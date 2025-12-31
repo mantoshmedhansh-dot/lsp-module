@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:claude.ai)",
+      "Bash(pnpm install)",
+      "Bash(npm install:*)",
+      "Bash(npx prisma generate)",
+      "Bash(npx prisma:*)",
+      "Bash(npx tsx:*)",
+      "Bash(pnpm dev)",
+      "Bash(curl:*)",
+      "Bash(timeout /t 10 /nobreak)",
+      "Bash(set PRISMA_CLIENT_ENGINE_TYPE=library)",
+      "Bash(dir:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm remove:*)",
+      "Bash(echo:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nInitial commit: CJDQuick B2B logistics aggregator platform\n\n- Turborepo monorepo with pnpm workspaces\n- Next.js 15 web app with App Router\n- Prisma schema for SQLite \\(with mock DB fallback for Windows ARM64\\)\n- Shared packages: @cjdquick/database, @cjdquick/types, @cjdquick/ui\n- Order lifecycle APIs: create, manifest, pick, pack, dispatch, POD\n- Partner selection algorithm with weighted scoring\n- Demo seed data with 5 logistics partners\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+    ]
+  }
+}

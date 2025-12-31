@@ -1,0 +1,451 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// USER & AUTHENTICATION
+// ============================================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash  String    @map("password_hash")
+  name          String
+  phone         String?
+  role          String    @default("CLIENT") // ADMIN, CLIENT, PARTNER, WAREHOUSE_STAFF, DRIVER
+  isActive      Boolean   @default(true) @map("is_active")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  client         Client?
+  partner        Partner?
+  warehouseStaff WarehouseStaff?
+
+  @@map("users")
+}
+
+// ============================================
+// CLIENT (B2B CUSTOMERS)
+// ============================================
+
+model Client {
+  id                  String   @id @default(cuid())
+  userId              String   @unique @map("user_id")
+  companyName         String   @map("company_name")
+  gstNumber           String?  @map("gst_number")
+  billingAddress      String   @map("billing_address")
+  creditLimit         Float    @default(0) @map("credit_limit")
+  currentBalance      Float    @default(0) @map("current_balance")
+  paymentTermsDays    Int      @default(15) @map("payment_terms_days")
+
+  weightCost          Float    @default(0.4) @map("weight_cost")
+  weightSpeed         Float    @default(0.3) @map("weight_speed")
+  weightReliability   Float    @default(0.3) @map("weight_reliability")
+
+  webhookUrl          String?  @map("webhook_url")
+  apiKey              String?  @unique @map("api_key")
+
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  user                User       @relation(fields: [userId], references: [id])
+  orders              Order[]
+  invoices            Invoice[]
+  warehouses          Warehouse[]
+
+  @@map("clients")
+}
+
+// ============================================
+// LOGISTICS PARTNERS
+// ============================================
+
+model Partner {
+  id                  String   @id @default(cuid())
+  userId              String?  @unique @map("user_id")
+  code                String   @unique
+  name                String
+  displayName         String   @map("display_name")
+  apiBaseUrl          String   @map("api_base_url")
+  apiKey              String   @map("api_key")
+  apiSecret           String?  @map("api_secret")
+  webhookSecret       String?  @map("webhook_secret")
+
+  isActive            Boolean  @default(true) @map("is_active")
+  settlementCycleDays Int      @default(15) @map("settlement_cycle_days")
+
+  supportsCod         Boolean  @default(true) @map("supports_cod")
+  supportsReverse     Boolean  @default(false) @map("supports_reverse")
+  supportsHyperlocal  Boolean  @default(false) @map("supports_hyperlocal")
+
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  user                User?    @relation(fields: [userId], references: [id])
+  serviceability      PartnerServiceability[]
+  performance         PartnerPerformance[]
+  orders              Order[]
+  settlements         PartnerSettlement[]
+
+  @@map("partners")
+}
+
+model PartnerServiceability {
+  id                 String   @id @default(cuid())
+  partnerId          String   @map("partner_id")
+  originPincode      String   @map("origin_pincode")
+  destinationPincode String   @map("destination_pincode")
+
+  baseRate           Float    @map("base_rate")
+  ratePerKg          Float    @map("rate_per_kg")
+  codChargePercent   Float    @default(2) @map("cod_charge_percent")
+  codChargeMin       Float    @default(30) @map("cod_charge_min")
+
+  estimatedTatDays   Int      @map("estimated_tat_days")
+  isActive           Boolean  @default(true) @map("is_active")
+
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  partner            Partner  @relation(fields: [partnerId], references: [id])
+
+  @@unique([partnerId, originPincode, destinationPincode])
+  @@index([originPincode, destinationPincode])
+  @@map("partner_serviceability")
+}
+
+model PartnerPerformance {
+  id                  String   @id @default(cuid())
+  partnerId           String   @map("partner_id")
+  calculationDate     DateTime @map("calculation_date")
+
+  totalOrders         Int      @default(0) @map("total_orders")
+  deliveredOrders     Int      @default(0) @map("delivered_orders")
+  onTimeDeliveries    Int      @default(0) @map("on_time_deliveries")
+  ndrRaised           Int      @default(0) @map("ndr_raised")
+  ndrResolved         Int      @default(0) @map("ndr_resolved")
+  rtoOrders           Int      @default(0) @map("rto_orders")
+
+  otpPercentage       Float    @default(0) @map("otp_percentage")
+  ndrResolutionRate   Float    @default(0) @map("ndr_resolution_rate")
+  rtoPercentage       Float    @default(0) @map("rto_percentage")
+  avgRating           Float    @default(5) @map("avg_rating")
+
+  reliabilityScore    Float    @default(80) @map("reliability_score")
+
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  partner             Partner  @relation(fields: [partnerId], references: [id])
+
+  @@unique([partnerId, calculationDate])
+  @@map("partner_performance")
+}
+
+// ============================================
+// WAREHOUSE & INVENTORY
+// ============================================
+
+model Warehouse {
+  id            String   @id @default(cuid())
+  clientId      String   @map("client_id")
+  name          String
+  code          String   @unique
+  address       String
+  pincode       String
+  city          String
+  state         String
+  contactName   String   @map("contact_name")
+  contactPhone  String   @map("contact_phone")
+  isActive      Boolean  @default(true) @map("is_active")
+
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  client        Client   @relation(fields: [clientId], references: [id])
+  staff         WarehouseStaff[]
+  orders        Order[]
+
+  @@map("warehouses")
+}
+
+model WarehouseStaff {
+  id            String   @id @default(cuid())
+  userId        String   @unique @map("user_id")
+  warehouseId   String   @map("warehouse_id")
+  employeeCode  String   @unique @map("employee_code")
+
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  user          User     @relation(fields: [userId], references: [id])
+  warehouse     Warehouse @relation(fields: [warehouseId], references: [id])
+  pickedOrders  Order[]  @relation("PickedBy")
+  packedOrders  Order[]  @relation("PackedBy")
+  dispatchedOrders Order[] @relation("DispatchedBy")
+
+  @@map("warehouse_staff")
+}
+
+// ============================================
+// ORDER & LIFECYCLE
+// ============================================
+
+model Order {
+  id                  String    @id @default(cuid())
+  orderNumber         String    @unique @map("order_number")
+  clientId            String    @map("client_id")
+  partnerId           String?   @map("partner_id")
+  warehouseId         String?   @map("warehouse_id")
+
+  customerName        String    @map("customer_name")
+  customerPhone       String    @map("customer_phone")
+  customerEmail       String?   @map("customer_email")
+  deliveryAddress     String    @map("delivery_address")
+  deliveryPincode     String    @map("delivery_pincode")
+  deliveryCity        String    @map("delivery_city")
+  deliveryState       String    @map("delivery_state")
+
+  originPincode       String    @map("origin_pincode")
+
+  weightKg            Float     @map("weight_kg")
+  lengthCm            Float?    @map("length_cm")
+  widthCm             Float?    @map("width_cm")
+  heightCm            Float?    @map("height_cm")
+  volumetricWeight    Float?    @map("volumetric_weight")
+  chargeableWeight    Float?    @map("chargeable_weight")
+
+  itemDescription     String    @map("item_description")
+  itemValue           Float     @map("item_value")
+  itemQuantity        Int       @default(1) @map("item_quantity")
+  itemSku             String?   @map("item_sku")
+
+  paymentMode         String    @default("PREPAID") @map("payment_mode") // PREPAID, COD
+  codAmount           Float     @default(0) @map("cod_amount")
+
+  awbNumber           String?   @unique @map("awb_number")
+  partnerRate         Float?    @map("partner_rate")
+  clientRate          Float?    @map("client_rate")
+  partnerScore        Float?    @map("partner_score")
+  labelUrl            String?   @map("label_url")
+  trackingUrl         String?   @map("tracking_url")
+
+  status              String    @default("CREATED") // OrderStatus enum values
+
+  manifestedAt        DateTime? @map("manifested_at")
+  pickupScheduledAt   DateTime? @map("pickup_scheduled_at")
+  pickedAt            DateTime? @map("picked_at")
+  packedAt            DateTime? @map("packed_at")
+  dispatchedAt        DateTime? @map("dispatched_at")
+  handedOverAt        DateTime? @map("handed_over_at")
+  deliveredAt         DateTime? @map("delivered_at")
+
+  pickedById          String?   @map("picked_by_id")
+  packedById          String?   @map("packed_by_id")
+  dispatchedById      String?   @map("dispatched_by_id")
+
+  expectedDeliveryDate DateTime? @map("expected_delivery_date")
+
+  podSignature        String?   @map("pod_signature")
+  podPhoto            String?   @map("pod_photo")
+  podOtp              String?   @map("pod_otp")
+  podReceiverName     String?   @map("pod_receiver_name")
+  podReceiverRelation String?   @map("pod_receiver_relation")
+  podLatitude         Float?    @map("pod_latitude")
+  podLongitude        Float?    @map("pod_longitude")
+
+  isSettled           Boolean   @default(false) @map("is_settled")
+  settlementId        String?   @map("settlement_id")
+
+  isInvoiced          Boolean   @default(false) @map("is_invoiced")
+  invoiceId           String?   @map("invoice_id")
+
+  clientOrderId       String?   @map("client_order_id")
+  notes               String?
+
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  client              Client    @relation(fields: [clientId], references: [id])
+  partner             Partner?  @relation(fields: [partnerId], references: [id])
+  warehouse           Warehouse? @relation(fields: [warehouseId], references: [id])
+  pickedBy            WarehouseStaff? @relation("PickedBy", fields: [pickedById], references: [id])
+  packedBy            WarehouseStaff? @relation("PackedBy", fields: [packedById], references: [id])
+  dispatchedBy        WarehouseStaff? @relation("DispatchedBy", fields: [dispatchedById], references: [id])
+  events              OrderEvent[]
+  ndrCase             NdrCase?
+  invoice             Invoice?  @relation(fields: [invoiceId], references: [id])
+  settlement          PartnerSettlement? @relation(fields: [settlementId], references: [id])
+
+  @@index([clientId, status])
+  @@index([partnerId, status])
+  @@index([status, createdAt])
+  @@index([deliveryPincode])
+  @@index([originPincode])
+  @@map("orders")
+}
+
+// ============================================
+// ORDER EVENTS (TRACKING)
+// ============================================
+
+model OrderEvent {
+  id            String   @id @default(cuid())
+  orderId       String   @map("order_id")
+
+  status        String   // OrderStatus value
+  statusText    String   @map("status_text")
+  location      String?
+  remarks       String?
+
+  source        String   @default("SYSTEM")
+  sourceRef     String?  @map("source_ref")
+
+  eventTime     DateTime @map("event_time")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  order         Order    @relation(fields: [orderId], references: [id])
+
+  @@index([orderId, eventTime])
+  @@map("order_events")
+}
+
+// ============================================
+// NDR MANAGEMENT
+// ============================================
+
+model NdrCase {
+  id                String    @id @default(cuid())
+  orderId           String    @unique @map("order_id")
+
+  reason            String    // NdrReason enum value
+  reasonText        String?   @map("reason_text")
+  attemptNumber     Int       @default(1) @map("attempt_number")
+  maxAttempts       Int       @default(3) @map("max_attempts")
+
+  action            String    @default("PENDING") // NdrAction enum value
+  actionNotes       String?   @map("action_notes")
+
+  correctedAddress  String?   @map("corrected_address")
+  correctedPincode  String?   @map("corrected_pincode")
+
+  rescheduledDate   DateTime? @map("rescheduled_date")
+
+  isResolved        Boolean   @default(false) @map("is_resolved")
+  resolvedAt        DateTime? @map("resolved_at")
+
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  order             Order     @relation(fields: [orderId], references: [id])
+
+  @@map("ndr_cases")
+}
+
+// ============================================
+// BILLING & INVOICES
+// ============================================
+
+model Invoice {
+  id              String   @id @default(cuid())
+  invoiceNumber   String   @unique @map("invoice_number")
+  clientId        String   @map("client_id")
+
+  invoiceDate     DateTime @map("invoice_date")
+  dueDate         DateTime @map("due_date")
+
+  subtotal        Float
+  taxAmount       Float    @map("tax_amount")
+  totalAmount     Float    @map("total_amount")
+
+  status          String   @default("PENDING") // InvoiceStatus enum value
+  pdfUrl          String?  @map("pdf_url")
+
+  paidAt          DateTime? @map("paid_at")
+  paymentRef      String?   @map("payment_ref")
+
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  client          Client    @relation(fields: [clientId], references: [id])
+  orders          Order[]
+
+  @@index([clientId, status])
+  @@map("invoices")
+}
+
+// ============================================
+// PARTNER SETTLEMENTS
+// ============================================
+
+model PartnerSettlement {
+  id                  String   @id @default(cuid())
+  settlementNumber    String   @unique @map("settlement_number")
+  partnerId           String   @map("partner_id")
+
+  periodStart         DateTime @map("period_start")
+  periodEnd           DateTime @map("period_end")
+
+  totalOrders         Int      @map("total_orders")
+  freightAmount       Float    @map("freight_amount")
+  codCollected        Float    @map("cod_collected")
+  codRemittance       Float    @map("cod_remittance")
+  netPayable          Float    @map("net_payable")
+
+  status              String   @default("PENDING") // SettlementStatus enum value
+
+  processedAt         DateTime? @map("processed_at")
+  paymentRef          String?   @map("payment_ref")
+
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  partner             Partner   @relation(fields: [partnerId], references: [id])
+  orders              Order[]
+
+  @@index([partnerId, status])
+  @@map("partner_settlements")
+}
+
+// ============================================
+// PINCODE MASTER
+// ============================================
+
+model PincodeMaster {
+  id          String   @id @default(cuid())
+  pincode     String   @unique
+  city        String
+  state       String
+  region      String?
+  tier        Int      @default(1)
+  isActive    Boolean  @default(true) @map("is_active")
+
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("pincode_master")
+}
+
+// ============================================
+// WEBHOOK LOGS
+// ============================================
+
+model WebhookLog {
+  id            String   @id @default(cuid())
+  direction     String
+  source        String
+  endpoint      String
+  payload       String   // JSON as string for SQLite
+  responseCode  Int?     @map("response_code")
+  responseBody  String?  @map("response_body")
+  isSuccess     Boolean  @default(false) @map("is_success")
+  errorMessage  String?  @map("error_message")
+  retryCount    Int      @default(0) @map("retry_count")
+
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@index([source, createdAt])
+  @@map("webhook_logs")
+}

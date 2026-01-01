@@ -48,3 +48,9 @@ coverage
 prisma/*.db
 prisma/*.db-journal
 prisma/mock-db.json
+
+# Local database
+packages/database/prisma/dev.db
+
+# Playwright test results
+apps/web/test-results/

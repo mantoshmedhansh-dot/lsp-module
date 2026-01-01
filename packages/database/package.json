@@ -12,14 +12,16 @@
     "db:seed": "prisma db seed"
   },
   "prisma": {
-    "seed": "tsx src/seed.ts"
+    "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@libsql/client": "^0.15.15",
     "@prisma/adapter-libsql": "^7.2.0",
-    "@prisma/client": "^6.1.0"
+    "@prisma/client": "^6.1.0",
+    "bcryptjs": "^2.4.3"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "prisma": "^6.1.0",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"

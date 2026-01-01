@@ -17,16 +17,121 @@ model User {
   passwordHash  String    @map("password_hash")
   name          String
   phone         String?
-  role          String    @default("CLIENT") // ADMIN, CLIENT, PARTNER, WAREHOUSE_STAFF, DRIVER
+  role          String    @default("CLIENT") // ADMIN, CLIENT, PARTNER, WAREHOUSE_STAFF, DRIVER, PICKUP_AGENT, DELIVERY_AGENT, HUB_OPERATOR
   isActive      Boolean   @default(true) @map("is_active")
+  hubId         String?   @map("hub_id") // For agents/operators assigned to a hub
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
 
   client         Client?
   partner        Partner?
   warehouseStaff WarehouseStaff?
+  sessions       Session[]
+  tasks          Task[]
 
   @@map("users")
+}
+
+// ============================================
+// AUTH SESSIONS (Mobile App)
+// ============================================
+
+model Session {
+  id            String    @id @default(cuid())
+  userId        String    @map("user_id")
+  token         String    @unique
+  deviceId      String?   @map("device_id")
+  deviceName    String?   @map("device_name")
+  platform      String?   // IOS, ANDROID
+  expiresAt     DateTime  @map("expires_at")
+  isActive      Boolean   @default(true) @map("is_active")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  lastUsedAt    DateTime  @default(now()) @map("last_used_at")
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@map("sessions")
+}
+
+// ============================================
+// MOBILE TASK ASSIGNMENT
+// ============================================
+
+model Task {
+  id              String    @id @default(cuid())
+  taskNumber      String    @unique @map("task_number")
+
+  // Assignment
+  assignedToId    String    @map("assigned_to_id")
+  hubId           String?   @map("hub_id")
+
+  // Task Type
+  type            String    // PICKUP, DELIVERY, INSCAN, OUTSCAN, LOAD, UNLOAD
+  priority        Int       @default(1) // 1=Low, 2=Medium, 3=High, 4=Urgent
+  sequence        Int       @default(0) // Order in the delivery route
+
+  // Related entities
+  shipmentId      String?   @map("shipment_id")
+  awbNumber       String?   @map("awb_number")
+  tripId          String?   @map("trip_id")
+  consignmentId   String?   @map("consignment_id")
+
+  // Location details
+  address         String?
+  pincode         String?
+  city            String?
+  latitude        Float?
+  longitude       Float?
+
+  // Contact
+  contactName     String?   @map("contact_name")
+  contactPhone    String?   @map("contact_phone")
+
+  // COD
+  isCod           Boolean   @default(false) @map("is_cod")
+  codAmount       Float     @default(0) @map("cod_amount")
+  codCollected    Float     @default(0) @map("cod_collected")
+  paymentMode     String?   @map("payment_mode") // CASH, UPI, CARD
+
+  // Scheduling
+  scheduledDate   DateTime  @map("scheduled_date")
+  timeSlotStart   String?   @map("time_slot_start")
+  timeSlotEnd     String?   @map("time_slot_end")
+
+  // Status
+  status          String    @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED, FAILED, CANCELLED
+
+  // Attempt tracking
+  attemptNumber   Int       @default(1) @map("attempt_number")
+  maxAttempts     Int       @default(3) @map("max_attempts")
+  failedReason    String?   @map("failed_reason")
+
+  // Completion
+  completedAt     DateTime? @map("completed_at")
+  completedLat    Float?    @map("completed_lat")
+  completedLng    Float?    @map("completed_lng")
+
+  // POD (for deliveries)
+  podReceiverName String?   @map("pod_receiver_name")
+  podRelation     String?   @map("pod_relation")
+  podSignature    String?   @map("pod_signature")
+  podPhoto        String?   @map("pod_photo")
+  podOtpVerified  Boolean   @default(false) @map("pod_otp_verified")
+
+  notes           String?
+
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  assignedTo      User      @relation(fields: [assignedToId], references: [id])
+
+  @@index([assignedToId, status])
+  @@index([hubId, scheduledDate])
+  @@index([status])
+  @@map("tasks")
 }
 
 // ============================================
@@ -57,6 +162,7 @@ model Client {
   orders              Order[]
   invoices            Invoice[]
   warehouses          Warehouse[]
+  customerSessions    CustomerSession[]
 
   @@map("clients")
 }
@@ -420,12 +526,73 @@ model PincodeMaster {
   city        String
   state       String
   region      String?
-  tier        Int      @default(1)
+  zone        String?  // NORTH, SOUTH, EAST, WEST, CENTRAL
+  tier        Int      @default(1) // 1=Metro, 2=Tier-1, 3=Tier-2, 4=Tier-3, 5=Rural
   isActive    Boolean  @default(true) @map("is_active")
 
   createdAt   DateTime @default(now()) @map("created_at")
 
   @@map("pincode_master")
+}
+
+// ============================================
+// ZONE TAT MATRIX (PTL SLA)
+// ============================================
+
+model ZoneTatMatrix {
+  id                String   @id @default(cuid())
+
+  // Origin/Destination Zone
+  originZone        String   @map("origin_zone")       // NORTH, SOUTH, EAST, WEST, CENTRAL
+  destinationZone   String   @map("destination_zone")
+
+  // Service Type
+  serviceType       String   @default("STANDARD") @map("service_type") // EXPRESS, STANDARD, ECONOMY
+
+  // Route Type (calculated)
+  routeType         String   @map("route_type")        // LOCAL, ZONAL, NATIONAL
+
+  // TAT in days
+  tatDays           Int      @map("tat_days")
+  minDays           Int      @default(1) @map("min_days")
+  maxDays           Int      @map("max_days")
+
+  // Rates
+  baseRatePerKg     Float    @map("base_rate_per_kg")
+  minChargeableKg   Float    @default(10) @map("min_chargeable_kg")
+
+  // SLA commitment
+  slaPercentage     Float    @default(95) @map("sla_percentage") // Target SLA %
+
+  isActive          Boolean  @default(true) @map("is_active")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@unique([originZone, destinationZone, serviceType])
+  @@index([originZone, destinationZone])
+  @@map("zone_tat_matrix")
+}
+
+// ============================================
+// PTL CUSTOMER SESSIONS
+// ============================================
+
+model CustomerSession {
+  id            String    @id @default(cuid())
+  clientId      String    @map("client_id")
+  token         String    @unique
+  deviceInfo    String?   @map("device_info")
+  ipAddress     String?   @map("ip_address")
+  expiresAt     DateTime  @map("expires_at")
+  isActive      Boolean   @default(true) @map("is_active")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  lastUsedAt    DateTime  @default(now()) @map("last_used_at")
+
+  client        Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@index([token])
+  @@map("customer_sessions")
 }
 
 // ============================================
@@ -448,4 +615,933 @@ model WebhookLog {
 
   @@index([source, createdAt])
   @@map("webhook_logs")
+}
+
+// ============================================
+// HUB NETWORK (PTL Operations)
+// ============================================
+
+model Hub {
+  id                  String   @id @default(cuid())
+  code                String   @unique
+  name                String
+  type                String   @default("TRANSSHIPMENT") // GATEWAY, TRANSSHIPMENT, SPOKE
+
+  // Location
+  address             String
+  pincode             String
+  city                String
+  state               String
+  latitude            Float?
+  longitude           Float?
+
+  // Capacity
+  totalBays           Int      @default(10) @map("total_bays")
+  loadingBays         Int      @default(5) @map("loading_bays")
+  unloadingBays       Int      @default(5) @map("unloading_bays")
+  sortingCapacity     Int      @default(1000) @map("sorting_capacity") // packages per hour
+
+  // Operations
+  operatingHoursStart String   @default("06:00") @map("operating_hours_start")
+  operatingHoursEnd   String   @default("22:00") @map("operating_hours_end")
+
+  // Contact
+  contactName         String   @map("contact_name")
+  contactPhone        String   @map("contact_phone")
+  contactEmail        String?  @map("contact_email")
+
+  isActive            Boolean  @default(true) @map("is_active")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  staff               HubStaff[]
+  servicedPincodes    HubPincodeMapping[]
+
+  @@index([pincode])
+  @@index([city, state])
+  @@map("hubs")
+}
+
+model HubPincodeMapping {
+  id          String   @id @default(cuid())
+  hubId       String   @map("hub_id")
+  pincode     String
+  type        String   @default("DELIVERY") // PICKUP, DELIVERY, BOTH
+  priority    Int      @default(1) // For multiple hubs serving same pincode
+
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  hub         Hub      @relation(fields: [hubId], references: [id], onDelete: Cascade)
+
+  @@unique([hubId, pincode, type])
+  @@index([pincode])
+  @@map("hub_pincode_mapping")
+}
+
+model HubStaff {
+  id            String   @id @default(cuid())
+  hubId         String   @map("hub_id")
+  employeeCode  String   @unique @map("employee_code")
+  name          String
+  phone         String
+  email         String?
+  role          String   @default("OPERATOR") // MANAGER, SUPERVISOR, OPERATOR, LOADER
+
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  hub           Hub      @relation(fields: [hubId], references: [id], onDelete: Cascade)
+
+  @@index([hubId])
+  @@map("hub_staff")
+}
+
+// ============================================
+// FLEET MANAGEMENT
+// ============================================
+
+model Vehicle {
+  id                String    @id @default(cuid())
+  registrationNo    String    @unique @map("registration_no")
+  type              String    // TATA_ACE, EICHER_14FT, TATA_407, TATA_709, CONTAINER_20FT
+
+  // Capacity
+  capacityTonnage   Float     @map("capacity_tonnage") // in tons
+  capacityVolumeCBM Float     @map("capacity_volume_cbm") // cubic meters
+
+  // Dimensions (internal cargo space in feet)
+  lengthFt          Float?    @map("length_ft")
+  widthFt           Float?    @map("width_ft")
+  heightFt          Float?    @map("height_ft")
+
+  // Vehicle Details
+  make              String?
+  model             String?
+  year              Int?
+  fuelType          String    @default("DIESEL") @map("fuel_type") // DIESEL, PETROL, CNG, EV
+
+  // Documents
+  rcExpiryDate      DateTime? @map("rc_expiry_date")
+  insuranceExpiry   DateTime? @map("insurance_expiry")
+  fitnessExpiry     DateTime? @map("fitness_expiry")
+  permitExpiry      DateTime? @map("permit_expiry")
+  pollutionExpiry   DateTime? @map("pollution_expiry")
+
+  // Status
+  status            String    @default("AVAILABLE") // AVAILABLE, IN_TRANSIT, MAINTENANCE, BREAKDOWN, RETIRED
+  currentHubId      String?   @map("current_hub_id")
+  currentLocation   String?   @map("current_location") // GPS coordinates or location description
+
+  // Ownership
+  ownershipType     String    @default("OWNED") @map("ownership_type") // OWNED, LEASED, ATTACHED
+  ownerName         String?   @map("owner_name")
+  ownerPhone        String?   @map("owner_phone")
+
+  // GPS Tracking
+  gpsDeviceId       String?   @map("gps_device_id")
+  lastGpsUpdate     DateTime? @map("last_gps_update")
+  lastLatitude      Float?    @map("last_latitude")
+  lastLongitude     Float?    @map("last_longitude")
+
+  isActive          Boolean   @default(true) @map("is_active")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  maintenanceLogs   VehicleMaintenance[]
+
+  @@index([status])
+  @@index([currentHubId])
+  @@index([type])
+  @@map("vehicles")
+}
+
+model VehicleMaintenance {
+  id              String    @id @default(cuid())
+  vehicleId       String    @map("vehicle_id")
+
+  type            String    // SCHEDULED, BREAKDOWN, ACCIDENT, INSPECTION
+  description     String
+  odometerReading Int?      @map("odometer_reading")
+
+  startDate       DateTime  @map("start_date")
+  endDate         DateTime? @map("end_date")
+
+  cost            Float?
+  vendorName      String?   @map("vendor_name")
+  invoiceNumber   String?   @map("invoice_number")
+
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  vehicle         Vehicle   @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([vehicleId, startDate])
+  @@map("vehicle_maintenance")
+}
+
+// ============================================
+// DRIVER MANAGEMENT
+// ============================================
+
+model Driver {
+  id              String    @id @default(cuid())
+  employeeCode    String    @unique @map("employee_code")
+
+  name            String
+  phone           String
+  altPhone        String?   @map("alt_phone")
+  email           String?
+
+  // Address
+  address         String?
+  city            String?
+  state           String?
+  pincode         String?
+
+  // License Details
+  licenseNumber   String    @unique @map("license_number")
+  licenseType     String    @map("license_type") // LMV, HMV, TRANS
+  licenseExpiry   DateTime  @map("license_expiry")
+  licenseState    String?   @map("license_state")
+
+  // Identity Documents
+  aadharNumber    String?   @map("aadhar_number")
+  panNumber       String?   @map("pan_number")
+
+  // Status
+  status          String    @default("AVAILABLE") // AVAILABLE, ON_TRIP, ON_LEAVE, INACTIVE
+  currentHubId    String?   @map("current_hub_id")
+
+  // Experience & Employment
+  joiningDate     DateTime  @map("joining_date")
+  yearsExperience Int?      @map("years_experience")
+
+  // Performance Metrics
+  totalTrips      Int       @default(0) @map("total_trips")
+  totalKm         Int       @default(0) @map("total_km")
+  rating          Float     @default(5) // 1-5 scale
+
+  // Emergency Contact
+  emergencyContactName  String? @map("emergency_contact_name")
+  emergencyContactPhone String? @map("emergency_contact_phone")
+
+  isActive        Boolean   @default(true) @map("is_active")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  leaves          DriverLeave[]
+
+  @@index([status])
+  @@index([currentHubId])
+  @@map("drivers")
+}
+
+model DriverLeave {
+  id          String    @id @default(cuid())
+  driverId    String    @map("driver_id")
+
+  type        String    // CASUAL, SICK, PLANNED, EMERGENCY
+  startDate   DateTime  @map("start_date")
+  endDate     DateTime  @map("end_date")
+  reason      String?
+
+  status      String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  approvedBy  String?   @map("approved_by")
+  approvedAt  DateTime? @map("approved_at")
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  driver      Driver    @relation(fields: [driverId], references: [id], onDelete: Cascade)
+
+  @@index([driverId, startDate])
+  @@map("driver_leaves")
+}
+
+// ============================================
+// ROUTES & TRIPS (Transport Management)
+// ============================================
+
+model Route {
+  id                   String   @id @default(cuid())
+  code                 String   @unique
+  name                 String
+
+  type                 String   @default("LINE_HAUL") // LINE_HAUL, MILK_RUN_PICKUP, MILK_RUN_DELIVERY, FEEDER
+
+  // Route endpoints
+  originHubId          String?  @map("origin_hub_id")
+  destinationHubId     String?  @map("destination_hub_id")
+
+  // Route details
+  distanceKm           Float    @map("distance_km")
+  estimatedDurationMin Int      @map("estimated_duration_min")
+
+  // For milk runs: array of stops [{pincode, sequence, estimatedTime}]
+  stops                String?  // JSON string for SQLite
+
+  // Schedule
+  departureTime        String?  @map("departure_time") // HH:MM format
+  arrivalTime          String?  @map("arrival_time")   // HH:MM format
+  frequency            String   @default("DAILY") // DAILY, MON_WED_FRI, TUE_THU_SAT, WEEKLY, ON_DEMAND
+
+  // Cost
+  baseCostPerTrip      Float?   @map("base_cost_per_trip")
+  fuelCostPerKm        Float?   @map("fuel_cost_per_km")
+  tollCost             Float?   @map("toll_cost")
+
+  // Recommended vehicle type
+  recommendedVehicle   String?  @map("recommended_vehicle")
+
+  isActive             Boolean  @default(true) @map("is_active")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  trips                Trip[]
+
+  @@index([originHubId])
+  @@index([destinationHubId])
+  @@index([type])
+  @@map("routes")
+}
+
+model Trip {
+  id                 String    @id @default(cuid())
+  tripNumber         String    @unique @map("trip_number")
+
+  routeId            String    @map("route_id")
+  vehicleId          String    @map("vehicle_id")
+  driverId           String    @map("driver_id")
+
+  type               String    @default("LINE_HAUL") // LINE_HAUL, MILK_RUN_PICKUP, MILK_RUN_DELIVERY, FEEDER
+
+  // Route overrides (if different from base route)
+  originHubId        String?   @map("origin_hub_id")
+  destinationHubId   String?   @map("destination_hub_id")
+
+  // Schedule
+  scheduledDeparture DateTime  @map("scheduled_departure")
+  scheduledArrival   DateTime  @map("scheduled_arrival")
+  actualDeparture    DateTime? @map("actual_departure")
+  actualArrival      DateTime? @map("actual_arrival")
+
+  // Load details
+  totalShipments     Int       @default(0) @map("total_shipments")
+  totalWeightKg      Float     @default(0) @map("total_weight_kg")
+  totalVolumeCBM     Float     @default(0) @map("total_volume_cbm")
+  totalPackages      Int       @default(0) @map("total_packages")
+
+  // Capacity utilization
+  fillRateWeight     Float     @default(0) @map("fill_rate_weight")   // percentage
+  fillRateVolume     Float     @default(0) @map("fill_rate_volume")   // percentage
+
+  // Status
+  status             String    @default("PLANNED") // PLANNED, LOADING, READY, IN_TRANSIT, ARRIVED, UNLOADING, COMPLETED, CANCELLED
+
+  // Live tracking
+  lastLatitude       Float?    @map("last_latitude")
+  lastLongitude      Float?    @map("last_longitude")
+  lastLocationUpdate DateTime? @map("last_location_update")
+  currentLocation    String?   @map("current_location") // Human readable location
+
+  // Distance tracking
+  plannedDistanceKm  Float?    @map("planned_distance_km")
+  actualDistanceKm   Float?    @map("actual_distance_km")
+
+  // Cost tracking
+  estimatedCost      Float?    @map("estimated_cost")
+  actualCost         Float?    @map("actual_cost")
+  fuelCost           Float?    @map("fuel_cost")
+  tollCost           Float?    @map("toll_cost")
+  driverAllowance    Float?    @map("driver_allowance")
+  otherExpenses      Float?    @map("other_expenses")
+
+  // Notes
+  notes              String?
+  loadManifest       String?   @map("load_manifest") // JSON string: [{orderId, awb, weight, volume}]
+  sealNumber         String?   @map("seal_number")
+
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  route              Route     @relation(fields: [routeId], references: [id])
+  events             TripEvent[]
+
+  @@index([routeId])
+  @@index([vehicleId])
+  @@index([driverId])
+  @@index([status])
+  @@index([scheduledDeparture])
+  @@map("trips")
+}
+
+model TripEvent {
+  id          String   @id @default(cuid())
+  tripId      String   @map("trip_id")
+
+  eventType   String   @map("event_type") // DEPARTURE, ARRIVAL, CHECKPOINT, DELAY, BREAKDOWN, FUEL_STOP, REST_STOP, INCIDENT
+  description String
+
+  // Location
+  location    String?
+  latitude    Float?
+  longitude   Float?
+
+  // Related hub (for arrivals/departures)
+  hubId       String?  @map("hub_id")
+
+  eventTime   DateTime @map("event_time")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  trip        Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@index([tripId, eventTime])
+  @@map("trip_events")
+}
+
+// ============================================
+// SHIPMENT ORCHESTRATION
+// ============================================
+
+model Shipment {
+  id                  String    @id @default(cuid())
+  awbNumber           String    @unique @map("awb_number") // Air Waybill / Tracking number
+
+  // Link to order
+  orderId             String?   @unique @map("order_id")
+
+  // Client info
+  clientId            String    @map("client_id")
+  clientOrderRef      String?   @map("client_order_ref")
+
+  // Shipper (Pickup) Details
+  shipperName         String    @map("shipper_name")
+  shipperPhone        String    @map("shipper_phone")
+  shipperAddress      String    @map("shipper_address")
+  shipperPincode      String    @map("shipper_pincode")
+  shipperCity         String    @map("shipper_city")
+  shipperState        String    @map("shipper_state")
+
+  // Consignee (Delivery) Details
+  consigneeName       String    @map("consignee_name")
+  consigneePhone      String    @map("consignee_phone")
+  consigneeAddress    String    @map("consignee_address")
+  consigneePincode    String    @map("consignee_pincode")
+  consigneeCity       String    @map("consignee_city")
+  consigneeState      String    @map("consignee_state")
+
+  // Package Details
+  pieces              Int       @default(1)
+  actualWeightKg      Float     @map("actual_weight_kg")
+  volumetricWeightKg  Float?    @map("volumetric_weight_kg")
+  chargeableWeightKg  Float     @map("chargeable_weight_kg")
+  lengthCm            Float?    @map("length_cm")
+  widthCm             Float?    @map("width_cm")
+  heightCm            Float?    @map("height_cm")
+
+  // Content
+  contentDescription  String    @map("content_description")
+  declaredValue       Float     @map("declared_value")
+
+  // Payment
+  paymentMode         String    @default("PREPAID") @map("payment_mode") // PREPAID, COD, TO_PAY
+  codAmount           Float     @default(0) @map("cod_amount")
+
+  // Service Type
+  serviceType         String    @default("STANDARD") @map("service_type") // EXPRESS, STANDARD, ECONOMY
+
+  // Fulfillment Mode
+  fulfillmentMode     String    @default("OWN_FLEET") @map("fulfillment_mode") // OWN_FLEET, PARTNER, HYBRID
+
+  // Journey Planning
+  originHubId         String?   @map("origin_hub_id")
+  destinationHubId    String?   @map("destination_hub_id")
+  currentHubId        String?   @map("current_hub_id")
+  journeyPlanId       String?   @map("journey_plan_id")
+
+  // Consignment (grouped shipments)
+  consignmentId       String?   @map("consignment_id")
+
+  // Current Status
+  status              String    @default("BOOKED") // See ShipmentStatus enum below
+  currentLegIndex     Int       @default(0) @map("current_leg_index")
+
+  // Partner Handover (for hybrid fulfillment)
+  handedOverToPartner Boolean   @default(false) @map("handed_over_to_partner")
+  partnerId           String?   @map("partner_id")
+  partnerAwb          String?   @map("partner_awb")
+  partnerHandoverAt   DateTime? @map("partner_handover_at")
+  partnerHandoverHub  String?   @map("partner_handover_hub")
+
+  // Delivery Details
+  expectedDeliveryDate DateTime? @map("expected_delivery_date")
+  actualDeliveryDate   DateTime? @map("actual_delivery_date")
+  deliveryAttempts     Int       @default(0) @map("delivery_attempts")
+
+  // POD
+  podCaptured         Boolean   @default(false) @map("pod_captured")
+  podReceiverName     String?   @map("pod_receiver_name")
+  podSignature        String?   @map("pod_signature")
+  podPhoto            String?   @map("pod_photo")
+  podRelation         String?   @map("pod_relation")
+  podLatitude         Float?    @map("pod_latitude")
+  podLongitude        Float?    @map("pod_longitude")
+
+  // Timestamps
+  bookedAt            DateTime  @default(now()) @map("booked_at")
+  pickedUpAt          DateTime? @map("picked_up_at")
+  deliveredAt         DateTime? @map("delivered_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  consignment         Consignment? @relation(fields: [consignmentId], references: [id])
+  journeyPlan         JourneyPlan? @relation(fields: [journeyPlanId], references: [id])
+  scans               ShipmentScan[]
+  legs                ShipmentLeg[]
+  events              ShipmentEvent[]
+
+  @@index([clientId])
+  @@index([status])
+  @@index([shipperPincode])
+  @@index([consigneePincode])
+  @@index([currentHubId])
+  @@index([consignmentId])
+  @@index([partnerId])
+  @@map("shipments")
+}
+
+// Shipment Status Enum Values:
+// BOOKED -> PICKUP_SCHEDULED -> PICKED_UP ->
+// RECEIVED_AT_ORIGIN_HUB -> IN_SORTING -> SORTED ->
+// CONSOLIDATED -> LOADED -> IN_TRANSIT ->
+// ARRIVED_AT_HUB -> UNLOADED -> (repeat for multi-leg) ->
+// HANDED_TO_PARTNER -> PARTNER_IN_TRANSIT ->
+// OUT_FOR_DELIVERY -> DELIVERED / DELIVERY_FAILED / RTO_INITIATED
+
+model ShipmentScan {
+  id            String   @id @default(cuid())
+  shipmentId    String   @map("shipment_id")
+
+  scanType      String   @map("scan_type") // See ScanType enum below
+  scanCode      String   @map("scan_code") // Barcode/AWB scanned
+
+  // Location
+  hubId         String?  @map("hub_id")
+  hubCode       String?  @map("hub_code")
+  location      String?
+
+  // Context
+  tripId        String?  @map("trip_id")
+  consignmentId String?  @map("consignment_id")
+  bagId         String?  @map("bag_id")
+
+  // Scan details
+  scannedBy     String   @map("scanned_by") // User/Staff ID
+  scannedByName String?  @map("scanned_by_name")
+  deviceId      String?  @map("device_id")
+
+  // Coordinates
+  latitude      Float?
+  longitude     Float?
+
+  remarks       String?
+  scanTime      DateTime @map("scan_time")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  shipment      Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  @@index([shipmentId, scanTime])
+  @@index([hubId, scanTime])
+  @@index([scanType])
+  @@map("shipment_scans")
+}
+
+// ScanType Enum Values:
+// PICKUP_SCAN, INSCAN, OUTSCAN, BAG_OPEN, BAG_CLOSE,
+// LOAD_SCAN, UNLOAD_SCAN, RECEIVED_SCAN, DISPATCH_SCAN,
+// OUT_FOR_DELIVERY_SCAN, DELIVERY_SCAN, POD_SCAN,
+// PARTNER_HANDOVER_SCAN, PARTNER_RECEIVED_SCAN,
+// RTO_SCAN, DAMAGE_SCAN, MISSING_SCAN
+
+model ShipmentEvent {
+  id            String   @id @default(cuid())
+  shipmentId    String   @map("shipment_id")
+
+  eventType     String   @map("event_type")
+  status        String   // New status after event
+  statusText    String   @map("status_text") // Human readable status
+
+  // Location
+  hubId         String?  @map("hub_id")
+  location      String?
+
+  // Source
+  source        String   @default("SYSTEM") // SYSTEM, HUB_SCAN, PARTNER_API, MANUAL
+  sourceRef     String?  @map("source_ref")
+
+  remarks       String?
+  eventTime     DateTime @map("event_time")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  shipment      Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  @@index([shipmentId, eventTime])
+  @@map("shipment_events")
+}
+
+// ============================================
+// CONSIGNMENT MANAGEMENT
+// ============================================
+
+model Consignment {
+  id                  String    @id @default(cuid())
+  consignmentNumber   String    @unique @map("consignment_number")
+
+  // Route
+  originHubId         String    @map("origin_hub_id")
+  destinationHubId    String    @map("destination_hub_id")
+
+  // Consolidation
+  shipmentCount       Int       @default(0) @map("shipment_count")
+  totalPieces         Int       @default(0) @map("total_pieces")
+  totalWeightKg       Float     @default(0) @map("total_weight_kg")
+  totalVolumeCBM      Float     @default(0) @map("total_volume_cbm")
+
+  // Bag/Container
+  bagCount            Int       @default(0) @map("bag_count")
+  sealNumbers         String?   @map("seal_numbers") // JSON array of seal numbers
+
+  // Assignment
+  tripId              String?   @map("trip_id")
+  vehicleId           String?   @map("vehicle_id")
+
+  // Status
+  status              String    @default("OPEN") // OPEN, CLOSED, LOADED, IN_TRANSIT, ARRIVED, DELIVERED
+
+  // Timestamps
+  closedAt            DateTime? @map("closed_at")
+  loadedAt            DateTime? @map("loaded_at")
+  dispatchedAt        DateTime? @map("dispatched_at")
+  arrivedAt           DateTime? @map("arrived_at")
+
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  shipments           Shipment[]
+  bags                ConsignmentBag[]
+
+  @@index([originHubId, destinationHubId])
+  @@index([status])
+  @@index([tripId])
+  @@map("consignments")
+}
+
+model ConsignmentBag {
+  id              String    @id @default(cuid())
+  bagNumber       String    @unique @map("bag_number")
+  consignmentId   String    @map("consignment_id")
+
+  // Contents
+  shipmentCount   Int       @default(0) @map("shipment_count")
+  totalWeightKg   Float     @default(0) @map("total_weight_kg")
+  shipmentAwbs    String?   @map("shipment_awbs") // JSON array of AWB numbers
+
+  // Seal
+  sealNumber      String?   @map("seal_number")
+
+  // Status
+  status          String    @default("OPEN") // OPEN, CLOSED, LOADED, UNLOADED
+
+  closedAt        DateTime? @map("closed_at")
+  closedBy        String?   @map("closed_by")
+
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  consignment     Consignment @relation(fields: [consignmentId], references: [id], onDelete: Cascade)
+
+  @@index([consignmentId])
+  @@map("consignment_bags")
+}
+
+// ============================================
+// JOURNEY PLANNING (Multi-leg orchestration)
+// ============================================
+
+model JourneyPlan {
+  id                    String    @id @default(cuid())
+
+  // Origin/Destination
+  originPincode         String    @map("origin_pincode")
+  originHubId           String    @map("origin_hub_id")
+  destinationPincode    String    @map("destination_pincode")
+  destinationHubId      String    @map("destination_hub_id")
+
+  // Route planning
+  totalLegs             Int       @map("total_legs")
+  estimatedTransitDays  Int       @map("estimated_transit_days")
+  estimatedDeliveryDate DateTime? @map("estimated_delivery_date")
+
+  // Fulfillment strategy
+  fulfillmentMode       String    @default("OWN_FLEET") @map("fulfillment_mode") // OWN_FLEET, PARTNER, HYBRID
+  partnerHandoverLeg    Int?      @map("partner_handover_leg") // Leg index where partner takes over
+  partnerId             String?   @map("partner_id")
+
+  // Leg details (JSON for flexibility)
+  legs                  String?   // JSON: [{legIndex, type, fromHub, toHub, mode, partnerId}]
+
+  status                String    @default("PLANNED") // PLANNED, ACTIVE, COMPLETED
+
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  shipments             Shipment[]
+  shipmentLegs          ShipmentLeg[]
+
+  @@index([originPincode, destinationPincode])
+  @@map("journey_plans")
+}
+
+model ShipmentLeg {
+  id              String    @id @default(cuid())
+  shipmentId      String    @map("shipment_id")
+  journeyPlanId   String?   @map("journey_plan_id")
+
+  legIndex        Int       @map("leg_index")
+  legType         String    @map("leg_type") // FIRST_MILE, LINE_HAUL, TRANSSHIPMENT, LAST_MILE
+
+  // Endpoints
+  fromHubId       String?   @map("from_hub_id")
+  toHubId         String?   @map("to_hub_id")
+  fromLocation    String?   @map("from_location")
+  toLocation      String?   @map("to_location")
+
+  // Fulfillment
+  mode            String    @default("OWN_FLEET") // OWN_FLEET, PARTNER
+  partnerId       String?   @map("partner_id")
+  partnerAwb      String?   @map("partner_awb")
+
+  // Assignment
+  tripId          String?   @map("trip_id")
+  consignmentId   String?   @map("consignment_id")
+
+  // Status
+  status          String    @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED, SKIPPED
+
+  // Timestamps
+  startedAt       DateTime? @map("started_at")
+  completedAt     DateTime? @map("completed_at")
+
+  // Scan references
+  loadScanId      String?   @map("load_scan_id")
+  unloadScanId    String?   @map("unload_scan_id")
+
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  shipment        Shipment    @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  journeyPlan     JourneyPlan? @relation(fields: [journeyPlanId], references: [id])
+
+  @@unique([shipmentId, legIndex])
+  @@index([shipmentId])
+  @@index([tripId])
+  @@index([status])
+  @@map("shipment_legs")
+}
+
+// ============================================
+// PARTNER INTEGRATION
+// ============================================
+
+model PartnerZoneMapping {
+  id              String   @id @default(cuid())
+  partnerId       String   @map("partner_id")
+
+  // Zone definition
+  zoneName        String   @map("zone_name")
+  zoneType        String   @map("zone_type") // SERVICEABLE, LOW_VOLUME, REMOTE
+
+  // Pincodes covered
+  pincodes        String   // JSON array or comma-separated
+
+  // Handover hub (where we hand shipments to this partner)
+  handoverHubId   String   @map("handover_hub_id")
+
+  // Rates
+  baseRate        Float    @map("base_rate")
+  ratePerKg       Float    @map("rate_per_kg")
+  minWeight       Float    @default(0.5) @map("min_weight")
+
+  // SLA
+  estimatedTatDays Int     @map("estimated_tat_days")
+
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([partnerId])
+  @@index([handoverHubId])
+  @@map("partner_zone_mappings")
+}
+
+model PartnerHandover {
+  id              String    @id @default(cuid())
+  handoverNumber  String    @unique @map("handover_number")
+
+  // Partner
+  partnerId       String    @map("partner_id")
+
+  // Hub where handover happens
+  handoverHubId   String    @map("handover_hub_id")
+
+  // Shipments being handed over
+  shipmentCount   Int       @map("shipment_count")
+  totalWeightKg   Float     @map("total_weight_kg")
+  shipmentIds     String    @map("shipment_ids") // JSON array
+
+  // Manifest
+  manifestNumber  String?   @map("manifest_number")
+  manifestUrl     String?   @map("manifest_url")
+
+  // Status
+  status          String    @default("PENDING") // PENDING, HANDED_OVER, ACKNOWLEDGED, REJECTED
+
+  // Handover details
+  handedOverBy    String?   @map("handed_over_by")
+  handedOverAt    DateTime? @map("handed_over_at")
+  receivedBy      String?   @map("received_by")
+  acknowledgedAt  DateTime? @map("acknowledged_at")
+
+  // Partner reference
+  partnerRef      String?   @map("partner_ref")
+
+  remarks         String?
+
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([partnerId])
+  @@index([handoverHubId])
+  @@index([status])
+  @@map("partner_handovers")
+}
+
+// ============================================
+// CONTROL TOWER - ETA PREDICTIONS
+// ============================================
+
+model ETAPrediction {
+  id                    String    @id @default(cuid())
+  shipmentId            String    @map("shipment_id")
+
+  // Predicted values
+  predictedDeliveryTime DateTime  @map("predicted_delivery_time")
+  delayMinutes          Int       @default(0) @map("delay_minutes")
+
+  // Risk assessment
+  riskScore             Float     @map("risk_score") // 0-100
+  delayRisk             String    @map("delay_risk") // LOW, MEDIUM, HIGH
+
+  // Confidence interval
+  confidenceLow         DateTime  @map("confidence_low")
+  confidenceHigh        DateTime  @map("confidence_high")
+  confidencePercent     Float     @default(80) @map("confidence_percent")
+
+  // Contributing factors (JSON)
+  factors               String    // JSON array of { factor, impact, description }
+
+  // Metadata
+  calculatedAt          DateTime  @default(now()) @map("calculated_at")
+  isActive              Boolean   @default(true) @map("is_active")
+
+  @@index([shipmentId])
+  @@index([delayRisk, isActive])
+  @@index([calculatedAt])
+  @@map("eta_predictions")
+}
+
+model HistoricalTransitTime {
+  id                    String    @id @default(cuid())
+
+  // Route identification
+  originPincode         String    @map("origin_pincode")
+  destinationPincode    String    @map("destination_pincode")
+  originHubId           String?   @map("origin_hub_id")
+  destinationHubId      String?   @map("destination_hub_id")
+
+  // Aggregated metrics (updated daily)
+  sampleCount           Int       @map("sample_count")
+  avgTransitMinutes     Float     @map("avg_transit_minutes")
+  medianTransitMinutes  Float     @default(0) @map("median_transit_minutes")
+  stdDevMinutes         Float     @map("std_dev_minutes")
+  percentile10          Float     @default(0) @map("percentile_10")
+  percentile90          Float     @map("percentile_90")
+  onTimePercentage      Float     @map("on_time_percentage")
+
+  // Time period
+  periodStart           DateTime  @map("period_start")
+  periodEnd             DateTime? @map("period_end")
+
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  @@unique([originPincode, destinationPincode, periodStart])
+  @@index([originHubId, destinationHubId])
+  @@map("historical_transit_times")
+}
+
+model HubCongestionSnapshot {
+  id                    String    @id @default(cuid())
+  hubId                 String    @map("hub_id")
+
+  // Current state
+  shipmentsInHub        Int       @map("shipments_in_hub")
+  sortingCapacity       Int       @map("sorting_capacity")
+  utilizationPercent    Float     @map("utilization_percent")
+
+  // Processing metrics
+  avgProcessingMinutes  Float     @default(0) @map("avg_processing_minutes")
+  pendingOutscans       Int       @default(0) @map("pending_outscans")
+
+  snapshotTime          DateTime  @default(now()) @map("snapshot_time")
+
+  @@index([hubId, snapshotTime])
+  @@map("hub_congestion_snapshots")
+}
+
+model ControlTowerAlert {
+  id                    String    @id @default(cuid())
+
+  // Alert type
+  alertType             String    @map("alert_type") // DELAY_RISK, HUB_CONGESTION, VEHICLE_DELAY, SLA_BREACH, SHIPMENT_STUCK
+  severity              String    @default("MEDIUM") // LOW, MEDIUM, HIGH, CRITICAL
+
+  // Related entities
+  shipmentId            String?   @map("shipment_id")
+  tripId                String?   @map("trip_id")
+  hubId                 String?   @map("hub_id")
+
+  // Alert details
+  title                 String
+  description           String
+  metrics               String?   // JSON with relevant metrics
+
+  // Status
+  status                String    @default("ACTIVE") // ACTIVE, ACKNOWLEDGED, RESOLVED, EXPIRED
+  acknowledgedBy        String?   @map("acknowledged_by")
+  acknowledgedAt        DateTime? @map("acknowledged_at")
+  resolvedAt            DateTime? @map("resolved_at")
+
+  createdAt             DateTime  @default(now()) @map("created_at")
+  expiresAt             DateTime? @map("expires_at")
+
+  @@index([alertType, status])
+  @@index([severity, status])
+  @@index([createdAt])
+  @@map("control_tower_alerts")
 }

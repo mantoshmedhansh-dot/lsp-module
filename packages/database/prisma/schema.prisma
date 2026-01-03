@@ -164,6 +164,12 @@ model Client {
   warehouses          Warehouse[]
   customerSessions    CustomerSession[]
 
+  // Compliance Relations
+  ulipIntegrations    ULIPIntegration[]
+  ewayBills           EwayBill[]
+  einvoices           EInvoice[]
+  paymentGateways     PaymentGateway[]
+
   @@map("clients")
 }
 
@@ -4490,4 +4496,735 @@ model InsuranceClaim {
   @@index([shipmentId])
   @@index([status])
   @@map("insurance_claims")
+}
+
+// ============================================
+// ULIP INTEGRATION (Unified Logistics Interface Platform)
+// Government logistics platform - Vehicle verification & Cargo tracking
+// ============================================
+
+model ULIPIntegration {
+  id                    String    @id @default(cuid())
+  clientId              String    @map("client_id")
+
+  // ULIP Credentials
+  ulipUserName          String    @map("ulip_user_name")
+  ulipProviderId        String?   @map("ulip_provider_id")
+
+  // Integration Status
+  isActive              Boolean   @default(true) @map("is_active")
+  lastSyncAt            DateTime? @map("last_sync_at")
+  syncStatus            String    @default("PENDING") @map("sync_status") // PENDING, IN_PROGRESS, SUCCESS, FAILED
+
+  // API Configuration
+  apiEndpoint           String?   @map("api_endpoint")
+  apiKey                String?   @map("api_key")
+
+  // Vehicle Details for ULIP
+  registeredVehicles    String?   @map("registered_vehicles") // JSON array of vehicle registration numbers
+
+  // Error Tracking
+  lastErrorMessage      String?   @map("last_error_message")
+  lastErrorAt           DateTime? @map("last_error_at")
+  retryCount            Int       @default(0) @map("retry_count")
+
+  // Tracking Configuration
+  enableCargoTracking   Boolean   @default(true) @map("enable_cargo_tracking")
+  trackingUpdateFreq    Int       @default(300) @map("tracking_update_freq") // In seconds
+
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  client                Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  vehicleVerifications  ULIPVehicleVerification[]
+  cargoTrackings        ULIPCargoTracking[]
+  syncLogs              ULIPSyncLog[]
+
+  @@index([clientId])
+  @@index([isActive, lastSyncAt])
+  @@map("ulip_integrations")
+}
+
+model ULIPVehicleVerification {
+  id                    String    @id @default(cuid())
+  ulipIntegrationId     String    @map("ulip_integration_id")
+  vehicleId             String?   @map("vehicle_id")
+
+  // Vehicle Verification Details
+  registrationNo        String    @map("registration_no")
+  rcNumber              String?   @map("rc_number")
+  chasisNumber          String?   @map("chasis_number")
+  engineNumber          String?   @map("engine_number")
+
+  // Verification Status
+  verificationStatus    String    @default("PENDING") // PENDING, VERIFIED, FAILED, EXPIRED
+  verifiedAt            DateTime? @map("verified_at")
+  expiryAt              DateTime? @map("expiry_at")
+
+  // ULIP Response
+  ulipRefNumber         String?   @map("ulip_ref_number")
+  ulipResponse          String?   @map("ulip_response") // JSON response from ULIP
+
+  // Verification Details
+  ownerName             String?   @map("owner_name")
+  ownerPhone            String?   @map("owner_phone")
+  vehicleClass          String?   @map("vehicle_class")
+  fuelType              String?   @map("fuel_type")
+  insuranceProvider     String?   @map("insurance_provider")
+  insurancePolicyNo     String?   @map("insurance_policy_no")
+  insuranceExpiry       DateTime? @map("insurance_expiry")
+  fitnessExpiry         DateTime? @map("fitness_expiry")
+  permitExpiry          DateTime? @map("permit_expiry")
+
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  ulipIntegration       ULIPIntegration @relation(fields: [ulipIntegrationId], references: [id], onDelete: Cascade)
+
+  @@index([ulipIntegrationId])
+  @@index([vehicleId])
+  @@index([registrationNo])
+  @@index([verificationStatus])
+  @@map("ulip_vehicle_verifications")
+}
+
+model ULIPCargoTracking {
+  id                    String    @id @default(cuid())
+  ulipIntegrationId     String    @map("ulip_integration_id")
+  shipmentId            String?   @map("shipment_id")
+  tripId                String?   @map("trip_id")
+
+  // Tracking Details
+  cargoTrackingId       String    @unique @map("cargo_tracking_id")
+  trackingStatus        String    @default("ACTIVE") // ACTIVE, COMPLETED, FAILED
+
+  // Journey Details
+  originLocation        String    @map("origin_location")
+  destinationLocation   String    @map("destination_location")
+  currentLocation       String?   @map("current_location")
+
+  // GPS Coordinates
+  lastLatitude          Float?    @map("last_latitude")
+  lastLongitude         Float?    @map("last_longitude")
+  lastLocationUpdate    DateTime? @map("last_location_update")
+
+  // Cargo Details
+  cargoWeight           Float?    @map("cargo_weight")
+  cargoValue            Float?    @map("cargo_value")
+  sealNumber            String?   @map("seal_number")
+  vehicleNo             String?   @map("vehicle_no")
+
+  // Timestamps
+  startedAt             DateTime  @default(now()) @map("started_at")
+  expectedCompletionAt  DateTime? @map("expected_completion_at")
+  completedAt           DateTime? @map("completed_at")
+
+  // ULIP Response
+  ulipRefNumber         String?   @map("ulip_ref_number")
+  lastSyncAt            DateTime? @map("last_sync_at")
+
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  ulipIntegration       ULIPIntegration @relation(fields: [ulipIntegrationId], references: [id], onDelete: Cascade)
+
+  @@index([ulipIntegrationId])
+  @@index([shipmentId])
+  @@index([tripId])
+  @@index([trackingStatus])
+  @@map("ulip_cargo_tracking")
+}
+
+model ULIPSyncLog {
+  id                    String    @id @default(cuid())
+  ulipIntegrationId     String    @map("ulip_integration_id")
+
+  syncType              String    @map("sync_type") // VEHICLE_VERIFICATION, CARGO_TRACKING, FUEL_STATION
+  status                String    // SUCCESS, FAILED, PARTIAL
+  recordsProcessed      Int       @default(0) @map("records_processed")
+  recordsFailed         Int       @default(0) @map("records_failed")
+
+  errorMessage          String?   @map("error_message")
+  response              String?   // JSON response
+
+  startedAt             DateTime  @default(now()) @map("started_at")
+  completedAt           DateTime? @map("completed_at")
+
+  createdAt             DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  ulipIntegration       ULIPIntegration @relation(fields: [ulipIntegrationId], references: [id], onDelete: Cascade)
+
+  @@index([ulipIntegrationId])
+  @@index([syncType, status])
+  @@map("ulip_sync_logs")
+}
+
+// ============================================
+// E-WAY BILL (GST Compliance for Goods Movement > ₹50,000)
+// ============================================
+
+model EwayBill {
+  id                    String    @id @default(cuid())
+  clientId              String    @map("client_id")
+  shipmentId            String?   @map("shipment_id")
+  invoiceId             String?   @map("invoice_id")
+
+  // E-way Bill Details
+  ewayBillNumber        String?   @unique @map("eway_bill_number")
+  ewayBillDate          DateTime? @map("eway_bill_date")
+
+  // Document Type
+  docType               String    @default("INV") @map("doc_type") // INV, BOE, BIL, CHL, CNT, OTH
+  docNumber             String    @map("doc_number")
+  docDate               DateTime  @map("doc_date")
+
+  // GSTIN Details
+  supplierGstin         String    @map("supplier_gstin")
+  supplierName          String    @map("supplier_name")
+  supplierAddress       String    @map("supplier_address")
+  supplierPlace         String    @map("supplier_place")
+  supplierState         String    @map("supplier_state")
+  supplierPincode       String    @map("supplier_pincode")
+
+  recipientGstin        String?   @map("recipient_gstin")
+  recipientName         String    @map("recipient_name")
+  recipientAddress      String    @map("recipient_address")
+  recipientPlace        String    @map("recipient_place")
+  recipientState        String    @map("recipient_state")
+  recipientPincode      String    @map("recipient_pincode")
+
+  transporterGstin      String?   @map("transporter_gstin")
+  transporterName       String?   @map("transporter_name")
+
+  // Shipment Reference
+  awbNumber             String?   @map("awb_number")
+
+  // Goods Details
+  goodsDescription      String    @map("goods_description")
+  goodsValue            Float     @map("goods_value")
+  hsnCode               String?   @map("hsn_code")
+  quantity              Float?
+  unit                  String?   // KGS, MTR, NOS, etc.
+
+  // GST Details
+  taxableValue          Float     @map("taxable_value")
+  sgstRate              Float     @default(0) @map("sgst_rate")
+  cgstRate              Float     @default(0) @map("cgst_rate")
+  igstRate              Float     @default(0) @map("igst_rate")
+  cessRate              Float     @default(0) @map("cess_rate")
+  sgstAmount            Float     @default(0) @map("sgst_amount")
+  cgstAmount            Float     @default(0) @map("cgst_amount")
+  igstAmount            Float     @default(0) @map("igst_amount")
+  cessAmount            Float     @default(0) @map("cess_amount")
+  totalGstAmount        Float     @default(0) @map("total_gst_amount")
+  totalInvoiceValue     Float     @map("total_invoice_value")
+
+  // Transportation Details
+  transportMode         String    @default("ROAD") @map("transport_mode") // ROAD, RAIL, AIR, SHIP
+  vehicleNo             String?   @map("vehicle_no")
+  vehicleType           String?   @map("vehicle_type") // REG, ODC
+  transactionType       String    @default("REGULAR") @map("transaction_type") // REGULAR, BILLTO_SHIPTO, BILLFRM_DISP, COMBO
+  subSupplyType         String    @default("SUPPLY") @map("sub_supply_type") // SUPPLY, IMPORT, EXPORT, JOB_WORK, etc.
+
+  // Distance
+  approxDistance        Float?    @map("approx_distance") // in KMs
+
+  // Validity
+  validFrom             DateTime? @map("valid_from")
+  validUpto             DateTime? @map("valid_upto")
+
+  // Status
+  status                String    @default("DRAFT") // DRAFT, GENERATED, ACTIVE, CANCELLED, EXPIRED, EXTENDED
+  generatedAt           DateTime? @map("generated_at")
+  cancelledAt           DateTime? @map("cancelled_at")
+  cancellationReason    String?   @map("cancellation_reason")
+  extendedAt            DateTime? @map("extended_at")
+  extendedUpto          DateTime? @map("extended_upto")
+  extensionReason       String?   @map("extension_reason")
+
+  // NIC/GST Portal Response
+  nicEwbNo              String?   @map("nic_ewb_no")
+  nicStatus             String?   @map("nic_status")
+  nicErrorMessage       String?   @map("nic_error_message")
+
+  // Part-B Updates (Vehicle changes)
+  partBUpdates          String?   @map("part_b_updates") // JSON array of vehicle updates
+
+  // Consolidated E-way Bill
+  isConsolidated        Boolean   @default(false) @map("is_consolidated")
+  consolidatedEwbNo     String?   @map("consolidated_ewb_no")
+
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+  createdBy             String?   @map("created_by")
+
+  // Relations
+  client                Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  items                 EwayBillItem[]
+
+  @@index([clientId])
+  @@index([shipmentId])
+  @@index([ewayBillNumber])
+  @@index([status, validUpto])
+  @@map("eway_bills")
+}
+
+model EwayBillItem {
+  id                    String    @id @default(cuid())
+  ewayBillId            String    @map("eway_bill_id")
+
+  itemNo                Int       @map("item_no")
+  productName           String    @map("product_name")
+  productDesc           String?   @map("product_desc")
+  hsnCode               String    @map("hsn_code")
+  quantity              Float
+  unit                  String    // UQC
+  taxableValue          Float     @map("taxable_value")
+  sgstRate              Float     @default(0) @map("sgst_rate")
+  cgstRate              Float     @default(0) @map("cgst_rate")
+  igstRate              Float     @default(0) @map("igst_rate")
+  cessRate              Float     @default(0) @map("cess_rate")
+
+  createdAt             DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  ewayBill              EwayBill  @relation(fields: [ewayBillId], references: [id], onDelete: Cascade)
+
+  @@index([ewayBillId])
+  @@map("eway_bill_items")
+}
+
+// ============================================
+// E-INVOICE (GST B2B Invoicing - IRP Portal)
+// Mandatory for B2B turnover > ₹5 Crore
+// ============================================
+
+model EInvoice {
+  id                    String    @id @default(cuid())
+  clientId              String    @map("client_id")
+  invoiceId             String    @map("invoice_id")
+
+  // IRN (Invoice Reference Number) from IRP
+  irn                   String?   @unique @map("irn")
+  ackNum                String?   @map("ack_num")
+  ackDate               DateTime? @map("ack_date")
+
+  // Document Details
+  docType               String    @default("INV") @map("doc_type") // INV, CRN, DBN
+  docNumber             String    @map("doc_number")
+  docDate               DateTime  @map("doc_date")
+
+  // Supplier Details (Seller)
+  supplierGstin         String    @map("supplier_gstin")
+  supplierLegalName     String    @map("supplier_legal_name")
+  supplierTradeName     String?   @map("supplier_trade_name")
+  supplierAddress1      String    @map("supplier_address1")
+  supplierAddress2      String?   @map("supplier_address2")
+  supplierPlace         String    @map("supplier_place")
+  supplierState         String    @map("supplier_state")
+  supplierPincode       String    @map("supplier_pincode")
+  supplierPhone         String?   @map("supplier_phone")
+  supplierEmail         String?   @map("supplier_email")
+
+  // Buyer Details
+  buyerGstin            String    @map("buyer_gstin")
+  buyerLegalName        String    @map("buyer_legal_name")
+  buyerTradeName        String?   @map("buyer_trade_name")
+  buyerAddress1         String    @map("buyer_address1")
+  buyerAddress2         String?   @map("buyer_address2")
+  buyerPlace            String    @map("buyer_place")
+  buyerState            String    @map("buyer_state")
+  buyerPincode          String    @map("buyer_pincode")
+  buyerPhone            String?   @map("buyer_phone")
+  buyerEmail            String?   @map("buyer_email")
+  buyerPos              String?   @map("buyer_pos") // Place of Supply
+
+  // Ship To (if different)
+  shipToGstin           String?   @map("ship_to_gstin")
+  shipToLegalName       String?   @map("ship_to_legal_name")
+  shipToAddress1        String?   @map("ship_to_address1")
+  shipToAddress2        String?   @map("ship_to_address2")
+  shipToPlace           String?   @map("ship_to_place")
+  shipToState           String?   @map("ship_to_state")
+  shipToPincode         String?   @map("ship_to_pincode")
+
+  // Dispatch From (if different)
+  dispatchFromGstin     String?   @map("dispatch_from_gstin")
+  dispatchFromName      String?   @map("dispatch_from_name")
+  dispatchFromAddress1  String?   @map("dispatch_from_address1")
+  dispatchFromAddress2  String?   @map("dispatch_from_address2")
+  dispatchFromPlace     String?   @map("dispatch_from_place")
+  dispatchFromState     String?   @map("dispatch_from_state")
+  dispatchFromPincode   String?   @map("dispatch_from_pincode")
+
+  // Value Details
+  totalAssessableValue  Float     @map("total_assessable_value")
+  totalCgstValue        Float     @default(0) @map("total_cgst_value")
+  totalSgstValue        Float     @default(0) @map("total_sgst_value")
+  totalIgstValue        Float     @default(0) @map("total_igst_value")
+  totalCessValue        Float     @default(0) @map("total_cess_value")
+  totalStateCessValue   Float     @default(0) @map("total_state_cess_value")
+  discount              Float     @default(0)
+  otherCharges          Float     @default(0) @map("other_charges")
+  roundOffAmount        Float     @default(0) @map("round_off_amount")
+  totalInvoiceValue     Float     @map("total_invoice_value")
+
+  // Payment Details
+  paymentMode           String?   @map("payment_mode") // CASH, CREDIT, DIRECT_TRANSFER
+  paymentTerms          String?   @map("payment_terms")
+  paymentDueDate        DateTime? @map("payment_due_date")
+  bankDetails           String?   @map("bank_details") // JSON
+
+  // Reference Documents
+  priorDocRef           String?   @map("prior_doc_ref") // For credit/debit notes
+  priorDocDate          DateTime? @map("prior_doc_date")
+  contractRef           String?   @map("contract_ref")
+  poRef                 String?   @map("po_ref")
+
+  // Status
+  status                String    @default("DRAFT") // DRAFT, PENDING, GENERATED, CANCELLED, FAILED
+  generatedAt           DateTime? @map("generated_at")
+  cancelledAt           DateTime? @map("cancelled_at")
+  cancellationReason    String?   @map("cancellation_reason")
+
+  // IRP Portal Response
+  irpStatus             String?   @map("irp_status")
+  irpErrorCode          String?   @map("irp_error_code")
+  irpErrorMessage       String?   @map("irp_error_message")
+  signedInvoice         String?   @map("signed_invoice") // Signed JSON from IRP
+  signedQRCode          String?   @map("signed_qr_code") // QR Code data
+
+  // Files
+  pdfUrl                String?   @map("pdf_url")
+  jsonUrl               String?   @map("json_url")
+  qrCodeUrl             String?   @map("qr_code_url")
+
+  // Linked E-way Bill
+  ewayBillNo            String?   @map("eway_bill_no")
+  ewayBillDate          DateTime? @map("eway_bill_date")
+
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+  createdBy             String?   @map("created_by")
+
+  // Relations
+  client                Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  items                 EInvoiceItem[]
+
+  @@index([clientId])
+  @@index([invoiceId])
+  @@index([irn])
+  @@index([status])
+  @@index([docDate])
+  @@map("e_invoices")
+}
+
+model EInvoiceItem {
+  id                    String    @id @default(cuid())
+  einvoiceId            String    @map("einvoice_id")
+
+  slNo                  Int       @map("sl_no")
+  productDesc           String    @map("product_desc")
+  isService             Boolean   @default(false) @map("is_service")
+  hsnCode               String    @map("hsn_code")
+
+  // Quantity
+  quantity              Float
+  unit                  String    // UQC - Unit Quantity Code
+  unitPrice             Float     @map("unit_price")
+  grossAmount           Float     @map("gross_amount")
+  discount              Float     @default(0)
+  preTaxValue           Float     @map("pre_tax_value")
+
+  // Tax Rates
+  cgstRate              Float     @default(0) @map("cgst_rate")
+  sgstRate              Float     @default(0) @map("sgst_rate")
+  igstRate              Float     @default(0) @map("igst_rate")
+  cessRate              Float     @default(0) @map("cess_rate")
+  stateCessRate         Float     @default(0) @map("state_cess_rate")
+
+  // Tax Amounts
+  cgstAmount            Float     @default(0) @map("cgst_amount")
+  sgstAmount            Float     @default(0) @map("sgst_amount")
+  igstAmount            Float     @default(0) @map("igst_amount")
+  cessAmount            Float     @default(0) @map("cess_amount")
+  stateCessAmount       Float     @default(0) @map("state_cess_amount")
+
+  totalItemValue        Float     @map("total_item_value")
+
+  // Batch Details
+  batchNo               String?   @map("batch_no")
+  expiryDate            DateTime? @map("expiry_date")
+
+  createdAt             DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  einvoice              EInvoice  @relation(fields: [einvoiceId], references: [id], onDelete: Cascade)
+
+  @@index([einvoiceId])
+  @@map("e_invoice_items")
+}
+
+// ============================================
+// PAYMENT GATEWAY INTEGRATION
+// Online payment processing (Razorpay, PayU, etc.)
+// ============================================
+
+model PaymentGateway {
+  id                    String    @id @default(cuid())
+  clientId              String?   @map("client_id") // Optional - can be global
+
+  // Gateway Configuration
+  gatewayType           String    @map("gateway_type") // RAZORPAY, PAYU, CCAVENUE, STRIPE, PHONEPE, PAYTM
+  gatewayName           String    @map("gateway_name")
+  displayName           String    @map("display_name")
+  description           String?
+
+  // API Credentials
+  apiKey                String    @map("api_key")
+  apiSecret             String    @map("api_secret")
+  merchantId            String?   @map("merchant_id")
+  salt                  String?   // For PayU
+
+  // Mode
+  mode                  String    @default("TEST") // TEST, LIVE
+  isActive              Boolean   @default(true) @map("is_active")
+  isPrimary             Boolean   @default(false) @map("is_primary")
+  priority              Int       @default(1)
+
+  // Supported Payment Methods
+  supportsCreditCard    Boolean   @default(true) @map("supports_credit_card")
+  supportsDebitCard     Boolean   @default(true) @map("supports_debit_card")
+  supportsNetBanking    Boolean   @default(true) @map("supports_net_banking")
+  supportsUPI           Boolean   @default(true) @map("supports_upi")
+  supportsWallet        Boolean   @default(true) @map("supports_wallet")
+  supportsEMI           Boolean   @default(false) @map("supports_emi")
+  supportsQRCode        Boolean   @default(false) @map("supports_qr_code")
+
+  // Webhook Configuration
+  webhookUrl            String?   @map("webhook_url")
+  webhookSecret         String?   @map("webhook_secret")
+
+  // Fee Configuration
+  transactionFeePercent Float     @default(2) @map("transaction_fee_percent")
+  flatFeePerTxn         Float     @default(0) @map("flat_fee_per_txn")
+  gstOnFee              Float     @default(18) @map("gst_on_fee")
+  minimumAmount         Float     @default(1) @map("minimum_amount")
+  maximumAmount         Float     @default(10000000) @map("maximum_amount")
+
+  // Settlement
+  settlementType        String    @default("T+2") @map("settlement_type") // T+1, T+2, T+3, INSTANT
+  settlementDays        Int       @default(2) @map("settlement_days")
+  bankAccountId         String?   @map("bank_account_id")
+
+  // Monitoring
+  lastHealthCheckAt     DateTime? @map("last_health_check_at")
+  healthStatus          String    @default("HEALTHY") @map("health_status") // HEALTHY, DEGRADED, DOWN
+  lastErrorMessage      String?   @map("last_error_message")
+  lastErrorAt           DateTime? @map("last_error_at")
+
+  // Statistics
+  totalTransactions     Int       @default(0) @map("total_transactions")
+  successfulTxns        Int       @default(0) @map("successful_txns")
+  totalAmountProcessed  Float     @default(0) @map("total_amount_processed")
+
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  client                Client?   @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  transactions          PaymentTransaction[]
+  webhookLogs           PaymentWebhookLog[]
+  settlements           PaymentSettlement[]
+
+  @@index([gatewayType])
+  @@index([isActive, isPrimary])
+  @@index([clientId])
+  @@map("payment_gateways")
+}
+
+model PaymentTransaction {
+  id                    String    @id @default(cuid())
+  paymentGatewayId      String    @map("payment_gateway_id")
+
+  // Transaction Reference
+  transactionId         String    @unique @map("transaction_id")
+  gatewayOrderId        String?   @map("gateway_order_id") // Order ID from gateway
+  gatewayPaymentId      String?   @map("gateway_payment_id") // Payment ID from gateway
+
+  // Order/Invoice Reference
+  orderId               String?   @map("order_id")
+  invoiceId             String?   @map("invoice_id")
+  referenceType         String    @map("reference_type") // INVOICE, COD_COLLECTION, FREIGHT, SUBSCRIPTION
+  referenceId           String    @map("reference_id")
+
+  // Customer Details
+  customerId            String?   @map("customer_id")
+  customerName          String    @map("customer_name")
+  customerEmail         String    @map("customer_email")
+  customerPhone         String    @map("customer_phone")
+
+  // Amount Details
+  amount                Float
+  currency              String    @default("INR")
+  convenienceFee        Float     @default(0) @map("convenience_fee")
+  gstOnFee              Float     @default(0) @map("gst_on_fee")
+  totalAmount           Float     @map("total_amount")
+
+  // Payment Method Details
+  paymentMethod         String    @map("payment_method") // CARD, NET_BANKING, UPI, WALLET, EMI, QR
+  cardLast4             String?   @map("card_last_4")
+  cardNetwork           String?   @map("card_network") // VISA, MASTERCARD, AMEX, RUPAY
+  cardType              String?   @map("card_type") // CREDIT, DEBIT
+  bankCode              String?   @map("bank_code")
+  bankName              String?   @map("bank_name")
+  walletName            String?   @map("wallet_name")
+  upiId                 String?   @map("upi_id")
+  emiMonths             Int?      @map("emi_months")
+
+  // Transaction Status
+  status                String    @default("INITIATED") // INITIATED, PENDING, AUTHORIZED, CAPTURED, SUCCESS, FAILED, CANCELLED, REFUNDED
+  statusCode            String?   @map("status_code")
+  statusMessage         String?   @map("status_message")
+  failureReason         String?   @map("failure_reason")
+
+  // Timestamps
+  initiatedAt           DateTime  @default(now()) @map("initiated_at")
+  authorizedAt          DateTime? @map("authorized_at")
+  capturedAt            DateTime? @map("captured_at")
+  completedAt           DateTime? @map("completed_at")
+  failedAt              DateTime? @map("failed_at")
+
+  // Gateway Response
+  gatewayResponse       String?   @map("gateway_response") // Full JSON response
+
+  // Settlement
+  settlementId          String?   @map("settlement_id")
+  settledAt             DateTime? @map("settled_at")
+
+  // Refund Details
+  refundAmount          Float     @default(0) @map("refund_amount")
+  refundStatus          String?   @map("refund_status")
+  refundId              String?   @map("refund_id")
+  refundedAt            DateTime? @map("refunded_at")
+  refundReason          String?   @map("refund_reason")
+
+  // Reconciliation
+  reconciliationStatus  String    @default("PENDING") @map("reconciliation_status") // PENDING, MATCHED, MISMATCHED, DISPUTED
+  reconciledAt          DateTime? @map("reconciled_at")
+  reconciledBy          String?   @map("reconciled_by")
+
+  // Metadata
+  metadata              String?   // JSON
+  notes                 String?
+  ipAddress             String?   @map("ip_address")
+  userAgent             String?   @map("user_agent")
+
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  paymentGateway        PaymentGateway @relation(fields: [paymentGatewayId], references: [id], onDelete: Cascade)
+
+  @@index([paymentGatewayId])
+  @@index([orderId])
+  @@index([invoiceId])
+  @@index([customerId])
+  @@index([status])
+  @@index([completedAt])
+  @@map("payment_transactions")
+}
+
+model PaymentWebhookLog {
+  id                    String    @id @default(cuid())
+  paymentGatewayId      String    @map("payment_gateway_id")
+
+  // Webhook Details
+  eventType             String    @map("event_type") // payment.authorized, payment.captured, payment.failed, refund.processed
+  eventId               String?   @map("event_id")
+
+  // Transaction Reference
+  transactionId         String?   @map("transaction_id")
+  gatewayPaymentId      String?   @map("gateway_payment_id")
+
+  // Payload
+  payload               String    // Full JSON payload
+  signature             String?
+  isSignatureValid      Boolean   @default(true) @map("is_signature_valid")
+
+  // Processing
+  status                String    @default("RECEIVED") // RECEIVED, PROCESSING, PROCESSED, FAILED, IGNORED
+  processedAt           DateTime? @map("processed_at")
+  errorMessage          String?   @map("error_message")
+
+  // Retry
+  retryCount            Int       @default(0) @map("retry_count")
+  lastRetryAt           DateTime? @map("last_retry_at")
+
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  paymentGateway        PaymentGateway @relation(fields: [paymentGatewayId], references: [id], onDelete: Cascade)
+
+  @@index([paymentGatewayId])
+  @@index([eventType])
+  @@index([transactionId])
+  @@index([status])
+  @@map("payment_webhook_logs")
+}
+
+model PaymentSettlement {
+  id                    String    @id @default(cuid())
+  paymentGatewayId      String    @map("payment_gateway_id")
+
+  // Settlement Details
+  settlementId          String    @unique @map("settlement_id")
+  settlementDate        DateTime  @map("settlement_date")
+
+  // Period
+  periodStart           DateTime  @map("period_start")
+  periodEnd             DateTime  @map("period_end")
+
+  // Amounts
+  grossAmount           Float     @map("gross_amount")
+  fees                  Float     @default(0)
+  tax                   Float     @default(0)
+  adjustments           Float     @default(0)
+  netAmount             Float     @map("net_amount")
+
+  // Transaction Count
+  transactionCount      Int       @default(0) @map("transaction_count")
+  refundCount           Int       @default(0) @map("refund_count")
+
+  // Status
+  status                String    @default("PENDING") // PENDING, PROCESSED, FAILED, REVERSED
+  processedAt           DateTime? @map("processed_at")
+  bankTransactionRef    String?   @map("bank_transaction_ref")
+  utrNumber             String?   @map("utr_number")
+
+  // Reconciliation
+  reconciliationStatus  String    @default("PENDING") @map("reconciliation_status")
+  reconciledAt          DateTime? @map("reconciled_at")
+  reconciledBy          String?   @map("reconciled_by")
+  variance              Float     @default(0)
+  varianceReason        String?   @map("variance_reason")
+
+  // Breakdown
+  breakdown             String?   // JSON breakdown
+
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  paymentGateway        PaymentGateway @relation(fields: [paymentGatewayId], references: [id], onDelete: Cascade)
+
+  @@index([paymentGatewayId])
+  @@index([settlementDate])
+  @@index([status])
+  @@map("payment_settlements")
 }

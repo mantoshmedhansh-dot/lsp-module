@@ -209,7 +209,7 @@ export default function ClientLayout({
           {!collapsed && (
             <div className="flex items-center gap-2">
               <Package className="h-8 w-8 text-primary-600" />
-              <span className="font-bold text-lg text-gray-900">CJDarcl Quick</span>
+              <span className="font-bold text-lg text-gray-900">CJDQuick B2B Client</span>
             </div>
           )}
           {collapsed && <Package className="h-8 w-8 text-primary-600 mx-auto" />}

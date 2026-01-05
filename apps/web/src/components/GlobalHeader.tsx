@@ -39,6 +39,8 @@ export default function GlobalHeader() {
   if (pathname?.startsWith("/operations")) return null;
   // Don't show on compliance pages (they have their own header)
   if (pathname?.startsWith("/compliance")) return null;
+  // Don't show on client pages (they have their own header)
+  if (pathname?.startsWith("/client")) return null;
 
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">

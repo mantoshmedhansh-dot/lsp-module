@@ -20,7 +20,7 @@ export const kn: Translations = {
     no: "ಇಲ್ಲ",
     ok: "ಸರಿ",
     done: "ಆಯಿತು",
-    poweredBy: "CJDQuick ಲಾಜಿಸ್ಟಿಕ್ಸ್ ನಿಂದ ಪವರ್ಡ್",
+    poweredBy: "CJDarcl Quick ಲಾಜಿಸ್ಟಿಕ್ಸ್ ನಿಂದ ಪವರ್ಡ್",
   },
 
   languages: {

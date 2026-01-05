@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
     const pageSize = parseInt(searchParams.get("pageSize") || "20");
     const status = searchParams.get("status");
     const type = searchParams.get("type");
+    const hubId = searchParams.get("hubId");
     const routeId = searchParams.get("routeId");
     const vehicleId = searchParams.get("vehicleId");
     const driverId = searchParams.get("driverId");
@@ -33,6 +34,14 @@ export async function GET(request: NextRequest) {
 
     if (type) {
       where.type = type;
+    }
+
+    // hubId filters trips that touch this hub (origin OR destination)
+    if (hubId) {
+      where.OR = [
+        { originHubId: hubId },
+        { destinationHubId: hubId },
+      ];
     }
 
     if (routeId) {
@@ -58,7 +67,16 @@ export async function GET(request: NextRequest) {
     }
 
     if (search) {
-      where.tripNumber = { contains: search };
+      if (hubId) {
+        // Need to handle search with hubId OR condition
+        where.AND = [
+          { OR: where.OR },
+          { tripNumber: { contains: search } },
+        ];
+        delete where.OR;
+      } else {
+        where.tripNumber = { contains: search };
+      }
     }
 
     const [trips, total] = await Promise.all([

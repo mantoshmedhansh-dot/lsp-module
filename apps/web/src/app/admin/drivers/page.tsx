@@ -15,6 +15,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { Card, Button } from "@cjdquick/ui";
+import { useHubFilter } from "@/contexts/HubFilterContext";
 
 interface Driver {
   id: string;
@@ -38,12 +39,14 @@ async function fetchDrivers(params: {
   search?: string;
   status?: string;
   licenseType?: string;
+  hubId?: string | null;
 }) {
   const searchParams = new URLSearchParams();
   searchParams.set("pageSize", "100");
   if (params.search) searchParams.set("search", params.search);
   if (params.status) searchParams.set("status", params.status);
   if (params.licenseType) searchParams.set("licenseType", params.licenseType);
+  if (params.hubId) searchParams.set("hubId", params.hubId);
   const res = await fetch(`/api/drivers?${searchParams.toString()}`);
   return res.json();
 }
@@ -85,14 +88,16 @@ export default function AdminDriversPage() {
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [selectedLicenseType, setSelectedLicenseType] = useState<string | null>(null);
   const queryClient = useQueryClient();
+  const { selectedHubId } = useHubFilter();
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ["admin-drivers", searchQuery, selectedStatus, selectedLicenseType],
+    queryKey: ["admin-drivers", searchQuery, selectedStatus, selectedLicenseType, selectedHubId],
     queryFn: () =>
       fetchDrivers({
         search: searchQuery || undefined,
         status: selectedStatus || undefined,
         licenseType: selectedLicenseType || undefined,
+        hubId: selectedHubId,
       }),
   });
 

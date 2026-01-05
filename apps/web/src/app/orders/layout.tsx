@@ -24,7 +24,7 @@ export default function OrdersLayout({
           <div className="flex items-center justify-between h-16">
             <Link href="/" className="flex items-center gap-2">
               <Truck className="h-8 w-8 text-primary-600" />
-              <span className="text-xl font-bold text-gray-900">CJDQuick</span>
+              <span className="text-xl font-bold text-gray-900">CJDarcl Quick</span>
             </Link>
 
             <nav className="hidden md:flex items-center gap-1">

@@ -9,6 +9,7 @@ import {
   Receipt,
   ShieldCheck,
   LayoutDashboard,
+  Home,
 } from "lucide-react";
 
 const complianceNav = [
@@ -48,6 +49,15 @@ export default function ComplianceLayout({
     <div className="flex min-h-screen">
       {/* Sidebar Navigation */}
       <aside className="w-64 border-r bg-muted/30 p-4">
+        {/* Home Button */}
+        <Link
+          href="/"
+          className="flex items-center gap-2 px-4 py-2 mb-4 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-sm"
+        >
+          <Home className="h-4 w-4" />
+          <span className="font-medium">Home</span>
+        </Link>
+
         <div className="mb-6">
           <h2 className="flex items-center gap-2 text-lg font-semibold">
             <FileCheck className="h-5 w-5" />

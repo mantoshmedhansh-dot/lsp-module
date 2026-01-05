@@ -15,6 +15,7 @@ import {
 import { Card, Button, Badge } from "@cjdquick/ui";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
+import { useHubFilter } from "@/contexts/HubFilterContext";
 
 const STATUS_COLORS: Record<string, string> = {
   PENDING: "warning",
@@ -26,15 +27,17 @@ export default function AdminHandoversPage() {
   const [filterStatus, setFilterStatus] = useState<string>("");
   const [filterPartner, setFilterPartner] = useState<string>("");
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const { selectedHubId } = useHubFilter();
 
   const queryClient = useQueryClient();
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ["admin-handovers", filterStatus, filterPartner],
+    queryKey: ["admin-handovers", filterStatus, filterPartner, selectedHubId],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (filterStatus) params.set("status", filterStatus);
       if (filterPartner) params.set("partnerId", filterPartner);
+      if (selectedHubId) params.set("hubId", selectedHubId);
       params.set("pageSize", "50");
 
       const res = await fetch(`/api/partner-handovers?${params}`);

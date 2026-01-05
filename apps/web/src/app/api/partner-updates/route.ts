@@ -5,7 +5,7 @@ import { prisma } from "@cjdquick/database";
  * Partner Status Updates API
  *
  * Receives status updates from partner networks to maintain
- * end-to-end visibility on CJDQuick platform
+ * end-to-end visibility on CJDarcl Quick platform
  *
  * Partners can push:
  * - Pickup confirmation

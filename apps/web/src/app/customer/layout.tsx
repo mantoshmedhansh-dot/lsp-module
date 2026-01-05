@@ -13,6 +13,7 @@ import {
   Menu,
   X,
   User,
+  Home,
 } from "lucide-react";
 
 interface CustomerData {
@@ -97,11 +98,18 @@ export default function CustomerLayout({
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            {/* Logo */}
+            {/* Home Button & Logo */}
             <div className="flex items-center gap-3">
+              <Link
+                href="/"
+                className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+              >
+                <Home className="h-4 w-4" />
+                <span className="font-medium text-sm">Home</span>
+              </Link>
               <Link href="/customer/dashboard" className="flex items-center gap-2">
                 <Truck className="h-8 w-8 text-blue-600" />
-                <span className="font-bold text-xl text-gray-900">CJDQuick</span>
+                <span className="font-bold text-xl text-gray-900">CJDarcl Quick</span>
               </Link>
               <span className="hidden sm:inline-block text-sm text-gray-500 border-l pl-3 ml-3">
                 Customer Portal
@@ -163,6 +171,14 @@ export default function CustomerLayout({
         {mobileMenuOpen && (
           <div className="md:hidden border-t border-gray-200 bg-white">
             <nav className="px-4 py-3 space-y-1">
+              <Link
+                href="/"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium bg-blue-50 text-blue-700"
+              >
+                <Home className="h-5 w-5" />
+                Home
+              </Link>
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = pathname === item.href;

@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
 
     switch (action) {
       case "CREATE_SHIPMENT": {
-        // Create a CJDQuick shipment from an ecommerce order
+        // Create a CJDarcl Quick shipment from an ecommerce order
         const { orderId } = body;
 
         const ecomOrder = await prisma.ecommerceOrder.findUnique({
@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
       }
 
       case "SYNC_TRACKING_STATUS": {
-        // Sync tracking status from CJDQuick shipment to ecommerce platform
+        // Sync tracking status from CJDarcl Quick shipment to ecommerce platform
         const { orderId } = body;
 
         const order = await prisma.ecommerceOrder.findUnique({
@@ -160,7 +160,7 @@ export async function POST(request: NextRequest) {
         }
 
         // In production, this would:
-        // 1. Fetch tracking status from CJDQuick shipment
+        // 1. Fetch tracking status from CJDarcl Quick shipment
         // 2. Push status update to the ecommerce platform
 
         await prisma.ecommerceOrder.update({

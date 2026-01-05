@@ -20,7 +20,7 @@ export const mr: Translations = {
     no: "नाही",
     ok: "ठीक आहे",
     done: "झाले",
-    poweredBy: "CJDQuick लॉजिस्टिक्स द्वारे संचालित",
+    poweredBy: "CJDarcl Quick लॉजिस्टिक्स द्वारे संचालित",
   },
 
   languages: {

@@ -17,18 +17,21 @@ model User {
   passwordHash  String    @map("password_hash")
   name          String
   phone         String?
-  role          String    @default("CLIENT") // ADMIN, CLIENT, PARTNER, WAREHOUSE_STAFF, DRIVER, PICKUP_AGENT, DELIVERY_AGENT, HUB_OPERATOR
+  role          String    @default("CLIENT") // SUPER_ADMIN, HUB_MANAGER, OPERATOR, ADMIN, CLIENT, PARTNER, WAREHOUSE_STAFF, DRIVER, PICKUP_AGENT, DELIVERY_AGENT, HUB_OPERATOR
   isActive      Boolean   @default(true) @map("is_active")
   hubId         String?   @map("hub_id") // For agents/operators assigned to a hub
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
 
+  // Relations
+  assignedHub    Hub?      @relation("HubUsers", fields: [hubId], references: [id])
   client         Client?
   partner        Partner?
   warehouseStaff WarehouseStaff?
   sessions       Session[]
   tasks          Task[]
 
+  @@index([hubId])
   @@map("users")
 }
 
@@ -170,6 +173,16 @@ model Client {
   einvoices           EInvoice[]
   paymentGateways     PaymentGateway[]
 
+  // Client Panel Relations
+  clientUsers         ClientUser[]
+  pickupRequests      PickupRequest[]
+  supportTickets      SupportTicket[]
+  bankAccounts        ClientBankAccount[]
+  documents           ClientDocument[]
+  services            ClientService[]
+  weightDisputes      WeightDispute[]
+  codRemittances      CODRemittance[]
+
   @@map("clients")
 }
 
@@ -281,6 +294,7 @@ model Warehouse {
   client        Client   @relation(fields: [clientId], references: [id])
   staff         WarehouseStaff[]
   orders        Order[]
+  pickupRequests PickupRequest[]
 
   @@map("warehouses")
 }
@@ -629,6 +643,52 @@ model ZoneTatMatrix {
 }
 
 // ============================================
+// PINCODE TO PINCODE SLA (Lane-Level)
+// ============================================
+
+model PincodeToSla {
+  id                  String   @id @default(cuid())
+
+  // Origin/Destination Pincodes
+  originPincode       String   @map("origin_pincode")
+  destinationPincode  String   @map("destination_pincode")
+
+  // Service Type
+  serviceType         String   @default("STANDARD") @map("service_type") // EXPRESS, STANDARD, ECONOMY
+
+  // SLA in days
+  tatDays             Int      @map("tat_days")
+  minDays             Int      @default(1) @map("min_days")
+  maxDays             Int      @map("max_days")
+
+  // Route Details
+  routeType           String?  @map("route_type")  // LOCAL, ZONAL, NATIONAL, METRO
+  originZone          String?  @map("origin_zone")
+  destinationZone     String?  @map("destination_zone")
+
+  // Rates (optional)
+  baseRate            Float?   @map("base_rate")
+  ratePerKg           Float?   @map("rate_per_kg")
+
+  // Service Flags
+  codAvailable        Boolean  @default(true) @map("cod_available")
+  reverseAvailable    Boolean  @default(true) @map("reverse_available")
+
+  // SLA Commitment
+  slaPercentage       Float    @default(95) @map("sla_percentage")
+
+  isActive            Boolean  @default(true) @map("is_active")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  @@unique([originPincode, destinationPincode, serviceType])
+  @@index([originPincode])
+  @@index([destinationPincode])
+  @@index([originPincode, destinationPincode])
+  @@map("pincode_to_sla")
+}
+
+// ============================================
 // PTL CUSTOMER SESSIONS
 // ============================================
 
@@ -682,6 +742,11 @@ model Hub {
   name                String
   type                String   @default("TRANSSHIPMENT") // GATEWAY, TRANSSHIPMENT, SPOKE
 
+  // Hub Hierarchy (for role-based access)
+  parentHubId         String?  @map("parent_hub_id")
+  parentHub           Hub?     @relation("HubHierarchy", fields: [parentHubId], references: [id])
+  childHubs           Hub[]    @relation("HubHierarchy")
+
   // Location
   address             String
   pincode             String
@@ -712,9 +777,11 @@ model Hub {
   // Relations
   staff               HubStaff[]
   servicedPincodes    HubPincodeMapping[]
+  assignedUsers       User[]   @relation("HubUsers")
 
   @@index([pincode])
   @@index([city, state])
+  @@index([parentHubId])
   @@map("hubs")
 }
 
@@ -1771,6 +1838,7 @@ model CODRemittance {
   createdAt           DateTime  @default(now()) @map("created_at")
   updatedAt           DateTime  @updatedAt @map("updated_at")
 
+  client              Client    @relation(fields: [clientId], references: [id])
   collections         CODCollection[]
 
   @@index([clientId, status])
@@ -7175,4 +7243,354 @@ model RobotMaintenance {
   @@index([robotId])
   @@index([maintenanceType])
   @@map("robot_maintenance")
+}
+
+// ============================================
+// CLIENT PANEL - TEAM USERS
+// ============================================
+
+model ClientUser {
+  id              String    @id @default(cuid())
+  clientId        String    @map("client_id")
+
+  email           String    @unique
+  passwordHash    String    @map("password_hash")
+  name            String
+  phone           String?
+
+  role            String    @default("OPERATIONS_USER") // OWNER, ADMIN, OPERATIONS_USER
+
+  isActive        Boolean   @default(true) @map("is_active")
+  lastLoginAt     DateTime? @map("last_login_at")
+
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  client          Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  sessions        ClientUserSession[]
+  raisedTickets   SupportTicket[] @relation("RaisedBy")
+  assignedTickets SupportTicket[] @relation("AssignedTo")
+
+  @@index([clientId])
+  @@map("client_users")
+}
+
+model ClientUserSession {
+  id            String    @id @default(cuid())
+  clientUserId  String    @map("client_user_id")
+  token         String    @unique
+  deviceInfo    String?   @map("device_info")
+  ipAddress     String?   @map("ip_address")
+  expiresAt     DateTime  @map("expires_at")
+  isActive      Boolean   @default(true) @map("is_active")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  lastUsedAt    DateTime  @default(now()) @map("last_used_at")
+
+  clientUser    ClientUser @relation(fields: [clientUserId], references: [id], onDelete: Cascade)
+
+  @@index([clientUserId])
+  @@index([token])
+  @@map("client_user_sessions")
+}
+
+// ============================================
+// CLIENT PANEL - PICKUP REQUESTS
+// ============================================
+
+model PickupRequest {
+  id                  String    @id @default(cuid())
+  pickupNumber        String    @unique @map("pickup_number")
+  clientId            String    @map("client_id")
+  warehouseId         String    @map("warehouse_id")
+
+  // Schedule
+  requestedDate       DateTime  @map("requested_date")
+  timeSlotStart       String?   @map("time_slot_start") // HH:MM
+  timeSlotEnd         String?   @map("time_slot_end")   // HH:MM
+
+  // Expected packages
+  expectedAwbs        Int       @default(0) @map("expected_awbs")
+  expectedWeight      Float?    @map("expected_weight")
+
+  // Actual pickup
+  pickedAwbs          Int       @default(0) @map("picked_awbs")
+  pickedWeight        Float?    @map("picked_weight")
+
+  // Status
+  status              String    @default("SCHEDULED") // SCHEDULED, OUT_FOR_PICKUP, PICKED, PARTIALLY_PICKED, CANCELLED, FAILED
+
+  // Assignment
+  assignedAgentId     String?   @map("assigned_agent_id")
+  assignedAgentName   String?   @map("assigned_agent_name")
+  assignedAgentPhone  String?   @map("assigned_agent_phone")
+
+  // Completion
+  pickedAt            DateTime? @map("picked_at")
+  failedReason        String?   @map("failed_reason")
+
+  // Contact override
+  contactName         String?   @map("contact_name")
+  contactPhone        String?   @map("contact_phone")
+
+  notes               String?
+
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  client              Client    @relation(fields: [clientId], references: [id])
+  warehouse           Warehouse @relation(fields: [warehouseId], references: [id])
+
+  @@index([clientId, status])
+  @@index([warehouseId, requestedDate])
+  @@index([status, requestedDate])
+  @@map("pickup_requests")
+}
+
+// ============================================
+// CLIENT PANEL - SUPPORT TICKETS
+// ============================================
+
+model SupportTicket {
+  id                String    @id @default(cuid())
+  ticketNumber      String    @unique @map("ticket_number")
+  clientId          String    @map("client_id")
+
+  // Related entities
+  orderId           String?   @map("order_id")
+  awbNumber         String?   @map("awb_number")
+
+  // Ticket details
+  category          String    // DELIVERY_DELAY, NDR, POD_ISSUE, DAMAGE, WEIGHT_DISPUTE, PAYMENT, PICKUP, OTHER
+  subCategory       String?   @map("sub_category")
+  subject           String
+  description       String
+
+  // Priority & Status
+  priority          String    @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  status            String    @default("OPEN") // OPEN, IN_PROGRESS, WAITING_CUSTOMER, RESOLVED, CLOSED
+
+  // Assignment
+  raisedById        String?   @map("raised_by_id")
+  assignedToId      String?   @map("assigned_to_id")
+
+  // Resolution
+  resolution        String?
+  resolvedAt        DateTime? @map("resolved_at")
+  closedAt          DateTime? @map("closed_at")
+
+  // SLA
+  slaDeadline       DateTime? @map("sla_deadline")
+  isEscalated       Boolean   @default(false) @map("is_escalated")
+  escalatedAt       DateTime? @map("escalated_at")
+
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  client            Client    @relation(fields: [clientId], references: [id])
+  raisedBy          ClientUser? @relation("RaisedBy", fields: [raisedById], references: [id])
+  assignedTo        ClientUser? @relation("AssignedTo", fields: [assignedToId], references: [id])
+  comments          TicketComment[]
+  attachments       TicketAttachment[]
+
+  @@index([clientId, status])
+  @@index([category])
+  @@index([status, createdAt])
+  @@map("support_tickets")
+}
+
+model TicketComment {
+  id              String    @id @default(cuid())
+  ticketId        String    @map("ticket_id")
+
+  authorType      String    @map("author_type") // CLIENT, SUPPORT, SYSTEM
+  authorName      String    @map("author_name")
+  authorEmail     String?   @map("author_email")
+
+  content         String
+  isInternal      Boolean   @default(false) @map("is_internal") // Internal notes not visible to client
+
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  ticket          SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId, createdAt])
+  @@map("ticket_comments")
+}
+
+model TicketAttachment {
+  id              String    @id @default(cuid())
+  ticketId        String    @map("ticket_id")
+
+  fileName        String    @map("file_name")
+  fileUrl         String    @map("file_url")
+  fileSize        Int       @map("file_size")
+  mimeType        String    @map("mime_type")
+
+  uploadedBy      String    @map("uploaded_by")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  ticket          SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+  @@map("ticket_attachments")
+}
+
+// ============================================
+// CLIENT PANEL - BANK ACCOUNTS (COD Remittance)
+// ============================================
+
+model ClientBankAccount {
+  id                String    @id @default(cuid())
+  clientId          String    @map("client_id")
+
+  accountHolderName String    @map("account_holder_name")
+  accountNumber     String    @map("account_number")
+  ifscCode          String    @map("ifsc_code")
+  bankName          String    @map("bank_name")
+  branchName        String?   @map("branch_name")
+
+  accountType       String    @default("SAVINGS") @map("account_type") // SAVINGS, CURRENT
+
+  // Verification
+  isVerified        Boolean   @default(false) @map("is_verified")
+  verifiedAt        DateTime? @map("verified_at")
+
+  // Status
+  isPrimary         Boolean   @default(false) @map("is_primary")
+  isActive          Boolean   @default(true) @map("is_active")
+
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  client            Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@map("client_bank_accounts")
+}
+
+// ============================================
+// CLIENT PANEL - DOCUMENTS
+// ============================================
+
+model ClientDocument {
+  id              String    @id @default(cuid())
+  clientId        String    @map("client_id")
+
+  // Related entity
+  orderId         String?   @map("order_id")
+  awbNumber       String?   @map("awb_number")
+
+  // Document details
+  documentType    String    @map("document_type") // INVOICE, EWAY_BILL, PACKING_LIST, CUSTOMS, POD, OTHER
+  documentName    String    @map("document_name")
+  fileUrl         String    @map("file_url")
+  fileSize        Int       @map("file_size")
+  mimeType        String    @map("mime_type")
+
+  // Status
+  status          String    @default("UPLOADED") // UPLOADED, VERIFIED, REJECTED
+  rejectionReason String?   @map("rejection_reason")
+
+  uploadedBy      String    @map("uploaded_by")
+  verifiedBy      String?   @map("verified_by")
+  verifiedAt      DateTime? @map("verified_at")
+
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  client          Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@index([orderId])
+  @@index([awbNumber])
+  @@map("client_documents")
+}
+
+// ============================================
+// CLIENT PANEL - SERVICES
+// ============================================
+
+model ClientService {
+  id              String    @id @default(cuid())
+  clientId        String    @map("client_id")
+
+  serviceCode     String    @map("service_code") // NEXT_DAY, INTRACITY, DOMESTIC_PARCEL, B2B_CARGO, CROSS_BORDER, FTL
+  serviceName     String    @map("service_name")
+
+  // Status
+  status          String    @default("INACTIVE") // INACTIVE, PENDING_ACTIVATION, ACTIVE, SUSPENDED
+
+  // Activation
+  activatedAt     DateTime? @map("activated_at")
+  activatedBy     String?   @map("activated_by")
+
+  // Configuration (service-specific settings as JSON)
+  config          String?   // JSON string
+
+  // Pricing override
+  customPricing   String?   @map("custom_pricing") // JSON string
+
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  client          Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@unique([clientId, serviceCode])
+  @@index([clientId])
+  @@map("client_services")
+}
+
+// ============================================
+// CLIENT PANEL - WEIGHT DISPUTES
+// ============================================
+
+model WeightDispute {
+  id                  String    @id @default(cuid())
+  clientId            String    @map("client_id")
+  orderId             String    @map("order_id")
+
+  // Declared vs Measured
+  declaredWeightKg    Float     @map("declared_weight_kg")
+  measuredWeightKg    Float     @map("measured_weight_kg")
+
+  declaredLengthCm    Float?    @map("declared_length_cm")
+  declaredWidthCm     Float?    @map("declared_width_cm")
+  declaredHeightCm    Float?    @map("declared_height_cm")
+
+  measuredLengthCm    Float?    @map("measured_length_cm")
+  measuredWidthCm     Float?    @map("measured_width_cm")
+  measuredHeightCm    Float?    @map("measured_height_cm")
+
+  // Volumetric
+  declaredVolWeight   Float?    @map("declared_vol_weight")
+  measuredVolWeight   Float?    @map("measured_vol_weight")
+
+  // Chargeable difference
+  chargeableDiff      Float     @map("chargeable_diff")
+  additionalCharge    Float     @map("additional_charge")
+
+  // Status
+  status              String    @default("PENDING") // PENDING, ACKNOWLEDGED, DISPUTED, RESOLVED
+
+  // Client response
+  acknowledgedAt      DateTime? @map("acknowledged_at")
+  disputeReason       String?   @map("dispute_reason")
+  disputedAt          DateTime? @map("disputed_at")
+
+  // Resolution
+  finalWeightKg       Float?    @map("final_weight_kg")
+  finalCharge         Float?    @map("final_charge")
+  resolvedBy          String?   @map("resolved_by")
+  resolvedAt          DateTime? @map("resolved_at")
+
+  // Evidence
+  proofImageUrl       String?   @map("proof_image_url")
+
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  client              Client    @relation(fields: [clientId], references: [id])
+
+  @@index([clientId, status])
+  @@index([orderId])
+  @@map("weight_disputes")
 }

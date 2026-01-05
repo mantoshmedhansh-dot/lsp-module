@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "CJDQuick",
+    "name": "CJDarcl Quick",
     "slug": "cjdquick-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -48,7 +48,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow CJDQuick to access your camera for barcode scanning"
+          "cameraPermission": "Allow CJDarcl Quick to access your camera for barcode scanning"
         }
       ]
     ],

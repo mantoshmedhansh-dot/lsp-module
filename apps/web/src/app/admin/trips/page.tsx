@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Card, Button } from "@cjdquick/ui";
 import { TRIP_STATUSES } from "@/lib/validations";
+import { useHubFilter } from "@/contexts/HubFilterContext";
 
 interface Trip {
   id: string;
@@ -42,6 +43,7 @@ async function fetchTrips(params: {
   status?: string;
   dateFrom?: string;
   dateTo?: string;
+  hubId?: string | null;
 }) {
   const searchParams = new URLSearchParams();
   searchParams.set("pageSize", "100");
@@ -49,6 +51,7 @@ async function fetchTrips(params: {
   if (params.status) searchParams.set("status", params.status);
   if (params.dateFrom) searchParams.set("dateFrom", params.dateFrom);
   if (params.dateTo) searchParams.set("dateTo", params.dateTo);
+  if (params.hubId) searchParams.set("hubId", params.hubId);
   const res = await fetch(`/api/trips?${searchParams.toString()}`);
   return res.json();
 }
@@ -100,15 +103,17 @@ export default function AdminTripsPage() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const queryClient = useQueryClient();
+  const { selectedHubId } = useHubFilter();
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ["admin-trips", searchQuery, selectedStatus, dateFrom, dateTo],
+    queryKey: ["admin-trips", searchQuery, selectedStatus, dateFrom, dateTo, selectedHubId],
     queryFn: () =>
       fetchTrips({
         search: searchQuery || undefined,
         status: selectedStatus || undefined,
         dateFrom: dateFrom || undefined,
         dateTo: dateTo || undefined,
+        hubId: selectedHubId,
       }),
   });
 

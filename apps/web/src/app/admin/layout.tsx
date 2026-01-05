@@ -28,7 +28,16 @@ import {
   Leaf,
   Shield,
   Radio,
+  ShoppingCart,
+  FileText,
+  PackageCheck,
+  PackageX,
+  Send,
+  ClipboardCheck,
 } from "lucide-react";
+import { AdminAuthGuard } from "@/components/admin/AdminAuthGuard";
+import { HubSelector } from "@/components/admin/HubSelector";
+import { UserMenu } from "@/components/admin/UserMenu";
 
 const navigation = [
   {
@@ -63,6 +72,18 @@ const navigation = [
       { name: "All Shipments", href: "/admin/shipments", icon: Package },
       { name: "Consignments", href: "/admin/consignments", icon: Layers },
       { name: "Journey Plans", href: "/admin/journeys", icon: TrendingUp },
+    ],
+  },
+  {
+    name: "Orders & Fulfillment",
+    items: [
+      { name: "All Orders", href: "/admin/orders", icon: ShoppingCart },
+      { name: "Manifest", href: "/admin/orders/manifest", icon: FileText },
+      { name: "Pick", href: "/admin/orders/pick", icon: PackageCheck },
+      { name: "Pack", href: "/admin/orders/pack", icon: Box },
+      { name: "Dispatch", href: "/admin/orders/dispatch", icon: Send },
+      { name: "Delivery", href: "/admin/orders/delivery", icon: Truck },
+      { name: "POD", href: "/admin/orders/pod", icon: ClipboardCheck },
     ],
   },
   {
@@ -101,6 +122,7 @@ export default function AdminLayout({
   const pathname = usePathname();
 
   return (
+    <AdminAuthGuard>
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
       <aside
@@ -113,7 +135,7 @@ export default function AdminLayout({
           {!collapsed && (
             <div className="flex items-center gap-2">
               <Package className="h-8 w-8 text-primary-500" />
-              <span className="font-bold text-lg">CJDQuick</span>
+              <span className="font-bold text-lg">CJDarcl Quick</span>
             </div>
           )}
           {collapsed && <Package className="h-8 w-8 text-primary-500 mx-auto" />}
@@ -176,7 +198,7 @@ export default function AdminLayout({
         <div className="p-4 border-t border-gray-800">
           {!collapsed && (
             <div className="text-xs text-gray-500">
-              <p>PTL Admin Panel</p>
+              <p>Admin Panel</p>
               <p>v1.0.0</p>
             </div>
           )}
@@ -187,7 +209,18 @@ export default function AdminLayout({
       <main className="flex-1 overflow-auto">
         {/* Top Bar */}
         <header className="h-16 bg-white border-b flex items-center justify-between px-6">
-          <h1 className="text-lg font-semibold text-gray-900">Admin Panel</h1>
+          <div className="flex items-center gap-6">
+            {pathname !== "/admin" && (
+              <Link
+                href="/admin"
+                className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors shadow-sm"
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                <span className="font-medium">Home</span>
+              </Link>
+            )}
+            <HubSelector />
+          </div>
           <div className="flex items-center gap-4">
             <Link
               href="/"
@@ -195,9 +228,7 @@ export default function AdminLayout({
             >
               View Site
             </Link>
-            <div className="h-8 w-8 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center font-medium">
-              A
-            </div>
+            <UserMenu />
           </div>
         </header>
 
@@ -205,5 +236,6 @@ export default function AdminLayout({
         <div className="p-6">{children}</div>
       </main>
     </div>
+    </AdminAuthGuard>
   );
 }

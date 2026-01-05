@@ -160,7 +160,7 @@ export default function AdminPartnerZonesPage() {
           <div>
             <h3 className="font-medium text-blue-900">Hybrid Fulfillment Zones</h3>
             <p className="text-sm text-blue-700 mt-1">
-              Partner zones define areas where CJDQuick handles first mile and line haul,
+              Partner zones define areas where CJDarcl Quick handles first mile and line haul,
               then hands over to partners for last-mile delivery. This enables coverage in
               low-volume areas without building full infrastructure.
             </p>

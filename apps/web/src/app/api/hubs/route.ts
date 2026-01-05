@@ -15,7 +15,13 @@ export async function GET(request: NextRequest) {
     const isActive = searchParams.get("isActive");
     const search = searchParams.get("search");
 
+    const hubId = searchParams.get("hubId");
     const where: any = {};
+
+    // If specific hubId is provided, filter to that hub
+    if (hubId) {
+      where.id = hubId;
+    }
 
     if (type) {
       where.type = type;

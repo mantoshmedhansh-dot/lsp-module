@@ -848,7 +848,7 @@ export default function TrackingPage() {
       {/* Footer */}
       <div className="max-w-4xl mx-auto px-4 py-8 text-center">
         <p className="text-sm text-gray-400">
-          Powered by CJDQuick Logistics
+          Powered by CJDarcl Quick Logistics
         </p>
       </div>
     </div>

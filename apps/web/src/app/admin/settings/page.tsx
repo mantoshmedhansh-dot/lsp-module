@@ -71,7 +71,7 @@ export default function AdminSettingsPage() {
                     </label>
                     <input
                       type="text"
-                      defaultValue="CJDQuick Logistics"
+                      defaultValue="CJDarcl Quick Logistics"
                       className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                     />
                   </div>

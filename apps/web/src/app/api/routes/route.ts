@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1");
     const pageSize = parseInt(searchParams.get("pageSize") || "20");
     const type = searchParams.get("type");
+    const hubId = searchParams.get("hubId");
     const originHubId = searchParams.get("originHubId");
     const destinationHubId = searchParams.get("destinationHubId");
     const search = searchParams.get("search");
@@ -20,12 +21,21 @@ export async function GET(request: NextRequest) {
       where.type = type;
     }
 
-    if (originHubId) {
-      where.originHubId = originHubId;
-    }
+    // hubId filters routes that touch this hub (origin OR destination)
+    if (hubId) {
+      where.OR = [
+        { originHubId: hubId },
+        { destinationHubId: hubId },
+      ];
+    } else {
+      // Only apply specific origin/destination filters if hubId is not set
+      if (originHubId) {
+        where.originHubId = originHubId;
+      }
 
-    if (destinationHubId) {
-      where.destinationHubId = destinationHubId;
+      if (destinationHubId) {
+        where.destinationHubId = destinationHubId;
+      }
     }
 
     if (isActive !== null && isActive !== undefined) {
@@ -33,10 +43,19 @@ export async function GET(request: NextRequest) {
     }
 
     if (search) {
-      where.OR = [
-        { code: { contains: search } },
-        { name: { contains: search } },
-      ];
+      // Need to handle OR carefully when hubId is set
+      if (hubId) {
+        where.AND = [
+          { OR: where.OR },
+          { OR: [{ code: { contains: search } }, { name: { contains: search } }] },
+        ];
+        delete where.OR;
+      } else {
+        where.OR = [
+          { code: { contains: search } },
+          { name: { contains: search } },
+        ];
+      }
     }
 
     const [routes, total] = await Promise.all([

@@ -19,7 +19,7 @@ export const en = {
     no: "No",
     ok: "OK",
     done: "Done",
-    poweredBy: "Powered by CJDQuick Logistics",
+    poweredBy: "Powered by CJDarcl Quick Logistics",
   },
 
   // Language names

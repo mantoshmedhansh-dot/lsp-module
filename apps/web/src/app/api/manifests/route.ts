@@ -350,7 +350,7 @@ function generateManifestHtml(manifest: any): string {
     <body>
       <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px;">
         <div>
-          <h2 style="margin: 0;">CJDQuick Logistics</h2>
+          <h2 style="margin: 0;">CJDarcl Quick Logistics</h2>
           <p style="margin: 5px 0;">Trip Manifest</p>
         </div>
         <div style="text-align: right;">

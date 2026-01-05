@@ -8,6 +8,7 @@ import {
   Handshake,
   Truck,
   Building2,
+  Home,
 } from "lucide-react";
 
 const navItems = [
@@ -44,6 +45,13 @@ export default function OperationsLayout({
       <div className="bg-white border-b sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center gap-8 h-14">
+            <Link
+              href="/"
+              className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors shadow-sm"
+            >
+              <Home className="h-4 w-4" />
+              <span className="font-medium">Home</span>
+            </Link>
             <Link href="/operations" className="font-semibold text-gray-900">
               Operations
             </Link>

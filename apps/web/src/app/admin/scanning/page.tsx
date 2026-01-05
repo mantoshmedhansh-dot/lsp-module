@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Card, Button, Badge } from "@cjdquick/ui";
 import { useQuery } from "@tanstack/react-query";
+import { useHubFilter } from "@/contexts/HubFilterContext";
 
 type ScanType =
   | "PICKUP_SCAN"
@@ -42,6 +43,7 @@ interface ScanResult {
 }
 
 export default function AdminScanningPage() {
+  const { selectedHubId, allowedHubs } = useHubFilter();
   const [selectedHub, setSelectedHub] = useState<string>("");
   const [scanType, setScanType] = useState<ScanType>("INSCAN");
   const [consignmentId, setConsignmentId] = useState<string>("");
@@ -50,13 +52,12 @@ export default function AdminScanningPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { data: hubsData } = useQuery({
-    queryKey: ["hubs"],
-    queryFn: async () => {
-      const res = await fetch("/api/hubs?pageSize=100");
-      return res.json();
-    },
-  });
+  // Auto-select hub when global hub filter changes
+  useEffect(() => {
+    if (selectedHubId && !selectedHub) {
+      setSelectedHub(selectedHubId);
+    }
+  }, [selectedHubId, selectedHub]);
 
   const { data: consignmentsData } = useQuery({
     queryKey: ["consignments", selectedHub],
@@ -69,7 +70,6 @@ export default function AdminScanningPage() {
     enabled: !!selectedHub && (scanType === "LOAD_SCAN" || scanType === "OUTSCAN"),
   });
 
-  const hubs = hubsData?.data?.items || [];
   const consignments = consignmentsData?.data?.items || [];
 
   useEffect(() => {
@@ -227,7 +227,7 @@ export default function AdminScanningPage() {
                 className="w-full px-3 py-2 border rounded-lg"
               >
                 <option value="">Select Hub</option>
-                {hubs.map((hub: any) => (
+                {allowedHubs.map((hub) => (
                   <option key={hub.id} value={hub.id}>
                     {hub.code} - {hub.name}
                   </option>

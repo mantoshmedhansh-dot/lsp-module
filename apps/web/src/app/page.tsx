@@ -56,43 +56,11 @@ const stages = [
 export default function Home() {
   return (
     <main className="min-h-screen">
-      {/* Header */}
-      <header className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Truck className="h-8 w-8 text-primary-600" />
-              <span className="text-2xl font-bold text-gray-900">CJDQuick</span>
-            </div>
-            <nav className="flex items-center gap-6">
-              <Link
-                href="/dashboard"
-                className="text-gray-600 hover:text-gray-900"
-              >
-                Dashboard
-              </Link>
-              <Link
-                href="/orders"
-                className="text-gray-600 hover:text-gray-900"
-              >
-                Orders
-              </Link>
-              <Link
-                href="/partners"
-                className="text-gray-600 hover:text-gray-900"
-              >
-                Partners
-              </Link>
-            </nav>
-          </div>
-        </div>
-      </header>
-
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-primary-600 to-primary-800 text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-4xl font-bold mb-4">
-            B2B Logistics Aggregator Platform
+            CJDarcl Quick Platform
           </h1>
           <p className="text-xl text-primary-100 max-w-2xl">
             Streamline your logistics operations from manifestation to proof of

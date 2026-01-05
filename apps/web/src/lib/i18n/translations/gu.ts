@@ -20,7 +20,7 @@ export const gu: Translations = {
     no: "ના",
     ok: "ઠીક છે",
     done: "થઈ ગયું",
-    poweredBy: "CJDQuick લોજિસ્ટિક્સ દ્વારા સંચાલિત",
+    poweredBy: "CJDarcl Quick લોજિસ્ટિક્સ દ્વારા સંચાલિત",
   },
 
   languages: {

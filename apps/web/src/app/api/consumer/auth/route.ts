@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
         // In production, send OTP via SMS gateway (Twilio, MSG91, etc.)
-        // await sendSMS(phone, `Your CJDQuick verification code is: ${otp}`);
+        // await sendSMS(phone, `Your CJDarcl Quick verification code is: ${otp}`);
 
         // Store OTP in cache/DB (for demo, we'll use a simple approach)
         // In production, use Redis with TTL

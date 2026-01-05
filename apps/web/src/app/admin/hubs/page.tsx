@@ -18,6 +18,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { Card, Button } from "@cjdquick/ui";
+import { useHubFilter } from "@/contexts/HubFilterContext";
 
 interface Hub {
   id: string;
@@ -35,11 +36,12 @@ interface Hub {
   _count?: { staff: number; servicedPincodes: number };
 }
 
-async function fetchHubs(params: { search?: string; type?: string }) {
+async function fetchHubs(params: { search?: string; type?: string; hubId?: string | null }) {
   const searchParams = new URLSearchParams();
   searchParams.set("pageSize", "100");
   if (params.search) searchParams.set("search", params.search);
   if (params.type) searchParams.set("type", params.type);
+  if (params.hubId) searchParams.set("hubId", params.hubId);
   const res = await fetch(`/api/hubs?${searchParams.toString()}`);
   return res.json();
 }
@@ -72,13 +74,15 @@ export default function AdminHubsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const queryClient = useQueryClient();
+  const { selectedHubId } = useHubFilter();
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ["admin-hubs", searchQuery, selectedType],
+    queryKey: ["admin-hubs", searchQuery, selectedType, selectedHubId],
     queryFn: () =>
       fetchHubs({
         search: searchQuery || undefined,
         type: selectedType || undefined,
+        hubId: selectedHubId,
       }),
   });
 

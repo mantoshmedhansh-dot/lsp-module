@@ -47,7 +47,7 @@ export default function CustomerLoginPage() {
         <div>
           <div className="flex items-center gap-3">
             <Truck className="h-10 w-10 text-white" />
-            <span className="text-2xl font-bold text-white">CJDQuick</span>
+            <span className="text-2xl font-bold text-white">CJDarcl Quick</span>
           </div>
           <p className="text-blue-100 mt-2">B2B PTL Logistics Platform</p>
         </div>
@@ -75,7 +75,7 @@ export default function CustomerLoginPage() {
           {/* Mobile Logo */}
           <div className="lg:hidden flex items-center gap-3 justify-center mb-8">
             <Truck className="h-10 w-10 text-blue-600" />
-            <span className="text-2xl font-bold text-gray-900">CJDQuick</span>
+            <span className="text-2xl font-bold text-gray-900">CJDarcl Quick</span>
           </div>
 
           <div className="text-center mb-8">

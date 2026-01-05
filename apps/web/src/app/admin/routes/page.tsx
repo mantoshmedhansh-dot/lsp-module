@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Card, Button } from "@cjdquick/ui";
 import { ROUTE_TYPES, ROUTE_FREQUENCIES } from "@/lib/validations";
+import { useHubFilter } from "@/contexts/HubFilterContext";
 
 interface Route {
   id: string;
@@ -35,11 +36,12 @@ interface Route {
   destinationHub: { name: string; code: string } | null;
 }
 
-async function fetchRoutes(params: { search?: string; type?: string }) {
+async function fetchRoutes(params: { search?: string; type?: string; hubId?: string | null }) {
   const searchParams = new URLSearchParams();
   searchParams.set("pageSize", "100");
   if (params.search) searchParams.set("search", params.search);
   if (params.type) searchParams.set("type", params.type);
+  if (params.hubId) searchParams.set("hubId", params.hubId);
   const res = await fetch(`/api/routes?${searchParams.toString()}`);
   return res.json();
 }
@@ -80,13 +82,15 @@ export default function AdminRoutesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const queryClient = useQueryClient();
+  const { selectedHubId } = useHubFilter();
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ["admin-routes", searchQuery, selectedType],
+    queryKey: ["admin-routes", searchQuery, selectedType, selectedHubId],
     queryFn: () =>
       fetchRoutes({
         search: searchQuery || undefined,
         type: selectedType || undefined,
+        hubId: selectedHubId,
       }),
   });
 

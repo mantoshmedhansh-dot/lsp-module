@@ -9,7 +9,7 @@ const DEFAULT_SMS_TEMPLATES = [
     channel: "SMS",
     triggerEvent: "SHIPMENT_BOOKED",
     recipientType: "CONSIGNEE",
-    body: "Dear {{consignee_name}}, your shipment {{awb}} has been booked and will be picked up soon. Track: {{tracking_url}} - CJDQuick",
+    body: "Dear {{consignee_name}}, your shipment {{awb}} has been booked and will be picked up soon. Track: {{tracking_url}} - CJDarcl Quick",
     delayMinutes: 0,
   },
   {
@@ -18,7 +18,7 @@ const DEFAULT_SMS_TEMPLATES = [
     channel: "SMS",
     triggerEvent: "PICKED_UP",
     recipientType: "CONSIGNEE",
-    body: "Your shipment {{awb}} has been picked up and is on its way to you. Expected delivery: {{expected_delivery}}. Track: {{tracking_url}} - CJDQuick",
+    body: "Your shipment {{awb}} has been picked up and is on its way to you. Expected delivery: {{expected_delivery}}. Track: {{tracking_url}} - CJDarcl Quick",
     delayMinutes: 0,
   },
   {
@@ -27,7 +27,7 @@ const DEFAULT_SMS_TEMPLATES = [
     channel: "SMS",
     triggerEvent: "OUT_FOR_DELIVERY",
     recipientType: "CONSIGNEE",
-    body: "Good news! Your shipment {{awb}} is out for delivery today. Keep your phone handy. Track: {{tracking_url}} - CJDQuick",
+    body: "Good news! Your shipment {{awb}} is out for delivery today. Keep your phone handy. Track: {{tracking_url}} - CJDarcl Quick",
     delayMinutes: 0,
   },
   {
@@ -36,7 +36,7 @@ const DEFAULT_SMS_TEMPLATES = [
     channel: "SMS",
     triggerEvent: "DELIVERED",
     recipientType: "CONSIGNEE",
-    body: "Your shipment {{awb}} has been delivered successfully. Thank you for choosing CJDQuick!",
+    body: "Your shipment {{awb}} has been delivered successfully. Thank you for choosing CJDarcl Quick!",
     delayMinutes: 0,
   },
   {
@@ -45,7 +45,7 @@ const DEFAULT_SMS_TEMPLATES = [
     channel: "SMS",
     triggerEvent: "DELIVERY_FAILED",
     recipientType: "CONSIGNEE",
-    body: "We couldn't deliver {{awb}} today. Reason: {{failure_reason}}. We'll reattempt on {{next_attempt_date}}. Track: {{tracking_url}} - CJDQuick",
+    body: "We couldn't deliver {{awb}} today. Reason: {{failure_reason}}. We'll reattempt on {{next_attempt_date}}. Track: {{tracking_url}} - CJDarcl Quick",
     delayMinutes: 0,
   },
 ];
@@ -58,7 +58,7 @@ const DEFAULT_WHATSAPP_TEMPLATES = [
     channel: "WHATSAPP",
     triggerEvent: "SHIPMENT_BOOKED",
     recipientType: "CONSIGNEE",
-    body: "Hello {{consignee_name}}! Your shipment has been booked.\n\nAWB: {{awb}}\nFrom: {{origin}}\nTo: {{destination}}\n\nTrack your shipment: {{tracking_url}}\n\n- CJDQuick Logistics",
+    body: "Hello {{consignee_name}}! Your shipment has been booked.\n\nAWB: {{awb}}\nFrom: {{origin}}\nTo: {{destination}}\n\nTrack your shipment: {{tracking_url}}\n\n- CJDarcl Quick Logistics",
     delayMinutes: 0,
   },
   {
@@ -76,7 +76,7 @@ const DEFAULT_WHATSAPP_TEMPLATES = [
     channel: "WHATSAPP",
     triggerEvent: "DELIVERED",
     recipientType: "CONSIGNEE",
-    body: "Hello {{consignee_name}}!\n\nYour shipment {{awb}} has been delivered successfully.\n\nReceived by: {{receiver_name}}\nTime: {{delivery_time}}\n\nThank you for choosing CJDQuick! We'd love your feedback.",
+    body: "Hello {{consignee_name}}!\n\nYour shipment {{awb}} has been delivered successfully.\n\nReceived by: {{receiver_name}}\nTime: {{delivery_time}}\n\nThank you for choosing CJDarcl Quick! We'd love your feedback.",
     delayMinutes: 0,
   },
 ];

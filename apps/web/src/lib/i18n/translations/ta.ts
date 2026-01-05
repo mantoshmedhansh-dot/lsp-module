@@ -20,7 +20,7 @@ export const ta: Translations = {
     no: "இல்லை",
     ok: "சரி",
     done: "முடிந்தது",
-    poweredBy: "CJDQuick லாஜிஸ்டிக்ஸ் மூலம் இயக்கப்படுகிறது",
+    poweredBy: "CJDarcl Quick லாஜிஸ்டிக்ஸ் மூலம் இயக்கப்படுகிறது",
   },
 
   languages: {

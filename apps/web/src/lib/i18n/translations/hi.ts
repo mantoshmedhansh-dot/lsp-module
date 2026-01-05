@@ -21,7 +21,7 @@ export const hi: Translations = {
     no: "नहीं",
     ok: "ठीक है",
     done: "हो गया",
-    poweredBy: "CJDQuick लॉजिस्टिक्स द्वारा संचालित",
+    poweredBy: "CJDarcl Quick लॉजिस्टिक्स द्वारा संचालित",
   },
 
   // Language names

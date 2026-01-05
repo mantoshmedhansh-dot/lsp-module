@@ -176,7 +176,7 @@ function generateLabelHtml(labels: any[]): string {
     <div class="label" style="page-break-after: always; width: 4in; height: 6in; padding: 10px; border: 1px solid #000; font-family: Arial, sans-serif; font-size: 10px;">
       <!-- Header -->
       <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 5px;">
-        <div style="font-weight: bold; font-size: 14px;">CJDQuick</div>
+        <div style="font-weight: bold; font-size: 14px;">CJDarcl Quick</div>
         <div style="text-align: right;">
           <div style="font-size: 12px; font-weight: bold;">${label.zoneCode}</div>
           <div style="font-size: 10px;">${label.routeCode}</div>

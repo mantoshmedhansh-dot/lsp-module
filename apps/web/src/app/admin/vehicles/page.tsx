@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Card, Button } from "@cjdquick/ui";
 import { VEHICLE_TYPES } from "@/lib/validations";
+import { useHubFilter } from "@/contexts/HubFilterContext";
 
 interface Vehicle {
   id: string;
@@ -37,12 +38,13 @@ interface Vehicle {
 
 const VEHICLE_STATUSES = ["AVAILABLE", "IN_TRANSIT", "MAINTENANCE", "BREAKDOWN", "RETIRED"];
 
-async function fetchVehicles(params: { search?: string; status?: string; type?: string }) {
+async function fetchVehicles(params: { search?: string; status?: string; type?: string; hubId?: string | null }) {
   const searchParams = new URLSearchParams();
   searchParams.set("pageSize", "100");
   if (params.search) searchParams.set("search", params.search);
   if (params.status) searchParams.set("status", params.status);
   if (params.type) searchParams.set("type", params.type);
+  if (params.hubId) searchParams.set("hubId", params.hubId);
   const res = await fetch(`/api/vehicles?${searchParams.toString()}`);
   return res.json();
 }
@@ -86,14 +88,16 @@ export default function AdminVehiclesPage() {
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const queryClient = useQueryClient();
+  const { selectedHubId } = useHubFilter();
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ["admin-vehicles", searchQuery, selectedStatus, selectedType],
+    queryKey: ["admin-vehicles", searchQuery, selectedStatus, selectedType, selectedHubId],
     queryFn: () =>
       fetchVehicles({
         search: searchQuery || undefined,
         status: selectedStatus || undefined,
         type: selectedType || undefined,
+        hubId: selectedHubId,
       }),
   });
 

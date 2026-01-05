@@ -26,6 +26,7 @@ async function main() {
   await prisma.vehicle.deleteMany();
   await prisma.hubStaff.deleteMany();
   await prisma.hubPincodeMapping.deleteMany();
+  await prisma.pincodeToSla.deleteMany();
   await prisma.hub.deleteMany();
   await prisma.partnerServiceability.deleteMany();
   await prisma.partnerPerformance.deleteMany();
@@ -112,7 +113,29 @@ async function main() {
   ]);
 
   console.log(`   ✅ Created ${users.length} mobile app users`);
-  console.log("   📝 Login credentials:");
+
+  // ============================================
+  // ADMIN PANEL USERS
+  // ============================================
+  console.log("\n👔 Creating Admin Panel Users...");
+
+  const adminUsers = await Promise.all([
+    // Super Admin - access to all hubs
+    prisma.user.create({
+      data: {
+        email: "superadmin@cjdquick.com",
+        passwordHash,
+        name: "Super Admin",
+        phone: "9900000001",
+        role: "SUPER_ADMIN",
+      },
+    }),
+  ]);
+
+  console.log(`   ✅ Created ${adminUsers.length} admin panel users`);
+  console.log("   📝 Admin Panel Login credentials:");
+  console.log("      - Super Admin: superadmin@cjdquick.com / password123");
+  console.log("   📝 Mobile App Login credentials:");
   console.log("      - Pickup Agent: pickup1@cjdquick.com / password123");
   console.log("      - Delivery Agent: delivery1@cjdquick.com / password123");
   console.log("      - Hub Operator: hub1@cjdquick.com / password123");
@@ -327,6 +350,169 @@ async function main() {
     }
   }
   console.log(`   ✅ Created pincode mappings for all hubs`);
+
+  // ============================================
+  // PINCODE-TO-PINCODE SLA DATA
+  // ============================================
+  console.log("\n⏱️  Creating Pincode-to-Pincode SLA data...");
+
+  const slaEntries = [
+    // Delhi to major metros
+    { origin: "110001", dest: "400001", tat: 3, service: "STANDARD", route: "NATIONAL" }, // Delhi -> Mumbai
+    { origin: "110001", dest: "400001", tat: 2, service: "EXPRESS", route: "NATIONAL" },
+    { origin: "110001", dest: "560001", tat: 4, service: "STANDARD", route: "NATIONAL" }, // Delhi -> Bangalore
+    { origin: "110001", dest: "560001", tat: 2, service: "EXPRESS", route: "NATIONAL" },
+    { origin: "110001", dest: "600001", tat: 4, service: "STANDARD", route: "NATIONAL" }, // Delhi -> Chennai
+    { origin: "110001", dest: "600001", tat: 3, service: "EXPRESS", route: "NATIONAL" },
+    // Mumbai to metros
+    { origin: "400001", dest: "110001", tat: 3, service: "STANDARD", route: "NATIONAL" }, // Mumbai -> Delhi
+    { origin: "400001", dest: "560001", tat: 2, service: "STANDARD", route: "NATIONAL" }, // Mumbai -> Bangalore
+    { origin: "400001", dest: "600001", tat: 3, service: "STANDARD", route: "NATIONAL" }, // Mumbai -> Chennai
+    { origin: "400001", dest: "411001", tat: 1, service: "STANDARD", route: "ZONAL" },    // Mumbai -> Pune (same zone)
+    { origin: "400001", dest: "411001", tat: 1, service: "EXPRESS", route: "ZONAL" },
+    // Bangalore routes
+    { origin: "560001", dest: "600001", tat: 1, service: "STANDARD", route: "ZONAL" },    // Bangalore -> Chennai
+    { origin: "560001", dest: "600001", tat: 1, service: "EXPRESS", route: "ZONAL" },
+    { origin: "560001", dest: "110001", tat: 4, service: "STANDARD", route: "NATIONAL" }, // Bangalore -> Delhi
+    { origin: "560001", dest: "400001", tat: 2, service: "STANDARD", route: "NATIONAL" }, // Bangalore -> Mumbai
+    // Local routes (same city)
+    { origin: "110001", dest: "110002", tat: 1, service: "STANDARD", route: "LOCAL" },
+    { origin: "110001", dest: "110003", tat: 1, service: "EXPRESS", route: "LOCAL" },
+    { origin: "400001", dest: "400002", tat: 1, service: "STANDARD", route: "LOCAL" },
+    { origin: "560001", dest: "560002", tat: 1, service: "STANDARD", route: "LOCAL" },
+    // Delhi region routes
+    { origin: "110001", dest: "302001", tat: 2, service: "STANDARD", route: "ZONAL" },    // Delhi -> Jaipur
+    { origin: "110001", dest: "226001", tat: 2, service: "STANDARD", route: "ZONAL" },    // Delhi -> Lucknow
+    { origin: "110001", dest: "282001", tat: 2, service: "STANDARD", route: "ZONAL" },    // Delhi -> Agra
+    { origin: "302001", dest: "110001", tat: 2, service: "STANDARD", route: "ZONAL" },    // Jaipur -> Delhi
+    { origin: "226001", dest: "110001", tat: 2, service: "STANDARD", route: "ZONAL" },    // Lucknow -> Delhi
+    { origin: "282001", dest: "110001", tat: 2, service: "STANDARD", route: "ZONAL" },    // Agra -> Delhi
+  ];
+
+  for (const sla of slaEntries) {
+    await prisma.pincodeToSla.create({
+      data: {
+        originPincode: sla.origin,
+        destinationPincode: sla.dest,
+        serviceType: sla.service,
+        tatDays: sla.tat,
+        minDays: Math.max(1, sla.tat - 1),
+        maxDays: sla.tat + 1,
+        routeType: sla.route,
+        codAvailable: true,
+        reverseAvailable: true,
+        slaPercentage: sla.service === "EXPRESS" ? 98 : 95,
+      },
+    });
+  }
+  console.log(`   ✅ Created ${slaEntries.length} pincode-to-pincode SLA entries`);
+
+  // Update hub hierarchy (set parent hubs)
+  console.log("\n📊 Setting up Hub Hierarchy...");
+
+  // Transshipment hubs report to Gateway hubs
+  await prisma.hub.update({
+    where: { id: hubs[3].id }, // Jaipur -> Delhi
+    data: { parentHubId: hubs[0].id },
+  });
+  await prisma.hub.update({
+    where: { id: hubs[4].id }, // Lucknow -> Delhi
+    data: { parentHubId: hubs[0].id },
+  });
+  await prisma.hub.update({
+    where: { id: hubs[5].id }, // Chennai -> Bangalore
+    data: { parentHubId: hubs[2].id },
+  });
+
+  // Spoke hubs report to Gateway/Transshipment hubs
+  await prisma.hub.update({
+    where: { id: hubs[6].id }, // Agra -> Lucknow
+    data: { parentHubId: hubs[4].id },
+  });
+  await prisma.hub.update({
+    where: { id: hubs[7].id }, // Pune -> Mumbai
+    data: { parentHubId: hubs[1].id },
+  });
+  console.log("   ✅ Hub hierarchy configured");
+
+  // Create Hub Managers and Operators with hub assignments
+  console.log("\n👔 Creating Hub Managers and Operators...");
+
+  const hubManagersAndOperators = await Promise.all([
+    // Hub Managers for Gateway hubs
+    prisma.user.create({
+      data: {
+        email: "manager.delhi@cjdquick.com",
+        passwordHash,
+        name: "Delhi Hub Manager",
+        phone: "9900000010",
+        role: "HUB_MANAGER",
+        hubId: hubs[0].id, // Delhi Gateway
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: "manager.mumbai@cjdquick.com",
+        passwordHash,
+        name: "Mumbai Hub Manager",
+        phone: "9900000011",
+        role: "HUB_MANAGER",
+        hubId: hubs[1].id, // Mumbai Gateway
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: "manager.bangalore@cjdquick.com",
+        passwordHash,
+        name: "Bangalore Hub Manager",
+        phone: "9900000012",
+        role: "HUB_MANAGER",
+        hubId: hubs[2].id, // Bangalore Gateway
+      },
+    }),
+    // Operators for Spoke hubs
+    prisma.user.create({
+      data: {
+        email: "operator.agra@cjdquick.com",
+        passwordHash,
+        name: "Agra Spoke Operator",
+        phone: "9900000020",
+        role: "OPERATOR",
+        hubId: hubs[6].id, // Agra Spoke
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: "operator.pune@cjdquick.com",
+        passwordHash,
+        name: "Pune Spoke Operator",
+        phone: "9900000021",
+        role: "OPERATOR",
+        hubId: hubs[7].id, // Pune Spoke
+      },
+    }),
+    // Operators for Transshipment hubs
+    prisma.user.create({
+      data: {
+        email: "operator.jaipur@cjdquick.com",
+        passwordHash,
+        name: "Jaipur Operator",
+        phone: "9900000022",
+        role: "OPERATOR",
+        hubId: hubs[3].id, // Jaipur Transshipment
+      },
+    }),
+  ]);
+
+  console.log(`   ✅ Created ${hubManagersAndOperators.length} hub managers and operators`);
+  console.log("   📝 Hub Manager Login credentials:");
+  console.log("      - Delhi Hub Manager: manager.delhi@cjdquick.com / password123");
+  console.log("      - Mumbai Hub Manager: manager.mumbai@cjdquick.com / password123");
+  console.log("      - Bangalore Hub Manager: manager.bangalore@cjdquick.com / password123");
+  console.log("   📝 Operator Login credentials:");
+  console.log("      - Agra Operator: operator.agra@cjdquick.com / password123");
+  console.log("      - Pune Operator: operator.pune@cjdquick.com / password123");
+  console.log("      - Jaipur Operator: operator.jaipur@cjdquick.com / password123");
 
   // ============================================
   // PHASE 2: FLEET MANAGEMENT
@@ -1092,7 +1278,8 @@ async function main() {
   console.log("\n✨ Seed completed successfully!\n");
   console.log("Summary:");
   console.log(`   • ${users.length} Mobile Users`);
-  console.log(`   • ${hubs.length} Hubs`);
+  console.log(`   • ${adminUsers.length + hubManagersAndOperators.length} Admin Panel Users (1 Super Admin, 3 Hub Managers, 3 Operators)`);
+  console.log(`   • ${hubs.length} Hubs (with hierarchy)`);
   console.log(`   • ${vehicles.length} Vehicles`);
   console.log(`   • ${drivers.length} Drivers`);
   console.log(`   • ${routes.length} Routes`);
@@ -1101,6 +1288,7 @@ async function main() {
   console.log(`   • ${shipments.length} Shipments`);
   console.log(`   • ${consignments.length} Consignments`);
   console.log(`   • ${handovers.length} Partner Handovers`);
+  console.log(`   • ${slaEntries.length} Pincode-to-Pincode SLA entries`);
 }
 
 main()

@@ -245,7 +245,7 @@ export default function AdminDashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
-            PTL Operations Dashboard
+            Operations Dashboard
           </h1>
           <p className="text-gray-500">
             Manage your hub network, fleet, and transport operations

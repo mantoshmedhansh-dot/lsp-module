@@ -52,7 +52,7 @@ export default function LoginScreen() {
           <View style={styles.logoContainer}>
             <Ionicons name="cube" size={48} color="#4F46E5" />
           </View>
-          <Text style={styles.title}>CJDQuick</Text>
+          <Text style={styles.title}>CJDarcl Quick</Text>
           <Text style={styles.subtitle}>Logistics Operations</Text>
         </View>
 

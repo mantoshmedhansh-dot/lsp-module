@@ -7,7 +7,7 @@ test.describe("Control Tower Page", () => {
 
   test("should load the Control Tower page", async ({ page }) => {
     // Check page title/header
-    await expect(page.getByText("Control Tower")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Control Tower" })).toBeVisible();
   });
 
   test("should display KPI cards", async ({ page }) => {

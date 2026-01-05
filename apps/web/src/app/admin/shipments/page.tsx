@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Package,
   Search,
@@ -18,6 +18,7 @@ import {
 import { Card, Button, Badge } from "@cjdquick/ui";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import { useHubFilter } from "@/contexts/HubFilterContext";
 
 const STATUS_COLORS: Record<string, string> = {
   BOOKED: "secondary",
@@ -43,18 +44,18 @@ export default function AdminShipmentsPage() {
   const [page, setPage] = useState(1);
   const [filterStatus, setFilterStatus] = useState<string>("");
   const [filterMode, setFilterMode] = useState<string>("");
-  const [filterHub, setFilterHub] = useState<string>("");
   const [search, setSearch] = useState("");
+  const { selectedHubId } = useHubFilter();
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ["admin-shipments", page, filterStatus, filterMode, filterHub, search],
+    queryKey: ["admin-shipments", page, filterStatus, filterMode, selectedHubId, search],
     queryFn: async () => {
       const params = new URLSearchParams();
       params.set("page", page.toString());
       params.set("pageSize", "25");
       if (filterStatus) params.set("status", filterStatus);
       if (filterMode) params.set("fulfillmentMode", filterMode);
-      if (filterHub) params.set("hubId", filterHub);
+      if (selectedHubId) params.set("hubId", selectedHubId);
       if (search) params.set("search", search);
 
       const res = await fetch(`/api/shipments?${params}`);
@@ -62,18 +63,9 @@ export default function AdminShipmentsPage() {
     },
   });
 
-  const { data: hubsData } = useQuery({
-    queryKey: ["hubs-list"],
-    queryFn: async () => {
-      const res = await fetch("/api/hubs?pageSize=100");
-      return res.json();
-    },
-  });
-
   const shipments = data?.data?.items || [];
   const totalPages = data?.data?.totalPages || 1;
   const total = data?.data?.total || 0;
-  const hubs = hubsData?.data?.items || [];
 
   // Calculate stats
   const stats = {
@@ -174,18 +166,6 @@ export default function AdminShipmentsPage() {
             <option value="OWN_FLEET">Own Fleet</option>
             <option value="HYBRID">Hybrid</option>
             <option value="PARTNER">Partner</option>
-          </select>
-          <select
-            value={filterHub}
-            onChange={(e) => setFilterHub(e.target.value)}
-            className="px-4 py-2 border rounded-lg"
-          >
-            <option value="">All Hubs</option>
-            {hubs.map((hub: any) => (
-              <option key={hub.id} value={hub.id}>
-                {hub.code} - {hub.name}
-              </option>
-            ))}
           </select>
         </div>
       </Card>

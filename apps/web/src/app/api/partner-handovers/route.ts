@@ -5,7 +5,7 @@ import { prisma } from "@cjdquick/database";
  * Partner Handover API
  *
  * Manages handover of shipments to partner networks for last-mile delivery
- * in areas where CJDQuick doesn't have own fleet coverage
+ * in areas where CJDarcl Quick doesn't have own fleet coverage
  */
 
 // Generate handover number: HO + YYYYMMDD + Partner Code + Seq

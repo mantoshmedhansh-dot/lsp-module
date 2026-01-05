@@ -20,7 +20,7 @@ export const bn: Translations = {
     no: "না",
     ok: "ঠিক আছে",
     done: "হয়ে গেছে",
-    poweredBy: "CJDQuick লজিস্টিক্স দ্বারা পাওয়ার্ড",
+    poweredBy: "CJDarcl Quick লজিস্টিক্স দ্বারা পাওয়ার্ড",
   },
 
   languages: {

@@ -20,7 +20,7 @@ export const te: Translations = {
     no: "కాదు",
     ok: "సరే",
     done: "పూర్తయింది",
-    poweredBy: "CJDQuick లాజిస్టిక్స్ ద్వారా పవర్డ్",
+    poweredBy: "CJDarcl Quick లాజిస్టిక్స్ ద్వారా పవర్డ్",
   },
 
   languages: {

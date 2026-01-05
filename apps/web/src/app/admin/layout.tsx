@@ -34,6 +34,7 @@ import {
   PackageX,
   Send,
   ClipboardCheck,
+  Briefcase,
 } from "lucide-react";
 import { AdminAuthGuard } from "@/components/admin/AdminAuthGuard";
 import { HubSelector } from "@/components/admin/HubSelector";
@@ -104,6 +105,12 @@ const navigation = [
       { name: "Capacity Planning", href: "/capacity", icon: Target },
       { name: "Carbon Footprint", href: "/carbon", icon: Leaf },
       { name: "Insurance", href: "/insurance", icon: Shield },
+    ],
+  },
+  {
+    name: "Client Management",
+    items: [
+      { name: "Clients", href: "/admin/clients", icon: Briefcase },
     ],
   },
   {

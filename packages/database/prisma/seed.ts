@@ -33,6 +33,21 @@ async function main() {
   await prisma.partner.deleteMany();
   await prisma.session.deleteMany();
   await prisma.task.deleteMany();
+  // Client panel related data
+  await prisma.clientUserSession.deleteMany();
+  await prisma.supportTicket.deleteMany();
+  await prisma.pickupRequest.deleteMany();
+  await prisma.clientBankAccount.deleteMany();
+  await prisma.clientDocument.deleteMany();
+  await prisma.clientService.deleteMany();
+  await prisma.weightDispute.deleteMany();
+  await prisma.cODRemittance.deleteMany();
+  await prisma.order.deleteMany();
+  await prisma.warehouse.deleteMany();
+  await prisma.customerSession.deleteMany();
+  await prisma.clientUser.deleteMany();
+  await prisma.invoice.deleteMany();
+  await prisma.client.deleteMany();
   await prisma.user.deleteMany();
 
   // ============================================
@@ -1275,10 +1290,307 @@ async function main() {
 
   console.log(`   ✅ Created shipment scans`);
 
+  // ============================================
+  // CLIENT PANEL DATA
+  // ============================================
+  console.log("\n🏢 Creating Client Panel Data...");
+
+  // Create a client user first (linked to existing User model)
+  const clientUser = await prisma.user.create({
+    data: {
+      email: "ashish@democompany.com",
+      passwordHash,
+      name: "Ashish Kumar",
+      phone: "9876500001",
+      role: "CLIENT",
+    },
+  });
+
+  // Create the client company
+  const demoClient = await prisma.client.create({
+    data: {
+      userId: clientUser.id,
+      companyName: "Demo Company Pvt Ltd",
+      gstNumber: "29ABCDE1234F1ZK",
+      billingAddress: "123, Industrial Area, Phase 2, Gurgaon, Haryana - 122001",
+      creditLimit: 100000,
+      currentBalance: 25000,
+      paymentTermsDays: 15,
+      apiKey: "demo_client_api_key_12345",
+    },
+  });
+
+  // Create client panel users
+  const clientUsers = await Promise.all([
+    prisma.clientUser.create({
+      data: {
+        clientId: demoClient.id,
+        email: "ashish@democompany.com",
+        passwordHash,
+        name: "Ashish Kumar",
+        phone: "9876500001",
+        role: "OWNER",
+      },
+    }),
+    prisma.clientUser.create({
+      data: {
+        clientId: demoClient.id,
+        email: "rohit@democompany.com",
+        passwordHash,
+        name: "Rohit Sharma",
+        phone: "9876500002",
+        role: "ADMIN",
+      },
+    }),
+    prisma.clientUser.create({
+      data: {
+        clientId: demoClient.id,
+        email: "monu@democompany.com",
+        passwordHash,
+        name: "Monu Singh",
+        phone: "9876500003",
+        role: "OPERATIONS_USER",
+      },
+    }),
+  ]);
+
+  console.log(`   ✅ Created ${clientUsers.length} client panel users`);
+
+  // Create client warehouses/facilities
+  const clientWarehouses = await Promise.all([
+    prisma.warehouse.create({
+      data: {
+        clientId: demoClient.id,
+        name: "Demo Delhi Warehouse",
+        code: "DEMO_WH_001",
+        address: "Plot 45, Industrial Area, Sector 18",
+        pincode: "122001",
+        city: "Gurgaon",
+        state: "Haryana",
+        contactName: "Rahul Manager",
+        contactPhone: "9876500010",
+        isActive: true,
+      },
+    }),
+    prisma.warehouse.create({
+      data: {
+        clientId: demoClient.id,
+        name: "Demo Mumbai Warehouse",
+        code: "DEMO_WH_002",
+        address: "Unit 12, Bhiwandi Industrial Estate",
+        pincode: "421302",
+        city: "Mumbai",
+        state: "Maharashtra",
+        contactName: "Amit Manager",
+        contactPhone: "9876500011",
+        isActive: true,
+      },
+    }),
+  ]);
+
+  console.log(`   ✅ Created ${clientWarehouses.length} client warehouses`);
+
+  // Create client orders
+  const clientOrders = await Promise.all([
+    // Delivered orders
+    prisma.order.create({
+      data: {
+        orderNumber: "CJD20260101O001",
+        clientId: demoClient.id,
+        warehouseId: clientWarehouses[0].id,
+        customerName: "Rajesh Verma",
+        customerPhone: "9988776655",
+        deliveryAddress: "456, Park Street, South Mumbai",
+        deliveryPincode: "400001",
+        deliveryCity: "Mumbai",
+        deliveryState: "Maharashtra",
+        originPincode: "122001",
+        weightKg: 2.5,
+        itemDescription: "Electronics",
+        itemValue: 15000,
+        paymentMode: "PREPAID",
+        status: "DELIVERED",
+        awbNumber: "CJDCL001234567",
+        deliveredAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+      },
+    }),
+    // In Transit orders
+    prisma.order.create({
+      data: {
+        orderNumber: "CJD20260101O002",
+        clientId: demoClient.id,
+        warehouseId: clientWarehouses[0].id,
+        customerName: "Priya Sharma",
+        customerPhone: "9988776656",
+        deliveryAddress: "789, MG Road, Bangalore",
+        deliveryPincode: "560001",
+        deliveryCity: "Bangalore",
+        deliveryState: "Karnataka",
+        originPincode: "122001",
+        weightKg: 1.5,
+        itemDescription: "Books",
+        itemValue: 2000,
+        paymentMode: "COD",
+        codAmount: 2000,
+        status: "IN_TRANSIT",
+        awbNumber: "CJDCL001234568",
+      },
+    }),
+    // Awaiting Pickup
+    prisma.order.create({
+      data: {
+        orderNumber: "CJD20260101O003",
+        clientId: demoClient.id,
+        warehouseId: clientWarehouses[0].id,
+        customerName: "Amit Kumar",
+        customerPhone: "9988776657",
+        deliveryAddress: "101, Anna Nagar, Chennai",
+        deliveryPincode: "600001",
+        deliveryCity: "Chennai",
+        deliveryState: "Tamil Nadu",
+        originPincode: "122001",
+        weightKg: 3.0,
+        itemDescription: "Clothing",
+        itemValue: 5000,
+        paymentMode: "PREPAID",
+        status: "MANIFESTED",
+        awbNumber: "CJDCL001234569",
+      },
+    }),
+    // Exception/NDR
+    prisma.order.create({
+      data: {
+        orderNumber: "CJD20260101O004",
+        clientId: demoClient.id,
+        warehouseId: clientWarehouses[1].id,
+        customerName: "Sneha Patel",
+        customerPhone: "9988776658",
+        deliveryAddress: "202, Civil Lines, Jaipur",
+        deliveryPincode: "302001",
+        deliveryCity: "Jaipur",
+        deliveryState: "Rajasthan",
+        originPincode: "421302",
+        weightKg: 0.8,
+        itemDescription: "Cosmetics",
+        itemValue: 3000,
+        paymentMode: "COD",
+        codAmount: 3000,
+        status: "NDR",
+        awbNumber: "CJDCL001234570",
+      },
+    }),
+  ]);
+
+  console.log(`   ✅ Created ${clientOrders.length} client orders`);
+
+  // Create pickup requests
+  const pickupRequests = await Promise.all([
+    prisma.pickupRequest.create({
+      data: {
+        pickupNumber: "PKP20260105001",
+        clientId: demoClient.id,
+        warehouseId: clientWarehouses[0].id,
+        requestedDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
+        timeSlotStart: "10:00",
+        timeSlotEnd: "14:00",
+        expectedAwbs: 12,
+        expectedWeight: 25.0,
+        status: "SCHEDULED",
+      },
+    }),
+    prisma.pickupRequest.create({
+      data: {
+        pickupNumber: "PKP20260104001",
+        clientId: demoClient.id,
+        warehouseId: clientWarehouses[0].id,
+        requestedDate: new Date(),
+        timeSlotStart: "09:00",
+        timeSlotEnd: "13:00",
+        expectedAwbs: 8,
+        expectedWeight: 15.0,
+        pickedAwbs: 8,
+        pickedWeight: 14.5,
+        status: "PICKED",
+        pickedAt: new Date(),
+        assignedAgentName: "Suresh Pickup Agent",
+        assignedAgentPhone: "9900110011",
+      },
+    }),
+  ]);
+
+  console.log(`   ✅ Created ${pickupRequests.length} pickup requests`);
+
+  // Create support tickets
+  const supportTickets = await Promise.all([
+    prisma.supportTicket.create({
+      data: {
+        ticketNumber: "TKT20260101001",
+        clientId: demoClient.id,
+        category: "DELIVERY_DELAY",
+        subject: "Order not delivered yet",
+        description: "Order CJD20260101O002 was supposed to be delivered yesterday but still shows in transit.",
+        priority: "HIGH",
+        status: "OPEN",
+        orderId: clientOrders[1].id,
+        awbNumber: "CJDCL001234568",
+        raisedById: clientUsers[0].id,
+        slaDeadline: new Date(Date.now() + 12 * 60 * 60 * 1000),
+      },
+    }),
+    prisma.supportTicket.create({
+      data: {
+        ticketNumber: "TKT20260101002",
+        clientId: demoClient.id,
+        category: "NDR",
+        subCategory: "Consignee unavailable",
+        subject: "Customer not available for delivery",
+        description: "Customer was not available when delivery was attempted. Please reattempt tomorrow.",
+        priority: "MEDIUM",
+        status: "IN_PROGRESS",
+        orderId: clientOrders[3].id,
+        awbNumber: "CJDCL001234570",
+        raisedById: clientUsers[2].id,
+        slaDeadline: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      },
+    }),
+  ]);
+
+  console.log(`   ✅ Created ${supportTickets.length} support tickets`);
+
+  // Create client services
+  const clientServices = await Promise.all([
+    prisma.clientService.create({
+      data: {
+        clientId: demoClient.id,
+        serviceCode: "DOMESTIC_PARCEL",
+        serviceName: "Domestic Parcel",
+        status: "ACTIVE",
+        activatedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+      },
+    }),
+    prisma.clientService.create({
+      data: {
+        clientId: demoClient.id,
+        serviceCode: "B2B_CARGO",
+        serviceName: "Domestic B2B Cargo",
+        status: "ACTIVE",
+        activatedAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
+      },
+    }),
+  ]);
+
+  console.log(`   ✅ Created ${clientServices.length} client services`);
+
+  console.log("\n   📝 Client Panel Login credentials:");
+  console.log("      - Owner: ashish@democompany.com / password123");
+  console.log("      - Admin: rohit@democompany.com / password123");
+  console.log("      - Operations: monu@democompany.com / password123");
+
   console.log("\n✨ Seed completed successfully!\n");
   console.log("Summary:");
   console.log(`   • ${users.length} Mobile Users`);
   console.log(`   • ${adminUsers.length + hubManagersAndOperators.length} Admin Panel Users (1 Super Admin, 3 Hub Managers, 3 Operators)`);
+  console.log(`   • ${clientUsers.length} Client Panel Users`);
   console.log(`   • ${hubs.length} Hubs (with hierarchy)`);
   console.log(`   • ${vehicles.length} Vehicles`);
   console.log(`   • ${drivers.length} Drivers`);
@@ -1286,9 +1598,13 @@ async function main() {
   console.log(`   • ${trips.length} Trips`);
   console.log(`   • ${partners.length} Partners`);
   console.log(`   • ${shipments.length} Shipments`);
+  console.log(`   • ${clientOrders.length} Client Orders`);
   console.log(`   • ${consignments.length} Consignments`);
   console.log(`   • ${handovers.length} Partner Handovers`);
   console.log(`   • ${slaEntries.length} Pincode-to-Pincode SLA entries`);
+  console.log(`   • ${clientWarehouses.length} Client Warehouses`);
+  console.log(`   • ${pickupRequests.length} Pickup Requests`);
+  console.log(`   • ${supportTickets.length} Support Tickets`);
 }
 
 main()

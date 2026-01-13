@@ -655,13 +655,6 @@ function getZoneType(pincode: string): string {
 }
 
 /**
- * Get route type between two zones
- */
-function getRouteType(originZone: string, destinationZone: string): string {
-  return `${originZone}_TO_${destinationZone}`;
-}
-
-/**
  * Calculate estimated TAT in days
  */
 function calculateEstimatedTAT(

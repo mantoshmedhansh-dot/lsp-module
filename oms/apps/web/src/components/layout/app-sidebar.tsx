@@ -310,8 +310,11 @@ export function AppSidebar() {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  onClick={() => signOut({ callbackUrl: "/login" })}
-                  className="text-red-600"
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    signOut({ callbackUrl: "/login", redirect: true });
+                  }}
+                  className="text-red-600 cursor-pointer"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
                   Sign Out

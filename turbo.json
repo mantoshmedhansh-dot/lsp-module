@@ -1,11 +1,30 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
+  "globalEnv": [
+    "DATABASE_URL",
+    "DIRECT_URL",
+    "NEXTAUTH_SECRET",
+    "AUTH_SECRET",
+    "NEXTAUTH_URL",
+    "INTERNAL_API_KEY",
+    "NEXT_PUBLIC_APP_URL",
+    "OMS_API_URL",
+    "OMS_INTERNAL_API_KEY"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"],
+      "env": [
+        "DATABASE_URL",
+        "DIRECT_URL",
+        "NEXTAUTH_SECRET",
+        "AUTH_SECRET",
+        "NEXTAUTH_URL",
+        "INTERNAL_API_KEY"
+      ]
     },
     "dev": {
       "cache": false,

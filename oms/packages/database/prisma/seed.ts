@@ -110,15 +110,26 @@ async function main() {
     },
     { email: "picker@demo.com", name: "Picker User", role: "PICKER" as const },
     { email: "packer@demo.com", name: "Packer User", role: "PACKER" as const },
+    {
+      email: "client@fashionforward.com",
+      name: "Fashion Forward Client",
+      role: "CLIENT" as const,
+    },
   ];
 
+  // Hash for client user (brand123)
+  const clientHashedPassword = await hash("brand123", 12);
+
   for (const user of testUsers) {
+    // Use different password for CLIENT role
+    const userPassword = user.role === "CLIENT" ? clientHashedPassword : hashedPassword;
+
     await prisma.user.upsert({
       where: { email: user.email },
       update: {},
       create: {
         email: user.email,
-        password: hashedPassword,
+        password: userPassword,
         name: user.name,
         role: user.role,
         companyId: company.id,

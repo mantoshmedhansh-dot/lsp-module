@@ -1,6 +1,6 @@
 // API Client for FastAPI Backend
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://cjdquick-api.onrender.com';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://cjdquick-api-vr4w.onrender.com';
 
 interface RequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';

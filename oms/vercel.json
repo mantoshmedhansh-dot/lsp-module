@@ -1,8 +1,11 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
-  "buildCommand": "cd packages/database && npx prisma generate && cd ../.. && pnpm run build",
-  "installCommand": "pnpm install",
   "framework": "nextjs",
-  "outputDirectory": "apps/web/.next"
+  "installCommand": "pnpm install",
+  "buildCommand": "cd packages/database && npx prisma generate && cd ../.. && pnpm run build",
+  "outputDirectory": "apps/web/.next",
+  "env": {
+    "NEXT_PUBLIC_API_URL": "https://cjdquick-api.onrender.com"
+  }
 }

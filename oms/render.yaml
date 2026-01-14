@@ -5,7 +5,7 @@ services:
     region: singapore
     plan: free
     branch: main
-    buildCommand: "corepack enable && corepack prepare pnpm@latest --activate && pnpm install && cd packages/database && npx prisma generate && cd ../.. && pnpm run build"
+    buildCommand: "npm install -g pnpm && pnpm install --no-frozen-lockfile && cd packages/database && ./node_modules/.bin/prisma generate && cd ../.. && pnpm run build"
     startCommand: "cd apps/web && node_modules/.bin/next start -p $PORT"
     envVars:
       - key: NODE_VERSION

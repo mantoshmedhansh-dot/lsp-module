@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
   "framework": "nextjs",
-  "installCommand": "yarn install",
-  "buildCommand": "cd packages/database && npx prisma generate && yarn build && cd ../../apps/web && yarn build",
+  "installCommand": "npm install -g pnpm && pnpm install --no-frozen-lockfile",
+  "buildCommand": "cd packages/database && npx prisma generate && cd ../.. && pnpm run build",
   "outputDirectory": "apps/web/.next"
 }

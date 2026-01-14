@@ -74,10 +74,50 @@ async def debug_db():
         if first_user:
             result["first_user_email"] = first_user.email
             result["first_user_role"] = first_user.role
+            result["password_hash_prefix"] = first_user.password[:20] + "..." if first_user.password else None
+            result["password_hash_length"] = len(first_user.password) if first_user.password else 0
 
         db.close()
     except Exception as e:
         result["connection"] = "failed"
+        result["error"] = str(e)
+        result["traceback"] = traceback.format_exc()
+
+    return result
+
+
+@app.get("/debug/verify/{email}")
+async def debug_verify(email: str, password: str = "admin123"):
+    """Debug endpoint to test password verification"""
+    from .core.database import SessionLocal
+    from .models.user import User
+    from .core.security import verify_password
+    import traceback
+
+    result = {"email": email, "password_to_verify": password}
+
+    try:
+        db = SessionLocal()
+        user = db.query(User).filter(User.email == email).first()
+
+        if not user:
+            result["error"] = "User not found"
+            return result
+
+        result["user_found"] = True
+        result["password_hash"] = user.password[:30] + "..." if user.password else None
+        result["password_hash_length"] = len(user.password) if user.password else 0
+        result["hash_starts_with_$2"] = user.password.startswith("$2") if user.password else False
+
+        try:
+            is_valid = verify_password(password, user.password)
+            result["password_valid"] = is_valid
+        except Exception as e:
+            result["verify_error"] = str(e)
+            result["verify_traceback"] = traceback.format_exc()
+
+        db.close()
+    except Exception as e:
         result["error"] = str(e)
         result["traceback"] = traceback.format_exc()
 

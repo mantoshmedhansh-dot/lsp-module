@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
       where: {
         OR: [
           { email: session.user.email },
-          { userId: session.user.id },
+          { portalUserId: session.user.id },
         ],
       },
     });
@@ -42,15 +42,12 @@ export async function GET(request: NextRequest) {
         orderBy: { createdAt: "desc" },
         skip,
         take: limit,
-        select: {
-          id: true,
-          orderNumber: true,
-          status: true,
-          totalAmount: true,
-          createdAt: true,
+        include: {
           items: { select: { id: true } },
-          delivery: {
-            select: { expectedDeliveryDate: true, trackingNumber: true },
+          deliveries: {
+            select: { status: true, awbNumber: true },
+            take: 1,
+            orderBy: { createdAt: "desc" },
           },
         },
       }),
@@ -60,13 +57,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       orders: orders.map((order) => ({
         id: order.id,
-        orderNumber: order.orderNumber,
+        orderNo: order.orderNo,
         status: order.status,
         totalAmount: Number(order.totalAmount),
         itemCount: order.items.length,
         createdAt: order.createdAt.toISOString().split("T")[0],
-        expectedDelivery: order.delivery?.expectedDeliveryDate?.toISOString().split("T")[0],
-        trackingNumber: order.delivery?.trackingNumber,
+        deliveryStatus: order.deliveries[0]?.status || null,
+        awbNumber: order.deliveries[0]?.awbNumber || null,
       })),
       total,
       page,
@@ -82,7 +79,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/b2b/orders - Create B2B order from cart
+// POST /api/b2b/orders - Create a new B2B order
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
@@ -91,7 +88,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { items, shippingAddressId, notes } = await request.json();
+    const { items, shippingAddressIndex = 0, poNumber, notes } = await request.json();
 
     if (!items || items.length === 0) {
       return NextResponse.json(
@@ -105,11 +102,15 @@ export async function POST(request: NextRequest) {
       where: {
         OR: [
           { email: session.user.email },
-          { userId: session.user.id },
+          { portalUserId: session.user.id },
         ],
       },
       include: {
-        priceList: { include: { items: true } },
+        priceList: {
+          include: {
+            items: true,
+          },
+        },
       },
     });
 
@@ -120,9 +121,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check credit availability
-    let orderTotal = 0;
-    const orderItems = [];
+    // Get default location for the customer's company
+    const location = await prisma.location.findFirst({
+      where: { companyId: customer.companyId, isActive: true },
+    });
+
+    if (!location) {
+      return NextResponse.json(
+        { error: "No active location found" },
+        { status: 400 }
+      );
+    }
+
+    // Calculate totals with price list if available
+    let subtotal = 0;
+    let taxAmount = 0;
+    const orderItems: Array<{
+      skuId: string;
+      skuCode: string;
+      skuName: string;
+      quantity: number;
+      unitPrice: number;
+      taxPercent: number;
+      taxAmount: number;
+      totalPrice: number;
+    }> = [];
 
     for (const item of items) {
       const sku = await prisma.sKU.findUnique({
@@ -136,92 +159,123 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Get price from customer's price list or default
-      let price = Number(sku.sellingPrice);
+      // Check for price list pricing
+      let unitPrice = Number(sku.sellingPrice);
       if (customer.priceList) {
         const priceListItem = customer.priceList.items.find(
-          (p) => p.skuId === item.skuId
+          (p: { skuId: string }) => p.skuId === item.skuId
         );
         if (priceListItem) {
-          price = Number(priceListItem.price);
+          unitPrice = Number(priceListItem.price);
         }
       }
 
-      const lineTotal = price * item.quantity;
-      orderTotal += lineTotal;
+      const itemTaxPercent = Number(sku.taxPercent || 18);
+      const lineTotal = unitPrice * item.quantity;
+      const lineTax = lineTotal * (itemTaxPercent / 100);
+
+      subtotal += lineTotal;
+      taxAmount += lineTax;
 
       orderItems.push({
         skuId: item.skuId,
+        skuCode: sku.code,
+        skuName: sku.name,
         quantity: item.quantity,
-        unitPrice: price,
-        totalPrice: lineTotal,
+        unitPrice,
+        taxPercent: itemTaxPercent,
+        taxAmount: lineTax,
+        totalPrice: lineTotal + lineTax,
       });
     }
 
-    // Check credit limit
-    if (customer.creditLimit && Number(customer.creditAvailable) < orderTotal) {
-      return NextResponse.json(
-        {
-          error: "Insufficient credit available",
-          creditAvailable: Number(customer.creditAvailable),
-          orderTotal,
-        },
-        { status: 400 }
-      );
+    const totalAmount = subtotal + taxAmount;
+
+    // Check credit limit if using credit payment
+    if (customer.creditEnabled) {
+      if (Number(customer.creditAvailable) < totalAmount) {
+        return NextResponse.json(
+          { error: "Insufficient credit available" },
+          { status: 400 }
+        );
+      }
     }
 
     // Generate order number
     const orderCount = await prisma.order.count({
-      where: { companyId: customer.companyId },
+      where: {
+        locationId: location.id,
+        createdAt: {
+          gte: new Date(new Date().getFullYear(), 0, 1),
+        },
+      },
     });
-    const orderNumber = `B2B-${new Date().getFullYear()}-${String(orderCount + 1).padStart(4, "0")}`;
+    const orderNo = `B2B-${new Date().getFullYear()}-${String(orderCount + 1).padStart(5, "0")}`;
+
+    // Get shipping address
+    const shippingAddress = customer.shippingAddresses[shippingAddressIndex] || customer.shippingAddresses[0] || customer.billingAddress;
 
     // Create order
     const order = await prisma.order.create({
       data: {
-        companyId: customer.companyId,
-        customerId: customer.id,
-        orderNumber,
-        channel: "B2B_PORTAL",
-        status: "PENDING",
-        totalAmount: orderTotal,
-        paymentMode: "CREDIT",
-        items: {
-          create: orderItems,
-        },
+        orderNo,
+        externalOrderNo: poNumber,
+        channel: "B2B",
+        orderType: "B2B",
+        paymentMode: customer.creditEnabled ? "CREDIT" : "PREPAID",
+        status: "CREATED",
         customerName: customer.name,
+        customerPhone: customer.phone,
         customerEmail: customer.email,
-        customerPhone: customer.phone || "",
-        shippingAddress: customer.shippingAddress as string || "",
-        shippingCity: "",
-        shippingState: "",
-        shippingPincode: "",
-        notes,
+        shippingAddress: shippingAddress as object,
+        billingAddress: customer.billingAddress as object,
+        subtotal,
+        taxAmount,
+        totalAmount,
+        orderDate: new Date(),
+        locationId: location.id,
+        customerId: customer.id,
+        paymentTermType: customer.paymentTermType,
+        paymentTermDays: customer.paymentTermDays,
+        poNumber,
+        remarks: notes,
+        items: {
+          create: orderItems.map((item) => ({
+            sku: { connect: { id: item.skuId } },
+            skuCode: item.skuCode,
+            skuName: item.skuName,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            taxPercent: item.taxPercent,
+            taxAmount: item.taxAmount,
+            totalPrice: item.totalPrice,
+          })),
+        },
       },
       include: {
         items: true,
       },
     });
 
-    // Update customer credit
-    if (customer.creditLimit) {
+    // Update credit if using credit payment
+    if (customer.creditEnabled) {
       await prisma.customer.update({
         where: { id: customer.id },
         data: {
-          creditUsed: { increment: orderTotal },
-          creditAvailable: { decrement: orderTotal },
+          creditUsed: { increment: totalAmount },
+          creditAvailable: { decrement: totalAmount },
         },
       });
 
       // Record credit transaction
-      await prisma.creditTransaction.create({
+      await prisma.b2BCreditTransaction.create({
         data: {
           customerId: customer.id,
-          type: "PURCHASE",
-          amount: orderTotal,
-          reference: orderNumber,
-          balanceAfter: Number(customer.creditAvailable) - orderTotal,
-          notes: `Order ${orderNumber}`,
+          type: "ORDER",
+          amount: totalAmount,
+          reference: orderNo,
+          balanceAfter: Number(customer.creditAvailable) - totalAmount,
+          description: `Order ${orderNo}`,
         },
       });
     }
@@ -230,7 +284,7 @@ export async function POST(request: NextRequest) {
       message: "Order created successfully",
       order: {
         id: order.id,
-        orderNumber: order.orderNumber,
+        orderNo: order.orderNo,
         totalAmount: Number(order.totalAmount),
         itemCount: order.items.length,
       },

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@oms/database";
 import { auth } from "@/lib/auth";
 
-// GET /api/b2b/catalog - Get product catalog for B2B customer
+// GET /api/b2b/catalog - Get B2B product catalog
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();
@@ -12,37 +12,39 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const category = searchParams.get("category");
-    const brand = searchParams.get("brand");
     const search = searchParams.get("search");
+    const category = searchParams.get("category");
     const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "50");
+    const limit = parseInt(searchParams.get("limit") || "20");
     const skip = (page - 1) * limit;
 
-    // Get the B2B customer for pricing
+    // Get the B2B customer
     const customer = await prisma.customer.findFirst({
       where: {
         OR: [
           { email: session.user.email },
-          { userId: session.user.id },
+          { portalUserId: session.user.id },
         ],
       },
       include: {
-        priceList: { include: { items: true } },
+        priceList: {
+          include: {
+            items: true,
+          },
+        },
       },
     });
 
-    // Build filter
+    if (!customer) {
+      return NextResponse.json({ products: [], total: 0 });
+    }
+
+    // Build where clause
     const where: Record<string, unknown> = {
+      companyId: customer.companyId,
       isActive: true,
     };
 
-    if (category && category !== "all") {
-      where.category = category;
-    }
-    if (brand && brand !== "all") {
-      where.brand = brand;
-    }
     if (search) {
       where.OR = [
         { name: { contains: search, mode: "insensitive" } },
@@ -50,7 +52,11 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    const [products, total, categories, brands] = await Promise.all([
+    if (category) {
+      where.category = category;
+    }
+
+    const [skus, total] = await Promise.all([
       prisma.sKU.findMany({
         where,
         orderBy: { name: "asc" },
@@ -60,65 +66,59 @@ export async function GET(request: NextRequest) {
           id: true,
           code: true,
           name: true,
+          description: true,
           category: true,
           brand: true,
-          sellingPrice: true,
           mrp: true,
-          minOrderQty: true,
+          sellingPrice: true,
+          taxPercent: true,
+          imageUrl: true,
           inventory: {
-            select: { quantity: true },
+            select: {
+              available: true,
+            },
           },
         },
       }),
       prisma.sKU.count({ where }),
-      prisma.sKU.findMany({
-        where: { isActive: true },
-        distinct: ["category"],
-        select: { category: true },
-      }),
-      prisma.sKU.findMany({
-        where: { isActive: true },
-        distinct: ["brand"],
-        select: { brand: true },
-      }),
     ]);
 
-    // Map prices based on customer's price list
-    const priceMap = new Map<string, number>();
-    if (customer?.priceList) {
-      customer.priceList.items.forEach((item) => {
-        priceMap.set(item.skuId, Number(item.price));
-      });
-    }
+    // Get price list items for quick lookup
+    const priceListItems = customer.priceList?.items || [];
+    const priceMap = new Map(
+      priceListItems.map((item: { skuId: string; price: { toString: () => string } }) => [item.skuId, Number(item.price)])
+    );
 
     return NextResponse.json({
-      products: products.map((product) => {
-        const totalStock = product.inventory.reduce(
-          (sum, inv) => sum + inv.quantity,
+      products: skus.map((sku) => {
+        // Calculate available stock
+        const availableStock = sku.inventory.reduce(
+          (sum: number, inv: { available: number }) => sum + inv.available,
           0
         );
-        const customerPrice = priceMap.get(product.id);
+
+        // Get customer-specific price or default
+        const customerPrice = priceMap.get(sku.id) || Number(sku.sellingPrice);
 
         return {
-          id: product.id,
-          code: product.code,
-          name: product.name,
-          category: product.category || "Uncategorized",
-          brand: product.brand || "Unbranded",
-          price: customerPrice || Number(product.sellingPrice),
-          mrp: Number(product.mrp),
-          minOrderQty: product.minOrderQty || 1,
-          stock: totalStock,
+          id: sku.id,
+          code: sku.code,
+          name: sku.name,
+          description: sku.description,
+          category: sku.category,
+          brand: sku.brand,
+          mrp: Number(sku.mrp || sku.sellingPrice),
+          price: customerPrice,
+          taxPercent: Number(sku.taxPercent || 18),
+          imageUrl: sku.imageUrl,
+          availableStock,
+          inStock: availableStock > 0,
         };
       }),
       total,
       page,
       limit,
       totalPages: Math.ceil(total / limit),
-      filters: {
-        categories: categories.map((c) => c.category).filter(Boolean),
-        brands: brands.map((b) => b.brand).filter(Boolean),
-      },
     });
   } catch (error) {
     console.error("Error fetching B2B catalog:", error);

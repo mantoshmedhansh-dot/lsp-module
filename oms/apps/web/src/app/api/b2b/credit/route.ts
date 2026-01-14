@@ -16,7 +16,7 @@ export async function GET() {
       where: {
         OR: [
           { email: session.user.email },
-          { userId: session.user.id },
+          { portalUserId: session.user.id },
         ],
       },
     });
@@ -29,32 +29,33 @@ export async function GET() {
     }
 
     // Get recent transactions
-    const transactions = await prisma.creditTransaction.findMany({
+    const transactions = await prisma.b2BCreditTransaction.findMany({
       where: { customerId: customer.id },
       orderBy: { createdAt: "desc" },
       take: 20,
     });
 
     // Calculate overdue amount (orders with payment terms past due)
+    const paymentDays = customer.paymentTermDays || 30;
     const overdueOrders = await prisma.order.findMany({
       where: {
         customerId: customer.id,
         paymentMode: "CREDIT",
         paymentStatus: { in: ["PENDING", "PARTIAL"] },
         createdAt: {
-          lt: new Date(Date.now() - getDaysFromPaymentTerms(customer.paymentTerms || "NET_30") * 24 * 60 * 60 * 1000),
+          lt: new Date(Date.now() - paymentDays * 24 * 60 * 60 * 1000),
         },
       },
       select: { totalAmount: true },
     });
 
     const overdueAmount = overdueOrders.reduce(
-      (sum, order) => sum + Number(order.totalAmount),
+      (sum: number, order: { totalAmount: { toString: () => string } }) => sum + Number(order.totalAmount),
       0
     );
 
     // Get last payment
-    const lastPayment = await prisma.creditTransaction.findFirst({
+    const lastPayment = await prisma.b2BCreditTransaction.findFirst({
       where: {
         customerId: customer.id,
         type: "PAYMENT",
@@ -68,7 +69,8 @@ export async function GET() {
         creditUsed: Number(customer.creditUsed || 0),
         creditAvailable: Number(customer.creditAvailable || 0),
         status: customer.creditStatus || "AVAILABLE",
-        paymentTerms: customer.paymentTerms || "NET_30",
+        paymentTermType: customer.paymentTermType,
+        paymentTermDays: customer.paymentTermDays,
         overdueAmount,
         lastPaymentDate: lastPayment?.createdAt.toISOString().split("T")[0] || null,
         lastPaymentAmount: lastPayment ? Number(lastPayment.amount) : 0,
@@ -91,17 +93,4 @@ export async function GET() {
       { status: 500 }
     );
   }
-}
-
-function getDaysFromPaymentTerms(terms: string): number {
-  const termMap: Record<string, number> = {
-    IMMEDIATE: 0,
-    NET_7: 7,
-    NET_15: 15,
-    NET_30: 30,
-    NET_45: 45,
-    NET_60: 60,
-    NET_90: 90,
-  };
-  return termMap[terms] || 30;
 }

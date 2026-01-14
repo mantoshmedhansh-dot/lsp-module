@@ -11,36 +11,34 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get the B2B customer associated with this user
+    // Get the B2B customer
     const customer = await prisma.customer.findFirst({
       where: {
         OR: [
           { email: session.user.email },
-          { userId: session.user.id },
+          { portalUserId: session.user.id },
         ],
       },
     });
 
     if (!customer) {
-      // Return empty dashboard if no customer linked
       return NextResponse.json({
         summary: {
           totalOrders: 0,
           pendingOrders: 0,
           totalSpent: 0,
           creditAvailable: 0,
-          creditLimit: 0,
         },
         recentOrders: [],
         pendingQuotations: [],
       });
     }
 
-    // Get order summary
+    // Get order counts and totals
     const [orderStats, recentOrders, pendingQuotations] = await Promise.all([
       prisma.order.aggregate({
         where: { customerId: customer.id },
-        _count: { _all: true },
+        _count: true,
         _sum: { totalAmount: true },
       }),
       prisma.order.findMany({
@@ -49,7 +47,7 @@ export async function GET() {
         take: 5,
         select: {
           id: true,
-          orderNumber: true,
+          orderNo: true,
           status: true,
           totalAmount: true,
           createdAt: true,
@@ -58,53 +56,56 @@ export async function GET() {
       prisma.quotation.findMany({
         where: {
           customerId: customer.id,
-          status: { in: ["PENDING_APPROVAL", "APPROVED"] },
-          validUntil: { gte: new Date() },
+          status: { in: ["DRAFT", "PENDING_APPROVAL", "APPROVED"] },
         },
-        orderBy: { validUntil: "asc" },
+        orderBy: { createdAt: "desc" },
         take: 5,
         select: {
           id: true,
-          quotationNumber: true,
+          quotationNo: true,
+          status: true,
           totalAmount: true,
           validUntil: true,
         },
       }),
     ]);
 
-    const pendingOrders = await prisma.order.count({
+    // Count pending orders
+    const pendingCount = await prisma.order.count({
       where: {
         customerId: customer.id,
-        status: { in: ["PENDING", "PROCESSING", "SHIPPED", "IN_TRANSIT"] },
+        status: { in: ["CREATED", "CONFIRMED", "PROCESSING"] },
       },
     });
 
     return NextResponse.json({
       summary: {
-        totalOrders: orderStats._count._all || 0,
-        pendingOrders,
-        totalSpent: Number(orderStats._sum.totalAmount || 0),
+        totalOrders: orderStats._count || 0,
+        pendingOrders: pendingCount,
+        totalSpent: Number(orderStats._sum?.totalAmount || 0),
         creditAvailable: Number(customer.creditAvailable || 0),
         creditLimit: Number(customer.creditLimit || 0),
+        creditUsed: Number(customer.creditUsed || 0),
       },
       recentOrders: recentOrders.map((order) => ({
         id: order.id,
-        orderNumber: order.orderNumber,
+        orderNo: order.orderNo,
         status: order.status,
         totalAmount: Number(order.totalAmount),
-        createdAt: order.createdAt.toISOString().split("T")[0],
+        date: order.createdAt.toISOString().split("T")[0],
       })),
       pendingQuotations: pendingQuotations.map((quote) => ({
         id: quote.id,
-        quotationNumber: quote.quotationNumber,
+        quotationNo: quote.quotationNo,
+        status: quote.status,
         totalAmount: Number(quote.totalAmount),
-        expiresAt: quote.validUntil.toISOString().split("T")[0],
+        validUntil: quote.validUntil.toISOString().split("T")[0],
       })),
     });
   } catch (error) {
     console.error("Error fetching B2B dashboard:", error);
     return NextResponse.json(
-      { error: "Failed to fetch dashboard" },
+      { error: "Failed to fetch dashboard data" },
       { status: 500 }
     );
   }

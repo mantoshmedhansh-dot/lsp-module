@@ -13,11 +13,6 @@ const nextConfig = {
 
   // Output configuration for standalone deployments
   output: "standalone",
-
-  // Set the turbopack root to avoid multiple lockfile warnings
-  turbopack: {
-    root: "..",
-  },
 };
 
 module.exports = nextConfig;

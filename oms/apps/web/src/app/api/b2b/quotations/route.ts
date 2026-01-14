@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
       where: {
         OR: [
           { email: session.user.email },
-          { userId: session.user.id },
+          { portalUserId: session.user.id },
         ],
       },
     });
@@ -42,13 +42,7 @@ export async function GET(request: NextRequest) {
         orderBy: { createdAt: "desc" },
         skip,
         take: limit,
-        select: {
-          id: true,
-          quotationNumber: true,
-          status: true,
-          totalAmount: true,
-          createdAt: true,
-          validUntil: true,
+        include: {
           items: { select: { id: true } },
         },
       }),
@@ -66,7 +60,7 @@ export async function GET(request: NextRequest) {
 
         return {
           id: quote.id,
-          quotationNumber: quote.quotationNumber,
+          quotationNo: quote.quotationNo,
           status: quote.status,
           totalAmount: Number(quote.totalAmount),
           itemCount: quote.items.length,
@@ -112,7 +106,7 @@ export async function POST(request: NextRequest) {
       where: {
         OR: [
           { email: session.user.email },
-          { userId: session.user.id },
+          { portalUserId: session.user.id },
         ],
       },
     });
@@ -124,9 +118,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calculate total
-    let totalAmount = 0;
-    const quotationItems = [];
+    // Get default location for the customer's company
+    const location = await prisma.location.findFirst({
+      where: { companyId: customer.companyId, isActive: true },
+    });
+
+    if (!location) {
+      return NextResponse.json(
+        { error: "No active location found" },
+        { status: 400 }
+      );
+    }
+
+    // Calculate totals
+    let subtotal = 0;
+    let taxAmount = 0;
+    const quotationItems: Array<{
+      skuId: string;
+      skuCode: string;
+      skuName: string;
+      quantity: number;
+      listPrice: number;
+      unitPrice: number;
+      taxPercent: number;
+      taxAmount: number;
+      totalPrice: number;
+    }> = [];
 
     for (const item of items) {
       const sku = await prisma.sKU.findUnique({
@@ -140,23 +157,35 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      const listPrice = Number(sku.mrp || sku.sellingPrice);
       const unitPrice = Number(sku.sellingPrice);
+      const itemTaxPercent = Number(sku.taxPercent || 18);
       const lineTotal = unitPrice * item.quantity;
-      totalAmount += lineTotal;
+      const lineTax = lineTotal * (itemTaxPercent / 100);
+
+      subtotal += lineTotal;
+      taxAmount += lineTax;
 
       quotationItems.push({
         skuId: item.skuId,
+        skuCode: sku.code,
+        skuName: sku.name,
         quantity: item.quantity,
+        listPrice,
         unitPrice,
-        totalPrice: lineTotal,
+        taxPercent: itemTaxPercent,
+        taxAmount: lineTax,
+        totalPrice: lineTotal + lineTax,
       });
     }
+
+    const totalAmount = subtotal + taxAmount;
 
     // Generate quotation number
     const quoteCount = await prisma.quotation.count({
       where: { companyId: customer.companyId },
     });
-    const quotationNumber = `QT-${new Date().getFullYear()}-${String(quoteCount + 1).padStart(4, "0")}`;
+    const quotationNo = `QT-${new Date().getFullYear()}-${String(quoteCount + 1).padStart(4, "0")}`;
 
     // Create quotation
     const validUntil = new Date();
@@ -165,14 +194,30 @@ export async function POST(request: NextRequest) {
     const quotation = await prisma.quotation.create({
       data: {
         companyId: customer.companyId,
+        locationId: location.id,
         customerId: customer.id,
-        quotationNumber,
+        quotationNo,
         status: "PENDING_APPROVAL",
+        shippingAddress: customer.shippingAddresses[0] || customer.billingAddress,
+        billingAddress: customer.billingAddress,
+        subtotal,
+        taxAmount,
         totalAmount,
         validUntil,
-        notes,
+        remarks: notes,
+        createdById: session.user.id || "system",
         items: {
-          create: quotationItems,
+          create: quotationItems.map((item) => ({
+            sku: { connect: { id: item.skuId } },
+            skuCode: item.skuCode,
+            skuName: item.skuName,
+            quantity: item.quantity,
+            listPrice: item.listPrice,
+            unitPrice: item.unitPrice,
+            taxPercent: item.taxPercent,
+            taxAmount: item.taxAmount,
+            totalPrice: item.totalPrice,
+          })),
         },
       },
       include: {
@@ -184,7 +229,7 @@ export async function POST(request: NextRequest) {
       message: "Quotation request submitted successfully",
       quotation: {
         id: quotation.id,
-        quotationNumber: quotation.quotationNumber,
+        quotationNo: quotation.quotationNo,
         totalAmount: Number(quotation.totalAmount),
         itemCount: quotation.items.length,
         validUntil: quotation.validUntil.toISOString().split("T")[0],

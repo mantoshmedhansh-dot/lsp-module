@@ -11,12 +11,12 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get the B2B customer
+    // Get the B2B customer by email or portalUserId
     const customer = await prisma.customer.findFirst({
       where: {
         OR: [
           { email: session.user.email },
-          { userId: session.user.id },
+          { portalUserId: session.user.id },
         ],
       },
       include: {
@@ -37,14 +37,17 @@ export async function GET() {
         name: customer.name,
         email: customer.email,
         phone: customer.phone,
-        companyName: customer.companyName,
+        contactPerson: customer.contactPerson,
         gst: customer.gst,
         customerType: customer.type,
         status: customer.status,
         billingAddress: customer.billingAddress,
-        shippingAddress: customer.shippingAddress,
-        paymentTerms: customer.paymentTerms || "NET_30",
+        shippingAddresses: customer.shippingAddresses,
+        paymentTermType: customer.paymentTermType,
+        paymentTermDays: customer.paymentTermDays,
         creditLimit: Number(customer.creditLimit || 0),
+        creditUsed: Number(customer.creditUsed || 0),
+        creditAvailable: Number(customer.creditAvailable || 0),
         priceList: customer.priceList?.name,
       },
     });
@@ -73,7 +76,7 @@ export async function PUT(request: NextRequest) {
       where: {
         OR: [
           { email: session.user.email },
-          { userId: session.user.id },
+          { portalUserId: session.user.id },
         ],
       },
     });
@@ -86,7 +89,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Only allow updating certain fields
-    const allowedFields = ["phone", "shippingAddress"];
+    const allowedFields = ["phone", "alternatePhone", "shippingAddresses"];
     const updateData: Record<string, unknown> = {};
 
     for (const field of allowedFields) {
@@ -113,7 +116,7 @@ export async function PUT(request: NextRequest) {
         id: updatedCustomer.id,
         name: updatedCustomer.name,
         phone: updatedCustomer.phone,
-        shippingAddress: updatedCustomer.shippingAddress,
+        shippingAddresses: updatedCustomer.shippingAddresses,
       },
     });
   } catch (error) {

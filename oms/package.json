@@ -21,7 +21,12 @@
     "db:studio": "cd packages/database && npx prisma studio",
     "db:seed": "cd packages/database && npm run db:seed",
     "vercel-build": "npm run prisma:generate && cd apps/web && npm run build",
-    "start": "cd apps/web && npm start"
+    "start": "cd apps/web && npm start",
+    "deploy": "./scripts/deploy-all.sh",
+    "deploy:vercel": "npm run vercel-build && npx vercel --prod --yes",
+    "deploy:render": "git push singh master:main",
+    "push:all": "git push origin master && git push singh master:main",
+    "validate": "npm run prisma:generate && npm run build:web"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.3.14",

@@ -10,6 +10,9 @@ export * from './transporters';
 // Channel/Marketplace integrations
 export * from './channels';
 
+// Logistics Aggregator integrations (ClickPost, etc.)
+export * from './aggregators';
+
 // CSV/Data importers
 export * from './importers';
 

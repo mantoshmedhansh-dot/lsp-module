@@ -23,6 +23,7 @@ import {
   ClipboardCheck,
   FileText,
   CreditCard,
+  Gauge,
 } from "lucide-react";
 import {
   Sidebar,
@@ -61,6 +62,11 @@ const navigation = [
       { title: "eRetail Dashboard", href: "/dashboard" },
       { title: "Seller Panel Dashboard", href: "/dashboard/seller-panel" },
     ],
+  },
+  {
+    title: "Control Tower",
+    icon: Gauge,
+    href: "/control-tower",
   },
   {
     title: "Orders",

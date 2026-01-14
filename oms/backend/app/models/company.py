@@ -53,7 +53,7 @@ class Location(Base):
     id = Column(String, primary_key=True)
     code = Column(String, nullable=False)
     name = Column(String, nullable=False)
-    type = Column(Enum(LocationType))
+    type = Column(Enum(LocationType, name="LocationType", create_type=False))
     address = Column(JSON)
     contactPerson = Column(String)
     contactPhone = Column(String)
@@ -80,7 +80,7 @@ class Zone(Base):
     id = Column(String, primary_key=True)
     code = Column(String, nullable=False)
     name = Column(String, nullable=False)
-    type = Column(Enum(ZoneType))
+    type = Column(Enum(ZoneType, name="ZoneType", create_type=False))
     description = Column(String)
     isActive = Column(Boolean, default=True)
 

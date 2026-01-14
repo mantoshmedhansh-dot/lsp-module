@@ -25,7 +25,8 @@ class User(Base):
     name = Column(String, nullable=False)
     phone = Column(String)
     avatar = Column(String)
-    role = Column(Enum(UserRole), default=UserRole.OPERATOR)
+    # Use the exact enum type name that Prisma created in PostgreSQL
+    role = Column(Enum(UserRole, name="UserRole", create_type=False), default=UserRole.OPERATOR)
     isActive = Column(Boolean, default=True)
     lastLoginAt = Column(DateTime)
 

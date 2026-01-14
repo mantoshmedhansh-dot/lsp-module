@@ -83,10 +83,10 @@ class Order(Base):
     id = Column(String, primary_key=True)
     orderNo = Column(String, unique=True, nullable=False)
     externalOrderNo = Column(String, index=True)
-    channel = Column(Enum(Channel), index=True)
-    orderType = Column(Enum(OrderType), default=OrderType.B2C)
-    paymentMode = Column(Enum(PaymentMode))
-    status = Column(Enum(OrderStatus), default=OrderStatus.CREATED, index=True)
+    channel = Column(Enum(Channel, name="Channel", create_type=False), index=True)
+    orderType = Column(Enum(OrderType, name="OrderType", create_type=False), default=OrderType.B2C)
+    paymentMode = Column(Enum(PaymentMode, name="PaymentMode", create_type=False))
+    status = Column(Enum(OrderStatus, name="OrderStatus", create_type=False), default=OrderStatus.CREATED, index=True)
 
     # Customer Info
     customerName = Column(String, nullable=False)
@@ -143,7 +143,7 @@ class OrderItem(Base):
     discount = Column(Numeric(12, 2), default=0)
     totalPrice = Column(Numeric(12, 2))
 
-    status = Column(Enum(ItemStatus), default=ItemStatus.PENDING)
+    status = Column(Enum(ItemStatus, name="ItemStatus", create_type=False), default=ItemStatus.PENDING)
     serialNumbers = Column(ARRAY(String), default=[])
     batchNo = Column(String)
 
@@ -162,7 +162,7 @@ class Delivery(Base):
     deliveryNo = Column(String, unique=True, nullable=False)
     orderId = Column(String, ForeignKey("Order.id", ondelete="CASCADE"), index=True)
 
-    status = Column(Enum(DeliveryStatus), default=DeliveryStatus.PENDING, index=True)
+    status = Column(Enum(DeliveryStatus, name="DeliveryStatus", create_type=False), default=DeliveryStatus.PENDING, index=True)
 
     transporterId = Column(String)
     awbNo = Column(String, index=True)

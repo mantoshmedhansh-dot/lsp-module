@@ -1,10 +1,23 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  serverExternalPackages: ["pdfkit", "fontkit", "linebreak", "png-js"],
+  // Transpile workspace packages - this is the key for monorepo support
   transpilePackages: ["@oms/database"],
+
+  // External packages that should not be bundled on server
+  serverExternalPackages: ["pdfkit", "fontkit", "linebreak", "png-js", "@prisma/client"],
+
+  // Skip type checking during build (faster builds, types checked separately)
   typescript: {
     ignoreBuildErrors: true,
   },
+
+  // Skip ESLint during build (lint checked separately)
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+
+  // Output configuration for standalone deployments
+  output: "standalone",
 };
 
 module.exports = nextConfig;

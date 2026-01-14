@@ -9,16 +9,18 @@
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
+    "build:web": "npm run prisma:generate && cd apps/web && npm run build",
     "lint": "turbo run lint",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
+    "prisma:generate": "cd packages/database && npx prisma generate",
     "db:generate": "turbo run db:generate",
     "db:push": "turbo run db:push",
     "db:studio": "cd packages/database && npx prisma studio",
     "db:seed": "cd packages/database && npm run db:seed",
-    "render-build": "cd packages/database && npx prisma generate && npm run build && cd ../.. && cd apps/web && npm run build",
+    "vercel-build": "npm run prisma:generate && cd apps/web && npm run build",
     "start": "cd apps/web && npm start"
   },
   "devDependencies": {

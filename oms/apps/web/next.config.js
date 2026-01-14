@@ -11,13 +11,13 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
 
-  // Skip ESLint during build (lint checked separately)
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-
   // Output configuration for standalone deployments
   output: "standalone",
+
+  // Set the turbopack root to avoid multiple lockfile warnings
+  turbopack: {
+    root: "..",
+  },
 };
 
 module.exports = nextConfig;

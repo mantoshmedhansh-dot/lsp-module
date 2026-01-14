@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
   "framework": "nextjs",
-  "installCommand": "npm install -g pnpm && pnpm install --no-frozen-lockfile",
-  "buildCommand": "cd packages/database && npx prisma generate && cd ../.. && pnpm run build",
+  "installCommand": "npm install --legacy-peer-deps",
+  "buildCommand": "cd packages/database && npx prisma generate && cd ../../apps/web && npm run build",
   "outputDirectory": "apps/web/.next"
 }

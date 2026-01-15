@@ -176,7 +176,7 @@ export async function PATCH(
                 customerId: quotation.customerId,
                 customerName: quotation.Customer.name,
                 customerPhone: quotation.Customer.phone,
-                shippingAddress: quotation.Customer.billingAddress,
+                shippingAddress: quotation.Customer.billingAddress as object,
                 orderDate: new Date(),
                 locationId: quotation.Customer.companyId, // Default to company's main location
                 paymentTermType: quotation.Customer.paymentTermType,
@@ -220,17 +220,24 @@ export async function PATCH(
               });
 
               // Create credit transaction
+              const txSequence = await tx.sequence.upsert({
+                where: { name: "credit_transaction" },
+                update: { currentValue: { increment: 1 } },
+                create: { name: "credit_transaction", prefix: "CTX", currentValue: 1, paddingLength: 8 },
+              });
+              const transactionNo = `${txSequence.prefix}${String(txSequence.currentValue).padStart(txSequence.paddingLength, "0")}`;
+
               await tx.b2BCreditTransaction.create({
                 data: {
+                  transactionNo,
                   customerId: quotation.customerId,
                   type: "ORDER_DEBIT",
                   amount: quotation.totalAmount,
                   balanceBefore: quotation.Customer.creditLimit.minus(quotation.Customer.creditUsed),
                   balanceAfter: quotation.Customer.creditLimit.minus(quotation.Customer.creditUsed).minus(quotation.totalAmount),
-                  referenceType: "ORDER",
-                  referenceId: order.id,
-                  referenceNo: orderNo,
-                  description: `Order created from quotation ${quotation.quotationNo}`,
+                  orderId: order.id,
+                  quotationId: id,
+                  remarks: `Order created from quotation ${quotation.quotationNo}`,
                   createdById: session.user.id,
                 },
               });

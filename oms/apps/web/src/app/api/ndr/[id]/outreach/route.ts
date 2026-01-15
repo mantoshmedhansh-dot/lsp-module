@@ -50,7 +50,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const ndr = await prisma.nDR.findUnique({
       where: { id },
       include: {
-        order: {
+        Order: {
           select: {
             id: true,
             orderNo: true,
@@ -62,11 +62,11 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
             totalAmount: true,
           },
         },
-        delivery: {
+        Delivery: {
           select: {
             id: true,
             awbNo: true,
-            transporter: {
+            Transporter: {
               select: {
                 name: true,
               },
@@ -86,13 +86,13 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     });
 
     // Prepare message content and variables
-    const order = ndr.order;
+    const order = ndr.Order;
     const variables: Record<string, string> = {
       customerName: order.customerName,
       orderNo: order.orderNo,
-      awbNo: ndr.delivery?.awbNo || "",
+      awbNo: ndr.Delivery?.awbNo || "",
       reason: ndr.aiClassification || ndr.reason,
-      courierName: ndr.delivery?.transporter?.name || "our delivery partner",
+      courierName: ndr.Delivery?.Transporter?.name || "our delivery partner",
     };
 
     let messageContent = customMessage || "";
@@ -232,7 +232,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
           error: result.error,
         },
         status: result.success ? "SUCCESS" : "FAILED",
-        errorMessage: result.error,
+        executionError: result.error,
         companyId: ndr.companyId,
       },
     });

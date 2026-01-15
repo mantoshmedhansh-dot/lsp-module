@@ -205,8 +205,8 @@ export async function POST(request: NextRequest) {
         customerId,
         status: "DRAFT",
         validUntil: validUntil ? new Date(validUntil) : defaultValidUntil,
-        shippingAddress: customer.billingAddress,
-        billingAddress: customer.billingAddress,
+        shippingAddress: customer.billingAddress as object,
+        billingAddress: customer.billingAddress as object,
         companyId: customer.companyId,
         locationId: customer.companyId, // Will be updated with actual location
         subtotal,

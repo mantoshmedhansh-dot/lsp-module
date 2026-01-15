@@ -164,7 +164,11 @@ export async function POST(request: NextRequest) {
     const delivery = await prisma.delivery.findFirst({
       where: { awbNo },
       include: {
-        order: true,
+        Order: {
+          include: {
+            Location: true,
+          },
+        },
       },
     });
 
@@ -223,7 +227,7 @@ export async function POST(request: NextRequest) {
         status: "OPEN",
         priority: classification.priority as "LOW" | "MEDIUM" | "HIGH" | "CRITICAL",
         riskScore: classification.riskScore,
-        companyId: delivery.order.companyId,
+        companyId: delivery.Order.Location.companyId,
       },
     });
 
@@ -285,7 +289,7 @@ async function triggerAutomatedOutreach(ndrId: string, priority: string) {
   const ndr = await prisma.nDR.findUnique({
     where: { id: ndrId },
     include: {
-      order: true,
+      Order: true,
     },
   });
 
@@ -302,8 +306,8 @@ async function triggerAutomatedOutreach(ndrId: string, priority: string) {
     const hour = new Date().getHours();
     if (hour >= 9 && hour <= 21) {
       const result = await whatsappService.sendNDRResolutionMessage(
-        ndr.order.customerPhone,
-        ndr.order.orderNo,
+        ndr.Order.customerPhone,
+        ndr.Order.orderNo,
         ndr.aiClassification || ndr.reason
       );
 

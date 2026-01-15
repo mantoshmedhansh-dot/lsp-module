@@ -20,21 +20,21 @@ export async function GET(
     const delivery = await prisma.delivery.findUnique({
       where: { id },
       include: {
-        order: {
+        Order: {
           include: {
-            items: {
+            OrderItem: {
               include: {
-                sku: true,
+                SKU: true,
               },
             },
-            location: {
+            Location: {
               include: {
-                company: true,
+                Company: true,
               },
             },
           },
         },
-        transporter: true,
+        Transporter: true,
       },
     });
 
@@ -42,8 +42,40 @@ export async function GET(
       return NextResponse.json({ error: "Delivery not found" }, { status: 404 });
     }
 
+    // Prepare delivery data for PDF generation
+    const deliveryDataForPdf = {
+      id: delivery.id,
+      awbNo: delivery.awbNo,
+      weight: delivery.weight,
+      dimensions: { length: delivery.length, width: delivery.width, height: delivery.height },
+      order: {
+        orderNo: delivery.Order.orderNo,
+        customerName: delivery.Order.customerName,
+        customerPhone: delivery.Order.customerPhone,
+        shippingAddress: delivery.Order.shippingAddress,
+        paymentMode: delivery.Order.paymentMode,
+        totalAmount: delivery.Order.totalAmount,
+        items: delivery.Order.OrderItem.map(i => ({
+          quantity: i.quantity,
+          sku: { code: i.SKU.code, name: i.SKU.name },
+        })),
+        location: {
+          name: delivery.Order.Location.name,
+          address: delivery.Order.Location.address,
+          company: {
+            name: delivery.Order.Location.Company.name,
+            phone: delivery.Order.Location.Company.phone,
+          },
+        },
+      },
+      transporter: delivery.Transporter ? {
+        name: delivery.Transporter.name,
+        code: delivery.Transporter.code,
+      } : null,
+    };
+
     // Generate PDF
-    const pdfBuffer = await generateShippingLabel(delivery);
+    const pdfBuffer = await generateShippingLabel(deliveryDataForPdf);
 
     // Return PDF - convert Buffer to Uint8Array for NextResponse compatibility
     return new NextResponse(new Uint8Array(pdfBuffer), {

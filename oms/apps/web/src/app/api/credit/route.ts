@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
       prisma.b2BCreditTransaction.findMany({
         where,
         include: {
-          customer: {
+          Customer: {
             select: { id: true, code: true, name: true },
           },
         },
@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate type
-    const validTypes = ["UTILIZATION", "PAYMENT", "CREDIT_NOTE", "ADJUSTMENT", "REVERSAL"];
+    const validTypes = ["ORDER_DEBIT", "PAYMENT_CREDIT", "ADJUSTMENT", "REFUND", "WRITE_OFF", "INTEREST_DEBIT", "PAYMENT", "ORDER", "CREDIT_NOTE"];
     if (!validTypes.includes(type)) {
       return NextResponse.json(
         { error: `Invalid type. Must be one of: ${validTypes.join(", ")}` },
@@ -127,8 +127,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // For utilization, check credit first
-    if (type === "UTILIZATION") {
+    // For order debit, check credit first
+    if (type === "ORDER_DEBIT") {
       const creditCheck = await checkCredit(customerId, amount);
       if (!creditCheck.canProceed) {
         return NextResponse.json(

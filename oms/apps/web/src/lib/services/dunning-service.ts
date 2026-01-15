@@ -59,7 +59,7 @@ export async function getOverdueCustomers(): Promise<OverdueCustomer[]> {
     const transactions = await prisma.b2BCreditTransaction.findMany({
       where: {
         customerId: customer.id,
-        type: "UTILIZATION",
+        type: "ORDER_DEBIT",
         dueDate: { lt: now },
       },
       select: {

@@ -164,7 +164,7 @@ export async function GET(request: NextRequest) {
       prisma.nDR.findMany({
         where,
         include: {
-          order: {
+          Order: {
             select: {
               id: true,
               orderNo: true,
@@ -177,13 +177,13 @@ export async function GET(request: NextRequest) {
               totalAmount: true,
             },
           },
-          delivery: {
+          Delivery: {
             select: {
               id: true,
               deliveryNo: true,
               awbNo: true,
               status: true,
-              transporter: {
+              Transporter: {
                 select: {
                   code: true,
                   name: true,
@@ -191,14 +191,14 @@ export async function GET(request: NextRequest) {
               },
             },
           },
-          outreachAttempts: {
+          NDROutreach: {
             orderBy: { createdAt: "desc" },
             take: 3,
           },
           _count: {
             select: {
-              outreachAttempts: true,
-              aiActions: true,
+              NDROutreach: true,
+              AIActionLog: true,
             },
           },
         },
@@ -329,7 +329,11 @@ export async function POST(request: NextRequest) {
     const delivery = await prisma.delivery.findUnique({
       where: { id: deliveryId },
       include: {
-        order: true,
+        Order: {
+          include: {
+            Location: true,
+          },
+        },
       },
     });
 
@@ -359,13 +363,13 @@ export async function POST(request: NextRequest) {
         status: "OPEN",
         priority: classification.priority as "LOW" | "MEDIUM" | "HIGH" | "CRITICAL",
         riskScore: classification.riskScore,
-        companyId: session.user.companyId || delivery.order.companyId,
+        companyId: session.user.companyId || delivery.Order.Location.companyId,
       },
       include: {
-        order: true,
-        delivery: {
+        Order: true,
+        Delivery: {
           include: {
-            transporter: true,
+            Transporter: true,
           },
         },
       },

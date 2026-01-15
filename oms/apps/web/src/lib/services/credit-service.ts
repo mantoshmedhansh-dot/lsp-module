@@ -17,7 +17,7 @@ export interface CreditCheckResult {
 
 export interface CreditTransactionInput {
   customerId: string;
-  type: "UTILIZATION" | "PAYMENT" | "CREDIT_NOTE" | "ADJUSTMENT" | "REVERSAL";
+  type: "ORDER_DEBIT" | "PAYMENT_CREDIT" | "ADJUSTMENT" | "REFUND" | "WRITE_OFF" | "INTEREST_DEBIT" | "PAYMENT" | "ORDER" | "CREDIT_NOTE";
   amount: number;
   orderId?: string;
   quotationId?: string;
@@ -173,7 +173,7 @@ export async function createCreditTransaction(
 
       // Calculate new balances based on transaction type
       switch (input.type) {
-        case "UTILIZATION":
+        case "ORDER_DEBIT":
           // Using credit for an order
           newCreditUsed = creditUsed + input.amount;
           newCreditAvailable = creditLimit - newCreditUsed;
@@ -207,7 +207,7 @@ export async function createCreditTransaction(
         throw new Error("Credit used cannot be negative");
       }
 
-      if (input.type === "UTILIZATION" && newCreditAvailable < 0) {
+      if (input.type === "ORDER_DEBIT" && newCreditAvailable < 0) {
         throw new Error("Insufficient credit available");
       }
 
@@ -296,7 +296,7 @@ export async function getCustomerCreditSummary(customerId: string) {
   const overdueTransactions = await prisma.b2BCreditTransaction.findMany({
     where: {
       customerId,
-      type: "UTILIZATION",
+      type: "ORDER_DEBIT",
       dueDate: { lt: new Date() },
     },
     select: {

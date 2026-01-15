@@ -41,12 +41,12 @@ export async function POST(
     const order = await prisma.order.findUnique({
       where: { id },
       include: {
-        items: {
+        OrderItem: {
           include: {
-            sku: true,
+            SKU: true,
           },
         },
-        location: true,
+        Location: true,
       },
     });
 
@@ -69,7 +69,7 @@ export async function POST(
 
     // Use intelligent allocation with hopping if enabled
     if (enableHopping) {
-      const items = order.items.map(item => ({
+      const items = order.OrderItem.map(item => ({
         skuId: item.skuId,
         quantity: item.quantity - item.allocatedQty,
       })).filter(i => i.quantity > 0);
@@ -92,7 +92,7 @@ export async function POST(
 
       // Update order items with allocation results
       for (const allocation of allocationResult.allocations) {
-        const orderItem = order.items.find(i => i.skuId === allocation.skuId);
+        const orderItem = order.OrderItem.find(i => i.skuId === allocation.skuId);
         if (orderItem) {
           await prisma.orderItem.update({
             where: { id: orderItem.id },
@@ -109,7 +109,7 @@ export async function POST(
       if (calculateSlaOnAllocate && !order.promisedDate) {
         const sla = calculateSLA({
           orderType: order.priority >= 2 ? "EXPRESS" : "STANDARD",
-          originPincode: order.location?.pincode || "110001",
+          originPincode: (order.Location?.address as any)?.pincode || "110001",
           destinationPincode,
           orderPlacedAt: order.orderDate || new Date(),
         });
@@ -144,12 +144,12 @@ export async function POST(
     const locationWithZones = await prisma.location.findUnique({
       where: { id: order.locationId || "" },
       include: {
-        zones: {
+        Zone: {
           where: { type: "SALEABLE" },
           include: {
-            bins: {
+            Bin: {
               include: {
-                inventory: true,
+                Inventory: true,
               },
             },
           },
@@ -168,13 +168,13 @@ export async function POST(
     let fullyAllocated = true;
 
     // Process each order item
-    for (const item of order.items) {
+    for (const item of order.OrderItem) {
       const requiredQty = item.quantity - item.allocatedQty;
 
       if (requiredQty <= 0) {
         allocationResults.push({
           skuId: item.skuId,
-          skuCode: item.sku.code,
+          skuCode: item.SKU.code,
           required: item.quantity,
           allocated: item.allocatedQty,
           status: "already_allocated",
@@ -185,13 +185,13 @@ export async function POST(
       // Find available inventory in saleable zones
       let allocatedQty = 0;
 
-      for (const zone of locationWithZones.zones) {
+      for (const zone of locationWithZones.Zone) {
         if (allocatedQty >= requiredQty) break;
 
-        for (const bin of zone.bins) {
+        for (const bin of zone.Bin) {
           if (allocatedQty >= requiredQty) break;
 
-          const inventory = bin.inventory.find(
+          const inventory = bin.Inventory.find(
             (inv) => inv.skuId === item.skuId
           );
 
@@ -230,7 +230,7 @@ export async function POST(
 
       allocationResults.push({
         skuId: item.skuId,
-        skuCode: item.sku.code,
+        skuCode: item.SKU.code,
         required: item.quantity,
         previouslyAllocated: item.allocatedQty,
         newlyAllocated: allocatedQty,
@@ -251,7 +251,7 @@ export async function POST(
     if (calculateSlaOnAllocate && !order.promisedDate) {
       const sla = calculateSLA({
         orderType: order.priority >= 2 ? "EXPRESS" : "STANDARD",
-        originPincode: locationWithZones.pincode || "110001",
+        originPincode: (locationWithZones.address as any)?.pincode || "110001",
         destinationPincode,
         orderPlacedAt: order.orderDate || new Date(),
       });

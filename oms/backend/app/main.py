@@ -42,7 +42,7 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy"}
+    return {"status": "healthy", "deploy": "auto"}
 
 
 @app.get("/debug/db")

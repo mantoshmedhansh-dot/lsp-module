@@ -123,6 +123,34 @@ rootDir: backend
 branch: main
 ```
 
+## Local Development (Docker PostgreSQL)
+
+For local development, use Docker PostgreSQL (same as Supabase production):
+
+```bash
+# First-time setup (starts PostgreSQL + creates tables)
+npm run local:setup
+
+# Or manually:
+npm run docker:up              # Start PostgreSQL container
+npm run db:push:local          # Push schema to local DB
+npm run db:seed                # Seed sample data
+npm run dev                    # Start development servers
+```
+
+### Docker Commands
+```bash
+npm run docker:up              # Start PostgreSQL
+npm run docker:down            # Stop PostgreSQL
+npm run docker:logs            # View PostgreSQL logs
+npm run docker:pgadmin         # Start pgAdmin UI (localhost:5050)
+```
+
+### Local Database
+- **URL**: `postgresql://postgres:postgres@localhost:5432/oms`
+- **pgAdmin**: http://localhost:5050 (admin@cjdquick.com / admin)
+- **Prisma Studio**: `npm run db:studio`
+
 ## Quick Commands
 
 ```bash
@@ -135,13 +163,20 @@ git push origin master         # Push to GitHub
 git push singh master:main     # Push to Render
 npx vercel --prod              # Deploy to Vercel
 
-# Database
+# Database (Production - Supabase)
 npm run prisma:generate        # Generate Prisma client
 npm run db:seed                # Seed database
 npm run db:studio              # Open Prisma Studio
 
+# Database (Local - Docker)
+npm run docker:up              # Start local PostgreSQL
+npm run db:push:local          # Push schema to local DB
+npm run db:migrate             # Run migrations
+npm run db:reset               # Reset database (DESTRUCTIVE)
+
 # Development
 npm run dev                    # Start dev server
+npm run local:setup            # Full local setup
 ```
 
 ## Environment Variables
@@ -206,6 +241,34 @@ FRONTEND_URL=https://oms-sable.vercel.app
 | `vercel.json` | Vercel deployment config |
 | `backend/render.yaml` | Render deployment config |
 
+## Database Architecture
+
+### ID Strategy: CUID
+All models use **CUID** (Collision-resistant Unique IDs):
+```prisma
+id String @id @default(cuid())
+```
+
+**Why CUID (not UUID)?**
+- Generated application-side (works offline)
+- Collision-resistant across distributed systems
+- No database-specific dependency
+- Same behavior local and production
+
+**Future Migration to UUID?**
+If performance becomes an issue with very large datasets, native PostgreSQL UUID (`@default(uuid())` with `@db.Uuid`) provides:
+- 16 bytes vs ~25 bytes storage
+- Native B-tree indexing
+- Database-side generation
+
+This would require a data migration script.
+
+### PostgreSQL Version
+- **Production (Supabase)**: PostgreSQL 15
+- **Local (Docker)**: PostgreSQL 15-alpine
+
+Both use identical configurations for consistency.
+
 ## RULES FOR CLAUDE CODE
 
 1. **ALWAYS run `npm run vercel-build` before committing major changes**
@@ -214,3 +277,4 @@ FRONTEND_URL=https://oms-sable.vercel.app
 4. **NEVER change `main` field in packages/database/package.json from `./src/index.ts`**
 5. **NEVER remove `@oms/database` from workspace packages**
 6. **Use `./scripts/deploy-all.sh` for deployments**
+7. **Use `npm run local:setup` for local development with Docker PostgreSQL**

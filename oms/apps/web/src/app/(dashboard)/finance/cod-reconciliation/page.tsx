@@ -452,12 +452,12 @@ export default function CODReconciliationPage() {
         </CardHeader>
         <CardContent>
           <div className="flex gap-4">
-            <Select value={status} onValueChange={setStatus}>
+            <Select value={status || "all"} onValueChange={(v) => setStatus(v === "all" ? "" : v)}>
               <SelectTrigger className="w-[150px]">
                 <SelectValue placeholder="All statuses" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All statuses</SelectItem>
+                <SelectItem value="all">All statuses</SelectItem>
                 <SelectItem value="PENDING">Pending</SelectItem>
                 <SelectItem value="PARTIAL">Partial</SelectItem>
                 <SelectItem value="RECONCILED">Reconciled</SelectItem>
@@ -465,12 +465,12 @@ export default function CODReconciliationPage() {
                 <SelectItem value="CLOSED">Closed</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={transporterId} onValueChange={setTransporterId}>
+            <Select value={transporterId || "all"} onValueChange={(v) => setTransporterId(v === "all" ? "" : v)}>
               <SelectTrigger className="w-[200px]">
                 <SelectValue placeholder="All transporters" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All transporters</SelectItem>
+                <SelectItem value="all">All transporters</SelectItem>
                 {transporters.map((t) => (
                   <SelectItem key={t.id} value={t.id}>
                     {t.name}

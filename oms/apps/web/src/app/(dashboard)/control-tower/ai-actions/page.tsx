@@ -336,23 +336,23 @@ export default function AIActionsPage() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-4 mb-4">
-            <Select value={entityTypeFilter} onValueChange={setEntityTypeFilter}>
+            <Select value={entityTypeFilter || "all"} onValueChange={(v) => setEntityTypeFilter(v === "all" ? "" : v)}>
               <SelectTrigger className="w-[150px]">
                 <SelectValue placeholder="Entity Type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Entities</SelectItem>
+                <SelectItem value="all">All Entities</SelectItem>
                 <SelectItem value="NDR">NDR</SelectItem>
                 <SelectItem value="Order">Order</SelectItem>
                 <SelectItem value="ProactiveCommunication">Communication</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={actionTypeFilter} onValueChange={setActionTypeFilter}>
+            <Select value={actionTypeFilter || "all"} onValueChange={(v) => setActionTypeFilter(v === "all" ? "" : v)}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Action Type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Actions</SelectItem>
+                <SelectItem value="all">All Actions</SelectItem>
                 <SelectItem value="AUTO_CLASSIFY">Auto Classify</SelectItem>
                 <SelectItem value="AUTO_OUTREACH">Auto Outreach</SelectItem>
                 <SelectItem value="AUTO_RESOLVE">Auto Resolve</SelectItem>
@@ -363,12 +363,12 @@ export default function AIActionsPage() {
                 <SelectItem value="MANUAL_UPDATE">Manual Update</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select value={statusFilter || "all"} onValueChange={(v) => setStatusFilter(v === "all" ? "" : v)}>
               <SelectTrigger className="w-[150px]">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Status</SelectItem>
+                <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="SUCCESS">Success</SelectItem>
                 <SelectItem value="FAILED">Failed</SelectItem>
                 <SelectItem value="PENDING">Pending</SelectItem>

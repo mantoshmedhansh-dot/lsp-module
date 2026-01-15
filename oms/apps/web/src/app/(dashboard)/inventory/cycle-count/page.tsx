@@ -232,9 +232,9 @@ export default function CycleCountPage() {
                 <div className="grid gap-2">
                   <Label htmlFor="zoneId">Zone (Optional)</Label>
                   <Select
-                    value={formData.zoneId}
+                    value={formData.zoneId || "all"}
                     onValueChange={(v) =>
-                      setFormData((p) => ({ ...p, zoneId: v }))
+                      setFormData((p) => ({ ...p, zoneId: v === "all" ? "" : v }))
                     }
                     disabled={!formData.locationId}
                   >
@@ -242,7 +242,7 @@ export default function CycleCountPage() {
                       <SelectValue placeholder="All zones" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All zones</SelectItem>
+                      <SelectItem value="all">All zones</SelectItem>
                       {zones.map((zone) => (
                         <SelectItem key={zone.id} value={zone.id}>
                           {zone.name} ({zone.code})
@@ -304,12 +304,12 @@ export default function CycleCountPage() {
         </CardHeader>
         <CardContent>
           <div className="flex gap-4">
-            <Select value={status} onValueChange={setStatus}>
+            <Select value={status || "all"} onValueChange={(v) => setStatus(v === "all" ? "" : v)}>
               <SelectTrigger className="w-[200px]">
                 <SelectValue placeholder="All statuses" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All statuses</SelectItem>
+                <SelectItem value="all">All statuses</SelectItem>
                 <SelectItem value="PLANNED">Planned</SelectItem>
                 <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
                 <SelectItem value="COMPLETED">Completed</SelectItem>

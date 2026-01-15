@@ -659,12 +659,12 @@ export default function GatePassPage() {
         </CardHeader>
         <CardContent>
           <div className="flex gap-4">
-            <Select value={type} onValueChange={setType}>
+            <Select value={type || "all"} onValueChange={(v) => setType(v === "all" ? "" : v)}>
               <SelectTrigger className="w-[150px]">
                 <SelectValue placeholder="All types" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All types</SelectItem>
+                <SelectItem value="all">All types</SelectItem>
                 <SelectItem value="VISITOR">Visitor</SelectItem>
                 <SelectItem value="DELIVERY_IN">Delivery In</SelectItem>
                 <SelectItem value="DELIVERY_OUT">Delivery Out</SelectItem>
@@ -673,12 +673,12 @@ export default function GatePassPage() {
                 <SelectItem value="VEHICLE">Vehicle</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={status} onValueChange={setStatus}>
+            <Select value={status || "all"} onValueChange={(v) => setStatus(v === "all" ? "" : v)}>
               <SelectTrigger className="w-[150px]">
                 <SelectValue placeholder="All statuses" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All statuses</SelectItem>
+                <SelectItem value="all">All statuses</SelectItem>
                 <SelectItem value="PENDING">Pending</SelectItem>
                 <SelectItem value="CHECKED_IN">Checked In</SelectItem>
                 <SelectItem value="CHECKED_OUT">Checked Out</SelectItem>

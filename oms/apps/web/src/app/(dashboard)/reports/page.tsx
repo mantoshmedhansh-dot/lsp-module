@@ -171,12 +171,12 @@ export default function ReportsPage() {
             </div>
             <div className="grid gap-2">
               <Label>Channel</Label>
-              <Select value={channel} onValueChange={setChannel}>
+              <Select value={channel || "all"} onValueChange={(v) => setChannel(v === "all" ? "" : v)}>
                 <SelectTrigger className="w-[150px]">
                   <SelectValue placeholder="All channels" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All channels</SelectItem>
+                  <SelectItem value="all">All channels</SelectItem>
                   <SelectItem value="AMAZON">Amazon</SelectItem>
                   <SelectItem value="FLIPKART">Flipkart</SelectItem>
                   <SelectItem value="SHOPIFY">Shopify</SelectItem>
@@ -188,12 +188,12 @@ export default function ReportsPage() {
             </div>
             <div className="grid gap-2">
               <Label>Location</Label>
-              <Select value={locationId} onValueChange={setLocationId}>
+              <Select value={locationId || "all"} onValueChange={(v) => setLocationId(v === "all" ? "" : v)}>
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="All locations" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All locations</SelectItem>
+                  <SelectItem value="all">All locations</SelectItem>
                   {locations.map((loc: { id: string; name: string }) => (
                     <SelectItem key={loc.id} value={loc.id}>
                       {loc.name}

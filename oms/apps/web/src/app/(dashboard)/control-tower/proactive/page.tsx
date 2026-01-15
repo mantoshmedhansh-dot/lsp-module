@@ -415,12 +415,12 @@ export default function ProactiveCommunicationPage() {
                 />
               </div>
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select value={statusFilter || "all"} onValueChange={(v) => setStatusFilter(v === "all" ? "" : v)}>
               <SelectTrigger className="w-[150px]">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Status</SelectItem>
+                <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="SCHEDULED">Scheduled</SelectItem>
                 <SelectItem value="PENDING">Pending</SelectItem>
                 <SelectItem value="SENT">Sent</SelectItem>
@@ -429,12 +429,12 @@ export default function ProactiveCommunicationPage() {
                 <SelectItem value="FAILED">Failed</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={channelFilter} onValueChange={setChannelFilter}>
+            <Select value={channelFilter || "all"} onValueChange={(v) => setChannelFilter(v === "all" ? "" : v)}>
               <SelectTrigger className="w-[150px]">
                 <SelectValue placeholder="Channel" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Channels</SelectItem>
+                <SelectItem value="all">All Channels</SelectItem>
                 <SelectItem value="WHATSAPP">WhatsApp</SelectItem>
                 <SelectItem value="SMS">SMS</SelectItem>
                 <SelectItem value="EMAIL">Email</SelectItem>

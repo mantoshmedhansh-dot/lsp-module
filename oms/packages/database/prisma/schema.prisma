@@ -1,14 +1,16 @@
 // Prisma Schema for OMS/WMS System
-// Similar to Vinculum eRetail
+// Using Native PostgreSQL UUIDs for optimal performance
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl  = env("DIRECT_URL")
+  extensions = [uuid_ossp(map: "uuid-ossp"), pgcrypto]
 }
 
 // ==================== ENUMS ====================
@@ -423,7 +425,7 @@ enum ReportFormat {
 // ==================== MULTI-TENANT: COMPANY & LOCATIONS ====================
 
 model Company {
-  id        String  @id @default(cuid())
+  id        String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   code      String  @unique
   name      String
   legalName String?
@@ -457,7 +459,7 @@ model Company {
 }
 
 model Location {
-  id            String       @id @default(cuid())
+  id            String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   code          String
   name          String
   type          LocationType
@@ -469,7 +471,7 @@ model Location {
   isActive      Boolean      @default(true)
   settings      Json?
 
-  companyId String
+  companyId String  @db.Uuid
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   zones            Zone[]
@@ -492,7 +494,7 @@ model Location {
 // ==================== USER MANAGEMENT ====================
 
 model User {
-  id          String    @id @default(cuid())
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   email       String    @unique
   password    String
   name        String
@@ -502,9 +504,9 @@ model User {
   isActive    Boolean   @default(true)
   lastLoginAt DateTime?
 
-  companyId      String?
+  companyId      String?  @db.Uuid
   company        Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
-  locationAccess String[] // Array of location IDs
+  locationAccess String[] @db.Uuid // Array of location UUIDs
 
   picklists        Picklist[]
   inbounds         Inbound[]         @relation("ReceivedBy")
@@ -522,9 +524,9 @@ model User {
 }
 
 model Session {
-  id           String   @id @default(cuid())
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   sessionToken String   @unique
-  userId       String
+  userId       String   @db.Uuid
   expires      DateTime
 
   createdAt DateTime @default(now())
@@ -535,7 +537,7 @@ model Session {
 // ==================== BRAND/CLIENT MANAGEMENT ====================
 
 model Brand {
-  id            String  @id @default(cuid())
+  id            String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   code          String  @unique
   name          String
   logo          String?
@@ -553,7 +555,7 @@ model Brand {
   isActive Boolean @default(true)
 
   // Company association (OMS company that manages this brand)
-  companyId String
+  companyId String  @db.Uuid
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   // Brand users (clients)
@@ -570,10 +572,10 @@ model Brand {
 }
 
 model BrandUser {
-  id      String @id @default(cuid())
-  brandId String
+  id      String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  brandId String @db.Uuid
   brand   Brand  @relation(fields: [brandId], references: [id], onDelete: Cascade)
-  userId  String
+  userId  String @db.Uuid
 
   // Role within the brand portal
   role BrandUserRole @default(VIEWER)
@@ -599,9 +601,9 @@ enum BrandUserRole {
 }
 
 model SKUBrand {
-  id      String @id @default(cuid())
-  skuId   String
-  brandId String
+  id      String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  skuId   String @db.Uuid
+  brandId String @db.Uuid
   brand   Brand  @relation(fields: [brandId], references: [id], onDelete: Cascade)
 
   isActive Boolean @default(true)
@@ -616,8 +618,8 @@ model SKUBrand {
 // ==================== CHANNEL & TRANSPORTER CONFIG ====================
 
 model ChannelConfig {
-  id          String    @id @default(cuid())
-  companyId   String
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  companyId   String    @db.Uuid
   company     Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
   channel     Channel
   displayName String?
@@ -645,7 +647,7 @@ model ChannelConfig {
 }
 
 model Transporter {
-  id                  String          @id @default(cuid())
+  id                  String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   code                String          @unique
   name                String
   type                TransporterType
@@ -665,10 +667,10 @@ model Transporter {
 }
 
 model TransporterConfig {
-  id            String      @id @default(cuid())
-  companyId     String
+  id            String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  companyId     String      @db.Uuid
   company       Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  transporterId String
+  transporterId String      @db.Uuid
   transporter   Transporter @relation(fields: [transporterId], references: [id], onDelete: Cascade)
   isActive      Boolean     @default(true)
   accountCode   String?
@@ -683,9 +685,9 @@ model TransporterConfig {
 }
 
 model ServicePincode {
-  id               String      @id @default(cuid())
+  id               String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   pincode          String
-  transporterId    String
+  transporterId    String      @db.Uuid
   transporter      Transporter @relation(fields: [transporterId], references: [id], onDelete: Cascade)
   codAvailable     Boolean     @default(true)
   prepaidAvailable Boolean     @default(true)
@@ -696,9 +698,9 @@ model ServicePincode {
 }
 
 model AWB {
-  id            String      @id @default(cuid())
+  id            String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   awbNo         String      @unique
-  transporterId String
+  transporterId String      @db.Uuid
   transporter   Transporter @relation(fields: [transporterId], references: [id], onDelete: Cascade)
   isUsed        Boolean     @default(false)
   usedAt        DateTime?
@@ -712,14 +714,14 @@ model AWB {
 // ==================== WAREHOUSE SETUP ====================
 
 model Zone {
-  id          String   @id @default(cuid())
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   code        String
   name        String
   type        ZoneType
   description String?
   isActive    Boolean  @default(true)
 
-  locationId String
+  locationId String   @db.Uuid
   location   Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
 
   bins Bin[]
@@ -732,14 +734,14 @@ model Zone {
 }
 
 model Bin {
-  id          String  @id @default(cuid())
+  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   code        String
   name        String?
   description String?
   capacity    Int?
   isActive    Boolean @default(true)
 
-  zoneId String
+  zoneId String @db.Uuid
   zone   Zone   @relation(fields: [zoneId], references: [id], onDelete: Cascade)
 
   inventory     Inventory[]
@@ -758,7 +760,7 @@ model Bin {
 // ==================== PRODUCT MASTER ====================
 
 model SKU {
-  id             String   @id @default(cuid())
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   code           String
   name           String
   description    String?
@@ -783,7 +785,7 @@ model SKU {
   attributes     Json?
   isActive       Boolean  @default(true)
 
-  companyId String
+  companyId String  @db.Uuid
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   inventory     Inventory[]
@@ -813,7 +815,7 @@ model SKU {
 }
 
 model Vendor {
-  id            String  @id @default(cuid())
+  id            String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   code          String
   name          String
   contactPerson String?
@@ -825,7 +827,7 @@ model Vendor {
   paymentTerms  String?
   isActive      Boolean @default(true)
 
-  companyId String
+  companyId String  @db.Uuid
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   purchaseOrders PurchaseOrder[]
@@ -840,7 +842,7 @@ model Vendor {
 // ==================== INVENTORY ====================
 
 model Inventory {
-  id            String    @id @default(cuid())
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   quantity      Int       @default(0)
   reservedQty   Int       @default(0)
   batchNo       String?
@@ -855,11 +857,11 @@ model Inventory {
   fifoSequence    Int? // For FIFO ordering
   costPrice       Decimal?                 @db.Decimal(12, 2)
 
-  skuId      String
+  skuId      String   @db.Uuid
   sku        SKU      @relation(fields: [skuId], references: [id], onDelete: Cascade)
-  binId      String
+  binId      String   @db.Uuid
   bin        Bin      @relation(fields: [binId], references: [id], onDelete: Cascade)
-  locationId String
+  locationId String   @db.Uuid
   location   Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
@@ -873,22 +875,22 @@ model Inventory {
 }
 
 model InventoryMovement {
-  id         String  @id @default(cuid())
+  id         String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   movementNo String  @unique
   type       String // IN, OUT, TRANSFER
   reason     String?
   quantity   Int
 
-  skuId         String
-  fromBinId     String?
-  toBinId       String?
+  skuId         String  @db.Uuid
+  fromBinId     String? @db.Uuid
+  toBinId       String? @db.Uuid
   batchNo       String?
   serialNumbers String[]
 
   referenceType String? // ORDER, INBOUND, ADJUSTMENT, TRANSFER
-  referenceId   String?
+  referenceId   String? @db.Uuid
 
-  performedBy String
+  performedBy String   @db.Uuid
   performedAt DateTime @default(now())
   remarks     String?
 
@@ -899,32 +901,32 @@ model InventoryMovement {
 }
 
 model StockAdjustment {
-  id           String           @id @default(cuid())
+  id           String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   adjustmentNo String           @unique
   reason       AdjustmentReason
   remarks      String?
 
-  locationId String
+  locationId String   @db.Uuid
   location   Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
 
-  adjustedById String
+  adjustedById String @db.Uuid
   adjustedBy   User   @relation("AdjustedBy", fields: [adjustedById], references: [id])
 
   items StockAdjustmentItem[]
 
   createdAt  DateTime  @default(now())
   approvedAt DateTime?
-  approvedBy String?
+  approvedBy String?   @db.Uuid
 
   @@index([locationId])
 }
 
 model StockAdjustmentItem {
-  id           String          @id @default(cuid())
-  adjustmentId String
+  id           String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  adjustmentId String          @db.Uuid
   adjustment   StockAdjustment @relation(fields: [adjustmentId], references: [id], onDelete: Cascade)
-  skuId        String
-  binId        String
+  skuId        String          @db.Uuid
+  binId        String          @db.Uuid
   batchNo      String?
   previousQty  Int
   adjustedQty  Int
@@ -936,7 +938,7 @@ model StockAdjustmentItem {
 // ==================== ORDERS ====================
 
 model Order {
-  id              String      @id @default(cuid())
+  id              String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   orderNo         String      @unique
   externalOrderNo String?
   channel         Channel
@@ -970,17 +972,17 @@ model Order {
   remarks  String?
 
   // CSV Import tracking
-  importId       String?
+  importId       String?      @db.Uuid
   import         OrderImport? @relation(fields: [importId], references: [id])
   csvLineNumber  Int?
   dataSourceType String? // CSV_IMPORT, API, MANUAL, EDI
 
   // Replacement order tracking
-  replacementForReturnId String? @unique
+  replacementForReturnId String? @unique @db.Uuid
   replacementForReturn   Return? @relation("ReplacementOrder", fields: [replacementForReturnId], references: [id])
 
   // Relations
-  locationId String
+  locationId String   @db.Uuid
   location   Location @relation(fields: [locationId], references: [id])
 
   items      OrderItem[]
@@ -989,7 +991,7 @@ model Order {
   returns    Return[]    @relation("OrderReturns")
 
   // B2B Customer & Payment Terms
-  customerId      String?
+  customerId      String?          @db.Uuid
   customer        Customer?        @relation("CustomerOrders", fields: [customerId], references: [id])
   paymentTermType PaymentTermType?
   paymentTermDays Int?
@@ -1019,10 +1021,10 @@ model Order {
 }
 
 model OrderItem {
-  id      String @id @default(cuid())
-  orderId String
+  id      String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId String @db.Uuid
   order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  skuId   String
+  skuId   String @db.Uuid
   sku     SKU    @relation(fields: [skuId], references: [id])
 
   externalItemId String?
@@ -1051,14 +1053,14 @@ model OrderItem {
 // ==================== DELIVERY & SHIPMENT ====================
 
 model Delivery {
-  id         String @id @default(cuid())
+  id         String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   deliveryNo String @unique
-  orderId    String
+  orderId    String @db.Uuid
   order      Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   status DeliveryStatus @default(PENDING)
 
-  transporterId String?
+  transporterId String?      @db.Uuid
   transporter   Transporter? @relation(fields: [transporterId], references: [id])
   awbNo         String?
   trackingUrl   String?
@@ -1089,7 +1091,7 @@ model Delivery {
   podRemarks   String?
   receivedBy   String?
 
-  manifestId String?
+  manifestId String?   @db.Uuid
   manifest   Manifest? @relation(fields: [manifestId], references: [id])
 
   remarks String?
@@ -1104,9 +1106,9 @@ model Delivery {
 }
 
 model Manifest {
-  id            String         @id @default(cuid())
+  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   manifestNo    String         @unique
-  transporterId String
+  transporterId String         @db.Uuid
   status        ManifestStatus @default(OPEN)
 
   vehicleNo     String?
@@ -1117,7 +1119,7 @@ model Manifest {
   deliveries Delivery[]
 
   confirmedAt DateTime?
-  confirmedBy String?
+  confirmedBy String?   @db.Uuid
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1129,14 +1131,14 @@ model Manifest {
 // ==================== PICKLIST & PICKING ====================
 
 model Picklist {
-  id         String         @id @default(cuid())
+  id         String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   picklistNo String         @unique
   status     PicklistStatus @default(PENDING)
 
-  orderId String
+  orderId String @db.Uuid
   order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
-  assignedToId String?
+  assignedToId String? @db.Uuid
   assignedTo   User?   @relation(fields: [assignedToId], references: [id])
 
   items PicklistItem[]
@@ -1153,13 +1155,13 @@ model Picklist {
 }
 
 model PicklistItem {
-  id         String   @id @default(cuid())
-  picklistId String
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  picklistId String   @db.Uuid
   picklist   Picklist @relation(fields: [picklistId], references: [id], onDelete: Cascade)
 
-  skuId String
+  skuId String @db.Uuid
   sku   SKU    @relation(fields: [skuId], references: [id])
-  binId String
+  binId String @db.Uuid
   bin   Bin    @relation(fields: [binId], references: [id])
 
   requiredQty   Int
@@ -1176,9 +1178,9 @@ model PicklistItem {
 // ==================== INBOUND & RECEIVING ====================
 
 model PurchaseOrder {
-  id       String @id @default(cuid())
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   poNo     String @unique
-  vendorId String
+  vendorId String @db.Uuid
   vendor   Vendor @relation(fields: [vendorId], references: [id])
 
   status       POStatus  @default(DRAFT)
@@ -1193,7 +1195,7 @@ model PurchaseOrder {
   inbounds Inbound[]
 
   approvedAt DateTime?
-  approvedBy String?
+  approvedBy String?   @db.Uuid
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1203,11 +1205,11 @@ model PurchaseOrder {
 }
 
 model POItem {
-  id              String        @id @default(cuid())
-  purchaseOrderId String
+  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  purchaseOrderId String        @db.Uuid
   purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
 
-  skuId String
+  skuId String @db.Uuid
   sku   SKU    @relation(fields: [skuId], references: [id])
 
   orderedQty  Int
@@ -1221,18 +1223,18 @@ model POItem {
 }
 
 model Inbound {
-  id        String        @id @default(cuid())
+  id        String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   inboundNo String        @unique
   type      InboundType
   status    InboundStatus @default(PENDING)
 
-  purchaseOrderId String?
+  purchaseOrderId String?        @db.Uuid
   purchaseOrder   PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
 
-  locationId String
+  locationId String   @db.Uuid
   location   Location @relation(fields: [locationId], references: [id])
 
-  receivedById String
+  receivedById String @db.Uuid
   receivedBy   User   @relation("ReceivedBy", fields: [receivedById], references: [id])
 
   grnNo   String?
@@ -1250,11 +1252,11 @@ model Inbound {
 }
 
 model InboundItem {
-  id        String  @id @default(cuid())
-  inboundId String
+  id        String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  inboundId String  @db.Uuid
   inbound   Inbound @relation(fields: [inboundId], references: [id], onDelete: Cascade)
 
-  skuId String
+  skuId String @db.Uuid
   sku   SKU    @relation(fields: [skuId], references: [id])
 
   expectedQty Int?
@@ -1268,7 +1270,7 @@ model InboundItem {
   mrp           Decimal?  @db.Decimal(12, 2)
   serialNumbers String[]
 
-  binId     String?
+  binId     String? @db.Uuid
   qcStatus  String?
   qcRemarks String?
 
@@ -1279,12 +1281,12 @@ model InboundItem {
 // ==================== RETURNS ====================
 
 model Return {
-  id       String       @id @default(cuid())
+  id       String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   returnNo String       @unique
   type     ReturnType
   status   ReturnStatus @default(INITIATED)
 
-  orderId String?
+  orderId String? @db.Uuid
   order   Order?  @relation("OrderReturns", fields: [orderId], references: [id])
 
   awbNo   String?
@@ -1294,7 +1296,7 @@ model Return {
   // QC Details
   qcStatus      QCStatus?
   qcCompletedAt DateTime?
-  qcCompletedBy String?
+  qcCompletedBy String?   @db.Uuid
   qcRemarks     String?
 
   items ReturnItem[]
@@ -1319,11 +1321,11 @@ model Return {
 }
 
 model ReturnItem {
-  id       String @id @default(cuid())
-  returnId String
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  returnId String @db.Uuid
   return   Return @relation(fields: [returnId], references: [id], onDelete: Cascade)
 
-  skuId       String
+  skuId       String @db.Uuid
   quantity    Int
   receivedQty Int    @default(0)
 
@@ -1341,13 +1343,13 @@ model ReturnItem {
 // ==================== AUDIT LOG ====================
 
 model AuditLog {
-  id         String @id @default(cuid())
+  id         String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   entityType String
-  entityId   String
+  entityId   String  @db.Uuid
   action     String
   changes    Json?
 
-  userId String?
+  userId String? @db.Uuid
   user   User?   @relation(fields: [userId], references: [id])
 
   ipAddress String?
@@ -1363,7 +1365,7 @@ model AuditLog {
 // ==================== SETTINGS & SEQUENCES ====================
 
 model Sequence {
-  id            String  @id @default(cuid())
+  id            String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name          String  @unique
   prefix        String?
   currentValue  Int     @default(0)
@@ -1375,7 +1377,7 @@ model Sequence {
 // ==================== ORDER IMPORT (CSV BULK IMPORT) ====================
 
 model OrderImport {
-  id       String       @id @default(cuid())
+  id       String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   importNo String       @unique
   fileName String
   fileUrl  String?
@@ -1389,8 +1391,8 @@ model OrderImport {
   errors  Json? // Array of row errors with line numbers
   summary Json? // Import summary stats
 
-  locationId   String
-  importedById String
+  locationId   String @db.Uuid
+  importedById String @db.Uuid
 
   orders Order[]
 
@@ -1407,15 +1409,15 @@ model OrderImport {
 // ==================== CYCLE COUNT (PHYSICAL INVENTORY VERIFICATION) ====================
 
 model CycleCount {
-  id           String           @id @default(cuid())
+  id           String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   cycleCountNo String           @unique
   status       CycleCountStatus @default(PLANNED)
 
-  locationId String
-  zoneId     String?
+  locationId String  @db.Uuid
+  zoneId     String? @db.Uuid
 
-  initiatedById String
-  verifiedById  String?
+  initiatedById String  @db.Uuid
+  verifiedById  String? @db.Uuid
 
   items CycleCountItem[]
 
@@ -1435,12 +1437,12 @@ model CycleCount {
 }
 
 model CycleCountItem {
-  id           String     @id @default(cuid())
-  cycleCountId String
+  id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cycleCountId String     @db.Uuid
   cycleCount   CycleCount @relation(fields: [cycleCountId], references: [id], onDelete: Cascade)
 
-  skuId   String
-  binId   String
+  skuId   String  @db.Uuid
+  binId   String  @db.Uuid
   batchNo String?
 
   expectedQty Int
@@ -1449,7 +1451,7 @@ model CycleCountItem {
 
   status      String? // PENDING, COUNTED, VERIFIED
   countedAt   DateTime?
-  countedById String?
+  countedById String?   @db.Uuid
   remarks     String?
 
   @@index([cycleCountId])
@@ -1459,12 +1461,12 @@ model CycleCountItem {
 // ==================== GATE PASS (VISITOR/DELIVERY TRACKING) ====================
 
 model GatePass {
-  id         String         @id @default(cuid())
+  id         String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   gatePassNo String         @unique
   type       GatePassType
   status     GatePassStatus @default(OPEN)
 
-  locationId String
+  locationId String @db.Uuid
 
   // Visitor Details
   visitorName   String?
@@ -1475,7 +1477,7 @@ model GatePass {
   purpose       String?
 
   // Delivery Details
-  transporterId String?
+  transporterId String? @db.Uuid
   awbNo         String?
   poNo          String?
   invoiceNo     String?
@@ -1495,7 +1497,7 @@ model GatePass {
   items GatePassItem[]
 
   // Verification
-  verifiedById    String?
+  verifiedById    String?   @db.Uuid
   verifiedAt      DateTime?
   securityRemarks String?
   photoUrl        String?
@@ -1510,11 +1512,11 @@ model GatePass {
 }
 
 model GatePassItem {
-  id         String   @id @default(cuid())
-  gatePassId String
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  gatePassId String   @db.Uuid
   gatePass   GatePass @relation(fields: [gatePassId], references: [id], onDelete: Cascade)
 
-  skuId       String?
+  skuId       String? @db.Uuid
   description String?
   quantity    Int
   receivedQty Int     @default(0)
@@ -1528,7 +1530,7 @@ model GatePassItem {
 // ==================== SHIPPING RULES (AUTO TRANSPORTER ASSIGNMENT) ====================
 
 model ShippingRule {
-  id     String           @id @default(cuid())
+  id     String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   ruleNo String           @unique
   name   String
   type   ShippingRuleType
@@ -1539,7 +1541,7 @@ model ShippingRule {
 
   conditions ShippingRuleCondition[]
 
-  transporterId String
+  transporterId String @db.Uuid
 
   // Weight conditions
   minWeight Decimal? @db.Decimal(10, 3)
@@ -1558,7 +1560,7 @@ model ShippingRule {
   effectiveFrom DateTime?
   effectiveTo   DateTime?
 
-  companyId String
+  companyId String @db.Uuid
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1570,8 +1572,8 @@ model ShippingRule {
 }
 
 model ShippingRuleCondition {
-  id     String       @id @default(cuid())
-  ruleId String
+  id     String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ruleId String       @db.Uuid
   rule   ShippingRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
 
   conditionType String // weight_range, pincode_range, order_value, etc.
@@ -1584,14 +1586,14 @@ model ShippingRuleCondition {
 // ==================== RATE CARDS (SHIPPING COST CALCULATION) ====================
 
 model RateCard {
-  id         String         @id @default(cuid())
+  id         String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   rateCardNo String         @unique
   name       String
   type       RateCardType
   status     RateCardStatus @default(DRAFT)
 
-  transporterId String
-  companyId     String
+  transporterId String @db.Uuid
+  companyId     String @db.Uuid
 
   effectiveFrom DateTime
   effectiveTo   DateTime?
@@ -1615,7 +1617,7 @@ model RateCard {
 
   remarks    String?
   approvedAt DateTime?
-  approvedBy String?
+  approvedBy String?   @db.Uuid
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1627,8 +1629,8 @@ model RateCard {
 }
 
 model RateCardSlab {
-  id         String   @id @default(cuid())
-  rateCardId String
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  rateCardId String   @db.Uuid
   rateCard   RateCard @relation(fields: [rateCardId], references: [id], onDelete: Cascade)
 
   // Weight slab
@@ -1651,13 +1653,13 @@ model RateCardSlab {
 // ==================== COD RECONCILIATION ====================
 
 model CODReconciliation {
-  id               String                  @id @default(cuid())
+  id               String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   reconciliationNo String                  @unique
   status           CODReconciliationStatus @default(PENDING)
 
-  locationId    String
-  transporterId String?
-  companyId     String
+  locationId    String  @db.Uuid
+  transporterId String? @db.Uuid
+  companyId     String  @db.Uuid
 
   reconciliationDate DateTime
   periodFrom         DateTime
@@ -1678,7 +1680,7 @@ model CODReconciliation {
 
   remarks    String?
   approvedAt DateTime?
-  approvedBy String?
+  approvedBy String?   @db.Uuid
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1691,15 +1693,15 @@ model CODReconciliation {
 }
 
 model CODTransaction {
-  id            String             @id @default(cuid())
+  id            String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   transactionNo String             @unique
   type          CODTransactionType
 
-  reconciliationId String?
+  reconciliationId String?            @db.Uuid
   reconciliation   CODReconciliation? @relation(fields: [reconciliationId], references: [id], onDelete: SetNull)
 
-  orderId    String?
-  deliveryId String?
+  orderId    String? @db.Uuid
+  deliveryId String? @db.Uuid
   awbNo      String?
 
   amount Decimal @db.Decimal(12, 2)
@@ -1722,13 +1724,13 @@ model CODTransaction {
 // ==================== WAVE PICKING SYSTEM ====================
 
 model Wave {
-  id     String     @id @default(cuid())
+  id     String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   waveNo String     @unique
   name   String?
   type   WaveType   @default(BATCH_PICK)
   status WaveStatus @default(DRAFT)
 
-  locationId String
+  locationId String   @db.Uuid
   location   Location @relation(fields: [locationId], references: [id])
 
   // Configuration
@@ -1742,7 +1744,7 @@ model Wave {
   zones String[]
 
   // Assignment
-  assignedToId String?
+  assignedToId String? @db.Uuid
   assignedTo   User?   @relation(fields: [assignedToId], references: [id])
 
   // Wave items
@@ -1768,7 +1770,7 @@ model Wave {
   estimatedTime  Int?
   actualTime     Int?
 
-  createdById String
+  createdById String @db.Uuid
   remarks     String?
 
   createdAt DateTime @default(now())
@@ -1780,11 +1782,11 @@ model Wave {
 }
 
 model WaveOrder {
-  id     String @id @default(cuid())
-  waveId String
+  id     String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  waveId String @db.Uuid
   wave   Wave   @relation(fields: [waveId], references: [id], onDelete: Cascade)
 
-  orderId String
+  orderId String @db.Uuid
   order   Order  @relation(fields: [orderId], references: [id])
 
   sequence Int    @default(0)
@@ -1799,13 +1801,13 @@ model WaveOrder {
 }
 
 model WaveItem {
-  id     String @id @default(cuid())
-  waveId String
+  id     String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  waveId String @db.Uuid
   wave   Wave   @relation(fields: [waveId], references: [id], onDelete: Cascade)
 
-  skuId String
+  skuId String @db.Uuid
   sku   SKU    @relation(fields: [skuId], references: [id])
-  binId String
+  binId String @db.Uuid
   bin   Bin    @relation(fields: [binId], references: [id])
 
   totalQty  Int
@@ -1820,7 +1822,7 @@ model WaveItem {
   distributions WaveItemDistribution[]
 
   pickedAt   DateTime?
-  pickedById String?
+  pickedById String?   @db.Uuid
 
   @@index([waveId])
   @@index([skuId])
@@ -1829,12 +1831,12 @@ model WaveItem {
 }
 
 model WaveItemDistribution {
-  id         String   @id @default(cuid())
-  waveItemId String
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  waveItemId String   @db.Uuid
   waveItem   WaveItem @relation(fields: [waveItemId], references: [id], onDelete: Cascade)
 
-  orderId     String
-  orderItemId String
+  orderId     String @db.Uuid
+  orderItemId String @db.Uuid
   quantity    Int
 
   @@index([waveItemId])
@@ -1844,13 +1846,13 @@ model WaveItemDistribution {
 // ==================== QC WORKFLOW SYSTEM ====================
 
 model QCTemplate {
-  id          String  @id @default(cuid())
+  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   code        String  @unique
   name        String
   description String?
   type        QCType
 
-  companyId String
+  companyId String  @db.Uuid
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   categoryFilter String[]
@@ -1870,8 +1872,8 @@ model QCTemplate {
 }
 
 model QCParameter {
-  id         String     @id @default(cuid())
-  templateId String
+  id         String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  templateId String     @db.Uuid
   template   QCTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
 
   code        String
@@ -1898,20 +1900,20 @@ model QCParameter {
 }
 
 model QCExecution {
-  id          String @id @default(cuid())
+  id          String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   executionNo String @unique
 
-  templateId String
+  templateId String     @db.Uuid
   template   QCTemplate @relation(fields: [templateId], references: [id])
 
   referenceType String
-  referenceId   String
+  referenceId   String @db.Uuid
 
-  skuId String
+  skuId String @db.Uuid
   sku   SKU    @relation(fields: [skuId], references: [id])
 
-  locationId String
-  binId      String?
+  locationId String  @db.Uuid
+  binId      String? @db.Uuid
   batchNo    String?
 
   sampleQty Int
@@ -1926,14 +1928,14 @@ model QCExecution {
 
   requiresApproval Boolean   @default(false)
   approvalStatus   String?
-  approvedById     String?
+  approvedById     String?   @db.Uuid
   approvedAt       DateTime?
   approvalRemarks  String?
 
   photos String[]
 
-  performedById String
-  performedAt   DateTime  @default(now())
+  performedById String   @db.Uuid
+  performedAt   DateTime @default(now())
   completedAt   DateTime?
 
   remarks String?
@@ -1948,11 +1950,11 @@ model QCExecution {
 }
 
 model QCResult {
-  id          String      @id @default(cuid())
-  executionId String
+  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  executionId String      @db.Uuid
   execution   QCExecution @relation(fields: [executionId], references: [id], onDelete: Cascade)
 
-  parameterId String
+  parameterId String      @db.Uuid
   parameter   QCParameter @relation(fields: [parameterId], references: [id])
 
   value        String?
@@ -1967,8 +1969,8 @@ model QCResult {
 }
 
 model QCDefect {
-  id          String      @id @default(cuid())
-  executionId String
+  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  executionId String      @db.Uuid
   execution   QCExecution @relation(fields: [executionId], references: [id], onDelete: Cascade)
 
   defectCode  String
@@ -1979,7 +1981,7 @@ model QCDefect {
   photos      String[]
 
   action        String?
-  actionById    String?
+  actionById    String?   @db.Uuid
   actionAt      DateTime?
   actionRemarks String?
 
@@ -1989,18 +1991,18 @@ model QCDefect {
 // ==================== VIRTUAL INVENTORY ====================
 
 model VirtualInventory {
-  id String @id @default(cuid())
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
 
-  skuId String
+  skuId String @db.Uuid
   sku   SKU    @relation(fields: [skuId], references: [id], onDelete: Cascade)
 
-  locationId String
+  locationId String   @db.Uuid
   location   Location @relation(fields: [locationId], references: [id])
 
   type VirtualInventoryType
 
   channel         Channel?
-  channelConfigId String?
+  channelConfigId String?  @db.Uuid
 
   quantity     Int @default(0)
   allocatedQty Int @default(0)
@@ -2009,11 +2011,11 @@ model VirtualInventory {
   validTo   DateTime?
 
   referenceType String?
-  referenceId   String?
+  referenceId   String? @db.Uuid
 
   isActive Boolean @default(true)
 
-  createdById String
+  createdById String   @db.Uuid
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -2026,9 +2028,9 @@ model VirtualInventory {
 // ==================== SKU VARIANTS ====================
 
 model VariantAttribute {
-  id String @id @default(cuid())
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
 
-  companyId String
+  companyId String  @db.Uuid
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   code String
@@ -2048,9 +2050,9 @@ model VariantAttribute {
 }
 
 model VariantAttributeValue {
-  id String @id @default(cuid())
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
 
-  attributeId String
+  attributeId String           @db.Uuid
   attribute   VariantAttribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
 
   value       String
@@ -2067,12 +2069,12 @@ model VariantAttributeValue {
 }
 
 model SKUVariant {
-  id String @id @default(cuid())
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
 
-  parentSkuId String
+  parentSkuId String @db.Uuid
   parentSku   SKU    @relation("ParentSKU", fields: [parentSkuId], references: [id], onDelete: Cascade)
 
-  variantSkuId String @unique
+  variantSkuId String @unique @db.Uuid
   variantSku   SKU    @relation("VariantSKU", fields: [variantSkuId], references: [id], onDelete: Cascade)
 
   attributeValues SKUVariantValue[]
@@ -2089,12 +2091,12 @@ model SKUVariant {
 }
 
 model SKUVariantValue {
-  id String @id @default(cuid())
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
 
-  skuVariantId String
+  skuVariantId String     @db.Uuid
   skuVariant   SKUVariant @relation(fields: [skuVariantId], references: [id], onDelete: Cascade)
 
-  attributeValueId String
+  attributeValueId String                @db.Uuid
   attributeValue   VariantAttributeValue @relation(fields: [attributeValueId], references: [id])
 
   @@unique([skuVariantId, attributeValueId])
@@ -2104,12 +2106,12 @@ model SKUVariantValue {
 // ==================== SKU BUNDLES ====================
 
 model SKUBundle {
-  id String @id @default(cuid())
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
 
-  bundleSkuId String @unique
+  bundleSkuId String @unique @db.Uuid
   bundleSku   SKU    @relation("BundleParent", fields: [bundleSkuId], references: [id], onDelete: Cascade)
 
-  companyId String
+  companyId String @db.Uuid
 
   type        BundleType @default(KIT)
   name        String
@@ -2134,18 +2136,18 @@ model SKUBundle {
 }
 
 model BundleItem {
-  id String @id @default(cuid())
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
 
-  bundleId String
+  bundleId String    @db.Uuid
   bundle   SKUBundle @relation(fields: [bundleId], references: [id], onDelete: Cascade)
 
-  componentSkuId String
+  componentSkuId String @db.Uuid
   componentSku   SKU    @relation(fields: [componentSkuId], references: [id])
 
   quantity Int @default(1)
 
   allowSubstitute Boolean  @default(false)
-  substituteSkus  String[]
+  substituteSkus  String[] @db.Uuid
 
   sequence Int @default(0)
 
@@ -2157,7 +2159,7 @@ model BundleItem {
 // ==================== B2B CUSTOMER MANAGEMENT ====================
 
 model Customer {
-  id     String         @id @default(cuid())
+  id     String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   code   String
   name   String
   type   CustomerType   @default(RETAIL)
@@ -2186,9 +2188,9 @@ model Customer {
   paymentTermDays      Int?
   earlyPaymentDiscount Decimal?        @db.Decimal(5, 2)
 
-  customerGroupId String?
+  customerGroupId String?        @db.Uuid
   customerGroup   CustomerGroup? @relation(fields: [customerGroupId], references: [id])
-  priceListId     String?
+  priceListId     String?        @db.Uuid
   priceList       PriceList?     @relation(fields: [priceListId], references: [id])
 
   dunningEnabled  Boolean   @default(true)
@@ -2196,7 +2198,7 @@ model Customer {
   lastDunningDate DateTime?
   dunningLevel    Int       @default(0)
 
-  companyId String
+  companyId String  @db.Uuid
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   orders             Order[]                @relation("CustomerOrders")
@@ -2204,7 +2206,7 @@ model Customer {
   creditTransactions B2BCreditTransaction[]
 
   portalEnabled Boolean @default(false)
-  portalUserId  String?
+  portalUserId  String? @db.Uuid
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -2218,7 +2220,7 @@ model Customer {
 }
 
 model CustomerGroup {
-  id          String  @id @default(cuid())
+  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   code        String
   name        String
   description String?
@@ -2226,14 +2228,14 @@ model CustomerGroup {
   discountPercent Decimal? @db.Decimal(5, 2)
   discountType    String?
 
-  priceListId String?
+  priceListId String?    @db.Uuid
   priceList   PriceList? @relation(fields: [priceListId], references: [id])
 
   defaultCreditLimit     Decimal?        @db.Decimal(14, 2)
   defaultPaymentTermType PaymentTermType @default(NET_30)
   defaultPaymentTermDays Int?
 
-  companyId String
+  companyId String  @db.Uuid
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   customers Customer[]
@@ -2249,7 +2251,7 @@ model CustomerGroup {
 // ==================== TIERED PRICING ====================
 
 model PriceList {
-  id          String  @id @default(cuid())
+  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   code        String
   name        String
   description String?
@@ -2260,7 +2262,7 @@ model PriceList {
   basedOnMRP     Boolean @default(false)
   roundingMethod String?
 
-  companyId String
+  companyId String  @db.Uuid
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   items          PriceListItem[]
@@ -2277,11 +2279,11 @@ model PriceList {
 }
 
 model PriceListItem {
-  id          String    @id @default(cuid())
-  priceListId String
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  priceListId String    @db.Uuid
   priceList   PriceList @relation(fields: [priceListId], references: [id], onDelete: Cascade)
 
-  skuId String
+  skuId String @db.Uuid
 
   fixedPrice      Decimal? @db.Decimal(12, 2)
   discountPercent Decimal? @db.Decimal(5, 2)
@@ -2301,8 +2303,8 @@ model PriceListItem {
 }
 
 model PricingTier {
-  id              String        @id @default(cuid())
-  priceListItemId String
+  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  priceListItemId String        @db.Uuid
   priceListItem   PriceListItem @relation(fields: [priceListItemId], references: [id], onDelete: Cascade)
 
   minQty Int
@@ -2315,26 +2317,26 @@ model PricingTier {
 // ==================== B2B CREDIT TRANSACTIONS ====================
 
 model B2BCreditTransaction {
-  id            String                @id @default(cuid())
+  id            String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   transactionNo String                @unique
   type          CreditTransactionType
 
-  customerId String
+  customerId String   @db.Uuid
   customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
   amount        Decimal @db.Decimal(14, 2)
   balanceBefore Decimal @db.Decimal(14, 2)
   balanceAfter  Decimal @db.Decimal(14, 2)
 
-  orderId     String?
-  quotationId String?
+  orderId     String? @db.Uuid
+  quotationId String? @db.Uuid
   paymentRef  String?
   invoiceNo   String?
 
   dueDate DateTime?
   remarks String?
 
-  createdById String
+  createdById String   @db.Uuid
   createdAt   DateTime @default(now())
 
   @@index([customerId])
@@ -2345,11 +2347,11 @@ model B2BCreditTransaction {
 // ==================== QUOTATIONS ====================
 
 model Quotation {
-  id          String          @id @default(cuid())
+  id          String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   quotationNo String          @unique
   status      QuotationStatus @default(DRAFT)
 
-  customerId String
+  customerId String   @db.Uuid
   customer   Customer @relation(fields: [customerId], references: [id])
 
   shippingAddress Json
@@ -2371,21 +2373,21 @@ model Quotation {
 
   requiresApproval Boolean   @default(false)
   approvalLevel    Int       @default(0)
-  approvedById     String?
+  approvedById     String?   @db.Uuid
   approvedAt       DateTime?
-  rejectedById     String?
+  rejectedById     String?   @db.Uuid
   rejectedAt       DateTime?
   rejectionReason  String?
 
-  convertedOrderId String?   @unique
+  convertedOrderId String?   @unique @db.Uuid
   convertedOrder   Order?    @relation("QuotationToOrder", fields: [convertedOrderId], references: [id])
   convertedAt      DateTime?
 
-  companyId  String
-  locationId String
+  companyId  String          @db.Uuid
+  locationId String          @db.Uuid
   items      QuotationItem[]
 
-  createdById String
+  createdById String   @db.Uuid
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -2396,11 +2398,11 @@ model Quotation {
 }
 
 model QuotationItem {
-  id          String    @id @default(cuid())
-  quotationId String
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  quotationId String    @db.Uuid
   quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
 
-  skuId    String
+  skuId    String @db.Uuid
   quantity Int
 
   listPrice       Decimal  @db.Decimal(12, 2)
@@ -2420,12 +2422,12 @@ model QuotationItem {
 // ==================== ANALYTICS ====================
 
 model AnalyticsSnapshot {
-  id           String   @id @default(cuid())
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   snapshotDate DateTime
   snapshotType String
 
-  companyId  String
-  locationId String?
+  companyId  String  @db.Uuid
+  locationId String? @db.Uuid
 
   totalOrders   Int     @default(0)
   totalRevenue  Decimal @default(0) @db.Decimal(14, 2)
@@ -2469,13 +2471,13 @@ model AnalyticsSnapshot {
 }
 
 model DemandForecast {
-  id           String   @id @default(cuid())
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   forecastDate DateTime
   forecastFor  DateTime
 
-  companyId  String
-  locationId String?
-  skuId      String
+  companyId  String  @db.Uuid
+  locationId String? @db.Uuid
+  skuId      String  @db.Uuid
 
   predictedDemand Int
   lowerBound      Int
@@ -2498,7 +2500,7 @@ model DemandForecast {
 }
 
 model ScheduledReport {
-  id          String  @id @default(cuid())
+  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name        String
   description String?
 
@@ -2519,8 +2521,8 @@ model ScheduledReport {
   lastError  String?
   nextRunAt  DateTime?
 
-  companyId   String
-  createdById String
+  companyId   String @db.Uuid
+  createdById String @db.Uuid
 
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
@@ -2534,8 +2536,8 @@ model ScheduledReport {
 }
 
 model ReportExecution {
-  id                String          @id @default(cuid())
-  scheduledReportId String
+  id                String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  scheduledReportId String          @db.Uuid
   scheduledReport   ScheduledReport @relation(fields: [scheduledReportId], references: [id], onDelete: Cascade)
 
   status      String

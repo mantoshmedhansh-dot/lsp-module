@@ -243,25 +243,23 @@ FRONTEND_URL=https://oms-sable.vercel.app
 
 ## Database Architecture
 
-### ID Strategy: CUID
-All models use **CUID** (Collision-resistant Unique IDs):
+### ID Strategy: Native PostgreSQL UUID
+All models use **native PostgreSQL UUID** for optimal performance:
 ```prisma
-id String @id @default(cuid())
+id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
 ```
 
-**Why CUID (not UUID)?**
-- Generated application-side (works offline)
-- Collision-resistant across distributed systems
-- No database-specific dependency
-- Same behavior local and production
+**Why Native UUID?**
+- 16-byte storage (vs ~25-byte CUID strings)
+- Native B-tree indexing for faster queries
+- Database-side generation (no round-trip)
+- Same format as Supabase uses internally
+- Better performance for high-traffic multi-client applications
 
-**Future Migration to UUID?**
-If performance becomes an issue with very large datasets, native PostgreSQL UUID (`@default(uuid())` with `@db.Uuid`) provides:
-- 16 bytes vs ~25 bytes storage
-- Native B-tree indexing
-- Database-side generation
-
-This would require a data migration script.
+**PostgreSQL Extensions Enabled:**
+```prisma
+extensions = [uuid_ossp(map: "uuid-ossp"), pgcrypto]
+```
 
 ### PostgreSQL Version
 - **Production (Supabase)**: PostgreSQL 15

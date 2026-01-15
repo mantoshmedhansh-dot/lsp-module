@@ -68,24 +68,25 @@ import { toast } from "sonner";
 
 interface Customer {
   id: string;
-  customerNo: string;
+  code: string;
   name: string;
   email: string | null;
   phone: string | null;
-  customerType: string;
+  type: string;
   status: string;
-  gstNo: string | null;
-  panNo: string | null;
+  gst: string | null;
+  pan: string | null;
   creditLimit: number;
   creditUsed: number;
   creditStatus: string;
-  paymentTerms: string;
+  paymentTermType: string;
   createdAt: string;
   _count: {
     orders: number;
     quotations: number;
+    creditTransactions: number;
   };
-  group: {
+  customerGroup: {
     id: string;
     name: string;
   } | null;
@@ -154,15 +155,16 @@ export default function CustomersPage() {
 
   // Create customer form
   const [newCustomer, setNewCustomer] = useState({
+    code: "",
     name: "",
     email: "",
     phone: "",
-    customerType: "RETAIL",
-    gstNo: "",
-    panNo: "",
+    type: "RETAIL",
+    gst: "",
+    pan: "",
     creditLimit: 0,
-    paymentTerms: "IMMEDIATE",
-    address: "",
+    paymentTermType: "IMMEDIATE",
+    billingAddress: {},
   });
 
   const fetchCustomers = useCallback(async () => {
@@ -171,7 +173,7 @@ export default function CustomersPage() {
       const params = new URLSearchParams();
       if (search) params.set("search", search);
       if (activeTab !== "all") params.set("status", activeTab);
-      if (typeFilter) params.set("customerType", typeFilter);
+      if (typeFilter) params.set("type", typeFilter);
       params.set("page", page.toString());
       params.set("limit", "25");
 
@@ -213,15 +215,16 @@ export default function CustomersPage() {
         toast.success("Customer created successfully");
         setIsCreateDialogOpen(false);
         setNewCustomer({
+          code: "",
           name: "",
           email: "",
           phone: "",
-          customerType: "RETAIL",
-          gstNo: "",
-          panNo: "",
+          type: "RETAIL",
+          gst: "",
+          pan: "",
           creditLimit: 0,
-          paymentTerms: "IMMEDIATE",
-          address: "",
+          paymentTermType: "IMMEDIATE",
+          billingAddress: {},
         });
         fetchCustomers();
       } else {
@@ -304,6 +307,17 @@ export default function CustomersPage() {
               <div className="grid gap-4 py-4">
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="grid gap-2">
+                    <Label htmlFor="code">Customer Code *</Label>
+                    <Input
+                      id="code"
+                      placeholder="CUST-001"
+                      value={newCustomer.code}
+                      onChange={(e) =>
+                        setNewCustomer((prev) => ({ ...prev, code: e.target.value }))
+                      }
+                    />
+                  </div>
+                  <div className="grid gap-2">
                     <Label htmlFor="name">Company Name *</Label>
                     <Input
                       id="name"
@@ -314,12 +328,14 @@ export default function CustomersPage() {
                       }
                     />
                   </div>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
                   <div className="grid gap-2">
-                    <Label htmlFor="customerType">Customer Type</Label>
+                    <Label htmlFor="type">Customer Type</Label>
                     <Select
-                      value={newCustomer.customerType}
+                      value={newCustomer.type}
                       onValueChange={(value) =>
-                        setNewCustomer((prev) => ({ ...prev, customerType: value }))
+                        setNewCustomer((prev) => ({ ...prev, type: value }))
                       }
                     >
                       <SelectTrigger>
@@ -333,6 +349,17 @@ export default function CustomersPage() {
                         ))}
                       </SelectContent>
                     </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="phone">Phone *</Label>
+                    <Input
+                      id="phone"
+                      placeholder="+91 98765 43210"
+                      value={newCustomer.phone}
+                      onChange={(e) =>
+                        setNewCustomer((prev) => ({ ...prev, phone: e.target.value }))
+                      }
+                    />
                   </div>
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">
@@ -349,42 +376,29 @@ export default function CustomersPage() {
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="phone">Phone</Label>
+                    <Label htmlFor="gst">GST Number</Label>
                     <Input
-                      id="phone"
-                      placeholder="+91 98765 43210"
-                      value={newCustomer.phone}
-                      onChange={(e) =>
-                        setNewCustomer((prev) => ({ ...prev, phone: e.target.value }))
-                      }
-                    />
-                  </div>
-                </div>
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="grid gap-2">
-                    <Label htmlFor="gstNo">GST Number</Label>
-                    <Input
-                      id="gstNo"
+                      id="gst"
                       placeholder="22AAAAA0000A1Z5"
-                      value={newCustomer.gstNo}
+                      value={newCustomer.gst}
                       onChange={(e) =>
-                        setNewCustomer((prev) => ({ ...prev, gstNo: e.target.value }))
-                      }
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="panNo">PAN Number</Label>
-                    <Input
-                      id="panNo"
-                      placeholder="AAAAA0000A"
-                      value={newCustomer.panNo}
-                      onChange={(e) =>
-                        setNewCustomer((prev) => ({ ...prev, panNo: e.target.value }))
+                        setNewCustomer((prev) => ({ ...prev, gst: e.target.value }))
                       }
                     />
                   </div>
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">
+                  <div className="grid gap-2">
+                    <Label htmlFor="pan">PAN Number</Label>
+                    <Input
+                      id="pan"
+                      placeholder="AAAAA0000A"
+                      value={newCustomer.pan}
+                      onChange={(e) =>
+                        setNewCustomer((prev) => ({ ...prev, pan: e.target.value }))
+                      }
+                    />
+                  </div>
                   <div className="grid gap-2">
                     <Label htmlFor="creditLimit">Credit Limit (INR)</Label>
                     <Input
@@ -400,38 +414,27 @@ export default function CustomersPage() {
                       }
                     />
                   </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="paymentTerms">Payment Terms</Label>
-                    <Select
-                      value={newCustomer.paymentTerms}
-                      onValueChange={(value) =>
-                        setNewCustomer((prev) => ({ ...prev, paymentTerms: value }))
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="IMMEDIATE">Immediate</SelectItem>
-                        <SelectItem value="NET_7">Net 7</SelectItem>
-                        <SelectItem value="NET_15">Net 15</SelectItem>
-                        <SelectItem value="NET_30">Net 30</SelectItem>
-                        <SelectItem value="NET_45">Net 45</SelectItem>
-                        <SelectItem value="NET_60">Net 60</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="address">Address</Label>
-                  <Textarea
-                    id="address"
-                    placeholder="Enter billing address"
-                    value={newCustomer.address}
-                    onChange={(e) =>
-                      setNewCustomer((prev) => ({ ...prev, address: e.target.value }))
+                  <Label htmlFor="paymentTermType">Payment Terms</Label>
+                  <Select
+                    value={newCustomer.paymentTermType}
+                    onValueChange={(value) =>
+                      setNewCustomer((prev) => ({ ...prev, paymentTermType: value }))
                     }
-                  />
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="IMMEDIATE">Immediate</SelectItem>
+                      <SelectItem value="NET_7">Net 7</SelectItem>
+                      <SelectItem value="NET_15">Net 15</SelectItem>
+                      <SelectItem value="NET_30">Net 30</SelectItem>
+                      <SelectItem value="NET_45">Net 45</SelectItem>
+                      <SelectItem value="NET_60">Net 60</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               <DialogFooter>
@@ -605,8 +608,8 @@ export default function CustomersPage() {
                 </TableHeader>
                 <TableBody>
                   {data.customers.map((customer) => {
-                    const typeInfo = customerTypeConfig[customer.customerType] || {
-                      label: customer.customerType,
+                    const typeInfo = customerTypeConfig[customer.type] || {
+                      label: customer.type,
                       icon: Users,
                     };
                     const statusInfo = statusConfig[customer.status] || {
@@ -633,11 +636,11 @@ export default function CustomersPage() {
                               {customer.name}
                             </button>
                             <p className="text-xs text-muted-foreground">
-                              {customer.customerNo}
+                              {customer.code}
                             </p>
-                            {customer.gstNo && (
+                            {customer.gst && (
                               <p className="text-xs text-muted-foreground">
-                                GST: {customer.gstNo}
+                                GST: {customer.gst}
                               </p>
                             )}
                           </div>
@@ -647,9 +650,9 @@ export default function CustomersPage() {
                             <typeInfo.icon className="h-4 w-4 text-muted-foreground" />
                             <span className="text-sm">{typeInfo.label}</span>
                           </div>
-                          {customer.group && (
+                          {customer.customerGroup && (
                             <Badge variant="outline" className="mt-1 text-xs">
-                              {customer.group.name}
+                              {customer.customerGroup.name}
                             </Badge>
                           )}
                         </TableCell>

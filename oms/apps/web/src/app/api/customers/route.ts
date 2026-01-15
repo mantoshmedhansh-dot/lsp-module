@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
         { name: { contains: search, mode: "insensitive" } },
         { email: { contains: search, mode: "insensitive" } },
         { phone: { contains: search, mode: "insensitive" } },
-        { gstin: { contains: search, mode: "insensitive" } },
+        { gst: { contains: search, mode: "insensitive" } },
       ];
     }
 
@@ -85,6 +85,20 @@ export async function GET(request: NextRequest) {
       {} as Record<string, number>
     );
 
+    // Get status counts for tabs
+    const statusCounts = await prisma.customer.groupBy({
+      by: ["status"],
+      _count: { _all: true },
+    });
+
+    const statusCountMap = statusCounts.reduce(
+      (acc, item) => {
+        acc[item.status] = item._count._all;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
+
     // Get credit summary
     const creditSummary = await prisma.customer.aggregate({
       _sum: {
@@ -101,6 +115,7 @@ export async function GET(request: NextRequest) {
       limit,
       totalPages: Math.ceil(total / limit),
       typeCounts: typeCountMap,
+      statusCounts: statusCountMap,
       creditSummary: {
         totalCreditLimit: creditSummary._sum.creditLimit || 0,
         totalCreditUsed: creditSummary._sum.creditUsed || 0,
@@ -136,7 +151,7 @@ export async function POST(request: NextRequest) {
       type = "RETAIL",
       email,
       phone,
-      gstin,
+      gst,
       pan,
       billingAddress,
       shippingAddress,
@@ -177,7 +192,7 @@ export async function POST(request: NextRequest) {
         status: "ACTIVE",
         email,
         phone,
-        gstin,
+        gst,
         pan,
         billingAddress,
         shippingAddress,

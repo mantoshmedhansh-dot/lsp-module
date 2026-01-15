@@ -55,7 +55,7 @@ export default function B2BCreditPage() {
 
   const fetchCreditInfo = async () => {
     try {
-      const response = await fetch("/api/portal/credit");
+      const response = await fetch("/api/b2b/credit");
       if (response.ok) {
         const result = await response.json();
         setCreditInfo(result.credit);

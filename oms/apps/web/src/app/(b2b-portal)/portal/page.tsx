@@ -49,7 +49,7 @@ export default function B2BDashboardPage() {
 
   const fetchDashboard = async () => {
     try {
-      const response = await fetch("/api/portal/dashboard");
+      const response = await fetch("/api/b2b/dashboard");
       if (response.ok) {
         const result = await response.json();
         setData(result);

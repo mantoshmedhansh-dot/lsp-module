@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    const [templates, total] = await Promise.all([
+    const [templatesRaw, total] = await Promise.all([
       prisma.qCTemplate.findMany({
         where,
         include: {
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
             orderBy: { sequence: "asc" },
           },
           _count: {
-            select: { executions: true },
+            select: { executions: true, parameters: true },
           },
         },
         orderBy: { createdAt: "desc" },
@@ -54,6 +54,12 @@ export async function GET(request: NextRequest) {
       }),
       prisma.qCTemplate.count({ where }),
     ]);
+
+    // Transform to match frontend expected format
+    const templates = templatesRaw.map((template) => ({
+      ...template,
+      qcType: template.type, // Map type to qcType for frontend
+    }));
 
     // Get type counts
     const typeCounts = await prisma.qCTemplate.groupBy({

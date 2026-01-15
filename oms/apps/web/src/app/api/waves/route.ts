@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    const [waves, total] = await Promise.all([
+    const [wavesRaw, total] = await Promise.all([
       prisma.wave.findMany({
         where,
         include: {
@@ -66,6 +66,9 @@ export async function GET(request: NextRequest) {
           assignedToUser: {
             select: { id: true, name: true },
           },
+          waveItems: {
+            select: { pickedQuantity: true, totalQuantity: true },
+          },
           _count: {
             select: { waveOrders: true, waveItems: true },
           },
@@ -76,6 +79,30 @@ export async function GET(request: NextRequest) {
       }),
       prisma.wave.count({ where }),
     ]);
+
+    // Transform waves to match frontend expected format
+    const waves = wavesRaw.map((wave) => {
+      const totalItems = wave.waveItems.reduce((sum, item) => sum + item.totalQuantity, 0);
+      const pickedItems = wave.waveItems.reduce((sum, item) => sum + item.pickedQuantity, 0);
+      const completionPercentage = totalItems > 0 ? Math.round((pickedItems / totalItems) * 100) : 0;
+
+      return {
+        ...wave,
+        waveType: wave.type, // Map type to waveType for frontend
+        createdBy: wave.createdByUser, // Map createdByUser to createdBy
+        _count: {
+          orders: wave._count.waveOrders,
+          items: wave._count.waveItems,
+        },
+        stats: {
+          totalOrders: wave.totalOrders,
+          totalItems,
+          pickedItems,
+          completionPercentage,
+        },
+        waveItems: undefined, // Remove raw waveItems from response
+      };
+    });
 
     // Get status counts
     const statusCounts = await prisma.wave.groupBy({

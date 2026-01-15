@@ -31,7 +31,11 @@ export async function GET(
       return NextResponse.json({ error: "QC template not found" }, { status: 404 });
     }
 
-    return NextResponse.json(template);
+    // Transform to match frontend expected format
+    return NextResponse.json({
+      ...template,
+      qcType: template.type,
+    });
   } catch (error) {
     console.error("Error fetching QC template:", error);
     return NextResponse.json(
@@ -115,12 +119,16 @@ export async function PATCH(
           orderBy: { sequence: "asc" },
         },
         _count: {
-          select: { executions: true },
+          select: { executions: true, parameters: true },
         },
       },
     });
 
-    return NextResponse.json(completeTemplate);
+    // Transform to match frontend expected format
+    return NextResponse.json({
+      ...completeTemplate,
+      qcType: completeTemplate?.type,
+    });
   } catch (error) {
     console.error("Error updating QC template:", error);
     return NextResponse.json(

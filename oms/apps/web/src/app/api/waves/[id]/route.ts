@@ -77,7 +77,33 @@ export async function GET(
       return NextResponse.json({ error: "Wave not found" }, { status: 404 });
     }
 
-    return NextResponse.json(wave);
+    // Calculate stats
+    const totalItems = wave.waveItems.reduce((sum, item) => sum + item.totalQuantity, 0);
+    const pickedItems = wave.waveItems.reduce((sum, item) => sum + item.pickedQuantity, 0);
+    const completionPercentage = totalItems > 0 ? Math.round((pickedItems / totalItems) * 100) : 0;
+
+    // Transform to match frontend expected format
+    const transformedWave = {
+      ...wave,
+      waveType: wave.type,
+      createdBy: wave.createdByUser,
+      stats: {
+        totalOrders: wave.totalOrders,
+        totalItems,
+        pickedItems,
+        completionPercentage,
+      },
+      // Map waveItems to include orderNo in distributions
+      waveItems: wave.waveItems.map((item) => ({
+        ...item,
+        distributions: item.distributions.map((dist) => ({
+          ...dist,
+          orderNo: dist.waveOrder?.order?.orderNo,
+        })),
+      })),
+    };
+
+    return NextResponse.json(transformedWave);
   } catch (error) {
     console.error("Error fetching wave:", error);
     return NextResponse.json(

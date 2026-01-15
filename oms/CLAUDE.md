@@ -22,15 +22,41 @@
 ## ONE COMMAND TO DEPLOY EVERYTHING
 
 ```bash
-./scripts/deploy-all.sh
+cd oms && ./scripts/deploy-all.sh
 ```
 
 This single command:
 1. ✅ Runs build test (catches errors BEFORE deploying)
-2. ✅ Pushes to origin (GitHub)
-3. ✅ Pushes to singh (Render auto-deploy)
-4. ✅ Deploys to Vercel production
-5. ✅ Verifies both deployments
+2. ✅ Pushes to origin (GitHub → Vercel auto-deploy)
+3. ✅ Pushes to singh (GitHub → Render)
+4. ✅ Triggers Render deploy via Deploy Hook (ensures deploy)
+5. ✅ Deploys to Vercel production
+6. ✅ Verifies both deployments
+
+## Auto-Deploy Behavior (IMPORTANT)
+
+| Platform | Trigger | What Changes Trigger Deploy |
+|----------|---------|----------------------------|
+| **Vercel** | Push to `origin/master` | ANY file change in repo |
+| **Render** | Push to `singh/main` | ONLY files in `oms/backend/` |
+
+**Why Render doesn't always auto-deploy:**
+Render is configured with `Root Directory: oms/backend`. This means:
+- Changes to `oms/apps/web/` (frontend) → Vercel deploys, Render does NOT
+- Changes to `oms/backend/` (API) → Both deploy
+
+**To force Render deploy (even without backend changes):**
+1. Use `./scripts/deploy-all.sh` (recommended - uses Deploy Hook)
+2. Or manually: `./scripts/trigger-render-deploy.sh`
+3. Or: Render Dashboard → Manual Deploy
+
+**Setup Deploy Hook (one-time):**
+```bash
+# Add to oms/.env.local:
+RENDER_DEPLOY_HOOK_URL=https://api.render.com/deploy/srv-xxxxx?key=xxxxx
+
+# Get URL from: Render Dashboard → cjdquick-api → Settings → Deploy Hook
+```
 
 ## Live URLs
 

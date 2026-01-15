@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
@@ -12,7 +12,6 @@ import {
   RotateCcw,
   BarChart3,
   FileText,
-  Settings,
   LogOut,
   ChevronDown,
   Bell,
@@ -20,6 +19,26 @@ import {
   Menu,
   X,
   Gauge,
+  Layers,
+  ClipboardList,
+  Warehouse,
+  PackageCheck,
+  PackagePlus,
+  ClipboardCheck,
+  CreditCard,
+  Users,
+  MapPin,
+  Scan,
+  History,
+  Route,
+  FileBox,
+  Receipt,
+  IndianRupee,
+  Scale,
+  PackageX,
+  CheckSquare,
+  Calendar,
+  ArrowDownToLine,
 } from "lucide-react";
 
 interface NavItem {
@@ -29,60 +48,189 @@ interface NavItem {
   children?: { name: string; href: string }[];
 }
 
-const navigation: NavItem[] = [
-  { name: "Dashboard", href: "/client", icon: LayoutDashboard },
-  { name: "Control Tower", href: "/client/control-tower", icon: Gauge },
+// Analytics Section - Dashboard & Monitoring (NO CONFIG)
+const analyticsNav: NavItem[] = [
   {
-    name: "Sales",
-    href: "/client/sales",
+    name: "Dashboard",
+    href: "/client",
+    icon: LayoutDashboard,
+    children: [
+      { name: "Overview", href: "/client" },
+    ],
+  },
+  { name: "Control Tower", href: "/client/control-tower", icon: Gauge },
+];
+
+// Channels Section - Marketplace Integrations
+const channelsNav: NavItem[] = [
+  {
+    name: "Channels",
+    href: "/client/channels",
+    icon: Layers,
+    children: [
+      { name: "Marketplace Integrations", href: "/client/channels" },
+      { name: "Order Sync", href: "/client/channels/sync" },
+    ],
+  },
+];
+
+// Orders Section
+const ordersNav: NavItem[] = [
+  {
+    name: "Orders",
+    href: "/client/orders",
     icon: ShoppingCart,
     children: [
-      { name: "Overview", href: "/client/sales" },
-      { name: "Orders", href: "/client/sales/orders" },
-      { name: "SKU Performance", href: "/client/sales/sku-performance" },
+      { name: "All Orders", href: "/client/orders" },
+      { name: "Order Processing", href: "/client/orders/processing" },
+      { name: "Bulk Actions", href: "/client/orders/bulk" },
     ],
   },
-  {
-    name: "Fulfillment",
-    href: "/client/fulfillment",
-    icon: Truck,
-    children: [
-      { name: "Overview", href: "/client/fulfillment" },
-      { name: "Shipments", href: "/client/fulfillment/shipments" },
-      { name: "By Location", href: "/client/fulfillment/by-location" },
-    ],
-  },
+];
+
+// Inventory Section
+const inventoryNav: NavItem[] = [
   {
     name: "Inventory",
     href: "/client/inventory",
     icon: Package,
     children: [
-      { name: "Overview", href: "/client/inventory" },
-      { name: "Stock Levels", href: "/client/inventory/stock" },
-      { name: "Inbound", href: "/client/inventory/inbound" },
+      { name: "Inventory View", href: "/client/inventory" },
+      { name: "Stock Adjustment", href: "/client/inventory/adjustment" },
+      { name: "Cycle Count", href: "/client/inventory/cycle-count" },
+      { name: "Movement History", href: "/client/inventory/movement" },
+      { name: "Virtual Inventory", href: "/client/inventory/virtual" },
     ],
   },
+];
+
+// Inbound Section
+const inboundNav: NavItem[] = [
   {
-    name: "Returns",
+    name: "Inbound",
+    href: "/client/inbound",
+    icon: ArrowDownToLine,
+    children: [
+      { name: "Purchase Orders", href: "/client/inbound/purchase-orders" },
+      { name: "ASN / Receiving", href: "/client/inbound/asn" },
+      { name: "Inbound QC", href: "/client/inbound/qc" },
+    ],
+  },
+];
+
+// WMS Section - Warehouse Operations
+const wmsNav: NavItem[] = [
+  {
+    name: "WMS",
+    href: "/client/wms",
+    icon: Warehouse,
+    children: [
+      { name: "Wave Picking", href: "/client/wms/waves" },
+      { name: "Picklist", href: "/client/wms/picklist" },
+      { name: "Packing", href: "/client/wms/packing" },
+      { name: "QC Templates", href: "/client/wms/qc/templates" },
+      { name: "QC Queue", href: "/client/wms/qc" },
+      { name: "Manifest", href: "/client/wms/manifest" },
+      { name: "Gate Pass", href: "/client/wms/gate-pass" },
+    ],
+  },
+];
+
+// Logistics Section - Expanded (Industry Standard)
+const logisticsNav: NavItem[] = [
+  {
+    name: "Logistics",
+    href: "/client/logistics",
+    icon: Truck,
+    children: [
+      { name: "Shipping Dashboard", href: "/client/logistics/dashboard" },
+      { name: "Courier Partners", href: "/client/logistics/transporters" },
+      { name: "AWB Management", href: "/client/logistics/awb" },
+      { name: "Rate Cards", href: "/client/logistics/rate-cards" },
+      { name: "Shipping Rules", href: "/client/logistics/shipping-rules" },
+      { name: "Allocation Rules", href: "/client/logistics/allocation-rules" },
+      { name: "Service Pincodes", href: "/client/logistics/pincodes" },
+      { name: "Tracking", href: "/client/logistics/tracking" },
+    ],
+  },
+];
+
+// Returns & RTO Section - Expanded
+const returnsNav: NavItem[] = [
+  {
+    name: "Returns & RTO",
     href: "/client/returns",
     icon: RotateCcw,
     children: [
-      { name: "Overview", href: "/client/returns" },
-      { name: "RTO Analysis", href: "/client/returns/rto" },
+      { name: "Return Requests", href: "/client/returns" },
+      { name: "RTO Management", href: "/client/returns/rto" },
+      { name: "Return QC", href: "/client/returns/qc" },
+      { name: "Refund Processing", href: "/client/returns/refunds" },
     ],
   },
+];
+
+// Finance & Reconciliation Section - Expanded
+const financeNav: NavItem[] = [
+  {
+    name: "Finance",
+    href: "/client/finance",
+    icon: CreditCard,
+    children: [
+      { name: "Finance Dashboard", href: "/client/finance/dashboard" },
+      { name: "COD Reconciliation", href: "/client/finance/cod-reconciliation" },
+      { name: "Weight Discrepancy", href: "/client/finance/weight-discrepancy" },
+      { name: "Freight Billing", href: "/client/finance/freight-billing" },
+      { name: "Invoices", href: "/client/finance/invoices" },
+      { name: "Payment Ledger", href: "/client/finance/payment-ledger" },
+    ],
+  },
+];
+
+// B2B Section
+const b2bNav: NavItem[] = [
+  {
+    name: "B2B",
+    href: "/client/b2b",
+    icon: Users,
+    children: [
+      { name: "Customers", href: "/client/b2b/customers" },
+      { name: "Price Lists", href: "/client/b2b/price-lists" },
+      { name: "Quotations", href: "/client/b2b/quotations" },
+      { name: "Credit Management", href: "/client/b2b/credit" },
+    ],
+  },
+];
+
+// Reports Section
+const reportsNav: NavItem[] = [
   {
     name: "Reports",
     href: "/client/reports",
     icon: FileText,
     children: [
-      { name: "Sales Report", href: "/client/reports/sales" },
-      { name: "Inventory Report", href: "/client/reports/inventory" },
-      { name: "Fulfillment Report", href: "/client/reports/fulfillment" },
-      { name: "Returns Report", href: "/client/reports/returns" },
+      { name: "Sales Reports", href: "/client/reports/sales" },
+      { name: "Inventory Reports", href: "/client/reports/inventory" },
+      { name: "Logistics Reports", href: "/client/reports/logistics" },
+      { name: "Finance Reports", href: "/client/reports/finance" },
+      { name: "Scheduled Reports", href: "/client/reports/scheduled" },
     ],
   },
-  { name: "Analytics", href: "/client/analytics", icon: BarChart3 },
+];
+
+// Combine all navigation sections (NO CONFIGURATION)
+const navigation: NavItem[] = [
+  ...analyticsNav,
+  ...channelsNav,
+  ...ordersNav,
+  ...inventoryNav,
+  ...inboundNav,
+  ...wmsNav,
+  ...logisticsNav,
+  ...returnsNav,
+  ...financeNav,
+  ...b2bNav,
+  ...reportsNav,
 ];
 
 export default function ClientPortalLayout({
@@ -92,9 +240,20 @@ export default function ClientPortalLayout({
 }) {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [expandedItems, setExpandedItems] = useState<string[]>(["Sales"]);
+  const [expandedItems, setExpandedItems] = useState<string[]>([]);
+
+  // Auto-expand the active section based on current path
+  useEffect(() => {
+    const activeSection = navigation.find(item =>
+      item.children?.some(child => pathname === child.href) || pathname === item.href
+    );
+    if (activeSection && !expandedItems.includes(activeSection.name)) {
+      setExpandedItems(prev => [...prev, activeSection.name]);
+    }
+  }, [pathname]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -123,6 +282,10 @@ export default function ClientPortalLayout({
       prev.includes(name) ? prev.filter((item) => item !== name) : [...prev, name]
     );
   };
+
+  const isActive = (href: string) => pathname === href;
+  const isParentActive = (item: NavItem) =>
+    item.children?.some(child => pathname === child.href) || pathname === item.href;
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -162,9 +325,11 @@ export default function ClientPortalLayout({
                 <>
                   <button
                     onClick={() => toggleExpanded(item.name)}
-                    className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-slate-300 hover:bg-slate-700 hover:text-white transition-colors ${
-                      !sidebarOpen && "justify-center"
-                    }`}
+                    className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium transition-colors ${
+                      isParentActive(item)
+                        ? "bg-slate-700 text-white"
+                        : "text-slate-300 hover:bg-slate-700 hover:text-white"
+                    } ${!sidebarOpen && "justify-center"}`}
                   >
                     <div className="flex items-center">
                       <item.icon className="w-5 h-5 flex-shrink-0" />
@@ -179,12 +344,16 @@ export default function ClientPortalLayout({
                     )}
                   </button>
                   {sidebarOpen && expandedItems.includes(item.name) && (
-                    <div className="pl-12 pb-2">
+                    <div className="pl-12 pb-2 bg-slate-900/30">
                       {item.children.map((child) => (
                         <Link
                           key={child.href}
                           href={child.href}
-                          className="block py-2 text-sm text-slate-400 hover:text-white transition-colors"
+                          className={`block py-2 text-sm transition-colors ${
+                            isActive(child.href)
+                              ? "text-blue-400 font-medium"
+                              : "text-slate-400 hover:text-white"
+                          }`}
                         >
                           {child.name}
                         </Link>
@@ -195,9 +364,11 @@ export default function ClientPortalLayout({
               ) : (
                 <Link
                   href={item.href}
-                  className={`flex items-center px-4 py-3 text-sm font-medium text-slate-300 hover:bg-slate-700 hover:text-white transition-colors ${
-                    !sidebarOpen && "justify-center"
-                  }`}
+                  className={`flex items-center px-4 py-3 text-sm font-medium transition-colors ${
+                    isActive(item.href)
+                      ? "bg-slate-700 text-white"
+                      : "text-slate-300 hover:bg-slate-700 hover:text-white"
+                  } ${!sidebarOpen && "justify-center"}`}
                 >
                   <item.icon className="w-5 h-5 flex-shrink-0" />
                   {sidebarOpen && <span className="ml-3">{item.name}</span>}
@@ -260,15 +431,61 @@ export default function ClientPortalLayout({
             </div>
             <nav className="py-4">
               {navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className="flex items-center px-4 py-3 text-sm font-medium text-slate-300 hover:bg-slate-700 hover:text-white"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <item.icon className="w-5 h-5 mr-3" />
-                  {item.name}
-                </Link>
+                <div key={item.name}>
+                  {item.children ? (
+                    <>
+                      <button
+                        onClick={() => toggleExpanded(item.name)}
+                        className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium transition-colors ${
+                          isParentActive(item)
+                            ? "bg-slate-700 text-white"
+                            : "text-slate-300 hover:bg-slate-700 hover:text-white"
+                        }`}
+                      >
+                        <div className="flex items-center">
+                          <item.icon className="w-5 h-5 mr-3" />
+                          {item.name}
+                        </div>
+                        <ChevronDown
+                          className={`w-4 h-4 transition-transform ${
+                            expandedItems.includes(item.name) ? "rotate-180" : ""
+                          }`}
+                        />
+                      </button>
+                      {expandedItems.includes(item.name) && (
+                        <div className="pl-12 pb-2 bg-slate-900/30">
+                          {item.children.map((child) => (
+                            <Link
+                              key={child.href}
+                              href={child.href}
+                              className={`block py-2 text-sm transition-colors ${
+                                isActive(child.href)
+                                  ? "text-blue-400 font-medium"
+                                  : "text-slate-400 hover:text-white"
+                              }`}
+                              onClick={() => setMobileMenuOpen(false)}
+                            >
+                              {child.name}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <Link
+                      href={item.href}
+                      className={`flex items-center px-4 py-3 text-sm font-medium transition-colors ${
+                        isActive(item.href)
+                          ? "bg-slate-700 text-white"
+                          : "text-slate-300 hover:bg-slate-700 hover:text-white"
+                      }`}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <item.icon className="w-5 h-5 mr-3" />
+                      {item.name}
+                    </Link>
+                  )}
+                </div>
               ))}
             </nav>
           </aside>
@@ -309,12 +526,6 @@ export default function ClientPortalLayout({
               <Bell className="w-5 h-5" />
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
             </button>
-            <Link
-              href="/client/settings"
-              className="p-2 text-gray-500 hover:text-gray-700"
-            >
-              <Settings className="w-5 h-5" />
-            </Link>
           </div>
         </header>
 

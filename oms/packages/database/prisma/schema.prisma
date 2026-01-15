@@ -1008,6 +1008,11 @@ model Order {
   waveOrders      WaveOrder[]
   sourceQuotation Quotation?  @relation("QuotationToOrder")
 
+  // AI Control Tower relations
+  ndrs                    NDR[]
+  proactiveCommunications ProactiveCommunication[]
+  exceptions              Exception[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -1095,6 +1100,9 @@ model Delivery {
   manifest   Manifest? @relation(fields: [manifestId], references: [id])
 
   remarks String?
+
+  // AI Control Tower - NDR relation
+  ndrs NDR[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -2553,4 +2561,429 @@ model ReportExecution {
 
   @@index([scheduledReportId])
   @@index([startedAt])
+}
+
+// ==================== AI CONTROL TOWER & NDR MANAGEMENT ====================
+
+// NDR (Non-Delivery Report) Enums
+enum NDRReason {
+  CUSTOMER_NOT_AVAILABLE
+  WRONG_ADDRESS
+  CUSTOMER_REFUSED
+  INCOMPLETE_ADDRESS
+  FUTURE_DELIVERY_REQUESTED
+  COD_NOT_READY
+  PHONE_NOT_REACHABLE
+  PREMISES_CLOSED
+  SHIPMENT_DAMAGED
+  CUSTOMER_OUT_OF_STATION
+  ADDRESS_NOT_FOUND
+  OTHER
+}
+
+enum NDRStatus {
+  OPEN
+  OUTREACH_IN_PROGRESS
+  CUSTOMER_RESPONDED
+  REATTEMPT_SCHEDULED
+  RESOLVED
+  ESCALATED
+  RTO_INITIATED
+  CLOSED
+}
+
+enum NDRPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum ResolutionType {
+  REATTEMPT_SCHEDULED
+  ADDRESS_UPDATED
+  CUSTOMER_WILL_COLLECT
+  PAYMENT_MODE_CHANGED
+  REFUND_INITIATED
+  RTO_INITIATED
+  ORDER_CANCELLED
+  DELIVERED_ON_REATTEMPT
+}
+
+enum OutreachChannel {
+  WHATSAPP
+  SMS
+  EMAIL
+  AI_VOICE
+  MANUAL_CALL
+  IVR
+}
+
+enum OutreachStatus {
+  PENDING
+  SENT
+  DELIVERED
+  READ
+  RESPONDED
+  FAILED
+  EXPIRED
+}
+
+enum CommunicationTrigger {
+  DELAY_PREDICTED
+  SLA_BREACH_RISK
+  WEATHER_DISRUPTION
+  CARRIER_ISSUE
+  OUT_FOR_DELIVERY
+  DELIVERY_ATTEMPTED
+  DELIVERED
+  RTO_INITIATED
+  ORDER_CONFIRMED
+  ORDER_SHIPPED
+  PAYMENT_REMINDER
+  FEEDBACK_REQUEST
+  CUSTOM
+}
+
+enum CommunicationStatus {
+  SCHEDULED
+  QUEUED
+  SENT
+  DELIVERED
+  READ
+  RESPONDED
+  FAILED
+  CANCELLED
+}
+
+enum AIActionType {
+  CARRIER_SWITCH
+  REATTEMPT_SCHEDULE
+  ADDRESS_UPDATE
+  CUSTOMER_NOTIFICATION
+  PRIORITY_CHANGE
+  ESCALATION
+  REFUND_RECOMMENDATION
+  ROUTE_OPTIMIZATION
+  INVENTORY_REALLOCATION
+  SLA_ALERT
+}
+
+enum AIActionStatus {
+  PENDING_APPROVAL
+  AUTO_APPROVED
+  APPROVED
+  REJECTED
+  EXECUTED
+  FAILED
+  EXPIRED
+}
+
+// NDR Management Model
+model NDR {
+  id              String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ndrCode         String      @unique // System-generated NDR code
+  deliveryId      String      @db.Uuid
+  delivery        Delivery    @relation(fields: [deliveryId], references: [id])
+  orderId         String      @db.Uuid
+  order           Order       @relation(fields: [orderId], references: [id])
+
+  // Carrier NDR details
+  carrierNDRCode  String?     // Carrier's NDR reference
+  carrierRemark   String?
+  attemptNumber   Int         @default(1)
+  attemptDate     DateTime
+
+  // AI Classification
+  reason          NDRReason
+  aiClassification String?    // AI's detailed classification
+  confidence      Float?      // AI confidence score (0-1)
+
+  // Status and Priority
+  status          NDRStatus   @default(OPEN)
+  priority        NDRPriority @default(MEDIUM)
+  riskScore       Int?        // 0-100 risk score for RTO
+
+  // Resolution tracking
+  resolutionType  ResolutionType?
+  resolvedAt      DateTime?
+  resolvedBy      String?     // 'AI_AUTO', 'AI_ASSISTED', or userId
+  resolutionNotes String?
+
+  // Reattempt details
+  reattemptDate   DateTime?
+  reattemptSlot   String?     // e.g., "10:00-12:00"
+
+  // Customer interaction
+  customerResponse String?
+  preferredSlot   String?
+  updatedAddress  Json?       // Updated address if provided
+  updatedPhone    String?
+
+  // Company context
+  companyId       String      @db.Uuid
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  outreachAttempts NDROutreach[]
+  aiActions        AIActionLog[] @relation("NDRAIActions")
+
+  @@index([deliveryId])
+  @@index([orderId])
+  @@index([status])
+  @@index([priority])
+  @@index([companyId])
+  @@index([createdAt])
+}
+
+// NDR Outreach Attempts
+model NDROutreach {
+  id            String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ndrId         String          @db.Uuid
+  ndr           NDR             @relation(fields: [ndrId], references: [id], onDelete: Cascade)
+
+  channel       OutreachChannel
+  attemptNumber Int
+
+  // Message details
+  templateId    String?
+  messageContent String?
+
+  // Status tracking
+  status        OutreachStatus  @default(PENDING)
+  sentAt        DateTime?
+  deliveredAt   DateTime?
+  readAt        DateTime?
+  respondedAt   DateTime?
+
+  // Response
+  response      String?
+  sentiment     String?         // AI-detected sentiment: positive, negative, neutral
+  sentimentScore Float?
+
+  // Voice call specific
+  callDuration  Int?            // Duration in seconds
+  callRecordingUrl String?
+  transcription String?
+
+  // Error tracking
+  errorCode     String?
+  errorMessage  String?
+
+  // Provider reference
+  providerMessageId String?     // WhatsApp/SMS/Voice provider message ID
+
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([ndrId])
+  @@index([status])
+  @@index([channel])
+}
+
+// Proactive Communication
+model ProactiveCommunication {
+  id            String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  // Target
+  orderId       String?               @db.Uuid
+  order         Order?                @relation(fields: [orderId], references: [id])
+  deliveryId    String?               @db.Uuid
+  customerId    String?               @db.Uuid
+
+  // Customer details (denormalized for speed)
+  customerName  String
+  customerPhone String
+  customerEmail String?
+
+  // Trigger and content
+  trigger       CommunicationTrigger
+  channel       OutreachChannel
+  templateId    String?
+  content       String
+  variables     Json?                 // Template variables used
+
+  // Scheduling
+  scheduledFor  DateTime?
+  priority      Int                   @default(5) // 1-10, 1 being highest
+
+  // Status tracking
+  status        CommunicationStatus   @default(SCHEDULED)
+  sentAt        DateTime?
+  deliveredAt   DateTime?
+  readAt        DateTime?
+
+  // Response
+  responseText  String?
+  responseAt    DateTime?
+
+  // Provider reference
+  providerMessageId String?
+
+  // Error tracking
+  errorCode     String?
+  errorMessage  String?
+  retryCount    Int                   @default(0)
+
+  // Company context
+  companyId     String                @db.Uuid
+
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+
+  @@index([orderId])
+  @@index([status])
+  @@index([scheduledFor])
+  @@index([companyId])
+  @@index([trigger])
+}
+
+// Communication Templates
+model CommunicationTemplate {
+  id            String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  name          String
+  description   String?
+
+  trigger       CommunicationTrigger
+  channel       OutreachChannel
+  language      String              @default("en")
+
+  // Template content
+  subject       String?             // For email
+  template      String              // Message template with {{variables}}
+  variables     String[]            // List of variables used
+
+  // WhatsApp specific
+  whatsappTemplateId String?        // Approved WhatsApp template ID
+  whatsappTemplateName String?
+
+  // Settings
+  sentiment     String              @default("informative") // informative, apologetic, urgent, celebratory
+  isActive      Boolean             @default(true)
+  isDefault     Boolean             @default(false)
+
+  // Company context
+  companyId     String              @db.Uuid
+
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  @@unique([companyId, trigger, channel, language, isDefault])
+  @@index([companyId])
+  @@index([trigger])
+  @@index([channel])
+}
+
+// AI Action Log - Tracks all AI decisions and actions
+model AIActionLog {
+  id            String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  actionType    AIActionType
+
+  // Entity reference
+  entityType    String          // 'ORDER', 'NDR', 'DELIVERY', 'SHIPMENT'
+  entityId      String
+
+  // NDR specific relation
+  ndrId         String?         @db.Uuid
+  ndr           NDR?            @relation("NDRAIActions", fields: [ndrId], references: [id])
+
+  // AI Decision details
+  decision      String          // What the AI decided to do
+  reasoning     String          // AI's explanation/reasoning
+  confidence    Float           // Confidence score (0-1)
+
+  // Risk assessment
+  riskLevel     String          @default("LOW") // LOW, MEDIUM, HIGH, CRITICAL
+  impactScore   Int?            // Predicted impact score
+
+  // Approval workflow
+  status        AIActionStatus  @default(PENDING_APPROVAL)
+  approvalRequired Boolean      @default(true)
+  approvedBy    String?         // 'AUTO', 'SYSTEM', or userId
+  approvedAt    DateTime?
+  rejectionReason String?
+
+  // Execution
+  executedAt    DateTime?
+  executionResult String?
+  executionError String?
+
+  // Recommendations (if not auto-executed)
+  recommendations Json?         // Array of recommended actions
+
+  // Feedback for learning
+  feedbackScore Int?            // 1-5 rating from operator
+  feedbackNotes String?
+
+  // Company context
+  companyId     String          @db.Uuid
+
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([entityId])
+  @@index([entityType])
+  @@index([actionType])
+  @@index([status])
+  @@index([companyId])
+  @@index([ndrId])
+}
+
+// Exception Workbench
+model Exception {
+  id            String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  exceptionCode String          @unique
+
+  // Exception type and source
+  type          String          // ADDRESS_ISSUE, WEIGHT_DISCREPANCY, PAYMENT_MISMATCH, etc.
+  source        String          // CARRIER, SYSTEM, CUSTOMER, WAREHOUSE
+  severity      String          @default("MEDIUM") // LOW, MEDIUM, HIGH, CRITICAL
+
+  // Entity reference
+  entityType    String          // ORDER, DELIVERY, INVENTORY, etc.
+  entityId      String
+  orderId       String?         @db.Uuid
+  order         Order?          @relation(fields: [orderId], references: [id])
+
+  // Exception details
+  title         String
+  description   String
+  originalValue String?
+  expectedValue String?
+
+  // AI assistance
+  aiSuggestion  String?
+  aiConfidence  Float?
+  autoResolvable Boolean        @default(false)
+
+  // Status
+  status        String          @default("OPEN") // OPEN, IN_PROGRESS, RESOLVED, ESCALATED, CLOSED
+  priority      Int             @default(5) // 1-10
+
+  // Resolution
+  resolution    String?
+  resolvedBy    String?
+  resolvedAt    DateTime?
+
+  // Assignment
+  assignedTo    String?         @db.Uuid
+  escalatedTo   String?         @db.Uuid
+  escalatedAt   DateTime?
+
+  // Company context
+  companyId     String          @db.Uuid
+
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([type])
+  @@index([status])
+  @@index([orderId])
+  @@index([companyId])
+  @@index([severity])
 }

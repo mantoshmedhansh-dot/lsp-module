@@ -24,6 +24,10 @@ import {
   FileText,
   CreditCard,
   Gauge,
+  Bot,
+  Bell,
+  MessageSquare,
+  AlertTriangle,
 } from "lucide-react";
 import {
   Sidebar,
@@ -67,7 +71,12 @@ const analyticsNav = [
   {
     title: "Control Tower",
     icon: Gauge,
-    href: "/control-tower",
+    items: [
+      { title: "Overview", href: "/control-tower" },
+      { title: "NDR Command Center", href: "/control-tower/ndr" },
+      { title: "Proactive Communication", href: "/control-tower/proactive" },
+      { title: "AI Actions", href: "/control-tower/ai-actions" },
+    ],
   },
 ];
 

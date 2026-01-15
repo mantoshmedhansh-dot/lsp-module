@@ -1,6 +1,3 @@
-// Prisma Schema for OMS/WMS System
-// Using Native PostgreSQL UUIDs for optimal performance
-
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["postgresqlExtensions"]
@@ -10,168 +7,1910 @@ datasource db {
   provider   = "postgresql"
   url        = env("DATABASE_URL")
   directUrl  = env("DIRECT_URL")
-  extensions = [uuid_ossp(map: "uuid-ossp"), pgcrypto]
+  extensions = [pgcrypto, uuid_ossp(map: "uuid-ossp")]
 }
 
-// ==================== ENUMS ====================
+model AIActionLog {
+  id               String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  actionType       AIActionType
+  entityType       String
+  entityId         String
+  ndrId            String?        @db.Uuid
+  decision         String
+  reasoning        String
+  confidence       Float
+  riskLevel        String         @default("LOW")
+  impactScore      Int?
+  status           AIActionStatus @default(PENDING_APPROVAL)
+  approvalRequired Boolean        @default(true)
+  approvedBy       String?
+  approvedAt       DateTime?
+  rejectionReason  String?
+  executedAt       DateTime?
+  executionResult  String?
+  executionError   String?
+  recommendations  Json?
+  feedbackScore    Int?
+  feedbackNotes    String?
+  companyId        String         @db.Uuid
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime
+  NDR              NDR?           @relation(fields: [ndrId], references: [id])
 
-enum LocationType {
-  WAREHOUSE
-  STORE
-  HUB
-  VIRTUAL
+  @@index([actionType])
+  @@index([companyId])
+  @@index([entityId])
+  @@index([entityType])
+  @@index([ndrId])
+  @@index([status])
 }
 
-enum ZoneType {
-  SALEABLE
-  DAMAGED
-  QC
-  RETURNS
-  DISPATCH
+model AWB {
+  id            String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  awbNo         String      @unique
+  transporterId String      @db.Uuid
+  isUsed        Boolean     @default(false)
+  usedAt        DateTime?
+  usedFor       String?
+  createdAt     DateTime    @default(now())
+  Transporter   Transporter @relation(fields: [transporterId], references: [id], onDelete: Cascade)
+
+  @@index([transporterId, isUsed])
 }
 
-enum UserRole {
-  SUPER_ADMIN
-  ADMIN
-  MANAGER
-  OPERATOR
-  PICKER
-  PACKER
-  VIEWER
-  CLIENT // Brand/Client users with limited dashboard access
+model AnalyticsSnapshot {
+  id                   String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  snapshotDate         DateTime
+  snapshotType         String
+  companyId            String   @db.Uuid
+  locationId           String?  @db.Uuid
+  totalOrders          Int      @default(0)
+  totalRevenue         Decimal  @default(0) @db.Decimal(14, 2)
+  avgOrderValue        Decimal  @default(0) @db.Decimal(12, 2)
+  totalUnits           Int      @default(0)
+  ordersShipped        Int      @default(0)
+  ordersDelivered      Int      @default(0)
+  ordersCancelled      Int      @default(0)
+  ordersRTO            Int      @default(0)
+  avgFulfillmentTime   Decimal? @db.Decimal(8, 2)
+  fillRate             Decimal? @db.Decimal(5, 2)
+  slaBreachedOrders    Int      @default(0)
+  onTimeDeliveryRate   Decimal? @db.Decimal(5, 2)
+  totalSKUs            Int      @default(0)
+  totalQuantity        Int      @default(0)
+  lowStockSKUs         Int      @default(0)
+  outOfStockSKUs       Int      @default(0)
+  inventoryValue       Decimal? @db.Decimal(14, 2)
+  totalReturns         Int      @default(0)
+  returnRate           Decimal? @db.Decimal(5, 2)
+  rtoRate              Decimal? @db.Decimal(5, 2)
+  b2bOrders            Int      @default(0)
+  b2bRevenue           Decimal  @default(0) @db.Decimal(14, 2)
+  creditUtilization    Decimal? @db.Decimal(5, 2)
+  channelBreakdown     Json?
+  categoryBreakdown    Json?
+  transporterBreakdown Json?
+  createdAt            DateTime @default(now())
+
+  @@unique([snapshotDate, snapshotType, companyId, locationId])
+  @@index([companyId])
+  @@index([snapshotDate])
+  @@index([snapshotType])
 }
 
-enum Channel {
-  AMAZON
-  FLIPKART
-  MYNTRA
-  AJIO
-  MEESHO
-  NYKAA
-  TATA_CLIQ
-  JIOMART
-  SHOPIFY
-  WOOCOMMERCE
-  WEBSITE
-  MANUAL
+model AuditLog {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  entityType String
+  entityId   String   @db.Uuid
+  action     String
+  changes    Json?
+  userId     String?  @db.Uuid
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+  User       User?    @relation(fields: [userId], references: [id])
+
+  @@index([createdAt])
+  @@index([entityType, entityId])
+  @@index([userId])
 }
 
-enum OrderType {
-  B2C
-  B2B
+model B2BCreditTransaction {
+  id            String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  transactionNo String                @unique
+  type          CreditTransactionType
+  customerId    String                @db.Uuid
+  amount        Decimal               @db.Decimal(14, 2)
+  balanceBefore Decimal               @db.Decimal(14, 2)
+  balanceAfter  Decimal               @db.Decimal(14, 2)
+  orderId       String?               @db.Uuid
+  quotationId   String?               @db.Uuid
+  paymentRef    String?
+  invoiceNo     String?
+  dueDate       DateTime?
+  remarks       String?
+  createdById   String                @db.Uuid
+  createdAt     DateTime              @default(now())
+  Customer      Customer              @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
+  @@index([customerId])
+  @@index([type])
 }
 
-enum PaymentMode {
-  PREPAID
-  COD
+model Bin {
+  id           String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code         String
+  name         String?
+  description  String?
+  capacity     Int?
+  isActive     Boolean        @default(true)
+  zoneId       String         @db.Uuid
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime
+  Zone         Zone           @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  Inventory    Inventory[]
+  PicklistItem PicklistItem[]
+  WaveItem     WaveItem[]
+
+  @@unique([zoneId, code])
+  @@index([zoneId])
 }
 
-enum OrderStatus {
-  CREATED
-  CONFIRMED
-  ALLOCATED
-  PARTIALLY_ALLOCATED
-  PICKLIST_GENERATED
-  PICKING
-  PICKED
-  PACKING
-  PACKED
-  MANIFESTED
-  SHIPPED
-  IN_TRANSIT
-  OUT_FOR_DELIVERY
-  DELIVERED
-  RTO_INITIATED
-  RTO_IN_TRANSIT
-  RTO_DELIVERED
-  CANCELLED
-  ON_HOLD
+model Brand {
+  id            String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code          String      @unique
+  name          String
+  logo          String?
+  description   String?
+  contactPerson String?
+  contactEmail  String?
+  contactPhone  String?
+  website       String?
+  address       Json?
+  settings      Json?
+  isActive      Boolean     @default(true)
+  companyId     String      @db.Uuid
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime
+  Company       Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  BrandUser     BrandUser[]
+  SKUBrand      SKUBrand[]
+
+  @@index([code])
+  @@index([companyId])
 }
 
-enum ItemStatus {
-  PENDING
-  ALLOCATED
-  PICKED
-  PACKED
-  SHIPPED
-  DELIVERED
-  CANCELLED
-  RETURNED
+model BrandUser {
+  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  brandId         String        @db.Uuid
+  userId          String        @db.Uuid
+  role            BrandUserRole @default(VIEWER)
+  dashboardConfig Json?
+  isActive        Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime
+  Brand           Brand         @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@unique([brandId, userId])
+  @@index([brandId])
+  @@index([userId])
 }
 
-enum DeliveryStatus {
-  PENDING
-  PACKED
-  MANIFESTED
-  SHIPPED
-  IN_TRANSIT
-  OUT_FOR_DELIVERY
-  DELIVERED
-  RTO_INITIATED
-  RTO_IN_TRANSIT
-  RTO_DELIVERED
-  CANCELLED
+model BundleItem {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  bundleId        String    @db.Uuid
+  componentSkuId  String    @db.Uuid
+  quantity        Int       @default(1)
+  allowSubstitute Boolean   @default(false)
+  substituteSkus  String[]  @db.Uuid
+  sequence        Int       @default(0)
+  SKUBundle       SKUBundle @relation(fields: [bundleId], references: [id], onDelete: Cascade)
+  SKU             SKU       @relation(fields: [componentSkuId], references: [id])
+
+  @@unique([bundleId, componentSkuId])
+  @@index([bundleId])
+  @@index([componentSkuId])
 }
 
-enum PicklistStatus {
-  PENDING
-  PROCESSING
-  COMPLETED
-  CANCELLED
+model CODReconciliation {
+  id                 String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  reconciliationNo   String                  @unique
+  status             CODReconciliationStatus @default(PENDING)
+  locationId         String                  @db.Uuid
+  transporterId      String?                 @db.Uuid
+  companyId          String                  @db.Uuid
+  reconciliationDate DateTime
+  periodFrom         DateTime
+  periodTo           DateTime
+  expectedAmount     Decimal                 @db.Decimal(14, 2)
+  collectedAmount    Decimal                 @db.Decimal(14, 2)
+  remittedAmount     Decimal                 @db.Decimal(14, 2)
+  variance           Decimal                 @db.Decimal(14, 2)
+  totalOrders        Int                     @default(0)
+  deliveredOrders    Int                     @default(0)
+  pendingOrders      Int                     @default(0)
+  remarks            String?
+  approvedAt         DateTime?
+  approvedBy         String?                 @db.Uuid
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime
+  CODTransaction     CODTransaction[]
+
+  @@index([companyId])
+  @@index([locationId])
+  @@index([reconciliationDate])
+  @@index([status])
+  @@index([transporterId])
 }
 
-enum TransporterType {
-  COURIER
-  SELF
-  AGGREGATOR
+model CODTransaction {
+  id                String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  transactionNo     String             @unique
+  type              CODTransactionType
+  reconciliationId  String?            @db.Uuid
+  orderId           String?            @db.Uuid
+  deliveryId        String?            @db.Uuid
+  awbNo             String?
+  amount            Decimal            @db.Decimal(12, 2)
+  paymentMode       String?
+  paymentRef        String?
+  paymentDate       DateTime?
+  remarks           String?
+  transactionDate   DateTime
+  createdAt         DateTime           @default(now())
+  CODReconciliation CODReconciliation? @relation(fields: [reconciliationId], references: [id])
+
+  @@index([orderId])
+  @@index([reconciliationId])
+  @@index([transactionDate])
 }
 
-enum ManifestStatus {
-  OPEN
-  CONFIRMED
-  CLOSED
+model ChannelConfig {
+  id               String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  companyId        String        @db.Uuid
+  channel          Channel
+  displayName      String?
+  isActive         Boolean       @default(true)
+  credentials      Json?
+  settings         Json?
+  lastSyncAt       DateTime?
+  syncFrequency    SyncFrequency @default(HOURLY)
+  nextSyncAt       DateTime?
+  syncStatus       ImportStatus  @default(PENDING)
+  webhookUrl       String?
+  webhookSecret    String?
+  mappingConfig    Json?
+  retryCount       Int           @default(0)
+  lastErrorMessage String?
+  lastErrorAt      DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime
+  Company          Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, channel])
+  @@index([companyId])
 }
 
-enum POStatus {
-  DRAFT
+model CommunicationTemplate {
+  id                   String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                 String
+  description          String?
+  trigger              CommunicationTrigger
+  channel              OutreachChannel
+  language             String               @default("en")
+  subject              String?
+  template             String
+  variables            String[]
+  whatsappTemplateId   String?
+  whatsappTemplateName String?
+  sentiment            String               @default("informative")
+  isActive             Boolean              @default(true)
+  isDefault            Boolean              @default(false)
+  companyId            String               @db.Uuid
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime
+
+  @@unique([companyId, trigger, channel, language, isDefault])
+  @@index([channel])
+  @@index([companyId])
+  @@index([trigger])
+}
+
+model Company {
+  id                String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code              String              @unique
+  name              String
+  legalName         String?
+  gst               String?
+  pan               String?
+  cin               String?
+  logo              String?
+  email             String?
+  phone             String?
+  address           Json?
+  settings          Json?
+  isActive          Boolean             @default(true)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime
+  Brand             Brand[]
+  ChannelConfig     ChannelConfig[]
+  Customer          Customer[]
+  CustomerGroup     CustomerGroup[]
+  Location          Location[]
+  PriceList         PriceList[]
+  QCTemplate        QCTemplate[]
+  SKU               SKU[]
+  TransporterConfig TransporterConfig[]
+  User              User[]
+  VariantAttribute  VariantAttribute[]
+  Vendor            Vendor[]
+}
+
+model Customer {
+  id                   String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code                 String
+  name                 String
+  type                 CustomerType           @default(RETAIL)
+  status               CustomerStatus         @default(ACTIVE)
+  contactPerson        String?
+  email                String?
+  phone                String
+  alternatePhone       String?
+  gst                  String?
+  pan                  String?
+  cin                  String?
+  tradeLicense         String?
+  billingAddress       Json
+  shippingAddresses    Json[]
+  creditEnabled        Boolean                @default(false)
+  creditLimit          Decimal                @default(0) @db.Decimal(14, 2)
+  creditUsed           Decimal                @default(0) @db.Decimal(14, 2)
+  creditAvailable      Decimal                @default(0) @db.Decimal(14, 2)
+  creditStatus         CreditStatus           @default(AVAILABLE)
+  paymentTermType      PaymentTermType        @default(IMMEDIATE)
+  paymentTermDays      Int?
+  earlyPaymentDiscount Decimal?               @db.Decimal(5, 2)
+  customerGroupId      String?                @db.Uuid
+  priceListId          String?                @db.Uuid
+  dunningEnabled       Boolean                @default(true)
+  dunningDays          Int[]                  @default([7, 15, 30])
+  lastDunningDate      DateTime?
+  dunningLevel         Int                    @default(0)
+  companyId            String                 @db.Uuid
+  portalEnabled        Boolean                @default(false)
+  portalUserId         String?                @db.Uuid
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime
+  B2BCreditTransaction B2BCreditTransaction[]
+  Company              Company                @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  CustomerGroup        CustomerGroup?         @relation(fields: [customerGroupId], references: [id])
+  PriceList            PriceList?             @relation(fields: [priceListId], references: [id])
+  Order                Order[]
+  Quotation            Quotation[]
+
+  @@unique([companyId, code])
+  @@index([companyId])
+  @@index([creditStatus])
+  @@index([customerGroupId])
+  @@index([status])
+  @@index([type])
+}
+
+model CustomerGroup {
+  id                     String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code                   String
+  name                   String
+  description            String?
+  discountPercent        Decimal?        @db.Decimal(5, 2)
+  discountType           String?
+  priceListId            String?         @db.Uuid
+  defaultCreditLimit     Decimal?        @db.Decimal(14, 2)
+  defaultPaymentTermType PaymentTermType @default(NET_30)
+  defaultPaymentTermDays Int?
+  companyId              String          @db.Uuid
+  isActive               Boolean         @default(true)
+  createdAt              DateTime        @default(now())
+  updatedAt              DateTime
+  Customer               Customer[]
+  Company                Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  PriceList              PriceList?      @relation(fields: [priceListId], references: [id])
+
+  @@unique([companyId, code])
+  @@index([companyId])
+}
+
+model CycleCount {
+  id             String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cycleCountNo   String           @unique
+  status         CycleCountStatus @default(PLANNED)
+  locationId     String           @db.Uuid
+  zoneId         String?          @db.Uuid
+  initiatedById  String           @db.Uuid
+  verifiedById   String?          @db.Uuid
+  scheduledDate  DateTime
+  startedAt      DateTime?
+  completedAt    DateTime?
+  varianceFound  Boolean          @default(false)
+  varianceValue  Decimal?         @db.Decimal(14, 2)
+  remarks        String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime
+  CycleCountItem CycleCountItem[]
+
+  @@index([locationId])
+  @@index([scheduledDate])
+  @@index([status])
+}
+
+model CycleCountItem {
+  id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cycleCountId String     @db.Uuid
+  skuId        String     @db.Uuid
+  binId        String     @db.Uuid
+  batchNo      String?
+  expectedQty  Int
+  countedQty   Int        @default(0)
+  varianceQty  Int        @default(0)
+  status       String?
+  countedAt    DateTime?
+  countedById  String?    @db.Uuid
+  remarks      String?
+  CycleCount   CycleCount @relation(fields: [cycleCountId], references: [id], onDelete: Cascade)
+
+  @@index([cycleCountId])
+  @@index([skuId])
+}
+
+model Delivery {
+  id               String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  deliveryNo       String         @unique
+  orderId          String         @db.Uuid
+  status           DeliveryStatus @default(PENDING)
+  transporterId    String?        @db.Uuid
+  awbNo            String?
+  trackingUrl      String?
+  weight           Decimal?       @db.Decimal(10, 3)
+  length           Decimal?       @db.Decimal(10, 2)
+  width            Decimal?       @db.Decimal(10, 2)
+  height           Decimal?       @db.Decimal(10, 2)
+  volumetricWeight Decimal?       @db.Decimal(10, 3)
+  boxes            Int            @default(1)
+  invoiceNo        String?
+  invoiceDate      DateTime?
+  invoiceUrl       String?
+  labelUrl         String?
+  packDate         DateTime?
+  shipDate         DateTime?
+  deliveryDate     DateTime?
+  podImage         String?
+  podSignature     String?
+  podRemarks       String?
+  receivedBy       String?
+  manifestId       String?        @db.Uuid
+  remarks          String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime
+  Manifest         Manifest?      @relation(fields: [manifestId], references: [id])
+  Order            Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  Transporter      Transporter?   @relation(fields: [transporterId], references: [id])
+  NDR              NDR[]
+
+  @@index([awbNo])
+  @@index([manifestId])
+  @@index([orderId])
+  @@index([status])
+}
+
+model DemandForecast {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  forecastDate     DateTime
+  forecastFor      DateTime
+  companyId        String   @db.Uuid
+  locationId       String?  @db.Uuid
+  skuId            String   @db.Uuid
+  predictedDemand  Int
+  lowerBound       Int
+  upperBound       Int
+  confidenceScore  Decimal? @db.Decimal(5, 2)
+  suggestedReorder Int?
+  reorderPoint     Int?
+  safetyStock      Int?
+  modelVersion     String?
+  features         Json?
+  createdAt        DateTime @default(now())
+
+  @@unique([forecastDate, forecastFor, companyId, skuId])
+  @@index([companyId])
+  @@index([forecastFor])
+  @@index([skuId])
+}
+
+model Exception {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  exceptionCode  String    @unique
+  type           String
+  source         String
+  severity       String    @default("MEDIUM")
+  entityType     String
+  entityId       String
+  orderId        String?   @db.Uuid
+  title          String
+  description    String
+  originalValue  String?
+  expectedValue  String?
+  aiSuggestion   String?
+  aiConfidence   Float?
+  autoResolvable Boolean   @default(false)
+  status         String    @default("OPEN")
+  priority       Int       @default(5)
+  resolution     String?
+  resolvedBy     String?
+  resolvedAt     DateTime?
+  assignedTo     String?   @db.Uuid
+  escalatedTo    String?   @db.Uuid
+  escalatedAt    DateTime?
+  companyId      String    @db.Uuid
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime
+  Order          Order?    @relation(fields: [orderId], references: [id])
+
+  @@index([companyId])
+  @@index([orderId])
+  @@index([severity])
+  @@index([status])
+  @@index([type])
+}
+
+model GatePass {
+  id               String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  gatePassNo       String         @unique
+  type             GatePassType
+  status           GatePassStatus @default(OPEN)
+  locationId       String         @db.Uuid
+  visitorName      String?
+  visitorPhone     String?
+  visitorIdType    String?
+  visitorIdNo      String?
+  companyName      String?
+  purpose          String?
+  transporterId    String?        @db.Uuid
+  awbNo            String?
+  poNo             String?
+  invoiceNo        String?
+  entryTime        DateTime
+  exitTime         DateTime?
+  expectedDuration Int?
+  vehicleNumber    String?
+  vehicleType      String?
+  driverName       String?
+  driverPhone      String?
+  sealNumber       String?
+  verifiedById     String?        @db.Uuid
+  verifiedAt       DateTime?
+  securityRemarks  String?
+  photoUrl         String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime
+  GatePassItem     GatePassItem[]
+
+  @@index([entryTime])
+  @@index([locationId])
+  @@index([status])
+  @@index([type])
+}
+
+model GatePassItem {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  gatePassId  String   @db.Uuid
+  skuId       String?  @db.Uuid
+  description String?
+  quantity    Int
+  receivedQty Int      @default(0)
+  unit        String?
+  remarks     String?
+  GatePass    GatePass @relation(fields: [gatePassId], references: [id], onDelete: Cascade)
+
+  @@index([gatePassId])
+}
+
+model Inbound {
+  id              String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  inboundNo       String         @unique
+  type            InboundType
+  status          InboundStatus  @default(PENDING)
+  purchaseOrderId String?        @db.Uuid
+  locationId      String         @db.Uuid
+  receivedById    String         @db.Uuid
+  grnNo           String?
+  remarks         String?
+  createdAt       DateTime       @default(now())
+  completedAt     DateTime?
+  updatedAt       DateTime
+  Location        Location       @relation(fields: [locationId], references: [id])
+  PurchaseOrder   PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
+  User            User           @relation(fields: [receivedById], references: [id])
+  InboundItem     InboundItem[]
+
+  @@index([locationId])
+  @@index([status])
+  @@index([type])
+}
+
+model InboundItem {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  inboundId     String    @db.Uuid
+  skuId         String    @db.Uuid
+  expectedQty   Int?
+  receivedQty   Int
+  acceptedQty   Int       @default(0)
+  rejectedQty   Int       @default(0)
+  batchNo       String?
+  expiryDate    DateTime?
+  mfgDate       DateTime?
+  mrp           Decimal?  @db.Decimal(12, 2)
+  serialNumbers String[]
+  binId         String?   @db.Uuid
+  qcStatus      String?
+  qcRemarks     String?
+  Inbound       Inbound   @relation(fields: [inboundId], references: [id], onDelete: Cascade)
+  SKU           SKU       @relation(fields: [skuId], references: [id])
+
+  @@index([inboundId])
+  @@index([skuId])
+}
+
+model Inventory {
+  id              String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  quantity        Int                      @default(0)
+  reservedQty     Int                      @default(0)
+  batchNo         String?
+  lotNo           String?
+  expiryDate      DateTime?
+  mfgDate         DateTime?
+  mrp             Decimal?                 @db.Decimal(12, 2)
+  serialNumbers   String[]
+  valuationMethod InventoryValuationMethod @default(FIFO)
+  fifoSequence    Int?
+  costPrice       Decimal?                 @db.Decimal(12, 2)
+  skuId           String                   @db.Uuid
+  binId           String                   @db.Uuid
+  locationId      String                   @db.Uuid
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime
+  Bin             Bin                      @relation(fields: [binId], references: [id], onDelete: Cascade)
+  Location        Location                 @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  SKU             SKU                      @relation(fields: [skuId], references: [id], onDelete: Cascade)
+
+  @@unique([skuId, binId, batchNo])
+  @@index([binId])
+  @@index([fifoSequence])
+  @@index([locationId])
+  @@index([skuId])
+}
+
+model InventoryMovement {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  movementNo    String   @unique
+  type          String
+  reason        String?
+  quantity      Int
+  skuId         String   @db.Uuid
+  fromBinId     String?  @db.Uuid
+  toBinId       String?  @db.Uuid
+  batchNo       String?
+  serialNumbers String[]
+  referenceType String?
+  referenceId   String?  @db.Uuid
+  performedBy   String   @db.Uuid
+  performedAt   DateTime @default(now())
+  remarks       String?
+  createdAt     DateTime @default(now())
+
+  @@index([referenceId])
+  @@index([skuId])
+}
+
+model Location {
+  id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code             String
+  name             String
+  type             LocationType
+  address          Json
+  contactPerson    String?
+  contactPhone     String?
+  contactEmail     String?
+  gst              String?
+  isActive         Boolean            @default(true)
+  settings         Json?
+  companyId        String             @db.Uuid
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime
+  Inbound          Inbound[]
+  Inventory        Inventory[]
+  Company          Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  Order            Order[]
+  StockAdjustment  StockAdjustment[]
+  VirtualInventory VirtualInventory[]
+  Wave             Wave[]
+  Zone             Zone[]
+
+  @@unique([companyId, code])
+  @@index([companyId])
+}
+
+model Manifest {
+  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  manifestNo    String         @unique
+  transporterId String         @db.Uuid
+  status        ManifestStatus @default(OPEN)
+  vehicleNo     String?
+  driverName    String?
+  driverPhone   String?
+  handoverImage String?
+  confirmedAt   DateTime?
+  confirmedBy   String?        @db.Uuid
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime
+  Delivery      Delivery[]
+
+  @@index([status])
+  @@index([transporterId])
+}
+
+model NDR {
+  id               String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ndrCode          String          @unique
+  deliveryId       String          @db.Uuid
+  orderId          String          @db.Uuid
+  carrierNDRCode   String?
+  carrierRemark    String?
+  attemptNumber    Int             @default(1)
+  attemptDate      DateTime
+  reason           NDRReason
+  aiClassification String?
+  confidence       Float?
+  status           NDRStatus       @default(OPEN)
+  priority         NDRPriority     @default(MEDIUM)
+  riskScore        Int?
+  resolutionType   ResolutionType?
+  resolvedAt       DateTime?
+  resolvedBy       String?
+  resolutionNotes  String?
+  reattemptDate    DateTime?
+  reattemptSlot    String?
+  customerResponse String?
+  preferredSlot    String?
+  updatedAddress   Json?
+  updatedPhone     String?
+  companyId        String          @db.Uuid
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime
+  AIActionLog      AIActionLog[]
+  Delivery         Delivery        @relation(fields: [deliveryId], references: [id])
+  Order            Order           @relation(fields: [orderId], references: [id])
+  NDROutreach      NDROutreach[]
+
+  @@index([companyId])
+  @@index([createdAt])
+  @@index([deliveryId])
+  @@index([orderId])
+  @@index([priority])
+  @@index([status])
+}
+
+model NDROutreach {
+  id                String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ndrId             String          @db.Uuid
+  channel           OutreachChannel
+  attemptNumber     Int
+  templateId        String?
+  messageContent    String?
+  status            OutreachStatus  @default(PENDING)
+  sentAt            DateTime?
+  deliveredAt       DateTime?
+  readAt            DateTime?
+  respondedAt       DateTime?
+  response          String?
+  sentiment         String?
+  sentimentScore    Float?
+  callDuration      Int?
+  callRecordingUrl  String?
+  transcription     String?
+  errorCode         String?
+  errorMessage      String?
+  providerMessageId String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime
+  NDR               NDR             @relation(fields: [ndrId], references: [id], onDelete: Cascade)
+
+  @@index([channel])
+  @@index([ndrId])
+  @@index([status])
+}
+
+model Order {
+  id                                          String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderNo                                     String                   @unique
+  externalOrderNo                             String?
+  channel                                     Channel
+  orderType                                   OrderType                @default(B2C)
+  paymentMode                                 PaymentMode
+  status                                      OrderStatus              @default(CREATED)
+  customerName                                String
+  customerPhone                               String
+  customerEmail                               String?
+  shippingAddress                             Json
+  billingAddress                              Json?
+  subtotal                                    Decimal                  @db.Decimal(12, 2)
+  taxAmount                                   Decimal                  @db.Decimal(12, 2)
+  shippingCharges                             Decimal                  @default(0) @db.Decimal(12, 2)
+  discount                                    Decimal                  @default(0) @db.Decimal(12, 2)
+  codCharges                                  Decimal                  @default(0) @db.Decimal(12, 2)
+  totalAmount                                 Decimal                  @db.Decimal(12, 2)
+  orderDate                                   DateTime
+  shipByDate                                  DateTime?
+  promisedDate                                DateTime?
+  priority                                    Int                      @default(0)
+  tags                                        String[]
+  remarks                                     String?
+  importId                                    String?                  @db.Uuid
+  csvLineNumber                               Int?
+  dataSourceType                              String?
+  replacementForReturnId                      String?                  @unique @db.Uuid
+  locationId                                  String                   @db.Uuid
+  customerId                                  String?                  @db.Uuid
+  paymentTermType                             PaymentTermType?
+  paymentTermDays                             Int?
+  creditDueDate                               DateTime?
+  poNumber                                    String?
+  gstInvoiceNo                                String?
+  gstInvoiceDate                              DateTime?
+  eWayBillNo                                  String?
+  irnNo                                       String?
+  createdAt                                   DateTime                 @default(now())
+  updatedAt                                   DateTime
+  Delivery                                    Delivery[]
+  Exception                                   Exception[]
+  NDR                                         NDR[]
+  Customer                                    Customer?                @relation(fields: [customerId], references: [id])
+  OrderImport                                 OrderImport?             @relation(fields: [importId], references: [id])
+  Location                                    Location                 @relation(fields: [locationId], references: [id])
+  Return_Order_replacementForReturnIdToReturn Return?                  @relation("Order_replacementForReturnIdToReturn", fields: [replacementForReturnId], references: [id])
+  OrderItem                                   OrderItem[]
+  Picklist                                    Picklist[]
+  ProactiveCommunication                      ProactiveCommunication[]
+  Quotation                                   Quotation?
+  Return_Return_orderIdToOrder                Return[]                 @relation("Return_orderIdToOrder")
+  WaveOrder                                   WaveOrder[]
+
+  @@index([channel])
+  @@index([customerId])
+  @@index([externalOrderNo])
+  @@index([importId])
+  @@index([locationId])
+  @@index([orderDate])
+  @@index([status])
+}
+
+model OrderImport {
+  id            String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  importNo      String       @unique
+  fileName      String
+  fileUrl       String?
+  status        ImportStatus @default(PENDING)
+  totalRows     Int          @default(0)
+  processedRows Int          @default(0)
+  successCount  Int          @default(0)
+  errorCount    Int          @default(0)
+  errors        Json?
+  summary       Json?
+  locationId    String       @db.Uuid
+  importedById  String       @db.Uuid
+  startedAt     DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime
+  Order         Order[]
+
+  @@index([locationId])
+  @@index([status])
+}
+
+model OrderItem {
+  id             String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId        String     @db.Uuid
+  skuId          String     @db.Uuid
+  externalItemId String?
+  quantity       Int
+  allocatedQty   Int        @default(0)
+  pickedQty      Int        @default(0)
+  packedQty      Int        @default(0)
+  shippedQty     Int        @default(0)
+  unitPrice      Decimal    @db.Decimal(12, 2)
+  taxAmount      Decimal    @db.Decimal(12, 2)
+  discount       Decimal    @default(0) @db.Decimal(12, 2)
+  totalPrice     Decimal    @db.Decimal(12, 2)
+  status         ItemStatus @default(PENDING)
+  serialNumbers  String[]
+  batchNo        String?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime
+  Order          Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  SKU            SKU        @relation(fields: [skuId], references: [id])
+
+  @@index([orderId])
+  @@index([skuId])
+}
+
+model POItem {
+  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  purchaseOrderId String        @db.Uuid
+  skuId           String        @db.Uuid
+  orderedQty      Int
+  receivedQty     Int           @default(0)
+  unitPrice       Decimal       @db.Decimal(12, 2)
+  taxAmount       Decimal       @db.Decimal(12, 2)
+  totalPrice      Decimal       @db.Decimal(12, 2)
+  PurchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  SKU             SKU           @relation(fields: [skuId], references: [id])
+
+  @@index([purchaseOrderId])
+  @@index([skuId])
+}
+
+model Picklist {
+  id           String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  picklistNo   String         @unique
+  status       PicklistStatus @default(PENDING)
+  orderId      String         @db.Uuid
+  assignedToId String?        @db.Uuid
+  startedAt    DateTime?
+  completedAt  DateTime?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime
+  User         User?          @relation(fields: [assignedToId], references: [id])
+  Order        Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  PicklistItem PicklistItem[]
+
+  @@index([assignedToId])
+  @@index([orderId])
+  @@index([status])
+}
+
+model PicklistItem {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  picklistId    String    @db.Uuid
+  skuId         String    @db.Uuid
+  binId         String    @db.Uuid
+  requiredQty   Int
+  pickedQty     Int       @default(0)
+  batchNo       String?
+  serialNumbers String[]
+  pickedAt      DateTime?
+  Bin           Bin       @relation(fields: [binId], references: [id])
+  Picklist      Picklist  @relation(fields: [picklistId], references: [id], onDelete: Cascade)
+  SKU           SKU       @relation(fields: [skuId], references: [id])
+
+  @@index([picklistId])
+  @@index([skuId])
+}
+
+model PriceList {
+  id             String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code           String
+  name           String
+  description    String?
+  effectiveFrom  DateTime
+  effectiveTo    DateTime?
+  basedOnMRP     Boolean         @default(false)
+  roundingMethod String?
+  companyId      String          @db.Uuid
+  isActive       Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime
+  Customer       Customer[]
+  CustomerGroup  CustomerGroup[]
+  Company        Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  PriceListItem  PriceListItem[]
+
+  @@unique([companyId, code])
+  @@index([companyId])
+  @@index([effectiveFrom])
+}
+
+model PriceListItem {
+  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  priceListId     String        @db.Uuid
+  skuId           String        @db.Uuid
+  fixedPrice      Decimal?      @db.Decimal(12, 2)
+  discountPercent Decimal?      @db.Decimal(5, 2)
+  markup          Decimal?      @db.Decimal(5, 2)
+  minOrderQty     Int?
+  maxOrderQty     Int?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime
+  PriceList       PriceList     @relation(fields: [priceListId], references: [id], onDelete: Cascade)
+  PricingTier     PricingTier[]
+
+  @@unique([priceListId, skuId])
+  @@index([priceListId])
+  @@index([skuId])
+}
+
+model PricingTier {
+  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  priceListItemId String        @db.Uuid
+  minQty          Int
+  maxQty          Int?
+  price           Decimal       @db.Decimal(12, 2)
+  PriceListItem   PriceListItem @relation(fields: [priceListItemId], references: [id], onDelete: Cascade)
+
+  @@index([priceListItemId])
+}
+
+model ProactiveCommunication {
+  id                String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId           String?              @db.Uuid
+  deliveryId        String?              @db.Uuid
+  customerId        String?              @db.Uuid
+  customerName      String
+  customerPhone     String
+  customerEmail     String?
+  trigger           CommunicationTrigger
+  channel           OutreachChannel
+  templateId        String?
+  content           String
+  variables         Json?
+  scheduledFor      DateTime?
+  priority          Int                  @default(5)
+  status            CommunicationStatus  @default(SCHEDULED)
+  sentAt            DateTime?
+  deliveredAt       DateTime?
+  readAt            DateTime?
+  responseText      String?
+  responseAt        DateTime?
+  providerMessageId String?
+  errorCode         String?
+  errorMessage      String?
+  retryCount        Int                  @default(0)
+  companyId         String               @db.Uuid
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime
+  Order             Order?               @relation(fields: [orderId], references: [id])
+
+  @@index([companyId])
+  @@index([orderId])
+  @@index([scheduledFor])
+  @@index([status])
+  @@index([trigger])
+}
+
+model PurchaseOrder {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  poNo         String    @unique
+  vendorId     String    @db.Uuid
+  status       POStatus  @default(DRAFT)
+  expectedDate DateTime?
+  remarks      String?
+  subtotal     Decimal   @db.Decimal(12, 2)
+  taxAmount    Decimal   @db.Decimal(12, 2)
+  totalAmount  Decimal   @db.Decimal(12, 2)
+  approvedAt   DateTime?
+  approvedBy   String?   @db.Uuid
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime
+  Inbound      Inbound[]
+  POItem       POItem[]
+  Vendor       Vendor    @relation(fields: [vendorId], references: [id])
+
+  @@index([status])
+  @@index([vendorId])
+}
+
+model QCDefect {
+  id            String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  executionId   String      @db.Uuid
+  defectCode    String
+  defectName    String
+  severity      String
+  quantity      Int
+  description   String?
+  photos        String[]
+  action        String?
+  actionById    String?     @db.Uuid
+  actionAt      DateTime?
+  actionRemarks String?
+  QCExecution   QCExecution @relation(fields: [executionId], references: [id], onDelete: Cascade)
+
+  @@index([executionId])
+}
+
+model QCExecution {
+  id               String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  executionNo      String     @unique
+  templateId       String     @db.Uuid
+  referenceType    String
+  referenceId      String     @db.Uuid
+  skuId            String     @db.Uuid
+  locationId       String     @db.Uuid
+  binId            String?    @db.Uuid
+  batchNo          String?
+  sampleQty        Int
+  passedQty        Int        @default(0)
+  failedQty        Int        @default(0)
+  status           QCStatus   @default(PENDING)
+  overallGrade     String?
+  requiresApproval Boolean    @default(false)
+  approvalStatus   String?
+  approvedById     String?    @db.Uuid
+  approvedAt       DateTime?
+  approvalRemarks  String?
+  photos           String[]
+  performedById    String     @db.Uuid
+  performedAt      DateTime   @default(now())
+  completedAt      DateTime?
+  remarks          String?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime
+  QCDefect         QCDefect[]
+  SKU              SKU        @relation(fields: [skuId], references: [id])
+  QCTemplate       QCTemplate @relation(fields: [templateId], references: [id])
+  QCResult         QCResult[]
+
+  @@index([referenceType, referenceId])
+  @@index([skuId])
+  @@index([status])
+  @@index([templateId])
+}
+
+model QCParameter {
+  id               String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  templateId       String          @db.Uuid
+  code             String
+  name             String
+  description      String?
+  type             QCParameterType
+  isMandatory      Boolean         @default(true)
+  acceptableValues String[]
+  minValue         Decimal?        @db.Decimal(10, 2)
+  maxValue         Decimal?        @db.Decimal(10, 2)
+  tolerance        Decimal?        @db.Decimal(5, 2)
+  requiresPhoto    Boolean         @default(false)
+  photoCount       Int             @default(1)
+  sequence         Int             @default(0)
+  isActive         Boolean         @default(true)
+  QCTemplate       QCTemplate      @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  QCResult         QCResult[]
+
+  @@unique([templateId, code])
+  @@index([templateId])
+}
+
+model QCResult {
+  id           String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  executionId  String      @db.Uuid
+  parameterId  String      @db.Uuid
+  value        String?
+  numericValue Decimal?    @db.Decimal(10, 2)
+  isPassed     Boolean
+  photos       String[]
+  remarks      String?
+  QCExecution  QCExecution @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  QCParameter  QCParameter @relation(fields: [parameterId], references: [id])
+
+  @@index([executionId])
+  @@index([parameterId])
+}
+
+model QCTemplate {
+  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code           String        @unique
+  name           String
+  description    String?
+  type           QCType
+  companyId      String        @db.Uuid
+  categoryFilter String[]
+  skuFilter      String[]
+  isActive       Boolean       @default(true)
+  isMandatory    Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime
+  QCExecution    QCExecution[]
+  QCParameter    QCParameter[]
+  Company        Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([type])
+}
+
+model Quotation {
+  id               String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  quotationNo      String           @unique
+  status           QuotationStatus  @default(DRAFT)
+  customerId       String           @db.Uuid
+  shippingAddress  Json
+  billingAddress   Json
+  subtotal         Decimal          @db.Decimal(14, 2)
+  discountAmount   Decimal          @default(0) @db.Decimal(14, 2)
+  taxAmount        Decimal          @db.Decimal(14, 2)
+  shippingCharges  Decimal          @default(0) @db.Decimal(14, 2)
+  totalAmount      Decimal          @db.Decimal(14, 2)
+  validFrom        DateTime         @default(now())
+  validUntil       DateTime
+  paymentTermType  PaymentTermType?
+  paymentTermDays  Int?
+  specialTerms     String?
+  remarks          String?
+  requiresApproval Boolean          @default(false)
+  approvalLevel    Int              @default(0)
+  approvedById     String?          @db.Uuid
+  approvedAt       DateTime?
+  rejectedById     String?          @db.Uuid
+  rejectedAt       DateTime?
+  rejectionReason  String?
+  convertedOrderId String?          @unique @db.Uuid
+  convertedAt      DateTime?
+  companyId        String           @db.Uuid
+  locationId       String           @db.Uuid
+  createdById      String           @db.Uuid
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime
+  Order            Order?           @relation(fields: [convertedOrderId], references: [id])
+  Customer         Customer         @relation(fields: [customerId], references: [id])
+  QuotationItem    QuotationItem[]
+
+  @@index([companyId])
+  @@index([customerId])
+  @@index([status])
+  @@index([validUntil])
+}
+
+model QuotationItem {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  quotationId     String    @db.Uuid
+  skuId           String    @db.Uuid
+  quantity        Int
+  listPrice       Decimal   @db.Decimal(12, 2)
+  unitPrice       Decimal   @db.Decimal(12, 2)
+  discountPercent Decimal?  @db.Decimal(5, 2)
+  discountAmount  Decimal   @default(0) @db.Decimal(12, 2)
+  taxPercent      Decimal   @db.Decimal(5, 2)
+  taxAmount       Decimal   @db.Decimal(12, 2)
+  totalPrice      Decimal   @db.Decimal(12, 2)
+  remarks         String?
+  Quotation       Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+
+  @@index([quotationId])
+  @@index([skuId])
+}
+
+model RateCard {
+  id                String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  rateCardNo        String         @unique
+  name              String
+  type              RateCardType
+  status            RateCardStatus @default(DRAFT)
+  transporterId     String         @db.Uuid
+  companyId         String         @db.Uuid
+  effectiveFrom     DateTime
+  effectiveTo       DateTime?
+  baseCost          Decimal        @db.Decimal(10, 2)
+  fuelSurcharge     Decimal?       @db.Decimal(5, 2)
+  codChargesPercent Decimal?       @db.Decimal(5, 2)
+  codChargesMin     Decimal?       @db.Decimal(10, 2)
+  codChargesCap     Decimal?       @db.Decimal(10, 2)
+  awbCharges        Decimal?       @db.Decimal(10, 2)
+  rtoChargesPercent Decimal?       @db.Decimal(5, 2)
+  remarks           String?
+  approvedAt        DateTime?
+  approvedBy        String?        @db.Uuid
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime
+  RateCardSlab      RateCardSlab[]
+
+  @@index([companyId])
+  @@index([effectiveFrom])
+  @@index([status])
+  @@index([transporterId])
+}
+
+model RateCardSlab {
+  id                   String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  rateCardId           String   @db.Uuid
+  fromWeight           Decimal  @db.Decimal(10, 3)
+  toWeight             Decimal  @db.Decimal(10, 3)
+  zone                 String?
+  fromPincode          String?
+  toPincode            String?
+  rate                 Decimal  @db.Decimal(10, 2)
+  additionalWeightRate Decimal? @db.Decimal(10, 2)
+  minCharge            Decimal? @db.Decimal(10, 2)
+  RateCard             RateCard @relation(fields: [rateCardId], references: [id], onDelete: Cascade)
+
+  @@index([rateCardId])
+}
+
+model ReportExecution {
+  id                String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  scheduledReportId String          @db.Uuid
+  status            String
+  startedAt         DateTime
+  completedAt       DateTime?
+  fileUrl           String?
+  fileName          String?
+  fileSize          Int?
+  error             String?
+  recipientsSent    String[]
+  ScheduledReport   ScheduledReport @relation(fields: [scheduledReportId], references: [id], onDelete: Cascade)
+
+  @@index([scheduledReportId])
+  @@index([startedAt])
+}
+
+model Return {
+  id                                         String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  returnNo                                   String       @unique
+  type                                       ReturnType
+  status                                     ReturnStatus @default(INITIATED)
+  orderId                                    String?      @db.Uuid
+  awbNo                                      String?
+  reason                                     String?
+  remarks                                    String?
+  qcStatus                                   QCStatus?
+  qcCompletedAt                              DateTime?
+  qcCompletedBy                              String?      @db.Uuid
+  qcRemarks                                  String?
+  initiatedAt                                DateTime     @default(now())
+  receivedAt                                 DateTime?
+  processedAt                                DateTime?
+  refundAmount                               Decimal?     @db.Decimal(12, 2)
+  refundStatus                               String?
+  createdAt                                  DateTime     @default(now())
+  updatedAt                                  DateTime
+  Order_Order_replacementForReturnIdToReturn Order?       @relation("Order_replacementForReturnIdToReturn")
+  Order_Return_orderIdToOrder                Order?       @relation("Return_orderIdToOrder", fields: [orderId], references: [id])
+  ReturnItem                                 ReturnItem[]
+
+  @@index([orderId])
+  @@index([qcStatus])
+  @@index([status])
+  @@index([type])
+}
+
+model ReturnItem {
+  id           String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  returnId     String  @db.Uuid
+  skuId        String  @db.Uuid
+  quantity     Int
+  receivedQty  Int     @default(0)
+  qcStatus     String?
+  qcGrade      String?
+  qcRemarks    String?
+  action       String?
+  restockedQty Int     @default(0)
+  disposedQty  Int     @default(0)
+  Return       Return  @relation(fields: [returnId], references: [id], onDelete: Cascade)
+
+  @@index([returnId])
+}
+
+model SKU {
+  id                                      String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code                                    String
+  name                                    String
+  description                             String?
+  category                                String?
+  subCategory                             String?
+  brand                                   String?
+  hsn                                     String?
+  weight                                  Decimal?           @db.Decimal(10, 3)
+  length                                  Decimal?           @db.Decimal(10, 2)
+  width                                   Decimal?           @db.Decimal(10, 2)
+  height                                  Decimal?           @db.Decimal(10, 2)
+  mrp                                     Decimal?           @db.Decimal(12, 2)
+  costPrice                               Decimal?           @db.Decimal(12, 2)
+  sellingPrice                            Decimal?           @db.Decimal(12, 2)
+  taxRate                                 Decimal?           @db.Decimal(5, 2)
+  isSerialised                            Boolean            @default(false)
+  isBatchTracked                          Boolean            @default(false)
+  reorderLevel                            Int?
+  reorderQty                              Int?
+  barcodes                                String[]
+  images                                  String[]
+  attributes                              Json?
+  isActive                                Boolean            @default(true)
+  companyId                               String             @db.Uuid
+  isVariantParent                         Boolean            @default(false)
+  isVariant                               Boolean            @default(false)
+  createdAt                               DateTime           @default(now())
+  updatedAt                               DateTime
+  BundleItem                              BundleItem[]
+  InboundItem                             InboundItem[]
+  Inventory                               Inventory[]
+  OrderItem                               OrderItem[]
+  POItem                                  POItem[]
+  PicklistItem                            PicklistItem[]
+  QCExecution                             QCExecution[]
+  Company                                 Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  SKUBundle                               SKUBundle?
+  SKUVariant_SKUVariant_parentSkuIdToSKU  SKUVariant[]       @relation("SKUVariant_parentSkuIdToSKU")
+  SKUVariant_SKUVariant_variantSkuIdToSKU SKUVariant?        @relation("SKUVariant_variantSkuIdToSKU")
+  VirtualInventory                        VirtualInventory[]
+  WaveItem                                WaveItem[]
+
+  @@unique([companyId, code])
+  @@index([code])
+  @@index([companyId])
+  @@index([name])
+}
+
+model SKUBrand {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  skuId     String   @db.Uuid
+  brandId   String   @db.Uuid
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  Brand     Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@unique([skuId, brandId])
+  @@index([brandId])
+  @@index([skuId])
+}
+
+model SKUBundle {
+  id              String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  bundleSkuId     String       @unique @db.Uuid
+  companyId       String       @db.Uuid
+  type            BundleType   @default(KIT)
+  name            String
+  description     String?
+  pricingType     String       @default("FIXED")
+  fixedPrice      Decimal?     @db.Decimal(12, 2)
+  discountPercent Decimal?     @db.Decimal(5, 2)
+  validFrom       DateTime?
+  validTo         DateTime?
+  isActive        Boolean      @default(true)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime
+  BundleItem      BundleItem[]
+  SKU             SKU          @relation(fields: [bundleSkuId], references: [id], onDelete: Cascade)
+
+  @@index([bundleSkuId])
+  @@index([companyId])
+}
+
+model SKUVariant {
+  id                               String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  parentSkuId                      String            @db.Uuid
+  variantSkuId                     String            @unique @db.Uuid
+  mrpOverride                      Decimal?          @db.Decimal(12, 2)
+  priceOverride                    Decimal?          @db.Decimal(12, 2)
+  isActive                         Boolean           @default(true)
+  createdAt                        DateTime          @default(now())
+  updatedAt                        DateTime
+  SKU_SKUVariant_parentSkuIdToSKU  SKU               @relation("SKUVariant_parentSkuIdToSKU", fields: [parentSkuId], references: [id], onDelete: Cascade)
+  SKU_SKUVariant_variantSkuIdToSKU SKU               @relation("SKUVariant_variantSkuIdToSKU", fields: [variantSkuId], references: [id], onDelete: Cascade)
+  SKUVariantValue                  SKUVariantValue[]
+
+  @@index([parentSkuId])
+}
+
+model SKUVariantValue {
+  id                    String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  skuVariantId          String                @db.Uuid
+  attributeValueId      String                @db.Uuid
+  VariantAttributeValue VariantAttributeValue @relation(fields: [attributeValueId], references: [id])
+  SKUVariant            SKUVariant            @relation(fields: [skuVariantId], references: [id], onDelete: Cascade)
+
+  @@unique([skuVariantId, attributeValueId])
+  @@index([skuVariantId])
+}
+
+model ScheduledReport {
+  id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String
+  description     String?
+  reportType      String
+  reportConfig    Json
+  frequency       ReportFrequency
+  dayOfWeek       Int?
+  dayOfMonth      Int?
+  time            String
+  timezone        String            @default("Asia/Kolkata")
+  format          ReportFormat      @default(EXCEL)
+  recipients      String[]
+  lastRunAt       DateTime?
+  lastStatus      String?
+  lastError       String?
+  nextRunAt       DateTime?
+  companyId       String            @db.Uuid
+  createdById     String            @db.Uuid
+  isActive        Boolean           @default(true)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime
+  ReportExecution ReportExecution[]
+
+  @@index([companyId])
+  @@index([isActive])
+  @@index([nextRunAt])
+}
+
+model Sequence {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String   @unique
+  prefix        String?
+  currentValue  Int      @default(0)
+  paddingLength Int      @default(6)
+  updatedAt     DateTime
+}
+
+model ServicePincode {
+  id               String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  pincode          String
+  transporterId    String      @db.Uuid
+  codAvailable     Boolean     @default(true)
+  prepaidAvailable Boolean     @default(true)
+  deliveryDays     Int?
+  Transporter      Transporter @relation(fields: [transporterId], references: [id], onDelete: Cascade)
+
+  @@unique([pincode, transporterId])
+  @@index([pincode])
+}
+
+model Session {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionToken String   @unique
+  userId       String   @db.Uuid
+  expires      DateTime
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+}
+
+model ShippingRule {
+  id                    String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ruleNo                String                  @unique
+  name                  String
+  type                  ShippingRuleType
+  status                RuleStatus              @default(DRAFT)
+  priority              Int                     @default(0)
+  description           String?
+  transporterId         String                  @db.Uuid
+  minWeight             Decimal?                @db.Decimal(10, 3)
+  maxWeight             Decimal?                @db.Decimal(10, 3)
+  fromPincodes          String[]
+  toPincodes            String[]
+  channels              Channel[]
+  orderTypes            OrderType[]
+  paymentModes          PaymentMode[]
+  effectiveFrom         DateTime?
+  effectiveTo           DateTime?
+  companyId             String                  @db.Uuid
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime
+  ShippingRuleCondition ShippingRuleCondition[]
+
+  @@index([companyId])
+  @@index([priority])
+  @@index([status])
+  @@index([transporterId])
+}
+
+model ShippingRuleCondition {
+  id            String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ruleId        String       @db.Uuid
+  conditionType String
+  operator      String
+  value         Json
+  ShippingRule  ShippingRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+
+  @@index([ruleId])
+}
+
+model StockAdjustment {
+  id                  String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  adjustmentNo        String                @unique
+  reason              AdjustmentReason
+  remarks             String?
+  locationId          String                @db.Uuid
+  adjustedById        String                @db.Uuid
+  createdAt           DateTime              @default(now())
+  approvedAt          DateTime?
+  approvedBy          String?               @db.Uuid
+  User                User                  @relation(fields: [adjustedById], references: [id])
+  Location            Location              @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  StockAdjustmentItem StockAdjustmentItem[]
+
+  @@index([locationId])
+}
+
+model StockAdjustmentItem {
+  id              String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  adjustmentId    String          @db.Uuid
+  skuId           String          @db.Uuid
+  binId           String          @db.Uuid
+  batchNo         String?
+  previousQty     Int
+  adjustedQty     Int
+  newQty          Int
+  StockAdjustment StockAdjustment @relation(fields: [adjustmentId], references: [id], onDelete: Cascade)
+
+  @@index([adjustmentId])
+}
+
+model Transporter {
+  id                  String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code                String              @unique
+  name                String
+  type                TransporterType
+  logo                String?
+  apiEnabled          Boolean             @default(false)
+  apiConfig           Json?
+  trackingUrlTemplate String?
+  isActive            Boolean             @default(true)
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime
+  AWB                 AWB[]
+  Delivery            Delivery[]
+  ServicePincode      ServicePincode[]
+  TransporterConfig   TransporterConfig[]
+}
+
+model TransporterConfig {
+  id            String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  companyId     String      @db.Uuid
+  transporterId String      @db.Uuid
+  isActive      Boolean     @default(true)
+  accountCode   String?
+  credentials   Json?
+  priority      Int         @default(0)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime
+  Company       Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  Transporter   Transporter @relation(fields: [transporterId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, transporterId])
+  @@index([companyId])
+}
+
+model User {
+  id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email           String            @unique
+  password        String
+  name            String
+  phone           String?
+  avatar          String?
+  role            UserRole          @default(OPERATOR)
+  isActive        Boolean           @default(true)
+  lastLoginAt     DateTime?
+  companyId       String?           @db.Uuid
+  locationAccess  String[]          @db.Uuid
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime
+  AuditLog        AuditLog[]
+  Inbound         Inbound[]
+  Picklist        Picklist[]
+  StockAdjustment StockAdjustment[]
+  Company         Company?          @relation(fields: [companyId], references: [id])
+  Wave            Wave[]
+
+  @@index([companyId])
+  @@index([email])
+}
+
+model VariantAttribute {
+  id                    String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  companyId             String                  @db.Uuid
+  code                  String
+  name                  String
+  type                  VariantAttributeType
+  isActive              Boolean                 @default(true)
+  displayOrder          Int                     @default(0)
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime
+  Company               Company                 @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  VariantAttributeValue VariantAttributeValue[]
+
+  @@unique([companyId, code])
+  @@index([companyId])
+}
+
+model VariantAttributeValue {
+  id               String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  attributeId      String            @db.Uuid
+  value            String
+  displayName      String?
+  sortOrder        Int               @default(0)
+  hexCode          String?
+  sizeOrder        Int?
+  SKUVariantValue  SKUVariantValue[]
+  VariantAttribute VariantAttribute  @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+
+  @@unique([attributeId, value])
+  @@index([attributeId])
+}
+
+model Vendor {
+  id            String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code          String
+  name          String
+  contactPerson String?
+  email         String?
+  phone         String?
+  gst           String?
+  pan           String?
+  address       Json?
+  paymentTerms  String?
+  isActive      Boolean         @default(true)
+  companyId     String          @db.Uuid
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime
+  PurchaseOrder PurchaseOrder[]
+  Company       Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, code])
+  @@index([companyId])
+}
+
+model VirtualInventory {
+  id              String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  skuId           String               @db.Uuid
+  locationId      String               @db.Uuid
+  type            VirtualInventoryType
+  channel         Channel?
+  channelConfigId String?              @db.Uuid
+  quantity        Int                  @default(0)
+  allocatedQty    Int                  @default(0)
+  validFrom       DateTime?
+  validTo         DateTime?
+  referenceType   String?
+  referenceId     String?              @db.Uuid
+  isActive        Boolean              @default(true)
+  createdById     String               @db.Uuid
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime
+  Location        Location             @relation(fields: [locationId], references: [id])
+  SKU             SKU                  @relation(fields: [skuId], references: [id], onDelete: Cascade)
+
+  @@index([channel])
+  @@index([locationId])
+  @@index([skuId])
+  @@index([type])
+}
+
+model Wave {
+  id             String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  waveNo         String      @unique
+  name           String?
+  type           WaveType    @default(BATCH_PICK)
+  status         WaveStatus  @default(DRAFT)
+  locationId     String      @db.Uuid
+  maxOrders      Int         @default(50)
+  maxItems       Int         @default(500)
+  priorityFrom   Int?
+  priorityTo     Int?
+  cutoffTime     DateTime?
+  zones          String[]
+  assignedToId   String?     @db.Uuid
+  totalOrders    Int         @default(0)
+  totalItems     Int         @default(0)
+  totalUnits     Int         @default(0)
+  pickedOrders   Int         @default(0)
+  pickedItems    Int         @default(0)
+  pickedUnits    Int         @default(0)
+  plannedStartAt DateTime?
+  releasedAt     DateTime?
+  startedAt      DateTime?
+  completedAt    DateTime?
+  optimizedRoute Json?
+  estimatedTime  Int?
+  actualTime     Int?
+  createdById    String      @db.Uuid
+  remarks        String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime
+  User           User?       @relation(fields: [assignedToId], references: [id])
+  Location       Location    @relation(fields: [locationId], references: [id])
+  WaveItem       WaveItem[]
+  WaveOrder      WaveOrder[]
+
+  @@index([assignedToId])
+  @@index([locationId])
+  @@index([status])
+}
+
+model WaveItem {
+  id                   String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  waveId               String                 @db.Uuid
+  skuId                String                 @db.Uuid
+  binId                String                 @db.Uuid
+  totalQty             Int
+  pickedQty            Int                    @default(0)
+  sequence             Int                    @default(0)
+  zoneCode             String?
+  aisle                String?
+  rack                 String?
+  level                String?
+  pickedAt             DateTime?
+  pickedById           String?                @db.Uuid
+  Bin                  Bin                    @relation(fields: [binId], references: [id])
+  SKU                  SKU                    @relation(fields: [skuId], references: [id])
+  Wave                 Wave                   @relation(fields: [waveId], references: [id], onDelete: Cascade)
+  WaveItemDistribution WaveItemDistribution[]
+
+  @@index([binId])
+  @@index([sequence])
+  @@index([skuId])
+  @@index([waveId])
+}
+
+model WaveItemDistribution {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  waveItemId  String   @db.Uuid
+  orderId     String   @db.Uuid
+  orderItemId String   @db.Uuid
+  quantity    Int
+  WaveItem    WaveItem @relation(fields: [waveItemId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([waveItemId])
+}
+
+model WaveOrder {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  waveId      String    @db.Uuid
+  orderId     String    @db.Uuid
+  sequence    Int       @default(0)
+  status      String    @default("PENDING")
+  startedAt   DateTime?
+  completedAt DateTime?
+  Order       Order     @relation(fields: [orderId], references: [id])
+  Wave        Wave      @relation(fields: [waveId], references: [id], onDelete: Cascade)
+
+  @@unique([waveId, orderId])
+  @@index([orderId])
+  @@index([waveId])
+}
+
+model Zone {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code        String
+  name        String
+  type        ZoneType
+  description String?
+  isActive    Boolean  @default(true)
+  locationId  String   @db.Uuid
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+  Bin         Bin[]
+  Location    Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@unique([locationId, code])
+  @@index([locationId])
+}
+
+enum AIActionStatus {
+  PENDING_APPROVAL
+  AUTO_APPROVED
   APPROVED
-  PARTIALLY_RECEIVED
-  RECEIVED
-  CANCELLED
+  REJECTED
+  EXECUTED
+  FAILED
+  EXPIRED
 }
 
-enum InboundType {
-  PURCHASE_ORDER
-  ASN
-  RETURN
-  DIRECT
-  STOCK_TRANSFER
-}
-
-enum InboundStatus {
-  PENDING
-  IN_PROGRESS
-  QC_PENDING
-  COMPLETED
-  CANCELLED
-}
-
-enum ReturnType {
-  CUSTOMER_RETURN
-  RTO
-  VENDOR_RETURN
-}
-
-enum ReturnStatus {
-  INITIATED
-  IN_TRANSIT
-  RECEIVED
-  QC_PENDING
-  QC_PASSED
-  QC_FAILED
-  RESTOCKED
-  DISPOSED
-  REFUNDED
+enum AIActionType {
+  CARRIER_SWITCH
+  REATTEMPT_SCHEDULE
+  ADDRESS_UPDATE
+  CUSTOMER_NOTIFICATION
+  PRIORITY_CHANGE
+  ESCALATION
+  REFUND_RECOMMENDATION
+  ROUTE_OPTIMIZATION
+  INVENTORY_REALLOCATION
+  SLA_ALERT
 }
 
 enum AdjustmentReason {
@@ -184,59 +1923,18 @@ enum AdjustmentReason {
   OTHER
 }
 
-// ==================== NEW ENUMS FOR MISSING FEATURES ====================
-
-enum CycleCountStatus {
-  PLANNED
-  IN_PROGRESS
-  COMPLETED
-  VARIANCE_FOUND
-  VERIFIED
-  CANCELLED
+enum BrandUserRole {
+  OWNER
+  MANAGER
+  ANALYST
+  VIEWER
 }
 
-enum GatePassType {
-  VISITOR
-  INBOUND_DELIVERY
-  OUTBOUND_SHIPMENT
-  VENDOR
-  OTHER
-}
-
-enum GatePassStatus {
-  OPEN
-  IN_PROGRESS
-  CLOSED
-  VERIFIED
-  CANCELLED
-}
-
-enum ShippingRuleType {
-  WEIGHT_BASED
-  PINCODE_BASED
-  PRIORITY_BASED
-  COST_OPTIMIZED
-  DELIVERY_TIME_BASED
-}
-
-enum RuleStatus {
-  DRAFT
-  ACTIVE
-  INACTIVE
-  ARCHIVED
-}
-
-enum RateCardType {
-  PREPAID
-  COD
-  BOTH
-}
-
-enum RateCardStatus {
-  DRAFT
-  ACTIVE
-  ARCHIVED
-  SUPERSEDED
+enum BundleType {
+  KIT
+  COMBO
+  ASSEMBLY
+  VIRTUAL
 }
 
 enum CODReconciliationStatus {
@@ -256,116 +1954,46 @@ enum CODTransactionType {
   WRITEOFF
 }
 
-enum InventoryValuationMethod {
-  FIFO
-  LIFO
-  FEFO
-  WAC
+enum Channel {
+  AMAZON
+  FLIPKART
+  MYNTRA
+  AJIO
+  MEESHO
+  NYKAA
+  TATA_CLIQ
+  JIOMART
+  SHOPIFY
+  WOOCOMMERCE
+  WEBSITE
+  MANUAL
 }
 
-enum SyncFrequency {
-  REALTIME
-  HOURLY
-  DAILY
-  WEEKLY
-}
-
-enum ImportStatus {
-  PENDING
-  PROCESSING
-  COMPLETED
+enum CommunicationStatus {
+  SCHEDULED
+  QUEUED
+  SENT
+  DELIVERED
+  READ
+  RESPONDED
   FAILED
-  PARTIAL
-}
-
-enum QCStatus {
-  PENDING
-  IN_PROGRESS
-  PASSED
-  FAILED
-  CONDITIONAL
-}
-
-// ==================== WAVE PICKING ENUMS ====================
-
-enum WaveStatus {
-  DRAFT
-  PLANNED
-  RELEASED
-  IN_PROGRESS
-  COMPLETED
   CANCELLED
 }
 
-enum WaveType {
-  BATCH_PICK
-  ZONE_PICK
-  CLUSTER_PICK
-  PRIORITY_PICK
-}
-
-// ==================== QC WORKFLOW ENUMS ====================
-
-enum QCType {
-  INBOUND
-  RETURN
-  PRODUCTION
-  CYCLE_COUNT
-  RANDOM_AUDIT
-}
-
-enum QCParameterType {
-  VISUAL
-  DIMENSIONAL
-  WEIGHT
-  BARCODE
-  FUNCTIONAL
-  DOCUMENTATION
-}
-
-// ==================== VIRTUAL INVENTORY ENUMS ====================
-
-enum VirtualInventoryType {
-  CHANNEL_RESERVE
-  PREORDER
-  PROMOTIONAL
-  SAFETY_STOCK
-  DAMAGED_HOLD
-}
-
-// ==================== CATALOG ENUMS ====================
-
-enum BundleType {
-  KIT
-  COMBO
-  ASSEMBLY
-  VIRTUAL
-}
-
-enum VariantAttributeType {
-  SIZE
-  COLOR
-  MATERIAL
-  PATTERN
-  STYLE
+enum CommunicationTrigger {
+  DELAY_PREDICTED
+  SLA_BREACH_RISK
+  WEATHER_DISRUPTION
+  CARRIER_ISSUE
+  OUT_FOR_DELIVERY
+  DELIVERY_ATTEMPTED
+  DELIVERED
+  RTO_INITIATED
+  ORDER_CONFIRMED
+  ORDER_SHIPPED
+  PAYMENT_REMINDER
+  FEEDBACK_REQUEST
   CUSTOM
-}
-
-// ==================== B2B CUSTOMER ENUMS ====================
-
-enum CustomerType {
-  RETAIL
-  WHOLESALE
-  DISTRIBUTOR
-  DEALER
-  CORPORATE
-}
-
-enum CustomerStatus {
-  ACTIVE
-  INACTIVE
-  SUSPENDED
-  BLOCKED
 }
 
 enum CreditStatus {
@@ -373,17 +2001,6 @@ enum CreditStatus {
   EXCEEDED
   BLOCKED
   ON_HOLD
-}
-
-enum PaymentTermType {
-  IMMEDIATE
-  NET_7
-  NET_15
-  NET_30
-  NET_45
-  NET_60
-  NET_90
-  CUSTOM
 }
 
 enum CreditTransactionType {
@@ -395,2177 +2012,122 @@ enum CreditTransactionType {
   INTEREST_DEBIT
 }
 
-// ==================== QUOTATION ENUMS ====================
+enum CustomerStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  BLOCKED
+}
 
-enum QuotationStatus {
-  DRAFT
-  PENDING_APPROVAL
-  APPROVED
-  REJECTED
-  EXPIRED
-  CONVERTED
+enum CustomerType {
+  RETAIL
+  WHOLESALE
+  DISTRIBUTOR
+  DEALER
+  CORPORATE
+}
+
+enum CycleCountStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  VARIANCE_FOUND
+  VERIFIED
   CANCELLED
 }
 
-// ==================== ANALYTICS ENUMS ====================
-
-enum ReportFrequency {
-  DAILY
-  WEEKLY
-  MONTHLY
-  QUARTERLY
-}
-
-enum ReportFormat {
-  PDF
-  EXCEL
-  CSV
-}
-
-// ==================== MULTI-TENANT: COMPANY & LOCATIONS ====================
-
-model Company {
-  id        String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  code      String  @unique
-  name      String
-  legalName String?
-  gst       String?
-  pan       String?
-  cin       String?
-  logo      String?
-  email     String?
-  phone     String?
-  address   Json?
-  settings  Json?
-  isActive  Boolean @default(true)
-
-  locations    Location[]
-  users        User[]
-  skus         SKU[]
-  vendors      Vendor[]
-  channels     ChannelConfig[]
-  transporters TransporterConfig[]
-  brands       Brand[]
-
-  // New relations for industry parity
-  qcTemplates       QCTemplate[]
-  variantAttributes VariantAttribute[]
-  customers         Customer[]
-  customerGroups    CustomerGroup[]
-  priceLists        PriceList[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Location {
-  id            String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  code          String
-  name          String
-  type          LocationType
-  address       Json
-  contactPerson String?
-  contactPhone  String?
-  contactEmail  String?
-  gst           String?
-  isActive      Boolean      @default(true)
-  settings      Json?
-
-  companyId String  @db.Uuid
-  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-
-  zones            Zone[]
-  orders           Order[]
-  inventory        Inventory[]
-  inbounds         Inbound[]
-  stockAdjustments StockAdjustment[]
-
-  // New relations for industry parity
-  waves            Wave[]
-  virtualInventory VirtualInventory[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([companyId, code])
-  @@index([companyId])
-}
-
-// ==================== USER MANAGEMENT ====================
-
-model User {
-  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email       String    @unique
-  password    String
-  name        String
-  phone       String?
-  avatar      String?
-  role        UserRole  @default(OPERATOR)
-  isActive    Boolean   @default(true)
-  lastLoginAt DateTime?
-
-  companyId      String?  @db.Uuid
-  company        Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
-  locationAccess String[] @db.Uuid // Array of location UUIDs
-
-  picklists        Picklist[]
-  inbounds         Inbound[]         @relation("ReceivedBy")
-  stockAdjustments StockAdjustment[] @relation("AdjustedBy")
-  auditLogs        AuditLog[]
-
-  // New relations for industry parity
-  assignedWaves Wave[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([companyId])
-  @@index([email])
-}
-
-model Session {
-  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  sessionToken String   @unique
-  userId       String   @db.Uuid
-  expires      DateTime
-
-  createdAt DateTime @default(now())
-
-  @@index([userId])
-}
-
-// ==================== BRAND/CLIENT MANAGEMENT ====================
-
-model Brand {
-  id            String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  code          String  @unique
-  name          String
-  logo          String?
-  description   String?
-  contactPerson String?
-  contactEmail  String?
-  contactPhone  String?
-  website       String?
-
-  // Address
-  address Json?
-
-  // Settings
-  settings Json? // Custom dashboard settings
-  isActive Boolean @default(true)
-
-  // Company association (OMS company that manages this brand)
-  companyId String  @db.Uuid
-  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-
-  // Brand users (clients)
-  users BrandUser[]
-
-  // SKU association - which SKUs belong to this brand
-  skuBrands SKUBrand[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([companyId])
-  @@index([code])
-}
-
-model BrandUser {
-  id      String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  brandId String @db.Uuid
-  brand   Brand  @relation(fields: [brandId], references: [id], onDelete: Cascade)
-  userId  String @db.Uuid
-
-  // Role within the brand portal
-  role BrandUserRole @default(VIEWER)
-
-  // Dashboard preferences
-  dashboardConfig Json?
-
-  isActive Boolean @default(true)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([brandId, userId])
-  @@index([brandId])
-  @@index([userId])
-}
-
-enum BrandUserRole {
-  OWNER // Full access to brand dashboard
-  MANAGER // Can view all data and export
-  ANALYST // Can view dashboards and reports
-  VIEWER // Read-only access
-}
-
-model SKUBrand {
-  id      String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  skuId   String @db.Uuid
-  brandId String @db.Uuid
-  brand   Brand  @relation(fields: [brandId], references: [id], onDelete: Cascade)
-
-  isActive Boolean @default(true)
-
-  createdAt DateTime @default(now())
-
-  @@unique([skuId, brandId])
-  @@index([brandId])
-  @@index([skuId])
-}
-
-// ==================== CHANNEL & TRANSPORTER CONFIG ====================
-
-model ChannelConfig {
-  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  companyId   String    @db.Uuid
-  company     Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  channel     Channel
-  displayName String?
-  isActive    Boolean   @default(true)
-  credentials Json?
-  settings    Json?
-  lastSyncAt  DateTime?
-
-  // Enhanced sync capabilities
-  syncFrequency    SyncFrequency @default(HOURLY)
-  nextSyncAt       DateTime?
-  syncStatus       ImportStatus  @default(PENDING)
-  webhookUrl       String?
-  webhookSecret    String?
-  mappingConfig    Json? // Field mapping configuration
-  retryCount       Int           @default(0)
-  lastErrorMessage String?
-  lastErrorAt      DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([companyId, channel])
-  @@index([companyId])
-}
-
-model Transporter {
-  id                  String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  code                String          @unique
-  name                String
-  type                TransporterType
-  logo                String?
-  apiEnabled          Boolean         @default(false)
-  apiConfig           Json?
-  trackingUrlTemplate String?
-  isActive            Boolean         @default(true)
-
-  deliveries      Delivery[]
-  awbPool         AWB[]
-  servicePincodes ServicePincode[]
-  companyConfigs  TransporterConfig[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model TransporterConfig {
-  id            String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  companyId     String      @db.Uuid
-  company       Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  transporterId String      @db.Uuid
-  transporter   Transporter @relation(fields: [transporterId], references: [id], onDelete: Cascade)
-  isActive      Boolean     @default(true)
-  accountCode   String?
-  credentials   Json?
-  priority      Int         @default(0)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([companyId, transporterId])
-  @@index([companyId])
-}
-
-model ServicePincode {
-  id               String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  pincode          String
-  transporterId    String      @db.Uuid
-  transporter      Transporter @relation(fields: [transporterId], references: [id], onDelete: Cascade)
-  codAvailable     Boolean     @default(true)
-  prepaidAvailable Boolean     @default(true)
-  deliveryDays     Int?
-
-  @@unique([pincode, transporterId])
-  @@index([pincode])
-}
-
-model AWB {
-  id            String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  awbNo         String      @unique
-  transporterId String      @db.Uuid
-  transporter   Transporter @relation(fields: [transporterId], references: [id], onDelete: Cascade)
-  isUsed        Boolean     @default(false)
-  usedAt        DateTime?
-  usedFor       String?
-
-  createdAt DateTime @default(now())
-
-  @@index([transporterId, isUsed])
-}
-
-// ==================== WAREHOUSE SETUP ====================
-
-model Zone {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  code        String
-  name        String
-  type        ZoneType
-  description String?
-  isActive    Boolean  @default(true)
-
-  locationId String   @db.Uuid
-  location   Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
-
-  bins Bin[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([locationId, code])
-  @@index([locationId])
-}
-
-model Bin {
-  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  code        String
-  name        String?
-  description String?
-  capacity    Int?
-  isActive    Boolean @default(true)
-
-  zoneId String @db.Uuid
-  zone   Zone   @relation(fields: [zoneId], references: [id], onDelete: Cascade)
-
-  inventory     Inventory[]
-  picklistItems PicklistItem[]
-
-  // New relation for wave picking
-  waveItems WaveItem[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([zoneId, code])
-  @@index([zoneId])
-}
-
-// ==================== PRODUCT MASTER ====================
-
-model SKU {
-  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  code           String
-  name           String
-  description    String?
-  category       String?
-  subCategory    String?
-  brand          String?
-  hsn            String?
-  weight         Decimal? @db.Decimal(10, 3)
-  length         Decimal? @db.Decimal(10, 2)
-  width          Decimal? @db.Decimal(10, 2)
-  height         Decimal? @db.Decimal(10, 2)
-  mrp            Decimal? @db.Decimal(12, 2)
-  costPrice      Decimal? @db.Decimal(12, 2)
-  sellingPrice   Decimal? @db.Decimal(12, 2)
-  taxRate        Decimal? @db.Decimal(5, 2)
-  isSerialised   Boolean  @default(false)
-  isBatchTracked Boolean  @default(false)
-  reorderLevel   Int?
-  reorderQty     Int?
-  barcodes       String[]
-  images         String[]
-  attributes     Json?
-  isActive       Boolean  @default(true)
-
-  companyId String  @db.Uuid
-  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-
-  inventory     Inventory[]
-  orderItems    OrderItem[]
-  picklistItems PicklistItem[]
-  poItems       POItem[]
-  inboundItems  InboundItem[]
-
-  // New relations for industry parity
-  isVariantParent  Boolean            @default(false)
-  isVariant        Boolean            @default(false)
-  childVariants    SKUVariant[]       @relation("ParentSKU")
-  variantOf        SKUVariant?        @relation("VariantSKU")
-  bundles          SKUBundle[]        @relation("BundleParent")
-  bundleComponents BundleItem[]
-  waveItems        WaveItem[]
-  qcExecutions     QCExecution[]
-  virtualInventory VirtualInventory[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([companyId, code])
-  @@index([companyId])
-  @@index([code])
-  @@index([name])
-}
-
-model Vendor {
-  id            String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  code          String
-  name          String
-  contactPerson String?
-  email         String?
-  phone         String?
-  gst           String?
-  pan           String?
-  address       Json?
-  paymentTerms  String?
-  isActive      Boolean @default(true)
-
-  companyId String  @db.Uuid
-  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-
-  purchaseOrders PurchaseOrder[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([companyId, code])
-  @@index([companyId])
-}
-
-// ==================== INVENTORY ====================
-
-model Inventory {
-  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  quantity      Int       @default(0)
-  reservedQty   Int       @default(0)
-  batchNo       String?
-  lotNo         String?
-  expiryDate    DateTime?
-  mfgDate       DateTime?
-  mrp           Decimal?  @db.Decimal(12, 2)
-  serialNumbers String[]
-
-  // FIFO/LIFO/FEFO support
-  valuationMethod InventoryValuationMethod @default(FIFO)
-  fifoSequence    Int? // For FIFO ordering
-  costPrice       Decimal?                 @db.Decimal(12, 2)
-
-  skuId      String   @db.Uuid
-  sku        SKU      @relation(fields: [skuId], references: [id], onDelete: Cascade)
-  binId      String   @db.Uuid
-  bin        Bin      @relation(fields: [binId], references: [id], onDelete: Cascade)
-  locationId String   @db.Uuid
-  location   Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([skuId, binId, batchNo])
-  @@index([skuId])
-  @@index([binId])
-  @@index([locationId])
-  @@index([fifoSequence])
-}
-
-model InventoryMovement {
-  id         String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  movementNo String  @unique
-  type       String // IN, OUT, TRANSFER
-  reason     String?
-  quantity   Int
-
-  skuId         String  @db.Uuid
-  fromBinId     String? @db.Uuid
-  toBinId       String? @db.Uuid
-  batchNo       String?
-  serialNumbers String[]
-
-  referenceType String? // ORDER, INBOUND, ADJUSTMENT, TRANSFER
-  referenceId   String? @db.Uuid
-
-  performedBy String   @db.Uuid
-  performedAt DateTime @default(now())
-  remarks     String?
-
-  createdAt DateTime @default(now())
-
-  @@index([skuId])
-  @@index([referenceId])
-}
-
-model StockAdjustment {
-  id           String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  adjustmentNo String           @unique
-  reason       AdjustmentReason
-  remarks      String?
-
-  locationId String   @db.Uuid
-  location   Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
-
-  adjustedById String @db.Uuid
-  adjustedBy   User   @relation("AdjustedBy", fields: [adjustedById], references: [id])
-
-  items StockAdjustmentItem[]
-
-  createdAt  DateTime  @default(now())
-  approvedAt DateTime?
-  approvedBy String?   @db.Uuid
-
-  @@index([locationId])
-}
-
-model StockAdjustmentItem {
-  id           String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  adjustmentId String          @db.Uuid
-  adjustment   StockAdjustment @relation(fields: [adjustmentId], references: [id], onDelete: Cascade)
-  skuId        String          @db.Uuid
-  binId        String          @db.Uuid
-  batchNo      String?
-  previousQty  Int
-  adjustedQty  Int
-  newQty       Int
-
-  @@index([adjustmentId])
-}
-
-// ==================== ORDERS ====================
-
-model Order {
-  id              String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  orderNo         String      @unique
-  externalOrderNo String?
-  channel         Channel
-  orderType       OrderType   @default(B2C)
-  paymentMode     PaymentMode
-  status          OrderStatus @default(CREATED)
-
-  // Customer Info
-  customerName    String
-  customerPhone   String
-  customerEmail   String?
-  shippingAddress Json
-  billingAddress  Json?
-
-  // Amounts
-  subtotal        Decimal @db.Decimal(12, 2)
-  taxAmount       Decimal @db.Decimal(12, 2)
-  shippingCharges Decimal @default(0) @db.Decimal(12, 2)
-  discount        Decimal @default(0) @db.Decimal(12, 2)
-  codCharges      Decimal @default(0) @db.Decimal(12, 2)
-  totalAmount     Decimal @db.Decimal(12, 2)
-
-  // Dates
-  orderDate    DateTime
-  shipByDate   DateTime?
-  promisedDate DateTime?
-
-  // Priority
-  priority Int      @default(0)
-  tags     String[]
-  remarks  String?
-
-  // CSV Import tracking
-  importId       String?      @db.Uuid
-  import         OrderImport? @relation(fields: [importId], references: [id])
-  csvLineNumber  Int?
-  dataSourceType String? // CSV_IMPORT, API, MANUAL, EDI
-
-  // Replacement order tracking
-  replacementForReturnId String? @unique @db.Uuid
-  replacementForReturn   Return? @relation("ReplacementOrder", fields: [replacementForReturnId], references: [id])
-
-  // Relations
-  locationId String   @db.Uuid
-  location   Location @relation(fields: [locationId], references: [id])
-
-  items      OrderItem[]
-  deliveries Delivery[]
-  picklists  Picklist[]
-  returns    Return[]    @relation("OrderReturns")
-
-  // B2B Customer & Payment Terms
-  customerId      String?          @db.Uuid
-  customer        Customer?        @relation("CustomerOrders", fields: [customerId], references: [id])
-  paymentTermType PaymentTermType?
-  paymentTermDays Int?
-  creditDueDate   DateTime?
-  poNumber        String? // Customer's PO number
-
-  // GST Invoice for B2B
-  gstInvoiceNo   String?
-  gstInvoiceDate DateTime?
-  eWayBillNo     String?
-  irnNo          String? // E-Invoice IRN
-
-  // Wave & Quotation relations
-  waveOrders      WaveOrder[]
-  sourceQuotation Quotation?  @relation("QuotationToOrder")
-
-  // AI Control Tower relations
-  ndrs                    NDR[]
-  proactiveCommunications ProactiveCommunication[]
-  exceptions              Exception[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([locationId])
-  @@index([customerId])
-  @@index([status])
-  @@index([channel])
-  @@index([orderDate])
-  @@index([externalOrderNo])
-  @@index([importId])
-}
-
-model OrderItem {
-  id      String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  orderId String @db.Uuid
-  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  skuId   String @db.Uuid
-  sku     SKU    @relation(fields: [skuId], references: [id])
-
-  externalItemId String?
-  quantity       Int
-  allocatedQty   Int     @default(0)
-  pickedQty      Int     @default(0)
-  packedQty      Int     @default(0)
-  shippedQty     Int     @default(0)
-
-  unitPrice  Decimal @db.Decimal(12, 2)
-  taxAmount  Decimal @db.Decimal(12, 2)
-  discount   Decimal @default(0) @db.Decimal(12, 2)
-  totalPrice Decimal @db.Decimal(12, 2)
-
-  status        ItemStatus @default(PENDING)
-  serialNumbers String[]
-  batchNo       String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([orderId])
-  @@index([skuId])
-}
-
-// ==================== DELIVERY & SHIPMENT ====================
-
-model Delivery {
-  id         String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  deliveryNo String @unique
-  orderId    String @db.Uuid
-  order      Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
-
-  status DeliveryStatus @default(PENDING)
-
-  transporterId String?      @db.Uuid
-  transporter   Transporter? @relation(fields: [transporterId], references: [id])
-  awbNo         String?
-  trackingUrl   String?
-
-  weight           Decimal? @db.Decimal(10, 3)
-  length           Decimal? @db.Decimal(10, 2)
-  width            Decimal? @db.Decimal(10, 2)
-  height           Decimal? @db.Decimal(10, 2)
-  volumetricWeight Decimal? @db.Decimal(10, 3)
-  boxes            Int      @default(1)
-
-  // Invoice
-  invoiceNo   String?
-  invoiceDate DateTime?
-  invoiceUrl  String?
-
-  // Label
-  labelUrl String?
-
-  // Dates
-  packDate     DateTime?
-  shipDate     DateTime?
-  deliveryDate DateTime?
-
-  // POD
-  podImage     String?
-  podSignature String?
-  podRemarks   String?
-  receivedBy   String?
-
-  manifestId String?   @db.Uuid
-  manifest   Manifest? @relation(fields: [manifestId], references: [id])
-
-  remarks String?
-
-  // AI Control Tower - NDR relation
-  ndrs NDR[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([orderId])
-  @@index([status])
-  @@index([awbNo])
-  @@index([manifestId])
-}
-
-model Manifest {
-  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  manifestNo    String         @unique
-  transporterId String         @db.Uuid
-  status        ManifestStatus @default(OPEN)
-
-  vehicleNo     String?
-  driverName    String?
-  driverPhone   String?
-  handoverImage String?
-
-  deliveries Delivery[]
-
-  confirmedAt DateTime?
-  confirmedBy String?   @db.Uuid
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([transporterId])
-  @@index([status])
-}
-
-// ==================== PICKLIST & PICKING ====================
-
-model Picklist {
-  id         String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  picklistNo String         @unique
-  status     PicklistStatus @default(PENDING)
-
-  orderId String @db.Uuid
-  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
-
-  assignedToId String? @db.Uuid
-  assignedTo   User?   @relation(fields: [assignedToId], references: [id])
-
-  items PicklistItem[]
-
-  startedAt   DateTime?
-  completedAt DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([orderId])
-  @@index([status])
-  @@index([assignedToId])
-}
-
-model PicklistItem {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  picklistId String   @db.Uuid
-  picklist   Picklist @relation(fields: [picklistId], references: [id], onDelete: Cascade)
-
-  skuId String @db.Uuid
-  sku   SKU    @relation(fields: [skuId], references: [id])
-  binId String @db.Uuid
-  bin   Bin    @relation(fields: [binId], references: [id])
-
-  requiredQty   Int
-  pickedQty     Int      @default(0)
-  batchNo       String?
-  serialNumbers String[]
-
-  pickedAt DateTime?
-
-  @@index([picklistId])
-  @@index([skuId])
-}
-
-// ==================== INBOUND & RECEIVING ====================
-
-model PurchaseOrder {
-  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  poNo     String @unique
-  vendorId String @db.Uuid
-  vendor   Vendor @relation(fields: [vendorId], references: [id])
-
-  status       POStatus  @default(DRAFT)
-  expectedDate DateTime?
-  remarks      String?
-
-  subtotal    Decimal @db.Decimal(12, 2)
-  taxAmount   Decimal @db.Decimal(12, 2)
-  totalAmount Decimal @db.Decimal(12, 2)
-
-  items    POItem[]
-  inbounds Inbound[]
-
-  approvedAt DateTime?
-  approvedBy String?   @db.Uuid
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([vendorId])
-  @@index([status])
-}
-
-model POItem {
-  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  purchaseOrderId String        @db.Uuid
-  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
-
-  skuId String @db.Uuid
-  sku   SKU    @relation(fields: [skuId], references: [id])
-
-  orderedQty  Int
-  receivedQty Int     @default(0)
-  unitPrice   Decimal @db.Decimal(12, 2)
-  taxAmount   Decimal @db.Decimal(12, 2)
-  totalPrice  Decimal @db.Decimal(12, 2)
-
-  @@index([purchaseOrderId])
-  @@index([skuId])
-}
-
-model Inbound {
-  id        String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  inboundNo String        @unique
-  type      InboundType
-  status    InboundStatus @default(PENDING)
-
-  purchaseOrderId String?        @db.Uuid
-  purchaseOrder   PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
-
-  locationId String   @db.Uuid
-  location   Location @relation(fields: [locationId], references: [id])
-
-  receivedById String @db.Uuid
-  receivedBy   User   @relation("ReceivedBy", fields: [receivedById], references: [id])
-
-  grnNo   String?
-  remarks String?
-
-  items InboundItem[]
-
-  createdAt   DateTime  @default(now())
-  completedAt DateTime?
-  updatedAt   DateTime  @updatedAt
-
-  @@index([locationId])
-  @@index([type])
-  @@index([status])
-}
-
-model InboundItem {
-  id        String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  inboundId String  @db.Uuid
-  inbound   Inbound @relation(fields: [inboundId], references: [id], onDelete: Cascade)
-
-  skuId String @db.Uuid
-  sku   SKU    @relation(fields: [skuId], references: [id])
-
-  expectedQty Int?
-  receivedQty Int
-  acceptedQty Int  @default(0)
-  rejectedQty Int  @default(0)
-
-  batchNo       String?
-  expiryDate    DateTime?
-  mfgDate       DateTime?
-  mrp           Decimal?  @db.Decimal(12, 2)
-  serialNumbers String[]
-
-  binId     String? @db.Uuid
-  qcStatus  String?
-  qcRemarks String?
-
-  @@index([inboundId])
-  @@index([skuId])
-}
-
-// ==================== RETURNS ====================
-
-model Return {
-  id       String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  returnNo String       @unique
-  type     ReturnType
-  status   ReturnStatus @default(INITIATED)
-
-  orderId String? @db.Uuid
-  order   Order?  @relation("OrderReturns", fields: [orderId], references: [id])
-
-  awbNo   String?
-  reason  String?
-  remarks String?
-
-  // QC Details
-  qcStatus      QCStatus?
-  qcCompletedAt DateTime?
-  qcCompletedBy String?   @db.Uuid
-  qcRemarks     String?
-
-  items ReturnItem[]
-
-  // Replacement order link
-  replacementOrder Order? @relation("ReplacementOrder")
-
-  initiatedAt DateTime  @default(now())
-  receivedAt  DateTime?
-  processedAt DateTime?
-
-  refundAmount Decimal? @db.Decimal(12, 2)
-  refundStatus String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([orderId])
-  @@index([type])
-  @@index([status])
-  @@index([qcStatus])
-}
-
-model ReturnItem {
-  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  returnId String @db.Uuid
-  return   Return @relation(fields: [returnId], references: [id], onDelete: Cascade)
-
-  skuId       String @db.Uuid
-  quantity    Int
-  receivedQty Int    @default(0)
-
-  qcStatus  String?
-  qcGrade   String?
-  qcRemarks String?
-
-  action       String? // RESTOCK, DISPOSE, REPAIR
-  restockedQty Int     @default(0)
-  disposedQty  Int     @default(0)
-
-  @@index([returnId])
-}
-
-// ==================== AUDIT LOG ====================
-
-model AuditLog {
-  id         String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  entityType String
-  entityId   String  @db.Uuid
-  action     String
-  changes    Json?
-
-  userId String? @db.Uuid
-  user   User?   @relation(fields: [userId], references: [id])
-
-  ipAddress String?
-  userAgent String?
-
-  createdAt DateTime @default(now())
-
-  @@index([entityType, entityId])
-  @@index([userId])
-  @@index([createdAt])
-}
-
-// ==================== SETTINGS & SEQUENCES ====================
-
-model Sequence {
-  id            String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name          String  @unique
-  prefix        String?
-  currentValue  Int     @default(0)
-  paddingLength Int     @default(6)
-
-  updatedAt DateTime @updatedAt
-}
-
-// ==================== ORDER IMPORT (CSV BULK IMPORT) ====================
-
-model OrderImport {
-  id       String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  importNo String       @unique
-  fileName String
-  fileUrl  String?
-  status   ImportStatus @default(PENDING)
-
-  totalRows     Int @default(0)
-  processedRows Int @default(0)
-  successCount  Int @default(0)
-  errorCount    Int @default(0)
-
-  errors  Json? // Array of row errors with line numbers
-  summary Json? // Import summary stats
-
-  locationId   String @db.Uuid
-  importedById String @db.Uuid
-
-  orders Order[]
-
-  startedAt   DateTime?
-  completedAt DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([status])
-  @@index([locationId])
-}
-
-// ==================== CYCLE COUNT (PHYSICAL INVENTORY VERIFICATION) ====================
-
-model CycleCount {
-  id           String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  cycleCountNo String           @unique
-  status       CycleCountStatus @default(PLANNED)
-
-  locationId String  @db.Uuid
-  zoneId     String? @db.Uuid
-
-  initiatedById String  @db.Uuid
-  verifiedById  String? @db.Uuid
-
-  items CycleCountItem[]
-
-  scheduledDate DateTime
-  startedAt     DateTime?
-  completedAt   DateTime?
-  varianceFound Boolean   @default(false)
-  varianceValue Decimal?  @db.Decimal(14, 2)
-  remarks       String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([locationId])
-  @@index([status])
-  @@index([scheduledDate])
-}
-
-model CycleCountItem {
-  id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  cycleCountId String     @db.Uuid
-  cycleCount   CycleCount @relation(fields: [cycleCountId], references: [id], onDelete: Cascade)
-
-  skuId   String  @db.Uuid
-  binId   String  @db.Uuid
-  batchNo String?
-
-  expectedQty Int
-  countedQty  Int @default(0)
-  varianceQty Int @default(0)
-
-  status      String? // PENDING, COUNTED, VERIFIED
-  countedAt   DateTime?
-  countedById String?   @db.Uuid
-  remarks     String?
-
-  @@index([cycleCountId])
-  @@index([skuId])
-}
-
-// ==================== GATE PASS (VISITOR/DELIVERY TRACKING) ====================
-
-model GatePass {
-  id         String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  gatePassNo String         @unique
-  type       GatePassType
-  status     GatePassStatus @default(OPEN)
-
-  locationId String @db.Uuid
-
-  // Visitor Details
-  visitorName   String?
-  visitorPhone  String?
-  visitorIdType String? // Aadhar, PAN, License, etc.
-  visitorIdNo   String?
-  companyName   String?
-  purpose       String?
-
-  // Delivery Details
-  transporterId String? @db.Uuid
-  awbNo         String?
-  poNo          String?
-  invoiceNo     String?
-
-  // Timing
-  entryTime        DateTime
-  exitTime         DateTime?
-  expectedDuration Int? // in minutes
-
-  // Vehicle Details
-  vehicleNumber String?
-  vehicleType   String?
-  driverName    String?
-  driverPhone   String?
-  sealNumber    String?
-
-  items GatePassItem[]
-
-  // Verification
-  verifiedById    String?   @db.Uuid
-  verifiedAt      DateTime?
-  securityRemarks String?
-  photoUrl        String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([locationId])
-  @@index([status])
-  @@index([type])
-  @@index([entryTime])
-}
-
-model GatePassItem {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  gatePassId String   @db.Uuid
-  gatePass   GatePass @relation(fields: [gatePassId], references: [id], onDelete: Cascade)
-
-  skuId       String? @db.Uuid
-  description String?
-  quantity    Int
-  receivedQty Int     @default(0)
-  unit        String?
-
-  remarks String?
-
-  @@index([gatePassId])
-}
-
-// ==================== SHIPPING RULES (AUTO TRANSPORTER ASSIGNMENT) ====================
-
-model ShippingRule {
-  id     String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  ruleNo String           @unique
-  name   String
-  type   ShippingRuleType
-  status RuleStatus       @default(DRAFT)
-
-  priority    Int     @default(0)
-  description String?
-
-  conditions ShippingRuleCondition[]
-
-  transporterId String @db.Uuid
-
-  // Weight conditions
-  minWeight Decimal? @db.Decimal(10, 3)
-  maxWeight Decimal? @db.Decimal(10, 3)
-
-  // Pincode conditions
-  fromPincodes String[] // Source pincodes
-  toPincodes   String[] // Destination pincodes
-
-  // Channel/Order type conditions
-  channels     Channel[]
-  orderTypes   OrderType[]
-  paymentModes PaymentMode[]
-
-  // Time-based conditions
-  effectiveFrom DateTime?
-  effectiveTo   DateTime?
-
-  companyId String @db.Uuid
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([companyId])
-  @@index([transporterId])
-  @@index([status])
-  @@index([priority])
-}
-
-model ShippingRuleCondition {
-  id     String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  ruleId String       @db.Uuid
-  rule   ShippingRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
-
-  conditionType String // weight_range, pincode_range, order_value, etc.
-  operator      String // equals, contains, between, greater_than, less_than
-  value         Json // Flexible JSON for various condition types
-
-  @@index([ruleId])
-}
-
-// ==================== RATE CARDS (SHIPPING COST CALCULATION) ====================
-
-model RateCard {
-  id         String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  rateCardNo String         @unique
-  name       String
-  type       RateCardType
-  status     RateCardStatus @default(DRAFT)
-
-  transporterId String @db.Uuid
-  companyId     String @db.Uuid
-
-  effectiveFrom DateTime
-  effectiveTo   DateTime?
-
-  // Base costs
-  baseCost      Decimal  @db.Decimal(10, 2)
-  fuelSurcharge Decimal? @db.Decimal(5, 2) // percentage
-
-  // COD charges
-  codChargesPercent Decimal? @db.Decimal(5, 2)
-  codChargesMin     Decimal? @db.Decimal(10, 2)
-  codChargesCap     Decimal? @db.Decimal(10, 2)
-
-  // AWB charges
-  awbCharges Decimal? @db.Decimal(10, 2)
-
-  // RTO charges
-  rtoChargesPercent Decimal? @db.Decimal(5, 2) // percentage of forward charges
-
-  slabs RateCardSlab[]
-
-  remarks    String?
-  approvedAt DateTime?
-  approvedBy String?   @db.Uuid
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([transporterId])
-  @@index([companyId])
-  @@index([status])
-  @@index([effectiveFrom])
-}
-
-model RateCardSlab {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  rateCardId String   @db.Uuid
-  rateCard   RateCard @relation(fields: [rateCardId], references: [id], onDelete: Cascade)
-
-  // Weight slab
-  fromWeight Decimal @db.Decimal(10, 3)
-  toWeight   Decimal @db.Decimal(10, 3)
-
-  // Zone/Distance slab (optional)
-  zone        String? // LOCAL, REGIONAL, METRO, REST_OF_INDIA
-  fromPincode String?
-  toPincode   String?
-
-  // Rate
-  rate                 Decimal  @db.Decimal(10, 2)
-  additionalWeightRate Decimal? @db.Decimal(10, 2) // per kg after base weight
-  minCharge            Decimal? @db.Decimal(10, 2)
-
-  @@index([rateCardId])
-}
-
-// ==================== COD RECONCILIATION ====================
-
-model CODReconciliation {
-  id               String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  reconciliationNo String                  @unique
-  status           CODReconciliationStatus @default(PENDING)
-
-  locationId    String  @db.Uuid
-  transporterId String? @db.Uuid
-  companyId     String  @db.Uuid
-
-  reconciliationDate DateTime
-  periodFrom         DateTime
-  periodTo           DateTime
-
-  // Amounts
-  expectedAmount  Decimal @db.Decimal(14, 2)
-  collectedAmount Decimal @db.Decimal(14, 2)
-  remittedAmount  Decimal @db.Decimal(14, 2)
-  variance        Decimal @db.Decimal(14, 2)
-
-  // Order counts
-  totalOrders     Int @default(0)
-  deliveredOrders Int @default(0)
-  pendingOrders   Int @default(0)
-
-  transactions CODTransaction[]
-
-  remarks    String?
-  approvedAt DateTime?
-  approvedBy String?   @db.Uuid
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([locationId])
-  @@index([companyId])
-  @@index([transporterId])
-  @@index([status])
-  @@index([reconciliationDate])
-}
-
-model CODTransaction {
-  id            String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  transactionNo String             @unique
-  type          CODTransactionType
-
-  reconciliationId String?            @db.Uuid
-  reconciliation   CODReconciliation? @relation(fields: [reconciliationId], references: [id], onDelete: SetNull)
-
-  orderId    String? @db.Uuid
-  deliveryId String? @db.Uuid
-  awbNo      String?
-
-  amount Decimal @db.Decimal(12, 2)
-
-  // Payment details
-  paymentMode String? // CASH, CHEQUE, NEFT, UPI
-  paymentRef  String?
-  paymentDate DateTime?
-
-  remarks         String?
-  transactionDate DateTime
-
-  createdAt DateTime @default(now())
-
-  @@index([reconciliationId])
-  @@index([orderId])
-  @@index([transactionDate])
-}
-
-// ==================== WAVE PICKING SYSTEM ====================
-
-model Wave {
-  id     String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  waveNo String     @unique
-  name   String?
-  type   WaveType   @default(BATCH_PICK)
-  status WaveStatus @default(DRAFT)
-
-  locationId String   @db.Uuid
-  location   Location @relation(fields: [locationId], references: [id])
-
-  // Configuration
-  maxOrders    Int       @default(50)
-  maxItems     Int       @default(500)
-  priorityFrom Int?
-  priorityTo   Int?
-  cutoffTime   DateTime?
-
-  // Zone restrictions
-  zones String[]
-
-  // Assignment
-  assignedToId String? @db.Uuid
-  assignedTo   User?   @relation(fields: [assignedToId], references: [id])
-
-  // Wave items
-  waveOrders WaveOrder[]
-  waveItems  WaveItem[]
-
-  // Metrics
-  totalOrders  Int @default(0)
-  totalItems   Int @default(0)
-  totalUnits   Int @default(0)
-  pickedOrders Int @default(0)
-  pickedItems  Int @default(0)
-  pickedUnits  Int @default(0)
-
-  // Timing
-  plannedStartAt DateTime?
-  releasedAt     DateTime?
-  startedAt      DateTime?
-  completedAt    DateTime?
-
-  // Optimization data
-  optimizedRoute Json?
-  estimatedTime  Int?
-  actualTime     Int?
-
-  createdById String @db.Uuid
-  remarks     String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([locationId])
-  @@index([status])
-  @@index([assignedToId])
-}
-
-model WaveOrder {
-  id     String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  waveId String @db.Uuid
-  wave   Wave   @relation(fields: [waveId], references: [id], onDelete: Cascade)
-
-  orderId String @db.Uuid
-  order   Order  @relation(fields: [orderId], references: [id])
-
-  sequence Int    @default(0)
-  status   String @default("PENDING")
-
-  startedAt   DateTime?
-  completedAt DateTime?
-
-  @@unique([waveId, orderId])
-  @@index([waveId])
-  @@index([orderId])
-}
-
-model WaveItem {
-  id     String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  waveId String @db.Uuid
-  wave   Wave   @relation(fields: [waveId], references: [id], onDelete: Cascade)
-
-  skuId String @db.Uuid
-  sku   SKU    @relation(fields: [skuId], references: [id])
-  binId String @db.Uuid
-  bin   Bin    @relation(fields: [binId], references: [id])
-
-  totalQty  Int
-  pickedQty Int @default(0)
-
-  sequence Int     @default(0)
-  zoneCode String?
-  aisle    String?
-  rack     String?
-  level    String?
-
-  distributions WaveItemDistribution[]
-
-  pickedAt   DateTime?
-  pickedById String?   @db.Uuid
-
-  @@index([waveId])
-  @@index([skuId])
-  @@index([binId])
-  @@index([sequence])
-}
-
-model WaveItemDistribution {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  waveItemId String   @db.Uuid
-  waveItem   WaveItem @relation(fields: [waveItemId], references: [id], onDelete: Cascade)
-
-  orderId     String @db.Uuid
-  orderItemId String @db.Uuid
-  quantity    Int
-
-  @@index([waveItemId])
-  @@index([orderId])
-}
-
-// ==================== QC WORKFLOW SYSTEM ====================
-
-model QCTemplate {
-  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  code        String  @unique
-  name        String
-  description String?
-  type        QCType
-
-  companyId String  @db.Uuid
-  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-
-  categoryFilter String[]
-  skuFilter      String[]
-
-  isActive    Boolean @default(true)
-  isMandatory Boolean @default(false)
-
-  parameters QCParameter[]
-  executions QCExecution[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([companyId])
-  @@index([type])
-}
-
-model QCParameter {
-  id         String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  templateId String     @db.Uuid
-  template   QCTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
-
-  code        String
-  name        String
-  description String?
-  type        QCParameterType
-
-  isMandatory      Boolean  @default(true)
-  acceptableValues String[]
-  minValue         Decimal? @db.Decimal(10, 2)
-  maxValue         Decimal? @db.Decimal(10, 2)
-  tolerance        Decimal? @db.Decimal(5, 2)
-
-  requiresPhoto Boolean @default(false)
-  photoCount    Int     @default(1)
-
-  sequence Int     @default(0)
-  isActive Boolean @default(true)
-
-  results QCResult[]
-
-  @@unique([templateId, code])
-  @@index([templateId])
-}
-
-model QCExecution {
-  id          String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  executionNo String @unique
-
-  templateId String     @db.Uuid
-  template   QCTemplate @relation(fields: [templateId], references: [id])
-
-  referenceType String
-  referenceId   String @db.Uuid
-
-  skuId String @db.Uuid
-  sku   SKU    @relation(fields: [skuId], references: [id])
-
-  locationId String  @db.Uuid
-  binId      String? @db.Uuid
-  batchNo    String?
-
-  sampleQty Int
-  passedQty Int @default(0)
-  failedQty Int @default(0)
-
-  status       QCStatus @default(PENDING)
-  overallGrade String?
-
-  results QCResult[]
-  defects QCDefect[]
-
-  requiresApproval Boolean   @default(false)
-  approvalStatus   String?
-  approvedById     String?   @db.Uuid
-  approvedAt       DateTime?
-  approvalRemarks  String?
-
-  photos String[]
-
-  performedById String   @db.Uuid
-  performedAt   DateTime @default(now())
-  completedAt   DateTime?
-
-  remarks String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([templateId])
-  @@index([skuId])
-  @@index([referenceType, referenceId])
-  @@index([status])
-}
-
-model QCResult {
-  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  executionId String      @db.Uuid
-  execution   QCExecution @relation(fields: [executionId], references: [id], onDelete: Cascade)
-
-  parameterId String      @db.Uuid
-  parameter   QCParameter @relation(fields: [parameterId], references: [id])
-
-  value        String?
-  numericValue Decimal? @db.Decimal(10, 2)
-  isPassed     Boolean
-
-  photos  String[]
-  remarks String?
-
-  @@index([executionId])
-  @@index([parameterId])
-}
-
-model QCDefect {
-  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  executionId String      @db.Uuid
-  execution   QCExecution @relation(fields: [executionId], references: [id], onDelete: Cascade)
-
-  defectCode  String
-  defectName  String
-  severity    String
-  quantity    Int
-  description String?
-  photos      String[]
-
-  action        String?
-  actionById    String?   @db.Uuid
-  actionAt      DateTime?
-  actionRemarks String?
-
-  @@index([executionId])
-}
-
-// ==================== VIRTUAL INVENTORY ====================
-
-model VirtualInventory {
-  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-
-  skuId String @db.Uuid
-  sku   SKU    @relation(fields: [skuId], references: [id], onDelete: Cascade)
-
-  locationId String   @db.Uuid
-  location   Location @relation(fields: [locationId], references: [id])
-
-  type VirtualInventoryType
-
-  channel         Channel?
-  channelConfigId String?  @db.Uuid
-
-  quantity     Int @default(0)
-  allocatedQty Int @default(0)
-
-  validFrom DateTime?
-  validTo   DateTime?
-
-  referenceType String?
-  referenceId   String? @db.Uuid
-
-  isActive Boolean @default(true)
-
-  createdById String   @db.Uuid
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([skuId])
-  @@index([locationId])
-  @@index([type])
-  @@index([channel])
-}
-
-// ==================== SKU VARIANTS ====================
-
-model VariantAttribute {
-  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-
-  companyId String  @db.Uuid
-  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-
-  code String
-  name String
-  type VariantAttributeType
-
-  values VariantAttributeValue[]
-
-  isActive     Boolean @default(true)
-  displayOrder Int     @default(0)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([companyId, code])
-  @@index([companyId])
-}
-
-model VariantAttributeValue {
-  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-
-  attributeId String           @db.Uuid
-  attribute   VariantAttribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
-
-  value       String
-  displayName String?
-  sortOrder   Int     @default(0)
-
-  hexCode   String?
-  sizeOrder Int?
-
-  skuVariants SKUVariantValue[]
-
-  @@unique([attributeId, value])
-  @@index([attributeId])
-}
-
-model SKUVariant {
-  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-
-  parentSkuId String @db.Uuid
-  parentSku   SKU    @relation("ParentSKU", fields: [parentSkuId], references: [id], onDelete: Cascade)
-
-  variantSkuId String @unique @db.Uuid
-  variantSku   SKU    @relation("VariantSKU", fields: [variantSkuId], references: [id], onDelete: Cascade)
-
-  attributeValues SKUVariantValue[]
-
-  mrpOverride   Decimal? @db.Decimal(12, 2)
-  priceOverride Decimal? @db.Decimal(12, 2)
-
-  isActive Boolean @default(true)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([parentSkuId])
-}
-
-model SKUVariantValue {
-  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-
-  skuVariantId String     @db.Uuid
-  skuVariant   SKUVariant @relation(fields: [skuVariantId], references: [id], onDelete: Cascade)
-
-  attributeValueId String                @db.Uuid
-  attributeValue   VariantAttributeValue @relation(fields: [attributeValueId], references: [id])
-
-  @@unique([skuVariantId, attributeValueId])
-  @@index([skuVariantId])
-}
-
-// ==================== SKU BUNDLES ====================
-
-model SKUBundle {
-  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-
-  bundleSkuId String @unique @db.Uuid
-  bundleSku   SKU    @relation("BundleParent", fields: [bundleSkuId], references: [id], onDelete: Cascade)
-
-  companyId String @db.Uuid
-
-  type        BundleType @default(KIT)
-  name        String
-  description String?
-
-  items BundleItem[]
-
-  pricingType     String   @default("FIXED")
-  fixedPrice      Decimal? @db.Decimal(12, 2)
-  discountPercent Decimal? @db.Decimal(5, 2)
-
-  validFrom DateTime?
-  validTo   DateTime?
-
-  isActive Boolean @default(true)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([companyId])
-  @@index([bundleSkuId])
-}
-
-model BundleItem {
-  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-
-  bundleId String    @db.Uuid
-  bundle   SKUBundle @relation(fields: [bundleId], references: [id], onDelete: Cascade)
-
-  componentSkuId String @db.Uuid
-  componentSku   SKU    @relation(fields: [componentSkuId], references: [id])
-
-  quantity Int @default(1)
-
-  allowSubstitute Boolean  @default(false)
-  substituteSkus  String[] @db.Uuid
-
-  sequence Int @default(0)
-
-  @@unique([bundleId, componentSkuId])
-  @@index([bundleId])
-  @@index([componentSkuId])
-}
-
-// ==================== B2B CUSTOMER MANAGEMENT ====================
-
-model Customer {
-  id     String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  code   String
-  name   String
-  type   CustomerType   @default(RETAIL)
-  status CustomerStatus @default(ACTIVE)
-
-  contactPerson  String?
-  email          String?
-  phone          String
-  alternatePhone String?
-
-  gst          String?
-  pan          String?
-  cin          String?
-  tradeLicense String?
-
-  billingAddress    Json
-  shippingAddresses Json[]
-
-  creditEnabled   Boolean      @default(false)
-  creditLimit     Decimal      @default(0) @db.Decimal(14, 2)
-  creditUsed      Decimal      @default(0) @db.Decimal(14, 2)
-  creditAvailable Decimal      @default(0) @db.Decimal(14, 2)
-  creditStatus    CreditStatus @default(AVAILABLE)
-
-  paymentTermType      PaymentTermType @default(IMMEDIATE)
-  paymentTermDays      Int?
-  earlyPaymentDiscount Decimal?        @db.Decimal(5, 2)
-
-  customerGroupId String?        @db.Uuid
-  customerGroup   CustomerGroup? @relation(fields: [customerGroupId], references: [id])
-  priceListId     String?        @db.Uuid
-  priceList       PriceList?     @relation(fields: [priceListId], references: [id])
-
-  dunningEnabled  Boolean   @default(true)
-  dunningDays     Int[]     @default([7, 15, 30])
-  lastDunningDate DateTime?
-  dunningLevel    Int       @default(0)
-
-  companyId String  @db.Uuid
-  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-
-  orders             Order[]                @relation("CustomerOrders")
-  quotations         Quotation[]
-  creditTransactions B2BCreditTransaction[]
-
-  portalEnabled Boolean @default(false)
-  portalUserId  String? @db.Uuid
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([companyId, code])
-  @@index([companyId])
-  @@index([customerGroupId])
-  @@index([type])
-  @@index([status])
-  @@index([creditStatus])
-}
-
-model CustomerGroup {
-  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  code        String
-  name        String
-  description String?
-
-  discountPercent Decimal? @db.Decimal(5, 2)
-  discountType    String?
-
-  priceListId String?    @db.Uuid
-  priceList   PriceList? @relation(fields: [priceListId], references: [id])
-
-  defaultCreditLimit     Decimal?        @db.Decimal(14, 2)
-  defaultPaymentTermType PaymentTermType @default(NET_30)
-  defaultPaymentTermDays Int?
-
-  companyId String  @db.Uuid
-  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-
-  customers Customer[]
-
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([companyId, code])
-  @@index([companyId])
-}
-
-// ==================== TIERED PRICING ====================
-
-model PriceList {
-  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  code        String
-  name        String
-  description String?
-
-  effectiveFrom DateTime
-  effectiveTo   DateTime?
-
-  basedOnMRP     Boolean @default(false)
-  roundingMethod String?
-
-  companyId String  @db.Uuid
-  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-
-  items          PriceListItem[]
-  customers      Customer[]
-  customerGroups CustomerGroup[]
-
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([companyId, code])
-  @@index([companyId])
-  @@index([effectiveFrom])
-}
-
-model PriceListItem {
-  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  priceListId String    @db.Uuid
-  priceList   PriceList @relation(fields: [priceListId], references: [id], onDelete: Cascade)
-
-  skuId String @db.Uuid
-
-  fixedPrice      Decimal? @db.Decimal(12, 2)
-  discountPercent Decimal? @db.Decimal(5, 2)
-  markup          Decimal? @db.Decimal(5, 2)
-
-  pricingTiers PricingTier[]
-
-  minOrderQty Int?
-  maxOrderQty Int?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([priceListId, skuId])
-  @@index([priceListId])
-  @@index([skuId])
-}
-
-model PricingTier {
-  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  priceListItemId String        @db.Uuid
-  priceListItem   PriceListItem @relation(fields: [priceListItemId], references: [id], onDelete: Cascade)
-
-  minQty Int
-  maxQty Int?
-  price  Decimal @db.Decimal(12, 2)
-
-  @@index([priceListItemId])
-}
-
-// ==================== B2B CREDIT TRANSACTIONS ====================
-
-model B2BCreditTransaction {
-  id            String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  transactionNo String                @unique
-  type          CreditTransactionType
-
-  customerId String   @db.Uuid
-  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-
-  amount        Decimal @db.Decimal(14, 2)
-  balanceBefore Decimal @db.Decimal(14, 2)
-  balanceAfter  Decimal @db.Decimal(14, 2)
-
-  orderId     String? @db.Uuid
-  quotationId String? @db.Uuid
-  paymentRef  String?
-  invoiceNo   String?
-
-  dueDate DateTime?
-  remarks String?
-
-  createdById String   @db.Uuid
-  createdAt   DateTime @default(now())
-
-  @@index([customerId])
-  @@index([type])
-  @@index([createdAt])
-}
-
-// ==================== QUOTATIONS ====================
-
-model Quotation {
-  id          String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  quotationNo String          @unique
-  status      QuotationStatus @default(DRAFT)
-
-  customerId String   @db.Uuid
-  customer   Customer @relation(fields: [customerId], references: [id])
-
-  shippingAddress Json
-  billingAddress  Json
-
-  subtotal        Decimal @db.Decimal(14, 2)
-  discountAmount  Decimal @default(0) @db.Decimal(14, 2)
-  taxAmount       Decimal @db.Decimal(14, 2)
-  shippingCharges Decimal @default(0) @db.Decimal(14, 2)
-  totalAmount     Decimal @db.Decimal(14, 2)
-
-  validFrom  DateTime @default(now())
-  validUntil DateTime
-
-  paymentTermType PaymentTermType?
-  paymentTermDays Int?
-  specialTerms    String?
-  remarks         String?
-
-  requiresApproval Boolean   @default(false)
-  approvalLevel    Int       @default(0)
-  approvedById     String?   @db.Uuid
-  approvedAt       DateTime?
-  rejectedById     String?   @db.Uuid
-  rejectedAt       DateTime?
-  rejectionReason  String?
-
-  convertedOrderId String?   @unique @db.Uuid
-  convertedOrder   Order?    @relation("QuotationToOrder", fields: [convertedOrderId], references: [id])
-  convertedAt      DateTime?
-
-  companyId  String          @db.Uuid
-  locationId String          @db.Uuid
-  items      QuotationItem[]
-
-  createdById String   @db.Uuid
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([customerId])
-  @@index([status])
-  @@index([companyId])
-  @@index([validUntil])
-}
-
-model QuotationItem {
-  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  quotationId String    @db.Uuid
-  quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
-
-  skuId    String @db.Uuid
-  quantity Int
-
-  listPrice       Decimal  @db.Decimal(12, 2)
-  unitPrice       Decimal  @db.Decimal(12, 2)
-  discountPercent Decimal? @db.Decimal(5, 2)
-  discountAmount  Decimal  @default(0) @db.Decimal(12, 2)
-  taxPercent      Decimal  @db.Decimal(5, 2)
-  taxAmount       Decimal  @db.Decimal(12, 2)
-  totalPrice      Decimal  @db.Decimal(12, 2)
-
-  remarks String?
-
-  @@index([quotationId])
-  @@index([skuId])
-}
-
-// ==================== ANALYTICS ====================
-
-model AnalyticsSnapshot {
-  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  snapshotDate DateTime
-  snapshotType String
-
-  companyId  String  @db.Uuid
-  locationId String? @db.Uuid
-
-  totalOrders   Int     @default(0)
-  totalRevenue  Decimal @default(0) @db.Decimal(14, 2)
-  avgOrderValue Decimal @default(0) @db.Decimal(12, 2)
-  totalUnits    Int     @default(0)
-
-  ordersShipped      Int      @default(0)
-  ordersDelivered    Int      @default(0)
-  ordersCancelled    Int      @default(0)
-  ordersRTO          Int      @default(0)
-  avgFulfillmentTime Decimal? @db.Decimal(8, 2)
-  fillRate           Decimal? @db.Decimal(5, 2)
-
-  slaBreachedOrders  Int      @default(0)
-  onTimeDeliveryRate Decimal? @db.Decimal(5, 2)
-
-  totalSKUs      Int      @default(0)
-  totalQuantity  Int      @default(0)
-  lowStockSKUs   Int      @default(0)
-  outOfStockSKUs Int      @default(0)
-  inventoryValue Decimal? @db.Decimal(14, 2)
-
-  totalReturns Int      @default(0)
-  returnRate   Decimal? @db.Decimal(5, 2)
-  rtoRate      Decimal? @db.Decimal(5, 2)
-
-  b2bOrders         Int      @default(0)
-  b2bRevenue        Decimal  @default(0) @db.Decimal(14, 2)
-  creditUtilization Decimal? @db.Decimal(5, 2)
-
-  channelBreakdown     Json?
-  categoryBreakdown    Json?
-  transporterBreakdown Json?
-
-  createdAt DateTime @default(now())
-
-  @@unique([snapshotDate, snapshotType, companyId, locationId])
-  @@index([companyId])
-  @@index([snapshotDate])
-  @@index([snapshotType])
-}
-
-model DemandForecast {
-  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  forecastDate DateTime
-  forecastFor  DateTime
-
-  companyId  String  @db.Uuid
-  locationId String? @db.Uuid
-  skuId      String  @db.Uuid
-
-  predictedDemand Int
-  lowerBound      Int
-  upperBound      Int
-  confidenceScore Decimal? @db.Decimal(5, 2)
-
-  suggestedReorder Int?
-  reorderPoint     Int?
-  safetyStock      Int?
-
-  modelVersion String?
-  features     Json?
-
-  createdAt DateTime @default(now())
-
-  @@unique([forecastDate, forecastFor, companyId, skuId])
-  @@index([companyId])
-  @@index([skuId])
-  @@index([forecastFor])
+enum DeliveryStatus {
+  PENDING
+  PACKED
+  MANIFESTED
+  SHIPPED
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  RTO_INITIATED
+  RTO_IN_TRANSIT
+  RTO_DELIVERED
+  CANCELLED
+}
+
+enum GatePassStatus {
+  OPEN
+  IN_PROGRESS
+  CLOSED
+  VERIFIED
+  CANCELLED
+}
+
+enum GatePassType {
+  VISITOR
+  INBOUND_DELIVERY
+  OUTBOUND_SHIPMENT
+  VENDOR
+  OTHER
+}
+
+enum ImportStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  PARTIAL
+}
+
+enum InboundStatus {
+  PENDING
+  IN_PROGRESS
+  QC_PENDING
+  COMPLETED
+  CANCELLED
+}
+
+enum InboundType {
+  PURCHASE_ORDER
+  ASN
+  RETURN
+  DIRECT
+  STOCK_TRANSFER
+}
+
+enum InventoryValuationMethod {
+  FIFO
+  LIFO
+  FEFO
+  WAC
+}
+
+enum ItemStatus {
+  PENDING
+  ALLOCATED
+  PICKED
+  PACKED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  RETURNED
+}
+
+enum LocationType {
+  WAREHOUSE
+  STORE
+  HUB
+  VIRTUAL
+}
+
+enum ManifestStatus {
+  OPEN
+  CONFIRMED
+  CLOSED
+}
+
+enum NDRPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
 }
-
-model ScheduledReport {
-  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name        String
-  description String?
-
-  reportType   String
-  reportConfig Json
-
-  frequency  ReportFrequency
-  dayOfWeek  Int?
-  dayOfMonth Int?
-  time       String
-  timezone   String          @default("Asia/Kolkata")
-
-  format     ReportFormat @default(EXCEL)
-  recipients String[]
-
-  lastRunAt  DateTime?
-  lastStatus String?
-  lastError  String?
-  nextRunAt  DateTime?
-
-  companyId   String @db.Uuid
-  createdById String @db.Uuid
-
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  executions ReportExecution[]
-
-  @@index([companyId])
-  @@index([nextRunAt])
-  @@index([isActive])
-}
-
-model ReportExecution {
-  id                String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  scheduledReportId String          @db.Uuid
-  scheduledReport   ScheduledReport @relation(fields: [scheduledReportId], references: [id], onDelete: Cascade)
-
-  status      String
-  startedAt   DateTime
-  completedAt DateTime?
-
-  fileUrl  String?
-  fileName String?
-  fileSize Int?
-
-  error          String?
-  recipientsSent String[]
-
-  @@index([scheduledReportId])
-  @@index([startedAt])
-}
-
-// ==================== AI CONTROL TOWER & NDR MANAGEMENT ====================
 
-// NDR (Non-Delivery Report) Enums
 enum NDRReason {
   CUSTOMER_NOT_AVAILABLE
   WRONG_ADDRESS
@@ -2592,22 +2154,31 @@ enum NDRStatus {
   CLOSED
 }
 
-enum NDRPriority {
-  LOW
-  MEDIUM
-  HIGH
-  CRITICAL
+enum OrderStatus {
+  CREATED
+  CONFIRMED
+  ALLOCATED
+  PARTIALLY_ALLOCATED
+  PICKLIST_GENERATED
+  PICKING
+  PICKED
+  PACKING
+  PACKED
+  MANIFESTED
+  SHIPPED
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  RTO_INITIATED
+  RTO_IN_TRANSIT
+  RTO_DELIVERED
+  CANCELLED
+  ON_HOLD
 }
 
-enum ResolutionType {
-  REATTEMPT_SCHEDULED
-  ADDRESS_UPDATED
-  CUSTOMER_WILL_COLLECT
-  PAYMENT_MODE_CHANGED
-  REFUND_INITIATED
-  RTO_INITIATED
-  ORDER_CANCELLED
-  DELIVERED_ON_REATTEMPT
+enum OrderType {
+  B2C
+  B2B
 }
 
 enum OutreachChannel {
@@ -2629,361 +2200,203 @@ enum OutreachStatus {
   EXPIRED
 }
 
-enum CommunicationTrigger {
-  DELAY_PREDICTED
-  SLA_BREACH_RISK
-  WEATHER_DISRUPTION
-  CARRIER_ISSUE
-  OUT_FOR_DELIVERY
-  DELIVERY_ATTEMPTED
-  DELIVERED
-  RTO_INITIATED
-  ORDER_CONFIRMED
-  ORDER_SHIPPED
-  PAYMENT_REMINDER
-  FEEDBACK_REQUEST
-  CUSTOM
-}
-
-enum CommunicationStatus {
-  SCHEDULED
-  QUEUED
-  SENT
-  DELIVERED
-  READ
-  RESPONDED
-  FAILED
+enum POStatus {
+  DRAFT
+  APPROVED
+  PARTIALLY_RECEIVED
+  RECEIVED
   CANCELLED
 }
 
-enum AIActionType {
-  CARRIER_SWITCH
-  REATTEMPT_SCHEDULE
-  ADDRESS_UPDATE
-  CUSTOMER_NOTIFICATION
-  PRIORITY_CHANGE
-  ESCALATION
-  REFUND_RECOMMENDATION
-  ROUTE_OPTIMIZATION
-  INVENTORY_REALLOCATION
-  SLA_ALERT
+enum PaymentMode {
+  PREPAID
+  COD
 }
 
-enum AIActionStatus {
+enum PaymentTermType {
+  IMMEDIATE
+  NET_7
+  NET_15
+  NET_30
+  NET_45
+  NET_60
+  NET_90
+  CUSTOM
+}
+
+enum PicklistStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  CANCELLED
+}
+
+enum QCParameterType {
+  VISUAL
+  DIMENSIONAL
+  WEIGHT
+  BARCODE
+  FUNCTIONAL
+  DOCUMENTATION
+}
+
+enum QCStatus {
+  PENDING
+  IN_PROGRESS
+  PASSED
+  FAILED
+  CONDITIONAL
+}
+
+enum QCType {
+  INBOUND
+  RETURN
+  PRODUCTION
+  CYCLE_COUNT
+  RANDOM_AUDIT
+}
+
+enum QuotationStatus {
+  DRAFT
   PENDING_APPROVAL
-  AUTO_APPROVED
   APPROVED
   REJECTED
-  EXECUTED
-  FAILED
   EXPIRED
+  CONVERTED
+  CANCELLED
 }
 
-// NDR Management Model
-model NDR {
-  id              String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  ndrCode         String      @unique // System-generated NDR code
-  deliveryId      String      @db.Uuid
-  delivery        Delivery    @relation(fields: [deliveryId], references: [id])
-  orderId         String      @db.Uuid
-  order           Order       @relation(fields: [orderId], references: [id])
-
-  // Carrier NDR details
-  carrierNDRCode  String?     // Carrier's NDR reference
-  carrierRemark   String?
-  attemptNumber   Int         @default(1)
-  attemptDate     DateTime
-
-  // AI Classification
-  reason          NDRReason
-  aiClassification String?    // AI's detailed classification
-  confidence      Float?      // AI confidence score (0-1)
-
-  // Status and Priority
-  status          NDRStatus   @default(OPEN)
-  priority        NDRPriority @default(MEDIUM)
-  riskScore       Int?        // 0-100 risk score for RTO
-
-  // Resolution tracking
-  resolutionType  ResolutionType?
-  resolvedAt      DateTime?
-  resolvedBy      String?     // 'AI_AUTO', 'AI_ASSISTED', or userId
-  resolutionNotes String?
-
-  // Reattempt details
-  reattemptDate   DateTime?
-  reattemptSlot   String?     // e.g., "10:00-12:00"
-
-  // Customer interaction
-  customerResponse String?
-  preferredSlot   String?
-  updatedAddress  Json?       // Updated address if provided
-  updatedPhone    String?
-
-  // Company context
-  companyId       String      @db.Uuid
-
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-
-  // Relations
-  outreachAttempts NDROutreach[]
-  aiActions        AIActionLog[] @relation("NDRAIActions")
-
-  @@index([deliveryId])
-  @@index([orderId])
-  @@index([status])
-  @@index([priority])
-  @@index([companyId])
-  @@index([createdAt])
+enum RateCardStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+  SUPERSEDED
 }
 
-// NDR Outreach Attempts
-model NDROutreach {
-  id            String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  ndrId         String          @db.Uuid
-  ndr           NDR             @relation(fields: [ndrId], references: [id], onDelete: Cascade)
-
-  channel       OutreachChannel
-  attemptNumber Int
-
-  // Message details
-  templateId    String?
-  messageContent String?
-
-  // Status tracking
-  status        OutreachStatus  @default(PENDING)
-  sentAt        DateTime?
-  deliveredAt   DateTime?
-  readAt        DateTime?
-  respondedAt   DateTime?
-
-  // Response
-  response      String?
-  sentiment     String?         // AI-detected sentiment: positive, negative, neutral
-  sentimentScore Float?
-
-  // Voice call specific
-  callDuration  Int?            // Duration in seconds
-  callRecordingUrl String?
-  transcription String?
-
-  // Error tracking
-  errorCode     String?
-  errorMessage  String?
-
-  // Provider reference
-  providerMessageId String?     // WhatsApp/SMS/Voice provider message ID
-
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-
-  @@index([ndrId])
-  @@index([status])
-  @@index([channel])
+enum RateCardType {
+  PREPAID
+  COD
+  BOTH
 }
 
-// Proactive Communication
-model ProactiveCommunication {
-  id            String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-
-  // Target
-  orderId       String?               @db.Uuid
-  order         Order?                @relation(fields: [orderId], references: [id])
-  deliveryId    String?               @db.Uuid
-  customerId    String?               @db.Uuid
-
-  // Customer details (denormalized for speed)
-  customerName  String
-  customerPhone String
-  customerEmail String?
-
-  // Trigger and content
-  trigger       CommunicationTrigger
-  channel       OutreachChannel
-  templateId    String?
-  content       String
-  variables     Json?                 // Template variables used
-
-  // Scheduling
-  scheduledFor  DateTime?
-  priority      Int                   @default(5) // 1-10, 1 being highest
-
-  // Status tracking
-  status        CommunicationStatus   @default(SCHEDULED)
-  sentAt        DateTime?
-  deliveredAt   DateTime?
-  readAt        DateTime?
-
-  // Response
-  responseText  String?
-  responseAt    DateTime?
-
-  // Provider reference
-  providerMessageId String?
-
-  // Error tracking
-  errorCode     String?
-  errorMessage  String?
-  retryCount    Int                   @default(0)
-
-  // Company context
-  companyId     String                @db.Uuid
-
-  createdAt     DateTime              @default(now())
-  updatedAt     DateTime              @updatedAt
-
-  @@index([orderId])
-  @@index([status])
-  @@index([scheduledFor])
-  @@index([companyId])
-  @@index([trigger])
+enum ReportFormat {
+  PDF
+  EXCEL
+  CSV
 }
 
-// Communication Templates
-model CommunicationTemplate {
-  id            String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-
-  name          String
-  description   String?
-
-  trigger       CommunicationTrigger
-  channel       OutreachChannel
-  language      String              @default("en")
-
-  // Template content
-  subject       String?             // For email
-  template      String              // Message template with {{variables}}
-  variables     String[]            // List of variables used
-
-  // WhatsApp specific
-  whatsappTemplateId String?        // Approved WhatsApp template ID
-  whatsappTemplateName String?
-
-  // Settings
-  sentiment     String              @default("informative") // informative, apologetic, urgent, celebratory
-  isActive      Boolean             @default(true)
-  isDefault     Boolean             @default(false)
-
-  // Company context
-  companyId     String              @db.Uuid
-
-  createdAt     DateTime            @default(now())
-  updatedAt     DateTime            @updatedAt
-
-  @@unique([companyId, trigger, channel, language, isDefault])
-  @@index([companyId])
-  @@index([trigger])
-  @@index([channel])
+enum ReportFrequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+  QUARTERLY
 }
 
-// AI Action Log - Tracks all AI decisions and actions
-model AIActionLog {
-  id            String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-
-  actionType    AIActionType
-
-  // Entity reference
-  entityType    String          // 'ORDER', 'NDR', 'DELIVERY', 'SHIPMENT'
-  entityId      String
-
-  // NDR specific relation
-  ndrId         String?         @db.Uuid
-  ndr           NDR?            @relation("NDRAIActions", fields: [ndrId], references: [id])
-
-  // AI Decision details
-  decision      String          // What the AI decided to do
-  reasoning     String          // AI's explanation/reasoning
-  confidence    Float           // Confidence score (0-1)
-
-  // Risk assessment
-  riskLevel     String          @default("LOW") // LOW, MEDIUM, HIGH, CRITICAL
-  impactScore   Int?            // Predicted impact score
-
-  // Approval workflow
-  status        AIActionStatus  @default(PENDING_APPROVAL)
-  approvalRequired Boolean      @default(true)
-  approvedBy    String?         // 'AUTO', 'SYSTEM', or userId
-  approvedAt    DateTime?
-  rejectionReason String?
-
-  // Execution
-  executedAt    DateTime?
-  executionResult String?
-  executionError String?
-
-  // Recommendations (if not auto-executed)
-  recommendations Json?         // Array of recommended actions
-
-  // Feedback for learning
-  feedbackScore Int?            // 1-5 rating from operator
-  feedbackNotes String?
-
-  // Company context
-  companyId     String          @db.Uuid
-
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-
-  @@index([entityId])
-  @@index([entityType])
-  @@index([actionType])
-  @@index([status])
-  @@index([companyId])
-  @@index([ndrId])
+enum ResolutionType {
+  REATTEMPT_SCHEDULED
+  ADDRESS_UPDATED
+  CUSTOMER_WILL_COLLECT
+  PAYMENT_MODE_CHANGED
+  REFUND_INITIATED
+  RTO_INITIATED
+  ORDER_CANCELLED
+  DELIVERED_ON_REATTEMPT
 }
 
-// Exception Workbench
-model Exception {
-  id            String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+enum ReturnStatus {
+  INITIATED
+  IN_TRANSIT
+  RECEIVED
+  QC_PENDING
+  QC_PASSED
+  QC_FAILED
+  RESTOCKED
+  DISPOSED
+  REFUNDED
+}
 
-  exceptionCode String          @unique
+enum ReturnType {
+  CUSTOMER_RETURN
+  RTO
+  VENDOR_RETURN
+}
 
-  // Exception type and source
-  type          String          // ADDRESS_ISSUE, WEIGHT_DISCREPANCY, PAYMENT_MISMATCH, etc.
-  source        String          // CARRIER, SYSTEM, CUSTOMER, WAREHOUSE
-  severity      String          @default("MEDIUM") // LOW, MEDIUM, HIGH, CRITICAL
+enum RuleStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
 
-  // Entity reference
-  entityType    String          // ORDER, DELIVERY, INVENTORY, etc.
-  entityId      String
-  orderId       String?         @db.Uuid
-  order         Order?          @relation(fields: [orderId], references: [id])
+enum ShippingRuleType {
+  WEIGHT_BASED
+  PINCODE_BASED
+  PRIORITY_BASED
+  COST_OPTIMIZED
+  DELIVERY_TIME_BASED
+}
 
-  // Exception details
-  title         String
-  description   String
-  originalValue String?
-  expectedValue String?
+enum SyncFrequency {
+  REALTIME
+  HOURLY
+  DAILY
+  WEEKLY
+}
 
-  // AI assistance
-  aiSuggestion  String?
-  aiConfidence  Float?
-  autoResolvable Boolean        @default(false)
+enum TransporterType {
+  COURIER
+  SELF
+  AGGREGATOR
+}
 
-  // Status
-  status        String          @default("OPEN") // OPEN, IN_PROGRESS, RESOLVED, ESCALATED, CLOSED
-  priority      Int             @default(5) // 1-10
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  MANAGER
+  OPERATOR
+  PICKER
+  PACKER
+  VIEWER
+  CLIENT
+}
 
-  // Resolution
-  resolution    String?
-  resolvedBy    String?
-  resolvedAt    DateTime?
+enum VariantAttributeType {
+  SIZE
+  COLOR
+  MATERIAL
+  PATTERN
+  STYLE
+  CUSTOM
+}
 
-  // Assignment
-  assignedTo    String?         @db.Uuid
-  escalatedTo   String?         @db.Uuid
-  escalatedAt   DateTime?
+enum VirtualInventoryType {
+  CHANNEL_RESERVE
+  PREORDER
+  PROMOTIONAL
+  SAFETY_STOCK
+  DAMAGED_HOLD
+}
 
-  // Company context
-  companyId     String          @db.Uuid
+enum WaveStatus {
+  DRAFT
+  PLANNED
+  RELEASED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
 
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+enum WaveType {
+  BATCH_PICK
+  ZONE_PICK
+  CLUSTER_PICK
+  PRIORITY_PICK
+}
 
-  @@index([type])
-  @@index([status])
-  @@index([orderId])
-  @@index([companyId])
-  @@index([severity])
+enum ZoneType {
+  SALEABLE
+  DAMAGED
+  QC
+  RETURNS
+  DISPATCH
 }

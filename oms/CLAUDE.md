@@ -213,10 +213,42 @@ FRONTEND_URL=https://oms-sable.vercel.app
 2. Check `transpilePackages` includes `@oms/database`
 3. Check `packages/database/package.json` has `"main": "./src/index.ts"`
 
-### Render Not Updating
-1. Push to singh remote: `git push singh master:main`
-2. Check Render dashboard for deploy status
-3. Free tier sleeps after 15 min - wake with: `curl https://cjdquick-api-vr4w.onrender.com/health`
+### Render Not Updating / Auto-Deploy Not Working
+
+**CRITICAL: Render Auto-Deploy Configuration**
+
+The repository structure has `oms/` as a subdirectory. For Render auto-deploy to work:
+
+1. **Check Render Dashboard Settings** (https://dashboard.render.com):
+   - Go to Service "cjdquick-api" → Settings → Build & Deploy
+   - Ensure "Auto-Deploy" toggle is **ON**
+   - Set "Root Directory" to: `oms/backend` (NOT just `backend`)
+   - Verify "Branch" is `main`
+   - Verify GitHub repo is connected to `singhmantoshkumar22/cjdquick-app`
+
+2. **Verify GitHub Webhook**:
+   - Go to GitHub repo → Settings → Webhooks
+   - Ensure Render webhook exists and shows recent deliveries
+
+3. **Manual deploy if needed**:
+   - Push to singh remote: `git push singh master:main`
+   - If auto-deploy fails, use Render Dashboard "Manual Deploy" button
+
+4. **Free tier sleeps after 15 min** - wake with:
+   ```bash
+   curl https://cjdquick-api-vr4w.onrender.com/health
+   ```
+
+**Repository Structure Note:**
+```
+CJDQuickApp/ (git root)
+├── oms/                    ← OMS project subdirectory
+│   ├── backend/           ← Render rootDir should be "oms/backend"
+│   ├── apps/web/          ← Next.js app
+│   └── packages/
+├── render.yaml            ← Blueprint at repo root (rootDir: oms/backend)
+└── ...
+```
 
 ### Database Connection Issues
 1. Check DATABASE_URL is set in both Vercel and Render

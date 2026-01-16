@@ -87,14 +87,8 @@ async def debug_db():
 
 
 @app.post("/admin/seed-returns")
-async def seed_returns_data(secret: str = ""):
-    """Admin endpoint to seed RTO/Return test data"""
-    from .core.config import settings
-
-    # Simple protection - require secret key
-    if secret != settings.SECRET_KEY[:8]:
-        return {"error": "Invalid secret key", "hint": "Use first 8 chars of SECRET_KEY"}
-
+async def seed_returns_data():
+    """Admin endpoint to seed RTO/Return test data (TEMPORARY - NO AUTH)"""
     try:
         from .scripts.seed_returns import seed_returns
         seed_returns()

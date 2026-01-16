@@ -161,6 +161,12 @@ export class AnalyticsService {
       },
     });
 
+    // Calculate on-time delivery rate from actual delivery data
+    const onTimeDeliveryRate = await this.calculateOnTimeDeliveryRate();
+
+    // Calculate average processing time (order creation to shipped)
+    const averageProcessingTime = await this.calculateAverageProcessingTime();
+
     // Inventory metrics
     const inventoryMetrics = await this.getInventoryMetrics(locationId);
 
@@ -202,8 +208,8 @@ export class AnalyticsService {
         fillRate: totalFulfillableOrders > 0
           ? (deliveredOrders / totalFulfillableOrders) * 100
           : 0,
-        onTimeDeliveryRate: 85, // Placeholder - needs shipment data analysis
-        averageProcessingTime: 24, // Placeholder - needs timestamp analysis
+        onTimeDeliveryRate,
+        averageProcessingTime,
         pendingShipments,
       },
       inventory: inventoryMetrics,
@@ -279,12 +285,17 @@ export class AnalyticsService {
       ${locationId ? `AND i."locationId" = ${locationId}` : ""}
     `;
 
+    // Calculate inventory turnover (COGS / Average Inventory Value)
+    const inventoryTurnover = await this.calculateInventoryTurnover(
+      Number(inventoryValue[0]?.total) || 0
+    );
+
     return {
       totalSKUs,
       lowStockSKUs,
       outOfStockSKUs,
       inventoryValue: Number(inventoryValue[0]?.total) || 0,
-      inventoryTurnover: 4.5, // Placeholder - needs historical COGS data
+      inventoryTurnover,
     };
   }
 
@@ -333,14 +344,14 @@ export class AnalyticsService {
   }
 
   /**
-   * Get SLA metrics
+   * Get SLA metrics - calculated from actual data
    */
   async getSLAMetrics(companyId?: string): Promise<SLAMetrics[]> {
     const metrics: SLAMetrics[] = [];
 
     // Order processing SLA (target: 24 hours)
     const processingTarget = 24;
-    const avgProcessingTime = 18; // Placeholder - needs actual calculation
+    const avgProcessingTime = await this.calculateAverageProcessingTime(companyId);
     metrics.push({
       metric: "Order Processing Time",
       target: processingTarget,
@@ -351,7 +362,7 @@ export class AnalyticsService {
 
     // On-time delivery SLA (target: 95%)
     const deliveryTarget = 95;
-    const actualDeliveryRate = 92; // Placeholder
+    const actualDeliveryRate = await this.calculateOnTimeDeliveryRate(companyId);
     metrics.push({
       metric: "On-Time Delivery Rate",
       target: deliveryTarget,
@@ -362,7 +373,7 @@ export class AnalyticsService {
 
     // Order accuracy SLA (target: 99%)
     const accuracyTarget = 99;
-    const actualAccuracy = 98.5; // Placeholder
+    const actualAccuracy = await this.calculateOrderAccuracyRate(companyId);
     metrics.push({
       metric: "Order Accuracy Rate",
       target: accuracyTarget,
@@ -373,7 +384,7 @@ export class AnalyticsService {
 
     // Fill rate SLA (target: 98%)
     const fillRateTarget = 98;
-    const actualFillRate = 96; // Placeholder
+    const actualFillRate = await this.calculateFillRate(companyId);
     metrics.push({
       metric: "Inventory Fill Rate",
       target: fillRateTarget,
@@ -383,6 +394,159 @@ export class AnalyticsService {
     });
 
     return metrics;
+  }
+
+  /**
+   * Calculate on-time delivery rate from actual delivery data
+   * Compares deliveredAt with expectedDeliveryDate
+   */
+  async calculateOnTimeDeliveryRate(companyId?: string): Promise<number> {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const where: Record<string, unknown> = {
+      status: "DELIVERED",
+      deliveredAt: { not: null },
+      expectedDeliveryDate: { not: null },
+      createdAt: { gte: thirtyDaysAgo },
+    };
+
+    if (companyId) {
+      where.Order = { companyId };
+    }
+
+    // Count deliveries with expected dates
+    const totalDeliveries = await prisma.delivery.count({ where });
+
+    if (totalDeliveries === 0) return 95; // Default if no data
+
+    // Count on-time deliveries using raw query for date comparison
+    const onTimeResult = await prisma.$queryRaw<[{ count: bigint }]>`
+      SELECT COUNT(*) as count
+      FROM "Delivery" d
+      ${companyId ? Prisma.sql`JOIN "Order" o ON d."orderId" = o.id` : Prisma.empty}
+      WHERE d.status = 'DELIVERED'
+        AND d."deliveredAt" IS NOT NULL
+        AND d."expectedDeliveryDate" IS NOT NULL
+        AND d."deliveredAt" <= d."expectedDeliveryDate"
+        AND d."createdAt" >= ${thirtyDaysAgo}
+        ${companyId ? Prisma.sql`AND o."companyId" = ${companyId}::uuid` : Prisma.empty}
+    `;
+
+    const onTimeCount = Number(onTimeResult[0]?.count) || 0;
+    return Math.round((onTimeCount / totalDeliveries) * 100 * 10) / 10;
+  }
+
+  /**
+   * Calculate average processing time (hours from order creation to shipped)
+   */
+  async calculateAverageProcessingTime(companyId?: string): Promise<number> {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    // Calculate avg time from order creation to first delivery shipment
+    const result = await prisma.$queryRaw<[{ avg_hours: number }]>`
+      SELECT COALESCE(
+        AVG(EXTRACT(EPOCH FROM (d."shippedAt" - o."createdAt")) / 3600),
+        24
+      ) as avg_hours
+      FROM "Order" o
+      JOIN "Delivery" d ON d."orderId" = o.id
+      WHERE d."shippedAt" IS NOT NULL
+        AND o."createdAt" >= ${thirtyDaysAgo}
+        ${companyId ? Prisma.sql`AND o."companyId" = ${companyId}::uuid` : Prisma.empty}
+    `;
+
+    return Math.round((Number(result[0]?.avg_hours) || 24) * 10) / 10;
+  }
+
+  /**
+   * Calculate inventory turnover ratio (annualized)
+   * Turnover = (COGS over period / Average Inventory Value) * (365 / days)
+   */
+  async calculateInventoryTurnover(currentInventoryValue: number): Promise<number> {
+    if (currentInventoryValue === 0) return 0;
+
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    // Calculate COGS from delivered orders in last 30 days
+    const cogsResult = await prisma.$queryRaw<[{ cogs: number }]>`
+      SELECT COALESCE(SUM(oi.quantity * s."costPrice"), 0) as cogs
+      FROM "OrderItem" oi
+      JOIN "SKU" s ON oi."skuId" = s.id
+      JOIN "Order" o ON oi."orderId" = o.id
+      WHERE o.status IN ('DELIVERED', 'SHIPPED')
+        AND o."createdAt" >= ${thirtyDaysAgo}
+    `;
+
+    const monthlyCOGS = Number(cogsResult[0]?.cogs) || 0;
+
+    // Annualize the turnover (multiply by 12 for monthly COGS)
+    const annualizedCOGS = monthlyCOGS * 12;
+    const turnover = annualizedCOGS / currentInventoryValue;
+
+    return Math.round(turnover * 10) / 10;
+  }
+
+  /**
+   * Calculate order accuracy rate (orders without returns/disputes)
+   */
+  async calculateOrderAccuracyRate(companyId?: string): Promise<number> {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const where: Record<string, unknown> = {
+      status: { notIn: ["CANCELLED", "CREATED"] },
+      createdAt: { gte: thirtyDaysAgo },
+    };
+    if (companyId) where.companyId = companyId;
+
+    const totalOrders = await prisma.order.count({ where });
+
+    if (totalOrders === 0) return 99; // Default if no data
+
+    // Count orders that have returns (indicating issues)
+    const ordersWithReturns = await prisma.return.count({
+      where: {
+        createdAt: { gte: thirtyDaysAgo },
+        reason: { in: ["WRONG_ITEM", "DAMAGED", "DEFECTIVE", "QUALITY_ISSUE"] },
+        ...(companyId ? { Order: { companyId } } : {}),
+      },
+    });
+
+    const accurateOrders = totalOrders - ordersWithReturns;
+    return Math.round((accurateOrders / totalOrders) * 100 * 10) / 10;
+  }
+
+  /**
+   * Calculate inventory fill rate (fulfilled vs requested quantity)
+   */
+  async calculateFillRate(companyId?: string): Promise<number> {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    // Calculate total requested vs fulfilled quantities
+    const result = await prisma.$queryRaw<[{ requested: bigint; fulfilled: bigint }]>`
+      SELECT
+        COALESCE(SUM(oi.quantity), 0) as requested,
+        COALESCE(SUM(
+          CASE WHEN o.status IN ('DELIVERED', 'SHIPPED', 'OUT_FOR_DELIVERY')
+          THEN oi.quantity ELSE 0 END
+        ), 0) as fulfilled
+      FROM "OrderItem" oi
+      JOIN "Order" o ON oi."orderId" = o.id
+      WHERE o."createdAt" >= ${thirtyDaysAgo}
+        AND o.status NOT IN ('CANCELLED')
+        ${companyId ? Prisma.sql`AND o."companyId" = ${companyId}::uuid` : Prisma.empty}
+    `;
+
+    const requested = Number(result[0]?.requested) || 0;
+    const fulfilled = Number(result[0]?.fulfilled) || 0;
+
+    if (requested === 0) return 98; // Default if no data
+
+    return Math.round((fulfilled / requested) * 100 * 10) / 10;
   }
 
   /**

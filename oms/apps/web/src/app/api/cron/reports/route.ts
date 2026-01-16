@@ -1,9 +1,71 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@oms/database";
 import { reportSchedulerService } from "@/lib/services/report-scheduler";
+import { getEmailService } from "@/lib/services/communication/email-service";
 
 // This endpoint is called by a cron job to execute scheduled reports
 // Should be protected by a secret token in production
+
+// Helper function to send report emails to all recipients
+async function sendReportEmailToRecipients(
+  recipients: string[],
+  reportName: string,
+  reportType: string,
+  downloadUrl: string,
+  dateRange: { fromDate: string; toDate: string }
+): Promise<void> {
+  const emailService = getEmailService();
+
+  const subject = `[CJDQuick OMS] ${reportName} - Report Ready`;
+
+  const htmlContent = `
+    <h2>Your Scheduled Report is Ready</h2>
+    <p>The scheduled report <strong>${reportName}</strong> has been generated and is ready for download.</p>
+    <table style="border-collapse: collapse; margin: 16px 0;">
+      <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Report Type:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${reportType}</td></tr>
+      <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Period:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${dateRange.fromDate} to ${dateRange.toDate}</td></tr>
+      <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Generated At:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${new Date().toLocaleString()}</td></tr>
+    </table>
+    <p>
+      <a href="${downloadUrl}" style="display: inline-block; padding: 12px 24px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 6px;">
+        Download Report
+      </a>
+    </p>
+    <p style="color: #666; font-size: 12px; margin-top: 24px;">
+      This is an automated email from CJDQuick OMS. Please do not reply to this email.
+    </p>
+  `;
+
+  const textContent = `
+Your Scheduled Report is Ready
+
+The scheduled report "${reportName}" has been generated and is ready for download.
+
+Report Type: ${reportType}
+Period: ${dateRange.fromDate} to ${dateRange.toDate}
+Generated At: ${new Date().toLocaleString()}
+
+Download your report: ${downloadUrl}
+
+This is an automated email from CJDQuick OMS. Please do not reply to this email.
+  `.trim();
+
+  // Send email to each recipient
+  for (const recipient of recipients) {
+    try {
+      await emailService.sendMessage({
+        to: recipient,
+        subject,
+        content: textContent,
+        htmlContent,
+      } as Parameters<typeof emailService.sendMessage>[0] & { htmlContent: string });
+
+      console.log(`Report email sent to: ${recipient}`);
+    } catch (error) {
+      console.error(`Failed to send report email to ${recipient}:`, error);
+    }
+  }
+}
 
 // GET /api/cron/reports - Execute due scheduled reports
 export async function GET(request: NextRequest) {
@@ -79,8 +141,16 @@ export async function GET(request: NextRequest) {
           success: true,
         });
 
-        // TODO: Send email to recipients
-        // await sendReportEmail(report.recipients, report.name, exportUrl);
+        // Send email to recipients
+        if (report.recipients && report.recipients.length > 0) {
+          await sendReportEmailToRecipients(
+            report.recipients,
+            report.name,
+            report.reportType,
+            exportUrl,
+            dateRange
+          );
+        }
 
         console.log(`Successfully executed report: ${report.name}`);
       } catch (error) {

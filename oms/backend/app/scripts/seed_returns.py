@@ -63,15 +63,14 @@ def seed_returns():
         returns_data = []
 
         # Distribution of statuses for realistic data
-        # Using only statuses that exist in DB enum
+        # Using only statuses that exist in DB enum (PROCESSED/COMPLETED not in DB yet)
         status_distribution = [
-            (ReturnStatus.INITIATED, 5),
-            (ReturnStatus.IN_TRANSIT, 8),
-            (ReturnStatus.RECEIVED, 6),
+            (ReturnStatus.INITIATED, 8),
+            (ReturnStatus.IN_TRANSIT, 10),
+            (ReturnStatus.RECEIVED, 8),
             (ReturnStatus.QC_PENDING, 10),
-            (ReturnStatus.QC_PASSED, 4),
+            (ReturnStatus.QC_PASSED, 7),
             (ReturnStatus.QC_FAILED, 2),
-            (ReturnStatus.COMPLETED, 10),
         ]
 
         index = 1
@@ -87,14 +86,11 @@ def seed_returns():
                 qc_status = None
 
                 if status in [ReturnStatus.RECEIVED, ReturnStatus.QC_PENDING,
-                             ReturnStatus.QC_PASSED, ReturnStatus.QC_FAILED,
-                             ReturnStatus.PROCESSED, ReturnStatus.COMPLETED]:
+                             ReturnStatus.QC_PASSED, ReturnStatus.QC_FAILED]:
                     received_at = initiated_at + timedelta(days=random.randint(1, 5))
 
-                if status in [ReturnStatus.QC_PASSED, ReturnStatus.QC_FAILED, ReturnStatus.COMPLETED]:
+                if status in [ReturnStatus.QC_PASSED, ReturnStatus.QC_FAILED]:
                     qc_status = QCStatus.PASSED if status != ReturnStatus.QC_FAILED else QCStatus.FAILED
-
-                if status == ReturnStatus.COMPLETED:
                     processed_at = received_at + timedelta(days=random.randint(1, 3)) if received_at else None
 
                 return_obj = Return(
@@ -110,7 +106,7 @@ def seed_returns():
                     initiatedAt=initiated_at,
                     receivedAt=received_at,
                     processedAt=processed_at,
-                    refundAmount=Decimal(random.randint(200, 5000)) if status == ReturnStatus.COMPLETED else None,
+                    refundAmount=Decimal(random.randint(200, 5000)) if status == ReturnStatus.QC_PASSED else None,
                     companyId=company_id,
                     createdAt=initiated_at,
                     updatedAt=datetime.utcnow(),
@@ -123,7 +119,7 @@ def seed_returns():
             days_ago = random.randint(0, 30)
             initiated_at = datetime.utcnow() - timedelta(days=days_ago)
             status = random.choice([ReturnStatus.INITIATED, ReturnStatus.RECEIVED,
-                                   ReturnStatus.QC_PENDING, ReturnStatus.COMPLETED])
+                                   ReturnStatus.QC_PENDING, ReturnStatus.QC_PASSED])
 
             return_obj = Return(
                 id=uuid4(),
@@ -146,7 +142,8 @@ def seed_returns():
             session.add(r)
 
         session.commit()
-        print(f"Successfully seeded {len(returns_data)} returns ({index - 11} RTOs + 10 Customer Returns)")
+        rto_count = sum(count for _, count in status_distribution)
+        print(f"Successfully seeded {len(returns_data)} returns ({rto_count} RTOs + 10 Customer Returns)")
 
 
 if __name__ == "__main__":

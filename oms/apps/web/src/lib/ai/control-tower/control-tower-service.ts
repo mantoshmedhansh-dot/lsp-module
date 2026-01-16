@@ -119,11 +119,11 @@ export class ControlTowerService {
         },
       },
       include: {
-        deliveries: {
-          include: { transporter: true },
+        Delivery: {
+          include: { Transporter: true },
           take: 1,
         },
-        location: true,
+        Location: true,
       },
       orderBy: { promisedDate: 'asc' },
       take: limit,
@@ -225,7 +225,7 @@ export class ControlTowerService {
     }
 
     // Check transporter if assigned
-    const delivery = order.deliveries?.[0];
+    const delivery = order.Delivery?.[0];
     if (delivery?.transporter) {
       // Could lookup historical data here
       return 36; // Default 36 hours
@@ -290,7 +290,7 @@ export class ControlTowerService {
       factors.push('Processing time exceeds available time');
     }
 
-    if (!order.deliveries?.[0]?.transporterId) {
+    if (!order.Delivery?.[0]?.transporterId) {
       factors.push('No carrier assigned');
     }
 
@@ -316,7 +316,7 @@ export class ControlTowerService {
       actions.push('Escalate to supervisor immediately');
       actions.push('Consider expedited shipping');
 
-      if (!order.deliveries?.[0]?.transporterId) {
+      if (!order.Delivery?.[0]?.transporterId) {
         actions.push('Assign fastest available carrier');
       }
     }
@@ -447,7 +447,7 @@ export class ControlTowerService {
             lte: dateEnd,
           },
         },
-        include: { deliveries: true },
+        include: { Delivery: true },
       });
     }
 
@@ -460,7 +460,7 @@ export class ControlTowerService {
           lte: dateEnd,
         },
       },
-      include: { deliveries: true },
+      include: { Delivery: true },
     });
   }
 

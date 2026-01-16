@@ -48,8 +48,8 @@ export async function POST(
         waveId,
       },
       include: {
-        sku: true,
-        bin: true,
+        SKU: true,
+        Bin: true,
       },
     });
 
@@ -57,11 +57,11 @@ export async function POST(
       return NextResponse.json({ error: "Wave item not found" }, { status: 404 });
     }
 
-    const newPickedQty = waveItem.pickedQuantity + pickedQuantity;
+    const newPickedQty = waveItem.pickedQty + pickedQuantity;
 
-    if (newPickedQty > waveItem.totalQuantity) {
+    if (newPickedQty > waveItem.totalQty) {
       return NextResponse.json(
-        { error: `Cannot pick more than required. Max: ${waveItem.totalQuantity - waveItem.pickedQuantity}` },
+        { error: `Cannot pick more than required. Max: ${waveItem.totalQty - waveItem.pickedQty}` },
         { status: 400 }
       );
     }
@@ -70,31 +70,29 @@ export async function POST(
     const updatedWaveItem = await prisma.waveItem.update({
       where: { id: waveItemId },
       data: {
-        pickedQuantity: newPickedQty,
+        pickedQty: newPickedQty,
         pickedAt: new Date(),
-        pickedBy: session.user.id,
+        pickedById: session.user.id,
       },
       include: {
-        sku: true,
-        bin: true,
+        SKU: true,
+        Bin: true,
       },
     });
 
     // If orderId is provided, create/update distribution
     if (orderId) {
-      const waveOrder = await prisma.waveOrder.findFirst({
-        where: {
-          waveId,
-          orderId,
-        },
+      // Get first order item to link distribution
+      const orderItem = await prisma.orderItem.findFirst({
+        where: { orderId },
       });
 
-      if (waveOrder) {
+      if (orderItem) {
         // Check if distribution exists
         const existingDist = await prisma.waveItemDistribution.findFirst({
           where: {
             waveItemId,
-            waveOrderId: waveOrder.id,
+            orderId,
           },
         });
 
@@ -109,7 +107,8 @@ export async function POST(
           await prisma.waveItemDistribution.create({
             data: {
               waveItemId,
-              waveOrderId: waveOrder.id,
+              orderId,
+              orderItemId: orderItem.id,
               quantity: pickedQuantity,
             },
           });
@@ -131,17 +130,18 @@ export async function POST(
       });
 
       // Create inventory movement
+      const movementNo = `MOV-${Date.now()}`;
       await prisma.inventoryMovement.create({
         data: {
+          movementNo,
           skuId: waveItem.skuId,
-          locationId: wave.locationId,
           fromBinId: waveItem.binId,
-          movementType: "PICK",
+          type: "PICK",
           quantity: pickedQuantity,
           reason: `Wave picking: ${wave.waveNo}`,
           referenceType: "WAVE",
           referenceId: waveId,
-          createdBy: session.user.id,
+          performedBy: session.user.id,
         },
       });
     }
@@ -154,13 +154,12 @@ export async function POST(
       },
     });
 
-    // Check if all items are picked
-    const pendingItems = await prisma.waveItem.count({
-      where: {
-        waveId,
-        pickedQuantity: { lt: prisma.waveItem.fields.totalQuantity },
-      },
+    // Check if all items are picked - get all wave items and filter
+    const allWaveItems = await prisma.waveItem.findMany({
+      where: { waveId },
+      select: { pickedQty: true, totalQty: true },
     });
+    const pendingItems = allWaveItems.filter(item => item.pickedQty < item.totalQty).length;
 
     const allPicked = pendingItems === 0;
 
@@ -194,24 +193,20 @@ export async function GET(
     const wave = await prisma.wave.findUnique({
       where: { id: waveId },
       include: {
-        location: true,
-        waveItems: {
+        Location: true,
+        WaveItem: {
           include: {
-            sku: {
-              select: { id: true, code: true, name: true, barcode: true },
+            SKU: {
+              select: { id: true, code: true, name: true, barcodes: true },
             },
-            bin: {
+            Bin: {
               select: {
                 id: true,
                 code: true,
-                zone: true,
-                aisle: true,
-                rack: true,
-                shelf: true,
               },
             },
           },
-          orderBy: { pickSequence: "asc" },
+          orderBy: { sequence: "asc" },
         },
       },
     });
@@ -221,21 +216,21 @@ export async function GET(
     }
 
     // Calculate progress
-    const totalItems = wave.waveItems.length;
-    const completedItems = wave.waveItems.filter(
-      (item) => item.pickedQuantity >= item.totalQuantity
+    const totalItems = wave.WaveItem.length;
+    const completedItems = wave.WaveItem.filter(
+      (item) => item.pickedQty >= item.totalQty
     ).length;
-    const totalUnits = wave.waveItems.reduce((sum, item) => sum + item.totalQuantity, 0);
-    const pickedUnits = wave.waveItems.reduce((sum, item) => sum + item.pickedQuantity, 0);
+    const totalUnits = wave.WaveItem.reduce((sum, item) => sum + item.totalQty, 0);
+    const pickedUnits = wave.WaveItem.reduce((sum, item) => sum + item.pickedQty, 0);
 
     // Get current item (first unpicked or partially picked)
-    const currentItem = wave.waveItems.find(
-      (item) => item.pickedQuantity < item.totalQuantity
+    const currentItem = wave.WaveItem.find(
+      (item) => item.pickedQty < item.totalQty
     );
 
     // Get next items
-    const upcomingItems = wave.waveItems
-      .filter((item) => item.pickedQuantity < item.totalQuantity && item.id !== currentItem?.id)
+    const upcomingItems = wave.WaveItem
+      .filter((item) => item.pickedQty < item.totalQty && item.id !== currentItem?.id)
       .slice(0, 5);
 
     return NextResponse.json({
@@ -243,7 +238,7 @@ export async function GET(
         id: wave.id,
         waveNo: wave.waveNo,
         status: wave.status,
-        location: wave.location,
+        location: wave.Location,
       },
       progress: {
         totalItems,
@@ -254,7 +249,7 @@ export async function GET(
       },
       currentItem,
       upcomingItems,
-      allItems: wave.waveItems,
+      allItems: wave.WaveItem,
     });
   } catch (error) {
     console.error("Error fetching pick progress:", error);

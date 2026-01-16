@@ -21,16 +21,16 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const communication = await prisma.proactiveCommunication.findUnique({
       where: { id },
       include: {
-        order: {
+        Order: {
           select: {
             id: true,
             orderNo: true,
             customerName: true,
             customerPhone: true,
             status: true,
-            items: {
+            OrderItem: {
               include: {
-                sku: {
+                SKU: {
                   select: {
                     name: true,
                     code: true,
@@ -102,7 +102,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       where: { id },
       data: updateData,
       include: {
-        order: {
+        Order: {
           select: {
             id: true,
             orderNo: true,

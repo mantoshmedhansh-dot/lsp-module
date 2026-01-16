@@ -99,11 +99,16 @@ export async function POST(request: NextRequest) {
     const order = await prisma.order.findUnique({
       where: { id: orderId },
       include: {
-        deliveries: {
+        Delivery: {
           orderBy: { createdAt: "desc" },
           take: 1,
           include: {
-            transporter: true,
+            Transporter: true,
+          },
+        },
+        Location: {
+          select: {
+            companyId: true,
           },
         },
       },
@@ -155,10 +160,10 @@ export async function POST(request: NextRequest) {
     const messageVariables: Record<string, string> = {
       customerName: order.customerName,
       orderNo: order.orderNo,
-      awbNo: order.deliveries[0]?.awbNo || "",
-      courierName: order.deliveries[0]?.transporter?.name || "our delivery partner",
-      eta: order.deliveries[0]?.estimatedDelivery
-        ? new Date(order.deliveries[0].estimatedDelivery).toLocaleDateString()
+      awbNo: order.Delivery[0]?.awbNo || "",
+      courierName: order.Delivery[0]?.Transporter?.name || "our delivery partner",
+      eta: order.promisedDate
+        ? new Date(order.promisedDate).toLocaleDateString()
         : "soon",
       trackingUrl: `${process.env.NEXT_PUBLIC_APP_URL || ""}/track/${order.orderNo}`,
       feedbackUrl: `${process.env.NEXT_PUBLIC_APP_URL || ""}/feedback/${order.orderNo}`,
@@ -214,18 +219,18 @@ export async function POST(request: NextRequest) {
         const communication = await prisma.proactiveCommunication.create({
           data: {
             orderId,
-            deliveryId: deliveryId || order.deliveries[0]?.id,
+            deliveryId: deliveryId || order.Delivery[0]?.id,
             customerName: order.customerName,
             customerPhone: order.customerPhone,
             customerEmail: order.customerEmail,
-            trigger: trigger as "ORDER_CONFIRMED" | "SHIPPED" | "OUT_FOR_DELIVERY" | "DELAY_PREDICTED" | "SLA_BREACH_RISK" | "DELIVERY_ATTEMPT" | "DELIVERED" | "FEEDBACK_REQUEST" | "PROMOTIONAL",
+            trigger: trigger as "ORDER_CONFIRMED" | "ORDER_SHIPPED" | "OUT_FOR_DELIVERY" | "DELAY_PREDICTED" | "SLA_BREACH_RISK" | "DELIVERY_ATTEMPTED" | "DELIVERED" | "FEEDBACK_REQUEST" | "CUSTOM",
             channel: channel as "WHATSAPP" | "SMS" | "EMAIL" | "AI_VOICE" | "MANUAL_CALL" | "IVR",
             content,
             variables: messageVariables,
             scheduledFor,
             priority: triggerConfig.priority,
             status: scheduledFor ? "SCHEDULED" : "PENDING",
-            companyId: order.companyId,
+            companyId: order.Location.companyId,
           },
         });
 
@@ -287,7 +292,7 @@ export async function POST(request: NextRequest) {
           isWorkingHours,
         },
         status: results.some((r) => r.success) ? "SUCCESS" : "FAILED",
-        companyId: order.companyId,
+        companyId: order.Location.companyId,
       },
     });
 

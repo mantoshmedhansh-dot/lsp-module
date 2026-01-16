@@ -19,13 +19,13 @@ export async function GET(
     const sku = await prisma.sKU.findUnique({
       where: { id },
       include: {
-        inventory: {
+        Inventory: {
           include: {
-            bin: {
+            Bin: {
               include: {
-                zone: {
+                Zone: {
                   include: {
-                    location: true,
+                    Location: true,
                   },
                 },
               },
@@ -34,8 +34,8 @@ export async function GET(
         },
         _count: {
           select: {
-            orderItems: true,
-            inventory: true,
+            OrderItem: true,
+            Inventory: true,
           },
         },
       },
@@ -183,8 +183,8 @@ export async function DELETE(
       include: {
         _count: {
           select: {
-            inventory: true,
-            orderItems: true,
+            Inventory: true,
+            OrderItem: true,
           },
         },
       },
@@ -194,7 +194,7 @@ export async function DELETE(
       return NextResponse.json({ error: "SKU not found" }, { status: 404 });
     }
 
-    if (sku._count.inventory > 0 || sku._count.orderItems > 0) {
+    if (sku._count.Inventory > 0 || sku._count.OrderItem > 0) {
       return NextResponse.json(
         {
           error:

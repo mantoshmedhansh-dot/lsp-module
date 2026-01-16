@@ -47,8 +47,8 @@ export async function GET(request: NextRequest) {
       prisma.gatePass.findMany({
         where,
         include: {
-          items: true,
-          _count: { select: { items: true } },
+          GatePassItem: true,
+          _count: { select: { GatePassItem: true } },
         },
         orderBy: { entryTime: "desc" },
         skip,
@@ -158,7 +158,7 @@ export async function POST(request: NextRequest) {
         driverPhone,
         sealNumber,
         expectedDuration,
-        items: items && items.length > 0 ? {
+        GatePassItem: items && items.length > 0 ? {
           create: items.map((item: { skuId?: string; description?: string; quantity: number; unit?: string }) => ({
             skuId: item.skuId,
             description: item.description,
@@ -168,7 +168,7 @@ export async function POST(request: NextRequest) {
         } : undefined,
       },
       include: {
-        items: true,
+        GatePassItem: true,
       },
     });
 

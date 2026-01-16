@@ -74,21 +74,21 @@ export async function GET(request: NextRequest) {
       prisma.inbound.findMany({
         where,
         include: {
-          location: {
+          Location: {
             select: { id: true, code: true, name: true },
           },
-          receivedBy: {
+          User: {
             select: { id: true, name: true },
           },
-          purchaseOrder: {
+          PurchaseOrder: {
             select: {
               id: true,
               poNo: true,
-              vendor: { select: { id: true, code: true, name: true } },
+              Vendor: { select: { id: true, code: true, name: true } },
             },
           },
           _count: {
-            select: { items: true },
+            select: { InboundItem: true },
           },
         },
         orderBy: { createdAt: "desc" },
@@ -168,7 +168,7 @@ export async function POST(request: NextRequest) {
     if (purchaseOrderId) {
       purchaseOrder = await prisma.purchaseOrder.findUnique({
         where: { id: purchaseOrderId },
-        include: { items: true },
+        include: { POItem: true },
       });
 
       if (!purchaseOrder) {
@@ -194,7 +194,7 @@ export async function POST(request: NextRequest) {
     if (!items || items.length === 0) {
       // If no items provided and PO exists, use PO items
       if (purchaseOrder) {
-        inboundItems = purchaseOrder.items.map((item) => ({
+        inboundItems = purchaseOrder.POItem.map((item) => ({
           skuId: item.skuId,
           expectedQty: item.orderedQty - item.receivedQty,
           receivedQty: 0,
@@ -217,7 +217,7 @@ export async function POST(request: NextRequest) {
         receivedById: session.user.id!,
         grnNo,
         remarks,
-        items: {
+        InboundItem: {
           create: inboundItems.map((item: {
             skuId: string;
             expectedQty?: number;
@@ -240,16 +240,16 @@ export async function POST(request: NextRequest) {
         },
       },
       include: {
-        location: true,
-        receivedBy: { select: { id: true, name: true } },
-        purchaseOrder: {
+        Location: true,
+        User: { select: { id: true, name: true } },
+        PurchaseOrder: {
           include: {
-            vendor: { select: { id: true, code: true, name: true } },
+            Vendor: { select: { id: true, code: true, name: true } },
           },
         },
-        items: {
+        InboundItem: {
           include: {
-            sku: {
+            SKU: {
               select: { id: true, code: true, name: true, barcodes: true },
             },
           },

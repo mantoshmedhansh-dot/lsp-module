@@ -42,16 +42,16 @@ export async function GET(request: NextRequest) {
     const returns = await prisma.return.findMany({
       where: {
         initiatedAt: { gte: startDate },
-        ...(companyId ? { order: { location: { companyId } } } : {}),
+        ...(companyId ? { Order_Return_orderIdToOrder: { Location: { companyId } } } : {}),
       },
       include: {
-        items: true,
-        order: true,
+        ReturnItem: true,
+        Order_Return_orderIdToOrder: true,
       },
     });
 
     // Fetch SKU data for all return items
-    const skuIds = [...new Set(returns.flatMap((r) => r.items.map((i) => i.skuId)))];
+    const skuIds = [...new Set(returns.flatMap((r) => r.ReturnItem.map((i) => i.skuId)))];
     const skus = await prisma.sKU.findMany({
       where: { id: { in: skuIds } },
       select: { id: true, code: true, name: true },
@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
     const rtoReturns = returns.filter((r) => r.type === "RTO").length;
     const rtoPercent = totalReturns > 0 ? (rtoReturns / totalReturns) * 100 : 0;
     const returnQty = returns.reduce(
-      (sum, r) => sum + r.items.reduce((isum, i) => isum + i.quantity, 0),
+      (sum, r) => sum + r.ReturnItem.reduce((isum, i) => isum + i.quantity, 0),
       0
     );
     const returnAmount = returns.reduce(
@@ -73,9 +73,9 @@ export async function GET(request: NextRequest) {
 
     // Average return days
     const returnDays = returns
-      .filter((r) => r.order)
+      .filter((r) => r.Order_Return_orderIdToOrder)
       .map((r) => {
-        const orderDate = new Date(r.order!.orderDate);
+        const orderDate = new Date(r.Order_Return_orderIdToOrder!.orderDate);
         const returnDate = new Date(r.initiatedAt);
         return Math.ceil(
           (returnDate.getTime() - orderDate.getTime()) / (1000 * 60 * 60 * 24)
@@ -94,7 +94,7 @@ export async function GET(request: NextRequest) {
     returns.forEach((r) => {
       const dateKey = new Date(r.initiatedAt).toISOString().split("T")[0];
       const existing = returnsByDateMap.get(dateKey) || { count: 0, quantity: 0 };
-      const itemQty = r.items.reduce((sum, i) => sum + i.quantity, 0);
+      const itemQty = r.ReturnItem.reduce((sum, i) => sum + i.quantity, 0);
       returnsByDateMap.set(dateKey, {
         count: existing.count + 1,
         quantity: existing.quantity + itemQty,
@@ -136,7 +136,7 @@ export async function GET(request: NextRequest) {
       { skuCode: string; skuName: string; quantity: number }
     >();
     returns.forEach((r) => {
-      r.items.forEach((item) => {
+      r.ReturnItem.forEach((item) => {
         const key = item.skuId;
         const sku = skuMap.get(item.skuId);
         const existing = skuReturnMap.get(key) || {

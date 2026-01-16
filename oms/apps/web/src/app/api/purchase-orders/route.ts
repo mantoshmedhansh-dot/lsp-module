@@ -53,11 +53,11 @@ export async function GET(request: NextRequest) {
       prisma.purchaseOrder.findMany({
         where,
         include: {
-          vendor: {
+          Vendor: {
             select: { id: true, code: true, name: true },
           },
           _count: {
-            select: { items: true, inbounds: true },
+            select: { POItem: true, Inbound: true },
           },
         },
         orderBy: { createdAt: "desc" },
@@ -167,15 +167,15 @@ export async function POST(request: NextRequest) {
         subtotal,
         taxAmount,
         totalAmount,
-        items: {
+        POItem: {
           create: processedItems,
         },
       },
       include: {
-        vendor: true,
-        items: {
+        Vendor: true,
+        POItem: {
           include: {
-            sku: {
+            SKU: {
               select: { id: true, code: true, name: true },
             },
           },

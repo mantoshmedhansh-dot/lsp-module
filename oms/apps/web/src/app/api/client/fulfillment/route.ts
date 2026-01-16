@@ -42,13 +42,13 @@ export async function GET(request: NextRequest) {
     const orders = await prisma.order.findMany({
       where: {
         orderDate: { gte: startDate },
-        ...(companyId ? { location: { companyId } } : {}),
+        ...(companyId ? { Location: { companyId } } : {}),
       },
       include: {
-        location: { select: { name: true } },
-        deliveries: {
+        Location: { select: { name: true } },
+        Delivery: {
           include: {
-            transporter: { select: { name: true } },
+            Transporter: { select: { name: true } },
           },
         },
       },
@@ -144,7 +144,7 @@ export async function GET(request: NextRequest) {
     >();
 
     orders.forEach((o) => {
-      const locationName = o.location.name;
+      const locationName = o.Location.name;
       const existing = locationMap.get(locationName) || {
         pendingPicklist: 0,
         pendingPick: 0,
@@ -177,7 +177,7 @@ export async function GET(request: NextRequest) {
     const deliveries = await prisma.delivery.findMany({
       where: {
         createdAt: { gte: startDate },
-        ...(companyId ? { order: { location: { companyId } } } : {}),
+        ...(companyId ? { Order: { Location: { companyId } } } : {}),
       },
     });
 
@@ -208,11 +208,11 @@ export async function GET(request: NextRequest) {
     // Shipments by Transporter
     const transporterMap = new Map<string, number>();
     deliveries.forEach((d) => {
-      const order = orders.find((o) => o.deliveries.some((del) => del.id === d.id));
+      const order = orders.find((o) => o.Delivery.some((del) => del.id === d.id));
       if (order) {
-        const delivery = order.deliveries.find((del) => del.id === d.id);
-        if (delivery?.transporter) {
-          const name = delivery.transporter.name;
+        const delivery = order.Delivery.find((del) => del.id === d.id);
+        if (delivery?.Transporter) {
+          const name = delivery.Transporter.name;
           transporterMap.set(name, (transporterMap.get(name) || 0) + 1);
         }
       }

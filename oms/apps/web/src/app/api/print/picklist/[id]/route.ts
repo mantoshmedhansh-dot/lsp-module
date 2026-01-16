@@ -20,21 +20,21 @@ export async function GET(
     const picklist = await prisma.picklist.findUnique({
       where: { id },
       include: {
-        items: {
+        PicklistItem: {
           include: {
-            sku: {
+            SKU: {
               select: { id: true, code: true, name: true },
             },
-            bin: {
-              select: { id: true, code: true, zone: { select: { code: true } } },
+            Bin: {
+              select: { id: true, code: true, Zone: { select: { code: true } } },
             },
           },
         },
-        order: {
+        Order: {
           include: {
-            location: {
+            Location: {
               include: {
-                company: true,
+                Company: true,
               },
             },
           },
@@ -47,12 +47,12 @@ export async function GET(
     }
 
     // Map items with correct field names (requiredQty -> quantity for PDF)
-    const itemsWithDetails = picklist.items.map((item) => ({
+    const itemsWithDetails = picklist.PicklistItem.map((item) => ({
       id: item.id,
       quantity: item.requiredQty,
       pickedQty: item.pickedQty,
-      sku: item.sku,
-      bin: item.bin,
+      sku: item.SKU ? { code: item.SKU.code, name: item.SKU.name } : null,
+      bin: item.Bin ? { code: item.Bin.code, zone: item.Bin.Zone ? { code: item.Bin.Zone.code } : null } : null,
     }));
 
     // Generate PDF
@@ -60,7 +60,10 @@ export async function GET(
       picklistNo: picklist.picklistNo,
       status: picklist.status,
       createdAt: picklist.createdAt,
-      location: picklist.order.location,
+      location: {
+        name: picklist.Order.Location.name,
+        company: { name: picklist.Order.Location.Company.name },
+      },
     }, itemsWithDetails);
 
     // Return PDF - convert Buffer to Uint8Array for NextResponse compatibility

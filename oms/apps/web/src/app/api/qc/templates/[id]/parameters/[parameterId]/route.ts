@@ -35,9 +35,10 @@ export async function PATCH(
       data: {
         ...(name !== undefined && { name }),
         ...(type !== undefined && { type }),
+        ...(description !== undefined && { description }),
         ...(isMandatory !== undefined && { isMandatory }),
         ...(expectedValue !== undefined && { acceptableValues: expectedValue ? [expectedValue] : [] }),
-        ...(tolerance !== undefined && { unitOfMeasure: tolerance }),
+        ...(tolerance !== undefined && { tolerance: tolerance ? parseFloat(tolerance) : null }),
         ...(order !== undefined && { sequence: order }),
       },
     });
@@ -47,10 +48,10 @@ export async function PATCH(
       id: updated.id,
       name: updated.name,
       type: updated.type,
-      description: description || "",
+      description: updated.description || "",
       isMandatory: updated.isMandatory,
       expectedValue: updated.acceptableValues?.[0] || "",
-      tolerance: updated.unitOfMeasure || "",
+      tolerance: updated.tolerance?.toString() || "",
       order: updated.sequence,
     });
   } catch (error) {

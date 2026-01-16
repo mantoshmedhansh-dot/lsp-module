@@ -32,18 +32,18 @@ export async function GET(request: NextRequest) {
       prisma.sKUBundle.findMany({
         where,
         include: {
-          bundleSku: {
+          SKU: {
             select: { id: true, code: true, name: true, mrp: true },
           },
-          items: {
+          BundleItem: {
             include: {
-              componentSku: {
+              SKU: {
                 select: { id: true, code: true, name: true, mrp: true },
               },
             },
           },
           _count: {
-            select: { items: true },
+            select: { BundleItem: true },
           },
         },
         orderBy: { createdAt: "desc" },
@@ -166,12 +166,12 @@ export async function POST(request: NextRequest) {
     const completeBundle = await prisma.sKUBundle.findUnique({
       where: { id: bundle.id },
       include: {
-        bundleSku: {
+        SKU: {
           select: { id: true, code: true, name: true },
         },
-        items: {
+        BundleItem: {
           include: {
-            componentSku: {
+            SKU: {
               select: { id: true, code: true, name: true },
             },
           },

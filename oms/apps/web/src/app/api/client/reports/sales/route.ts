@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     // Get client's company
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      include: { company: true },
+      include: { Company: true },
     });
 
     if (!user?.companyId) {
@@ -46,14 +46,14 @@ export async function GET(request: NextRequest) {
     // Get orders for the period
     const orders = await prisma.order.findMany({
       where: {
-        companyId: user.companyId,
+        Location: { companyId: user.companyId },
         createdAt: { gte: startDate },
         status: { not: "CANCELLED" },
       },
       include: {
-        items: {
+        OrderItem: {
           include: {
-            sku: { select: { category: true } },
+            SKU: { select: { category: true } },
           },
         },
       },
@@ -83,14 +83,14 @@ export async function GET(request: NextRequest) {
 
       salesByPeriod[key].orders += 1;
       salesByPeriod[key].revenue += Number(order.totalAmount);
-      salesByPeriod[key].units += order.items.reduce((sum, i) => sum + i.quantity, 0);
+      salesByPeriod[key].units += order.OrderItem.reduce((sum, i) => sum + i.quantity, 0);
     });
 
     // Get sales by channel
     const salesByChannel = await prisma.order.groupBy({
       by: ["channel"],
       where: {
-        companyId: user.companyId,
+        Location: { companyId: user.companyId },
         createdAt: { gte: startDate },
         status: { not: "CANCELLED" },
       },
@@ -101,8 +101,8 @@ export async function GET(request: NextRequest) {
     // Get sales by category
     const categoryMap: Record<string, { orders: number; revenue: number; units: number }> = {};
     orders.forEach((order) => {
-      order.items.forEach((item) => {
-        const category = item.sku?.category || "Uncategorized";
+      order.OrderItem.forEach((item) => {
+        const category = item.SKU?.category || "Uncategorized";
         if (!categoryMap[category]) {
           categoryMap[category] = { orders: 0, revenue: 0, units: 0 };
         }
@@ -116,7 +116,7 @@ export async function GET(request: NextRequest) {
     const totalRevenue = orders.reduce((sum, o) => sum + Number(o.totalAmount), 0);
     const totalOrders = orders.length;
     const totalUnits = orders.reduce(
-      (sum, o) => sum + o.items.reduce((s, i) => s + i.quantity, 0),
+      (sum, o) => sum + o.OrderItem.reduce((s, i) => s + i.quantity, 0),
       0
     );
     const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;

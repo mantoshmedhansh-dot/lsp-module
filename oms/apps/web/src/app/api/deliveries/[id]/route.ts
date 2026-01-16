@@ -19,18 +19,18 @@ export async function GET(
     const delivery = await prisma.delivery.findUnique({
       where: { id },
       include: {
-        order: {
+        Order: {
           include: {
-            location: true,
-            items: {
+            Location: true,
+            OrderItem: {
               include: {
-                sku: true,
+                SKU: true,
               },
             },
           },
         },
-        transporter: true,
-        manifest: true,
+        Transporter: true,
+        Manifest: true,
       },
     });
 
@@ -78,8 +78,8 @@ export async function PATCH(
     const delivery = await prisma.delivery.findUnique({
       where: { id },
       include: {
-        order: true,
-        transporter: true,
+        Order: true,
+        Transporter: true,
       },
     });
 
@@ -131,7 +131,7 @@ export async function PATCH(
             trackingUrl: finalTrackingUrl,
           },
           include: {
-            transporter: true,
+            Transporter: true,
           },
         });
 
@@ -175,8 +175,8 @@ export async function PATCH(
             shipDate: new Date(),
           },
           include: {
-            transporter: true,
-            order: true,
+            Transporter: true,
+            Order: true,
           },
         });
 
@@ -232,7 +232,7 @@ export async function PATCH(
           where: { id },
           data: updateData,
           include: {
-            transporter: true,
+            Transporter: true,
           },
         });
 
@@ -271,7 +271,7 @@ export async function PATCH(
             receivedBy,
           },
           include: {
-            transporter: true,
+            Transporter: true,
           },
         });
 
@@ -313,7 +313,7 @@ export async function PATCH(
             remarks: remarks !== undefined ? remarks : undefined,
           },
           include: {
-            transporter: true,
+            Transporter: true,
           },
         });
 
@@ -336,7 +336,7 @@ export async function PATCH(
           where: { id },
           data: { status: "CANCELLED" },
           include: {
-            transporter: true,
+            Transporter: true,
           },
         });
 

@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
       prisma.aIActionLog.findMany({
         where,
         include: {
-          ndr: {
+          NDR: {
             select: {
               id: true,
               ndrCode: true,
@@ -223,10 +223,10 @@ export async function POST(request: NextRequest) {
         ndrId,
         actionType: actionType as "AUTO_CLASSIFY" | "AUTO_OUTREACH" | "AUTO_RESOLVE" | "SENTIMENT_ANALYSIS" | "PRIORITY_UPDATE" | "ESCALATION" | "PREDICTION" | "MANUAL_UPDATE" | "OUTREACH_ATTEMPT" | "PROACTIVE_TRIGGER",
         actionDetails,
-        status: status as "SUCCESS" | "FAILED" | "PENDING" | "SKIPPED",
+        status: status as "PENDING_APPROVAL" | "APPROVED" | "REJECTED" | "EXECUTED" | "FAILED",
         confidence,
         processingTime,
-        errorMessage,
+        executionError: errorMessage,
         companyId: session.user.companyId || "",
       },
     });

@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     // Get client's company
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      include: { company: true },
+      include: { Company: true },
     });
 
     if (!user?.companyId) {
@@ -42,46 +42,43 @@ export async function GET(request: NextRequest) {
         startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     }
 
-    // Get shipments for the period
-    const shipments = await prisma.shipment.findMany({
+    // Get deliveries for the period
+    const deliveries = await prisma.delivery.findMany({
       where: {
-        order: { companyId: user.companyId },
+        Order: { Location: { companyId: user.companyId } },
         createdAt: { gte: startDate },
       },
       include: {
-        order: {
-          select: { id: true, orderNo: true, createdAt: true },
+        Order: {
+          select: { id: true, orderNo: true, createdAt: true, locationId: true, Location: { select: { id: true, name: true } } },
         },
-        transporter: {
-          select: { id: true, name: true },
-        },
-        location: {
+        Transporter: {
           select: { id: true, name: true },
         },
       },
     });
 
     // Calculate fulfillment metrics
-    const totalShipments = shipments.length;
-    const deliveredShipments = shipments.filter((s) => s.status === "DELIVERED");
-    const inTransitShipments = shipments.filter((s) =>
-      ["IN_TRANSIT", "OUT_FOR_DELIVERY", "PICKED_UP"].includes(s.status)
+    const totalDeliveries = deliveries.length;
+    const deliveredDeliveries = deliveries.filter((d) => d.status === "DELIVERED");
+    const inTransitDeliveries = deliveries.filter((d) =>
+      ["IN_TRANSIT", "OUT_FOR_DELIVERY", "SHIPPED"].includes(d.status)
     );
-    const failedShipments = shipments.filter((s) =>
-      ["FAILED", "RTO_INITIATED", "RTO_IN_TRANSIT", "RTO_DELIVERED"].includes(s.status)
+    const failedDeliveries = deliveries.filter((d) =>
+      ["RTO_INITIATED", "RTO_IN_TRANSIT", "RTO_DELIVERED", "CANCELLED"].includes(d.status)
     );
 
     // Calculate delivery rate
-    const deliveryRate = totalShipments > 0
-      ? (deliveredShipments.length / totalShipments) * 100
+    const deliveryRate = totalDeliveries > 0
+      ? (deliveredDeliveries.length / totalDeliveries) * 100
       : 0;
 
     // Calculate average delivery time
-    const deliveryTimes = deliveredShipments
-      .filter((s) => s.deliveredAt)
-      .map((s) => {
-        const created = new Date(s.createdAt);
-        const delivered = new Date(s.deliveredAt!);
+    const deliveryTimes = deliveredDeliveries
+      .filter((d) => d.deliveryDate)
+      .map((d) => {
+        const created = new Date(d.createdAt);
+        const delivered = new Date(d.deliveryDate!);
         return (delivered.getTime() - created.getTime()) / (1000 * 60 * 60 * 24);
       });
     const avgDeliveryTime = deliveryTimes.length > 0
@@ -97,9 +94,9 @@ export async function GET(request: NextRequest) {
       avgTime: number;
     }> = {};
 
-    shipments.forEach((s) => {
-      const transporterId = s.transporterId || "unassigned";
-      const transporterName = s.transporter?.name || "Unassigned";
+    deliveries.forEach((d) => {
+      const transporterId = d.transporterId || "unassigned";
+      const transporterName = d.Transporter?.name || "Unassigned";
 
       if (!transporterMetrics[transporterId]) {
         transporterMetrics[transporterId] = {
@@ -112,10 +109,10 @@ export async function GET(request: NextRequest) {
       }
 
       transporterMetrics[transporterId].total += 1;
-      if (s.status === "DELIVERED") {
+      if (d.status === "DELIVERED") {
         transporterMetrics[transporterId].delivered += 1;
       }
-      if (["FAILED", "RTO_INITIATED", "RTO_IN_TRANSIT", "RTO_DELIVERED"].includes(s.status)) {
+      if (["RTO_INITIATED", "RTO_IN_TRANSIT", "RTO_DELIVERED", "CANCELLED"].includes(d.status)) {
         transporterMetrics[transporterId].failed += 1;
       }
     });
@@ -128,9 +125,9 @@ export async function GET(request: NextRequest) {
       pending: number;
     }> = {};
 
-    shipments.forEach((s) => {
-      const locationId = s.locationId || "unknown";
-      const locationName = s.location?.name || "Unknown";
+    deliveries.forEach((d) => {
+      const locationId = d.Order.locationId || "unknown";
+      const locationName = d.Order.Location?.name || "Unknown";
 
       if (!locationMetrics[locationId]) {
         locationMetrics[locationId] = {
@@ -142,30 +139,30 @@ export async function GET(request: NextRequest) {
       }
 
       locationMetrics[locationId].total += 1;
-      if (s.status === "DELIVERED") {
+      if (d.status === "DELIVERED") {
         locationMetrics[locationId].delivered += 1;
       }
-      if (["CREATED", "PENDING", "IN_TRANSIT", "OUT_FOR_DELIVERY"].includes(s.status)) {
+      if (["PENDING", "PACKED", "MANIFESTED", "IN_TRANSIT", "OUT_FOR_DELIVERY"].includes(d.status)) {
         locationMetrics[locationId].pending += 1;
       }
     });
 
     // SLA compliance (orders shipped within 24 hours)
-    const slaCompliant = shipments.filter((s) => {
-      if (!s.order.createdAt || !s.pickedUpAt) return false;
-      const orderDate = new Date(s.order.createdAt);
-      const pickupDate = new Date(s.pickedUpAt);
-      const hoursToShip = (pickupDate.getTime() - orderDate.getTime()) / (1000 * 60 * 60);
+    const slaCompliant = deliveries.filter((d) => {
+      if (!d.Order.createdAt || !d.shipDate) return false;
+      const orderDate = new Date(d.Order.createdAt);
+      const shipDate = new Date(d.shipDate);
+      const hoursToShip = (shipDate.getTime() - orderDate.getTime()) / (1000 * 60 * 60);
       return hoursToShip <= 24;
     }).length;
-    const slaCompliance = totalShipments > 0 ? (slaCompliant / totalShipments) * 100 : 0;
+    const slaCompliance = totalDeliveries > 0 ? (slaCompliant / totalDeliveries) * 100 : 0;
 
     return NextResponse.json({
       summary: {
-        totalShipments,
-        deliveredCount: deliveredShipments.length,
-        inTransitCount: inTransitShipments.length,
-        failedCount: failedShipments.length,
+        totalShipments: totalDeliveries,
+        deliveredCount: deliveredDeliveries.length,
+        inTransitCount: inTransitDeliveries.length,
+        failedCount: failedDeliveries.length,
         deliveryRate: Math.round(deliveryRate * 10) / 10,
         avgDeliveryTime: Math.round(avgDeliveryTime * 10) / 10,
         slaCompliance: Math.round(slaCompliance * 10) / 10,

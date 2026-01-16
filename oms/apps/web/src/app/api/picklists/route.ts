@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     if (search) {
       where.OR = [
         { picklistNo: { contains: search, mode: "insensitive" } },
-        { order: { orderNo: { contains: search, mode: "insensitive" } } },
+        { Order: { orderNo: { contains: search, mode: "insensitive" } } },
       ];
     }
 
@@ -47,8 +47,8 @@ export async function GET(request: NextRequest) {
 
     // Filter by location access
     if (session.user.locationAccess && session.user.locationAccess.length > 0) {
-      where.order = {
-        ...(where.order as object || {}),
+      where.Order = {
+        ...(where.Order as object || {}),
         locationId: { in: session.user.locationAccess },
       };
     }
@@ -57,13 +57,13 @@ export async function GET(request: NextRequest) {
       prisma.picklist.findMany({
         where,
         include: {
-          order: {
+          Order: {
             select: {
               id: true,
               orderNo: true,
               customerName: true,
               status: true,
-              location: {
+              Location: {
                 select: {
                   id: true,
                   code: true,
@@ -72,26 +72,26 @@ export async function GET(request: NextRequest) {
               },
             },
           },
-          assignedTo: {
+          User: {
             select: {
               id: true,
               name: true,
             },
           },
-          items: {
+          PicklistItem: {
             include: {
-              sku: {
+              SKU: {
                 select: {
                   id: true,
                   code: true,
                   name: true,
                 },
               },
-              bin: {
+              Bin: {
                 select: {
                   id: true,
                   code: true,
-                  zone: {
+                  Zone: {
                     select: {
                       code: true,
                       name: true,
@@ -103,7 +103,7 @@ export async function GET(request: NextRequest) {
           },
           _count: {
             select: {
-              items: true,
+              PicklistItem: true,
             },
           },
         },
@@ -171,30 +171,30 @@ export async function POST(request: NextRequest) {
       const order = await prisma.order.findUnique({
         where: { id: orderId },
         include: {
-          items: {
+          OrderItem: {
             where: {
               allocatedQty: { gt: 0 },
               status: { in: ["ALLOCATED", "PENDING"] },
             },
             include: {
-              sku: true,
+              SKU: true,
             },
           },
-          location: {
+          Location: {
             include: {
-              zones: {
+              Zone: {
                 where: { type: "SALEABLE" },
                 include: {
-                  bins: {
+                  Bin: {
                     include: {
-                      inventory: true,
+                      Inventory: true,
                     },
                   },
                 },
               },
             },
           },
-          picklists: {
+          Picklist: {
             where: {
               status: { in: ["PENDING", "PROCESSING"] },
             },
@@ -207,7 +207,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Check if order already has an active picklist
-      if (order.picklists.length > 0) {
+      if (order.Picklist.length > 0) {
         continue;
       }
 
@@ -223,16 +223,16 @@ export async function POST(request: NextRequest) {
         requiredQty: number;
       }> = [];
 
-      for (const item of order.items) {
+      for (const item of order.OrderItem) {
         let remainingQty = item.allocatedQty;
 
-        for (const zone of order.location.zones) {
+        for (const zone of order.Location.Zone) {
           if (remainingQty <= 0) break;
 
-          for (const bin of zone.bins) {
+          for (const bin of zone.Bin) {
             if (remainingQty <= 0) break;
 
-            const inventory = bin.inventory.find(
+            const inventory = bin.Inventory.find(
               (inv) => inv.skuId === item.skuId && inv.reservedQty > 0
             );
 
@@ -249,10 +249,10 @@ export async function POST(request: NextRequest) {
         }
 
         // If we couldn't find enough inventory, use default bin
-        if (remainingQty > 0 && order.location.zones[0]?.bins[0]) {
+        if (remainingQty > 0 && order.Location.Zone[0]?.Bin[0]) {
           picklistItems.push({
             skuId: item.skuId,
-            binId: order.location.zones[0].bins[0].id,
+            binId: order.Location.Zone[0].Bin[0].id,
             requiredQty: remainingQty,
           });
         }
@@ -268,13 +268,13 @@ export async function POST(request: NextRequest) {
           picklistNo: generatePicklistNo(),
           status: "PENDING",
           orderId: order.id,
-          items: {
+          PicklistItem: {
             create: picklistItems,
           },
         },
         include: {
-          items: true,
-          order: {
+          PicklistItem: true,
+          Order: {
             select: {
               orderNo: true,
             },

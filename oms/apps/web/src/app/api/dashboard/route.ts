@@ -235,7 +235,7 @@ export async function GET(request: NextRequest) {
           status: true,
           totalAmount: true,
           createdAt: true,
-          _count: { select: { items: true } },
+          _count: { select: { OrderItem: true } },
         },
       }),
 

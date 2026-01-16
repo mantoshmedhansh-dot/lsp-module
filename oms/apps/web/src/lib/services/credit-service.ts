@@ -174,20 +174,19 @@ export async function createCreditTransaction(
       // Calculate new balances based on transaction type
       switch (input.type) {
         case "ORDER_DEBIT":
-          // Using credit for an order
+        case "ORDER":
+        case "INTEREST_DEBIT":
+          // Using credit for an order or interest charge
           newCreditUsed = creditUsed + input.amount;
           newCreditAvailable = creditLimit - newCreditUsed;
           break;
 
         case "PAYMENT":
+        case "PAYMENT_CREDIT":
         case "CREDIT_NOTE":
-          // Reducing credit used
-          newCreditUsed = Math.max(0, creditUsed - input.amount);
-          newCreditAvailable = creditLimit - newCreditUsed;
-          break;
-
-        case "REVERSAL":
-          // Reversing a previous utilization
+        case "REFUND":
+        case "WRITE_OFF":
+          // Reducing credit used (payments, credits, refunds, write-offs)
           newCreditUsed = Math.max(0, creditUsed - input.amount);
           newCreditAvailable = creditLimit - newCreditUsed;
           break;

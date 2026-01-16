@@ -25,8 +25,8 @@ export async function GET(request: NextRequest) {
     const delivery = await prisma.delivery.findFirst({
       where: deliveryId ? { id: deliveryId } : { awbNo: awbNo! },
       include: {
-        transporter: true,
-        order: {
+        Transporter: true,
+        Order: {
           select: {
             id: true,
             orderNo: true,
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const transporter = delivery.transporter;
+    const transporter = delivery.Transporter;
 
     if (!transporter?.apiEnabled || !transporter?.apiConfig) {
       // Return stored tracking info if API not configured
@@ -195,7 +195,7 @@ export async function POST(request: NextRequest) {
     const deliveries = await prisma.delivery.findMany({
       where,
       include: {
-        transporter: true,
+        Transporter: true,
       },
     });
 
@@ -210,15 +210,15 @@ export async function POST(request: NextRequest) {
     // Group by transporter for efficient API calls
     const byTransporter = new Map<string, typeof deliveries>();
     for (const delivery of deliveries) {
-      if (!delivery.transporter) continue;
-      const key = delivery.transporter.id;
+      if (!delivery.Transporter) continue;
+      const key = delivery.Transporter.id;
       const existing = byTransporter.get(key) || [];
       existing.push(delivery);
       byTransporter.set(key, existing);
     }
 
     for (const [, transporterDeliveries] of byTransporter) {
-      const transporter = transporterDeliveries[0].transporter!;
+      const transporter = transporterDeliveries[0].Transporter!;
 
       if (!transporter.apiEnabled || !transporter.apiConfig) {
         for (const d of transporterDeliveries) {

@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
       prisma.inventory.findMany({
         where,
         include: {
-          sku: {
+          SKU: {
             select: {
               id: true,
               code: true,
@@ -80,12 +80,12 @@ export async function GET(request: NextRequest) {
               images: true,
             },
           },
-          bin: {
+          Bin: {
             select: {
               id: true,
               code: true,
               name: true,
-              zone: {
+              Zone: {
                 select: {
                   id: true,
                   code: true,
@@ -95,7 +95,7 @@ export async function GET(request: NextRequest) {
               },
             },
           },
-          location: {
+          Location: {
             select: {
               id: true,
               code: true,
@@ -104,8 +104,8 @@ export async function GET(request: NextRequest) {
           },
         },
         orderBy: [
-          { sku: { code: "asc" } },
-          { bin: { code: "asc" } },
+          { SKU: { code: "asc" } },
+          { Bin: { code: "asc" } },
         ],
         skip,
         take: limit,
@@ -117,7 +117,7 @@ export async function GET(request: NextRequest) {
     let filteredInventory = inventory;
     if (lowStock) {
       filteredInventory = inventory.filter(
-        (inv) => inv.sku.reorderLevel && inv.quantity <= inv.sku.reorderLevel
+        (inv) => inv.SKU.reorderLevel && inv.quantity <= inv.SKU.reorderLevel
       );
     }
 
@@ -153,7 +153,7 @@ export async function GET(request: NextRequest) {
         quantity: { gt: 0 },
       },
       include: {
-        sku: {
+        SKU: {
           select: {
             reorderLevel: true,
           },
@@ -162,7 +162,7 @@ export async function GET(request: NextRequest) {
     });
 
     const lowStockCount = lowStockItems.filter(
-      (inv) => inv.sku.reorderLevel && inv.quantity <= inv.sku.reorderLevel
+      (inv) => inv.SKU.reorderLevel && inv.quantity <= inv.SKU.reorderLevel
     ).length;
 
     // Get out of stock count
@@ -249,11 +249,11 @@ export async function POST(request: NextRequest) {
             : existing.serialNumbers,
         },
         include: {
-          sku: true,
-          bin: {
-            include: { zone: true },
+          SKU: true,
+          Bin: {
+            include: { Zone: true },
           },
-          location: true,
+          Location: true,
         },
       });
     } else {
@@ -272,11 +272,11 @@ export async function POST(request: NextRequest) {
           serialNumbers: serialNumbers || [],
         },
         include: {
-          sku: true,
-          bin: {
-            include: { zone: true },
+          SKU: true,
+          Bin: {
+            include: { Zone: true },
           },
-          location: true,
+          Location: true,
         },
       });
     }

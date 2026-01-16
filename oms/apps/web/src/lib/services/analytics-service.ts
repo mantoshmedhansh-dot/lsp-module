@@ -4,7 +4,7 @@
  * Provides analytics computation for OMS dashboard and reports
  */
 
-import { prisma } from "@oms/database";
+import { prisma, Prisma } from "@oms/database";
 
 export interface DashboardMetrics {
   orders: {
@@ -151,13 +151,13 @@ export class AnalyticsService {
     const totalFulfillableOrders = await prisma.order.count({
       where: {
         ...baseWhere,
-        status: { notIn: ["CANCELLED", "PENDING"] },
+        status: { notIn: ["CANCELLED", "CREATED"] },
       },
     });
 
-    const pendingShipments = await prisma.shipment.count({
+    const pendingShipments = await prisma.delivery.count({
       where: {
-        status: { in: ["CREATED", "PICKED_UP"] },
+        status: { in: ["PENDING", "PACKED", "MANIFESTED"] as const },
       },
     });
 
@@ -226,18 +226,27 @@ export class AnalyticsService {
 
     const totalSKUs = await prisma.sKU.count({ where: { isActive: true } });
 
-    // Get SKUs with low stock (below reorder point)
-    const lowStockSKUs = await prisma.sKU.count({
+    // Get SKUs with low stock (below reorder level)
+    // Count SKUs where inventory is at or below reorder level
+    const skusWithLowStock = await prisma.sKU.findMany({
       where: {
         isActive: true,
-        inventory: {
-          some: {
-            ...where,
-            quantity: { lte: prisma.sKU.fields.reorderPoint },
-          },
+        reorderLevel: { not: null },
+        Inventory: locationId ? { some: { locationId } } : undefined,
+      },
+      select: {
+        id: true,
+        reorderLevel: true,
+        Inventory: {
+          where: locationId ? { locationId } : undefined,
+          select: { quantity: true },
         },
       },
     });
+    const lowStockSKUs = skusWithLowStock.filter((sku) => {
+      const totalQty = sku.Inventory.reduce((sum: number, inv: { quantity: number }) => sum + inv.quantity, 0);
+      return totalQty <= (sku.reorderLevel || 0);
+    }).length;
 
     // Get out of stock SKUs
     const outOfStockSKUs = await prisma.sKU.count({
@@ -245,12 +254,12 @@ export class AnalyticsService {
         isActive: true,
         OR: [
           {
-            inventory: {
+            Inventory: {
               none: where,
             },
           },
           {
-            inventory: {
+            Inventory: {
               every: {
                 ...where,
                 quantity: 0,
@@ -390,23 +399,20 @@ export class AnalyticsService {
       data: {
         companyId,
         snapshotDate: today,
-        metricType: "DAILY",
+        snapshotType: "DAILY",
         totalOrders: metrics.orders.total,
         totalRevenue: metrics.revenue.total,
         totalUnits: trends[0]?.units || 0,
-        averageOrderValue: metrics.revenue.averageOrderValue,
+        avgOrderValue: metrics.revenue.averageOrderValue,
         fillRate: metrics.fulfillment.fillRate,
         onTimeDeliveryRate: metrics.fulfillment.onTimeDeliveryRate,
-        cancelRate: metrics.orders.total > 0
-          ? (metrics.orders.cancelled / metrics.orders.total) * 100
-          : 0,
+        ordersCancelled: metrics.orders.cancelled,
         returnRate: metrics.orders.total > 0
           ? (metrics.orders.returned / metrics.orders.total) * 100
           : 0,
         channelBreakdown: metrics.channels,
-        topSellingSkus: [], // Would need additional query
         inventoryValue: metrics.inventory.inventoryValue,
-        lowStockSkuCount: metrics.inventory.lowStockSKUs,
+        lowStockSKUs: metrics.inventory.lowStockSKUs,
       },
     });
   }

@@ -18,20 +18,20 @@ export async function GET(
     const priceList = await prisma.priceList.findUnique({
       where: { id },
       include: {
-        company: {
+        Company: {
           select: { id: true, name: true },
         },
-        items: {
+        PriceListItem: {
           include: {
-            pricingTiers: {
+            PricingTier: {
               orderBy: { minQty: "asc" },
             },
           },
         },
-        customers: {
+        Customer: {
           select: { id: true, name: true, code: true },
         },
-        customerGroups: {
+        CustomerGroup: {
           select: { id: true, name: true, code: true },
         },
       },
@@ -42,7 +42,7 @@ export async function GET(
     }
 
     // Get SKU details for items
-    const skuIds = priceList.items.map((item) => item.skuId);
+    const skuIds = priceList.PriceListItem.map((item) => item.skuId);
     const skus = await prisma.sKU.findMany({
       where: { id: { in: skuIds } },
       select: { id: true, code: true, name: true, mrp: true, sellingPrice: true },
@@ -51,7 +51,7 @@ export async function GET(
     const skuMap = new Map(skus.map((s) => [s.id, s]));
 
     // Enrich items with SKU details
-    const enrichedItems = priceList.items.map((item) => ({
+    const enrichedItems = priceList.PriceListItem.map((item) => ({
       ...item,
       sku: skuMap.get(item.skuId) || null,
     }));
@@ -186,9 +186,9 @@ export async function PATCH(
     const completePriceList = await prisma.priceList.findUnique({
       where: { id },
       include: {
-        items: {
+        PriceListItem: {
           include: {
-            pricingTiers: true,
+            PricingTier: true,
           },
         },
       },

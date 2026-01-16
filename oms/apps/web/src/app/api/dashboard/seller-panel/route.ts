@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
       // Order Items stats (total lines, total quantity)
       prisma.orderItem.aggregate({
         where: {
-          order: {
+          Order: {
             ...locationFilter,
             createdAt: { gte: startDate },
           },
@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
       prisma.orderItem.groupBy({
         by: ["skuId"],
         where: {
-          order: {
+          Order: {
             ...locationFilter,
             createdAt: { gte: startDate },
             status: { notIn: ["CANCELLED"] },
@@ -127,7 +127,7 @@ export async function GET(request: NextRequest) {
       // Unfulfillable line level items
       prisma.orderItem.count({
         where: {
-          order: locationFilter,
+          Order: locationFilter,
           status: "PENDING",
           allocatedQty: 0,
         },
@@ -154,7 +154,7 @@ export async function GET(request: NextRequest) {
       // Order quantity with pending stock (items with 0 allocation)
       prisma.orderItem.aggregate({
         where: {
-          order: {
+          Order: {
             ...locationFilter,
             status: { notIn: ["DELIVERED", "CANCELLED", "RTO_DELIVERED", "SHIPPED"] },
           },
@@ -184,7 +184,7 @@ export async function GET(request: NextRequest) {
       },
       select: {
         orderDate: true,
-        _count: { select: { items: true } },
+        _count: { select: { OrderItem: true } },
       },
     });
 
@@ -193,7 +193,7 @@ export async function GET(request: NextRequest) {
     ordersWithItemCounts.forEach((order) => {
       const dateKey = order.orderDate.toISOString().split("T")[0];
       const currentCount = orderLinesByDateMap.get(dateKey) || 0;
-      orderLinesByDateMap.set(dateKey, currentCount + order._count.items);
+      orderLinesByDateMap.set(dateKey, currentCount + order._count.OrderItem);
     });
 
     // Calculate derived metrics

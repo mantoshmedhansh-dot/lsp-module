@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
         const orders = await prisma.order.findMany({
           where: {
             createdAt: { gte: startDate },
-            status: { notIn: ["CANCELLED", "FAILED"] },
+            status: { notIn: ["CANCELLED"] },
           },
           select: {
             createdAt: true,
@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
       }
 
       case "returns": {
-        const returns = await prisma.returnRequest.groupBy({
+        const returns = await prisma.return.groupBy({
           by: ["createdAt"],
           where: {
             createdAt: { gte: startDate },

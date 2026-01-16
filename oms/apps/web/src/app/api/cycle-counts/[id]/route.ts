@@ -18,7 +18,7 @@ export async function GET(
     const cycleCount = await prisma.cycleCount.findUnique({
       where: { id },
       include: {
-        items: {
+        CycleCountItem: {
           include: {
             // We'll need to manually join SKU and Bin info
           },
@@ -31,8 +31,8 @@ export async function GET(
     }
 
     // Get SKU and Bin details for items
-    const skuIds = [...new Set(cycleCount.items.map((i) => i.skuId))];
-    const binIds = [...new Set(cycleCount.items.map((i) => i.binId))];
+    const skuIds = [...new Set(cycleCount.CycleCountItem.map((i) => i.skuId))];
+    const binIds = [...new Set(cycleCount.CycleCountItem.map((i) => i.binId))];
 
     const [skus, bins] = await Promise.all([
       prisma.sKU.findMany({
@@ -41,14 +41,14 @@ export async function GET(
       }),
       prisma.bin.findMany({
         where: { id: { in: binIds } },
-        select: { id: true, code: true, zone: { select: { code: true, name: true } } },
+        select: { id: true, code: true, Zone: { select: { code: true, name: true } } },
       }),
     ]);
 
     const skuMap = new Map(skus.map((s) => [s.id, s]));
     const binMap = new Map(bins.map((b) => [b.id, b]));
 
-    const itemsWithDetails = cycleCount.items.map((item) => ({
+    const itemsWithDetails = cycleCount.CycleCountItem.map((item) => ({
       ...item,
       sku: skuMap.get(item.skuId),
       bin: binMap.get(item.binId),
@@ -56,7 +56,7 @@ export async function GET(
 
     return NextResponse.json({
       ...cycleCount,
-      items: itemsWithDetails,
+      CycleCountItem: itemsWithDetails,
     });
   } catch (error) {
     console.error("Error fetching cycle count:", error);
@@ -84,7 +84,7 @@ export async function PATCH(
 
     const cycleCount = await prisma.cycleCount.findUnique({
       where: { id },
-      include: { items: true },
+      include: { CycleCountItem: true },
     });
 
     if (!cycleCount) {
@@ -131,7 +131,7 @@ export async function PATCH(
         for (const item of items) {
           const { itemId, countedQty } = item;
 
-          const existingItem = cycleCount.items.find((i) => i.id === itemId);
+          const existingItem = cycleCount.CycleCountItem.find((i) => i.id === itemId);
           if (!existingItem) continue;
 
           const varianceQty = countedQty - existingItem.expectedQty;
@@ -160,7 +160,7 @@ export async function PATCH(
         }
 
         // Check if all items are counted
-        const uncountedItems = cycleCount.items.filter(
+        const uncountedItems = cycleCount.CycleCountItem.filter(
           (i) => i.status !== "COUNTED"
         );
 
@@ -261,7 +261,7 @@ export async function PATCH(
             remarks: `Adjustment from Cycle Count ${cycleCount.cycleCountNo}`,
             locationId: cycleCount.locationId,
             adjustedById: session.user.id!,
-            items: {
+            StockAdjustmentItem: {
               create: varianceItems.map((item) => ({
                 skuId: item.skuId,
                 binId: item.binId,

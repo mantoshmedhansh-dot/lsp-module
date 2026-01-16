@@ -27,14 +27,14 @@ export async function GET(request: NextRequest) {
       prisma.priceList.findMany({
         where,
         include: {
-          company: {
+          Company: {
             select: { id: true, name: true },
           },
           _count: {
             select: {
-              items: true,
-              customers: true,
-              customerGroups: true,
+              PriceListItem: true,
+              Customer: true,
+              CustomerGroup: true,
             },
           },
         },
@@ -172,9 +172,9 @@ export async function POST(request: NextRequest) {
     const completePriceList = await prisma.priceList.findUnique({
       where: { id: priceList.id },
       include: {
-        items: {
+        PriceListItem: {
           include: {
-            pricingTiers: true,
+            PricingTier: true,
           },
         },
       },

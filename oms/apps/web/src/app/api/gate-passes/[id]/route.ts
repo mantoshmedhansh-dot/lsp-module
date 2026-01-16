@@ -18,7 +18,7 @@ export async function GET(
     const gatePass = await prisma.gatePass.findUnique({
       where: { id },
       include: {
-        items: true,
+        GatePassItem: true,
       },
     });
 
@@ -53,7 +53,7 @@ export async function PATCH(
 
     const gatePass = await prisma.gatePass.findUnique({
       where: { id },
-      include: { items: true },
+      include: { GatePassItem: true },
     });
 
     if (!gatePass) {
@@ -178,7 +178,7 @@ export async function PATCH(
 
         const updated = await prisma.gatePass.findUnique({
           where: { id },
-          include: { items: true },
+          include: { GatePassItem: true },
         });
 
         return NextResponse.json(updated);
@@ -222,7 +222,7 @@ export async function PATCH(
           where: { id },
           data: filteredData,
           include: {
-            items: true,
+            GatePassItem: true,
           },
         });
 

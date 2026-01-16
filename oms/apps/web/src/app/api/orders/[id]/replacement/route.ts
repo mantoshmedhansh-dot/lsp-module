@@ -25,17 +25,17 @@ export async function POST(
     const returnRecord = await prisma.return.findUnique({
       where: { id: returnId },
       include: {
-        order: {
+        Order_Return_orderIdToOrder: {
           include: {
-            items: {
+            OrderItem: {
               include: {
-                sku: true,
+                SKU: true,
               },
             },
-            location: true,
+            Location: true,
           },
         },
-        items: true,
+        ReturnItem: true,
       },
     });
 
@@ -53,7 +53,7 @@ export async function POST(
     }
 
     // Check if return has associated order
-    const originalOrder = returnRecord.order;
+    const originalOrder = returnRecord.Order_Return_orderIdToOrder;
     if (!originalOrder) {
       return NextResponse.json(
         { error: "Return has no associated order" },
@@ -99,14 +99,14 @@ export async function POST(
       }
     } else {
       // Use return items for replacement - fetch SKUs separately
-      const skuIds = returnRecord.items.map((item) => item.skuId);
+      const skuIds = returnRecord.ReturnItem.map((item) => item.skuId);
       const skus = await prisma.sKU.findMany({
         where: { id: { in: skuIds } },
         select: { id: true, mrp: true },
       });
       const skuMap = new Map(skus.map((s) => [s.id, s]));
 
-      replacementItems = returnRecord.items.map((item) => {
+      replacementItems = returnRecord.ReturnItem.map((item) => {
         const sku = skuMap.get(item.skuId);
         return {
           skuId: item.skuId,
@@ -178,14 +178,14 @@ export async function POST(
         dataSourceType: "REPLACEMENT",
         priority: 1, // High priority
         remarks: remarks || `Replacement for Return ${returnRecord.returnNo}`,
-        items: {
+        OrderItem: {
           create: orderItems,
         },
       },
       include: {
-        items: {
+        OrderItem: {
           include: {
-            sku: true,
+            SKU: true,
           },
         },
       },
@@ -205,7 +205,7 @@ export async function POST(
         id: replacementOrder.id,
         orderNo: replacementOrder.orderNo,
         status: replacementOrder.status,
-        items: replacementOrder.items,
+        items: replacementOrder.OrderItem,
       },
       message: `Replacement order ${replacementOrder.orderNo} created successfully`,
     });
@@ -234,14 +234,14 @@ export async function GET(
     const replacementOrder = await prisma.order.findFirst({
       where: { replacementForReturnId: returnId },
       include: {
-        items: {
+        OrderItem: {
           include: {
-            sku: true,
+            SKU: true,
           },
         },
-        deliveries: {
+        Delivery: {
           include: {
-            transporter: true,
+            Transporter: true,
           },
         },
       },

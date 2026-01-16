@@ -18,20 +18,17 @@ export async function GET(
     const wave = await prisma.wave.findUnique({
       where: { id },
       include: {
-        location: true,
-        createdByUser: {
+        Location: true,
+        User: {
           select: { id: true, name: true, email: true },
         },
-        assignedToUser: {
-          select: { id: true, name: true, email: true },
-        },
-        waveOrders: {
+        WaveOrder: {
           include: {
-            order: {
+            Order: {
               include: {
-                items: {
+                OrderItem: {
                   include: {
-                    sku: {
+                    SKU: {
                       select: { id: true, code: true, name: true },
                     },
                   },
@@ -41,34 +38,20 @@ export async function GET(
           },
           orderBy: { sequence: "asc" },
         },
-        waveItems: {
+        WaveItem: {
           include: {
-            sku: {
-              select: { id: true, code: true, name: true, barcode: true },
+            SKU: {
+              select: { id: true, code: true, name: true, barcodes: true },
             },
-            bin: {
+            Bin: {
               select: {
                 id: true,
                 code: true,
-                zone: true,
-                aisle: true,
-                rack: true,
-                shelf: true,
               },
             },
-            distributions: {
-              include: {
-                waveOrder: {
-                  include: {
-                    order: {
-                      select: { id: true, orderNo: true },
-                    },
-                  },
-                },
-              },
-            },
+            WaveItemDistribution: true,
           },
-          orderBy: { pickSequence: "asc" },
+          orderBy: { sequence: "asc" },
         },
       },
     });
@@ -78,29 +61,24 @@ export async function GET(
     }
 
     // Calculate stats
-    const totalItems = wave.waveItems.reduce((sum, item) => sum + item.totalQuantity, 0);
-    const pickedItems = wave.waveItems.reduce((sum, item) => sum + item.pickedQuantity, 0);
+    const totalItems = wave.WaveItem.reduce((sum, item) => sum + item.totalQty, 0);
+    const pickedItems = wave.WaveItem.reduce((sum, item) => sum + item.pickedQty, 0);
     const completionPercentage = totalItems > 0 ? Math.round((pickedItems / totalItems) * 100) : 0;
 
     // Transform to match frontend expected format
     const transformedWave = {
       ...wave,
       waveType: wave.type,
-      createdBy: wave.createdByUser,
+      location: wave.Location,
+      assignedToUser: wave.User,
+      waveOrders: wave.WaveOrder,
+      waveItems: wave.WaveItem,
       stats: {
         totalOrders: wave.totalOrders,
         totalItems,
         pickedItems,
         completionPercentage,
       },
-      // Map waveItems to include orderNo in distributions
-      waveItems: wave.waveItems.map((item) => ({
-        ...item,
-        distributions: item.distributions.map((dist) => ({
-          ...dist,
-          orderNo: dist.waveOrder?.order?.orderNo,
-        })),
-      })),
     };
 
     return NextResponse.json(transformedWave);
@@ -157,8 +135,8 @@ export async function PATCH(
               releasedAt: new Date(),
             },
             include: {
-              location: true,
-              _count: { select: { waveOrders: true, waveItems: true } },
+              Location: true,
+              _count: { select: { WaveOrder: true, WaveItem: true } },
             },
           });
           return NextResponse.json(releasedWave);
@@ -178,8 +156,8 @@ export async function PATCH(
               startedAt: new Date(),
             },
             include: {
-              location: true,
-              _count: { select: { waveOrders: true, waveItems: true } },
+              Location: true,
+              _count: { select: { WaveOrder: true, WaveItem: true } },
             },
           });
           return NextResponse.json(startedWave);
@@ -192,13 +170,12 @@ export async function PATCH(
             );
           }
 
-          // Check if all items are picked
-          const unpickedItems = await prisma.waveItem.count({
-            where: {
-              waveId: id,
-              pickedQuantity: { lt: prisma.waveItem.fields.totalQuantity },
-            },
+          // Check if all items are picked - get all wave items and filter
+          const allWaveItems = await prisma.waveItem.findMany({
+            where: { waveId: id },
+            select: { pickedQty: true, totalQty: true },
           });
+          const unpickedItems = allWaveItems.filter(item => item.pickedQty < item.totalQty).length;
 
           if (unpickedItems > 0) {
             return NextResponse.json(
@@ -214,8 +191,8 @@ export async function PATCH(
               completedAt: new Date(),
             },
             include: {
-              location: true,
-              _count: { select: { waveOrders: true, waveItems: true } },
+              Location: true,
+              _count: { select: { WaveOrder: true, WaveItem: true } },
             },
           });
           return NextResponse.json(completedWave);
@@ -234,8 +211,8 @@ export async function PATCH(
               status: "CANCELLED",
             },
             include: {
-              location: true,
-              _count: { select: { waveOrders: true, waveItems: true } },
+              Location: true,
+              _count: { select: { WaveOrder: true, WaveItem: true } },
             },
           });
           return NextResponse.json(cancelledWave);
@@ -252,22 +229,18 @@ export async function PATCH(
     const updateData: Record<string, unknown> = {};
 
     if (status) updateData.status = status;
-    if (assignedTo !== undefined) updateData.assignedTo = assignedTo;
-    if (priority !== undefined) updateData.priority = priority;
+    if (assignedTo !== undefined) updateData.assignedToId = assignedTo;
 
     const updatedWave = await prisma.wave.update({
       where: { id },
       data: updateData,
       include: {
-        location: true,
-        createdByUser: {
-          select: { id: true, name: true },
-        },
-        assignedToUser: {
+        Location: true,
+        User: {
           select: { id: true, name: true },
         },
         _count: {
-          select: { waveOrders: true, waveItems: true },
+          select: { WaveOrder: true, WaveItem: true },
         },
       },
     });
@@ -316,7 +289,7 @@ export async function DELETE(
     await prisma.$transaction(async (tx) => {
       // Delete wave item distributions
       await tx.waveItemDistribution.deleteMany({
-        where: { waveItem: { waveId: id } },
+        where: { WaveItem: { waveId: id } },
       });
 
       // Delete wave items

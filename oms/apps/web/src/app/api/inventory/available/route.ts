@@ -41,10 +41,10 @@ export async function GET(request: NextRequest) {
     const inventory = await prisma.inventory.findMany({
       where: inventoryWhere,
       include: {
-        sku: {
+        SKU: {
           select: { id: true, code: true, name: true },
         },
-        location: {
+        Location: {
           select: { id: true, code: true, name: true },
         },
       },
@@ -96,10 +96,10 @@ export async function GET(request: NextRequest) {
 
       return {
         skuId: inv.skuId,
-        skuCode: inv.sku.code,
-        skuName: inv.sku.name,
+        skuCode: inv.SKU.code,
+        skuName: inv.SKU.name,
         locationId: inv.locationId,
-        locationName: inv.location.name,
+        locationName: inv.Location.name,
         physicalQty,
         reservedQty,
         virtualReserves: {

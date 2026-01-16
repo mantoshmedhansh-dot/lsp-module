@@ -526,7 +526,7 @@ export class DemandForecaster {
     const result = await prisma.orderItem.groupBy({
       by: ['skuId'],
       where: {
-        order: {
+        Order: {
           orderDate: { gte: thirtyDaysAgo },
           status: { notIn: ['CANCELLED'] },
         },

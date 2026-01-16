@@ -75,9 +75,9 @@ export function InventoryAgingChart({
           />
           <YAxis dataKey="label" type="category" tick={{ fontSize: 11 }} width={80} />
           <Tooltip
-            formatter={(value: number, name: string) => {
-              if (name === "value") return [valueFormatter(value), "Value"];
-              return [value, name];
+            formatter={(value: number | undefined, name: string | undefined) => {
+              if (name === "value") return [valueFormatter(value ?? 0), "Value"];
+              return [value ?? 0, name ?? ""];
             }}
             content={({ active, payload }) => {
               if (!active || !payload || !payload[0]) return null;

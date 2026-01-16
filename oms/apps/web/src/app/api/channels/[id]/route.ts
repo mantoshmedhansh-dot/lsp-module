@@ -19,10 +19,7 @@ export async function GET(
     const channelConfig = await prisma.channelConfig.findUnique({
       where: { id },
       include: {
-        location: {
-          select: { id: true, code: true, name: true },
-        },
-        company: {
+        Company: {
           select: { id: true, name: true },
         },
       },
@@ -43,13 +40,12 @@ export async function GET(
     return NextResponse.json({
       id: channelConfig.id,
       channel: channelConfig.channel,
-      name: channelConfig.name,
+      name: channelConfig.displayName,
       isActive: channelConfig.isActive,
-      apiSyncStatus: channelConfig.apiSyncStatus,
+      apiSyncStatus: channelConfig.syncStatus,
       syncFrequency: channelConfig.syncFrequency,
       webhookUrl: channelConfig.webhookUrl,
-      location: channelConfig.location,
-      company: channelConfig.company,
+      company: channelConfig.Company,
       lastSyncAt: channelConfig.lastSyncAt,
       createdAt: channelConfig.createdAt,
       // Don't expose credentials
@@ -77,7 +73,7 @@ export async function PATCH(
 
     const { id } = await params;
     const body = await request.json();
-    const { name, locationId, syncFrequency, credentials, webhookUrl, isActive } = body;
+    const { name, syncFrequency, credentials, webhookUrl, isActive } = body;
 
     // Check if channel exists
     const existingChannel = await prisma.channelConfig.findUnique({
@@ -96,42 +92,24 @@ export async function PATCH(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // Verify location if provided
-    if (locationId) {
-      const location = await prisma.location.findFirst({
-        where: { id: locationId, companyId: existingChannel.companyId },
-      });
-
-      if (!location) {
-        return NextResponse.json(
-          { error: "Location not found or does not belong to company" },
-          { status: 400 }
-        );
-      }
-    }
-
     // Build update data
     const updateData: Record<string, unknown> = {};
 
-    if (name !== undefined) updateData.name = name;
-    if (locationId !== undefined) updateData.locationId = locationId;
+    if (name !== undefined) updateData.displayName = name;
     if (syncFrequency !== undefined) updateData.syncFrequency = syncFrequency;
     if (webhookUrl !== undefined) updateData.webhookUrl = webhookUrl;
     if (isActive !== undefined) updateData.isActive = isActive;
 
     // Update credentials if provided
     if (credentials) {
-      updateData.apiCredentials = JSON.stringify(credentials);
+      updateData.credentials = credentials;
     }
 
     const channelConfig = await prisma.channelConfig.update({
       where: { id },
       data: updateData,
       include: {
-        location: {
-          select: { id: true, code: true, name: true },
-        },
-        company: {
+        Company: {
           select: { id: true, name: true },
         },
       },
@@ -140,13 +118,12 @@ export async function PATCH(
     return NextResponse.json({
       id: channelConfig.id,
       channel: channelConfig.channel,
-      name: channelConfig.name,
+      name: channelConfig.displayName,
       isActive: channelConfig.isActive,
-      apiSyncStatus: channelConfig.apiSyncStatus,
+      apiSyncStatus: channelConfig.syncStatus,
       syncFrequency: channelConfig.syncFrequency,
       webhookUrl: channelConfig.webhookUrl,
-      location: channelConfig.location,
-      company: channelConfig.company,
+      company: channelConfig.Company,
     });
   } catch (error) {
     console.error("Error updating channel:", error);
@@ -190,7 +167,7 @@ export async function DELETE(
 
     // Check if channel has synced orders
     const orderCount = await prisma.order.count({
-      where: { channelConfigId: id },
+      where: { channel: existingChannel.channel },
     });
 
     if (orderCount > 0) {

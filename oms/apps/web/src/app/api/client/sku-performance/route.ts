@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     // Get client's company
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      include: { company: true },
+      include: { Company: true },
     });
 
     if (!user?.companyId) {
@@ -51,35 +51,46 @@ export async function GET(request: NextRequest) {
     const skus = await prisma.sKU.findMany({
       where: skuWhere,
       include: {
-        orderItems: {
+        OrderItem: {
           select: {
             quantity: true,
             totalPrice: true,
-            order: {
+            Order: {
               select: { status: true, createdAt: true },
             },
           },
-        },
-        returnItems: {
-          select: { quantity: true },
         },
       },
       skip,
       take: limit,
     });
 
+    // Get return items separately
+    const skuIds = skus.map(s => s.id);
+    const returnItems = await prisma.returnItem.findMany({
+      where: { skuId: { in: skuIds } },
+      select: { skuId: true, quantity: true },
+    });
+    const returnItemsBySkuId = new Map<string, number>();
+    returnItems.forEach(item => {
+      returnItemsBySkuId.set(
+        item.skuId,
+        (returnItemsBySkuId.get(item.skuId) || 0) + item.quantity
+      );
+    });
+
     const total = await prisma.sKU.count({ where: skuWhere });
 
     // Calculate metrics for each SKU
     const skuPerformance = skus.map((sku) => {
-      const completedOrders = sku.orderItems.filter(
-        (item) => item.order.status === "DELIVERED"
+      const completedOrders = sku.OrderItem.filter(
+        (item) => item.Order.status === "DELIVERED"
       );
 
       const totalOrders = completedOrders.length;
       const totalUnits = completedOrders.reduce((sum, item) => sum + item.quantity, 0);
       const revenue = completedOrders.reduce((sum, item) => sum + Number(item.totalPrice), 0);
-      const returnedUnits = sku.returnItems.reduce((sum, item) => sum + item.quantity, 0);
+      const returnedUnits = returnItemsBySkuId.get(sku.id) || 0;
       const returnRate = totalUnits > 0 ? (returnedUnits / totalUnits) * 100 : 0;
       const avgOrderValue = totalOrders > 0 ? revenue / totalOrders : 0;
 
@@ -89,13 +100,13 @@ export async function GET(request: NextRequest) {
       const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
 
       const recentRevenue = completedOrders
-        .filter((item) => item.order.createdAt >= thirtyDaysAgo)
+        .filter((item) => item.Order.createdAt >= thirtyDaysAgo)
         .reduce((sum, item) => sum + Number(item.totalPrice), 0);
 
       const previousRevenue = completedOrders
         .filter(
           (item) =>
-            item.order.createdAt >= sixtyDaysAgo && item.order.createdAt < thirtyDaysAgo
+            item.Order.createdAt >= sixtyDaysAgo && item.Order.createdAt < thirtyDaysAgo
         )
         .reduce((sum, item) => sum + Number(item.totalPrice), 0);
 

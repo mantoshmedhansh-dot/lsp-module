@@ -18,7 +18,7 @@ export async function GET(
     const rateCard = await prisma.rateCard.findUnique({
       where: { id },
       include: {
-        slabs: {
+        RateCardSlab: {
           orderBy: { fromWeight: "asc" },
         },
       },
@@ -110,13 +110,13 @@ export async function PATCH(
             fromWeight: number;
             toWeight: number;
             rate: number;
-            additionalPerKg?: number;
+            additionalWeightRate?: number;
           }) => ({
             rateCardId: id,
             fromWeight: s.fromWeight,
             toWeight: s.toWeight,
             rate: s.rate,
-            additionalPerKg: s.additionalPerKg,
+            additionalWeightRate: s.additionalWeightRate,
           })),
         });
       }
@@ -126,7 +126,7 @@ export async function PATCH(
       where: { id },
       data: updateData,
       include: {
-        slabs: {
+        RateCardSlab: {
           orderBy: { fromWeight: "asc" },
         },
       },

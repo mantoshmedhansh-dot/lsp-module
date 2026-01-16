@@ -54,14 +54,14 @@ export async function GET(request: NextRequest) {
       prisma.customer.findMany({
         where,
         include: {
-          customerGroup: {
+          CustomerGroup: {
             select: { id: true, name: true },
           },
-          priceList: {
+          PriceList: {
             select: { id: true, name: true },
           },
           _count: {
-            select: { orders: true, quotations: true, creditTransactions: true },
+            select: { Order: true, Quotation: true, B2BCreditTransaction: true },
           },
         },
         orderBy: { createdAt: "desc" },
@@ -108,6 +108,9 @@ export async function GET(request: NextRequest) {
       where: { creditEnabled: true },
     });
 
+    const totalCreditLimit = creditSummary._sum.creditLimit ? Number(creditSummary._sum.creditLimit) : 0;
+    const totalCreditUsed = creditSummary._sum.creditUsed ? Number(creditSummary._sum.creditUsed) : 0;
+
     return NextResponse.json({
       customers,
       total,
@@ -117,9 +120,9 @@ export async function GET(request: NextRequest) {
       typeCounts: typeCountMap,
       statusCounts: statusCountMap,
       creditSummary: {
-        totalCreditLimit: creditSummary._sum.creditLimit || 0,
-        totalCreditUsed: creditSummary._sum.creditUsed || 0,
-        totalCreditAvailable: (creditSummary._sum.creditLimit || 0) - (creditSummary._sum.creditUsed || 0),
+        totalCreditLimit,
+        totalCreditUsed,
+        totalCreditAvailable: totalCreditLimit - totalCreditUsed,
       },
     });
   } catch (error) {
@@ -161,13 +164,12 @@ export async function POST(request: NextRequest) {
       creditLimit = 0,
       paymentTermType = "IMMEDIATE",
       paymentTermDays,
-      taxExempt = false,
-      notes,
+      companyId,
     } = body;
 
-    if (!code || !name) {
+    if (!code || !name || !phone || !companyId) {
       return NextResponse.json(
-        { error: "Customer code and name are required" },
+        { error: "Customer code, name, phone, and companyId are required" },
         { status: 400 }
       );
     }
@@ -195,7 +197,7 @@ export async function POST(request: NextRequest) {
         gst,
         pan,
         billingAddress,
-        shippingAddress,
+        shippingAddresses: shippingAddress ? [shippingAddress] : [],
         customerGroupId,
         priceListId,
         creditEnabled,
@@ -204,12 +206,11 @@ export async function POST(request: NextRequest) {
         creditStatus: "AVAILABLE",
         paymentTermType,
         paymentTermDays,
-        taxExempt,
-        notes,
+        companyId,
       },
       include: {
-        customerGroup: true,
-        priceList: true,
+        CustomerGroup: true,
+        PriceList: true,
       },
     });
 

@@ -62,7 +62,7 @@ export function FillRateChart({
             background={{ fill: "#f3f4f6" }}
           />
           <Tooltip
-            formatter={(value: number) => [`${value.toFixed(1)}%`, ""]}
+            formatter={(value: number | undefined) => [`${(value ?? 0).toFixed(1)}%`, ""]}
           />
         </RadialBarChart>
       </ResponsiveContainer>

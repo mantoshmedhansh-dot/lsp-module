@@ -36,12 +36,7 @@ export async function GET(request: NextRequest) {
     }
 
     const forecaster = createDemandForecaster(companyId);
-    const forecast = await forecaster.forecastSKU(skuId, {
-      horizonDays,
-      locationId,
-      granularity: 'DAILY',
-      includeConfidenceInterval: true,
-    });
+    const forecast = await forecaster.forecastSKU(skuId, horizonDays);
 
     return NextResponse.json({
       success: true,
@@ -71,7 +66,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { skuIds, locationId, horizonDays = 14 } = body;
+    const { skuIds, locationId, horizonDays = 14, granularity = 'DAILY' } = body;
 
     if (!skuIds || !Array.isArray(skuIds) || skuIds.length === 0) {
       return NextResponse.json(
@@ -83,15 +78,15 @@ export async function POST(request: NextRequest) {
     const forecaster = createDemandForecaster(companyId);
 
     // Generate forecasts for multiple SKUs
-    const forecasts = await forecaster.forecastMultipleSKUs(skuIds, {
+    const forecasts = await forecaster.forecastMultipleSKUs({
+      skuIds,
       horizonDays,
       locationId,
-      granularity: 'DAILY',
-      includeConfidenceInterval: true,
+      granularity,
     });
 
     // Get inventory recommendations
-    const recommendations = await forecaster.getInventoryRecommendations(skuIds);
+    const recommendations = await forecaster.getInventoryRecommendations(locationId);
 
     // Calculate summary
     const trendSummary = {

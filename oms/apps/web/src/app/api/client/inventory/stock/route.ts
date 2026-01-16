@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     // Get client's company
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      include: { company: true },
+      include: { Company: true },
     });
 
     if (!user?.companyId) {
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
 
     // Build where clause
     const where: Record<string, unknown> = {
-      sku: { companyId: user.companyId },
+      SKU: { companyId: user.companyId },
     };
 
     if (locationId) {
@@ -39,8 +39,8 @@ export async function GET(request: NextRequest) {
     }
 
     if (search) {
-      where.sku = {
-        ...((where.sku as object) || {}),
+      where.SKU = {
+        ...((where.SKU as object) || {}),
         OR: [
           { code: { contains: search, mode: "insensitive" } },
           { name: { contains: search, mode: "insensitive" } },
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
       prisma.inventory.findMany({
         where,
         include: {
-          sku: {
+          SKU: {
             select: {
               id: true,
               code: true,
@@ -64,16 +64,16 @@ export async function GET(request: NextRequest) {
               reorderLevel: true,
             },
           },
-          location: {
+          Location: {
             select: { id: true, name: true, code: true },
           },
-          bin: {
-            select: { id: true, code: true, zone: true },
+          Bin: {
+            select: { id: true, code: true, Zone: true },
           },
         },
         skip,
         take: limit,
-        orderBy: { sku: { code: "asc" } },
+        orderBy: { SKU: { code: "asc" } },
       }),
       prisma.inventory.count({ where }),
     ]);
@@ -82,13 +82,13 @@ export async function GET(request: NextRequest) {
     let filteredItems = inventoryItems;
     if (stockStatus === "low") {
       filteredItems = inventoryItems.filter(
-        (i) => i.available <= (i.sku.reorderLevel || 10) && i.available > 0
+        (i) => (i.quantity - i.reservedQty) <= (i.SKU.reorderLevel || 10) && (i.quantity - i.reservedQty) > 0
       );
     } else if (stockStatus === "out") {
-      filteredItems = inventoryItems.filter((i) => i.available === 0);
+      filteredItems = inventoryItems.filter((i) => (i.quantity - i.reservedQty) === 0);
     } else if (stockStatus === "healthy") {
       filteredItems = inventoryItems.filter(
-        (i) => i.available > (i.sku.reorderLevel || 10)
+        (i) => (i.quantity - i.reservedQty) > (i.SKU.reorderLevel || 10)
       );
     }
 
@@ -100,47 +100,50 @@ export async function GET(request: NextRequest) {
 
     // Calculate summary
     const allInventory = await prisma.inventory.findMany({
-      where: { sku: { companyId: user.companyId } },
-      include: { sku: { select: { reorderLevel: true, sellingPrice: true } } },
+      where: { SKU: { companyId: user.companyId } },
+      include: { SKU: { select: { reorderLevel: true, sellingPrice: true } } },
     });
 
     const summary = {
       totalSKUs: new Set(allInventory.map((i) => i.skuId)).size,
-      totalStock: allInventory.reduce((sum, i) => sum + i.available, 0),
+      totalStock: allInventory.reduce((sum, i) => sum + (i.quantity - i.reservedQty), 0),
       lowStock: allInventory.filter(
-        (i) => i.available <= (i.sku.reorderLevel || 10) && i.available > 0
+        (i) => (i.quantity - i.reservedQty) <= (i.SKU.reorderLevel || 10) && (i.quantity - i.reservedQty) > 0
       ).length,
-      outOfStock: allInventory.filter((i) => i.available === 0).length,
+      outOfStock: allInventory.filter((i) => (i.quantity - i.reservedQty) === 0).length,
       stockValue: allInventory.reduce(
-        (sum, i) => sum + i.available * Number(i.sku.sellingPrice || 0),
+        (sum, i) => sum + (i.quantity - i.reservedQty) * Number(i.SKU.sellingPrice || 0),
         0
       ),
     };
 
     return NextResponse.json({
-      items: filteredItems.map((item) => ({
-        id: item.id,
-        sku: {
-          id: item.sku.id,
-          code: item.sku.code,
-          name: item.sku.name,
-          category: item.sku.category,
-        },
-        location: item.location,
-        bin: item.bin,
-        available: item.available,
-        reserved: item.reserved,
-        onHand: item.onHand,
-        inTransit: item.inTransit,
-        reorderLevel: item.sku.reorderLevel || 10,
-        stockValue: item.available * Number(item.sku.sellingPrice || 0),
-        stockStatus:
-          item.available === 0
-            ? "out"
-            : item.available <= (item.sku.reorderLevel || 10)
-            ? "low"
-            : "healthy",
-      })),
+      items: filteredItems.map((item) => {
+        const available = item.quantity - item.reservedQty;
+        return {
+          id: item.id,
+          sku: {
+            id: item.SKU.id,
+            code: item.SKU.code,
+            name: item.SKU.name,
+            category: item.SKU.category,
+          },
+          location: item.Location,
+          bin: item.Bin,
+          available: available,
+          reserved: item.reservedQty,
+          onHand: item.quantity,
+          inTransit: 0,
+          reorderLevel: item.SKU.reorderLevel || 10,
+          stockValue: available * Number(item.SKU.sellingPrice || 0),
+          stockStatus:
+            available === 0
+              ? "out"
+              : available <= (item.SKU.reorderLevel || 10)
+              ? "low"
+              : "healthy",
+        };
+      }),
       total: stockStatus ? filteredItems.length : total,
       page,
       limit,

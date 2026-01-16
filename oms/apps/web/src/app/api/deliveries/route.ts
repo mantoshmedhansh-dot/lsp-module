@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
       prisma.delivery.findMany({
         where,
         include: {
-          order: {
+          Order: {
             select: {
               id: true,
               orderNo: true,
@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
               shippingAddress: true,
               paymentMode: true,
               totalAmount: true,
-              location: {
+              Location: {
                 select: {
                   id: true,
                   code: true,
@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
               },
             },
           },
-          transporter: {
+          Transporter: {
             select: {
               id: true,
               code: true,
@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
               trackingUrlTemplate: true,
             },
           },
-          manifest: {
+          Manifest: {
             select: {
               id: true,
               manifestNo: true,

@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       include: {
-        company: {
+        Company: {
           select: {
             id: true,
             settings: true,
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get notification settings from company settings
-    const companySettings = user.company?.settings as Record<string, unknown> | null;
+    const companySettings = user.Company?.settings as Record<string, unknown> | null;
     const notifications = {
       ...defaultNotifications,
       ...((companySettings?.notifications as Partial<NotificationSettings>) || {}),
@@ -75,7 +75,7 @@ export async function PATCH(request: NextRequest) {
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       include: {
-        company: {
+        Company: {
           select: {
             id: true,
             settings: true,
@@ -98,17 +98,17 @@ export async function PATCH(request: NextRequest) {
     };
 
     // Merge with existing company settings
-    const existingSettings = (user.company?.settings as Record<string, unknown>) || {};
+    const existingSettings = (user.Company?.settings as Record<string, unknown>) || {};
     const updatedSettings = {
       ...existingSettings,
-      notifications: notificationSettings,
+      notifications: notificationSettings as unknown as Record<string, unknown>,
     };
 
     // Update company settings
     await prisma.company.update({
       where: { id: user.companyId },
       data: {
-        settings: updatedSettings,
+        settings: updatedSettings as object,
       },
     });
 

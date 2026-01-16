@@ -57,7 +57,7 @@ async function handleShiprocketWebhook(payload: {
   // Find delivery by AWB
   const delivery = await prisma.delivery.findFirst({
     where: { awbNo: awb },
-    include: { order: true },
+    include: { Order: true },
   });
 
   if (!delivery) {
@@ -99,7 +99,7 @@ async function handleShiprocketWebhook(payload: {
 
   // Update order status
   const orderStatus = mapDeliveryToOrderStatus(newStatus);
-  if (orderStatus && delivery.order.status !== orderStatus) {
+  if (orderStatus && delivery.Order.status !== orderStatus) {
     await prisma.order.update({
       where: { id: delivery.orderId },
       data: { status: orderStatus },
@@ -134,7 +134,7 @@ async function handleDelhiveryWebhook(payload: {
   // Find delivery by AWB
   const delivery = await prisma.delivery.findFirst({
     where: { awbNo: awb },
-    include: { order: true },
+    include: { Order: true },
   });
 
   if (!delivery) {
@@ -163,7 +163,7 @@ async function handleDelhiveryWebhook(payload: {
 
   // Update order status
   const orderStatus = mapDeliveryToOrderStatus(newStatus);
-  if (orderStatus && delivery.order.status !== orderStatus) {
+  if (orderStatus && delivery.Order.status !== orderStatus) {
     await prisma.order.update({
       where: { id: delivery.orderId },
       data: { status: orderStatus },

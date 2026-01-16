@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
 
     // Query historical order data
     const orderItemsWhere: Record<string, unknown> = {
-      order: {
+      Order: {
         createdAt: { gte: startDate },
         status: { notIn: ["CANCELLED", "FAILED"] },
       },
@@ -37,10 +37,12 @@ export async function GET(request: NextRequest) {
       where: orderItemsWhere,
       select: {
         skuId: true,
-        skuCode: true,
         quantity: true,
-        order: {
+        Order: {
           select: { createdAt: true },
+        },
+        SKU: {
+          select: { code: true },
         },
       },
     });
@@ -53,11 +55,11 @@ export async function GET(request: NextRequest) {
 
     for (const item of historicalData) {
       const skuKey = item.skuId;
-      const dateKey = item.order.createdAt.toISOString().split("T")[0];
+      const dateKey = item.Order.createdAt.toISOString().split("T")[0];
 
       if (!skuDailyDemand.has(skuKey)) {
         skuDailyDemand.set(skuKey, {
-          sku: item.skuCode || skuKey,
+          sku: item.SKU?.code || skuKey,
           dailyDemand: new Map(),
         });
       }

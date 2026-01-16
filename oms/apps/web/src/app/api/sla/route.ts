@@ -40,12 +40,12 @@ export async function GET(request: NextRequest) {
       ] = await Promise.all([
         prisma.order.count({
           where: {
-            status: { notIn: ["DELIVERED", "CANCELLED", "RETURNED"] },
+            status: { notIn: ["DELIVERED", "CANCELLED", "RTO_DELIVERED"] },
           },
         }),
         prisma.order.count({
           where: {
-            status: { notIn: ["DELIVERED", "CANCELLED", "RETURNED"] },
+            status: { notIn: ["DELIVERED", "CANCELLED", "RTO_DELIVERED"] },
             promisedDate: {
               lte: new Date(Date.now() + 4 * 60 * 60 * 1000), // Within 4 hours
               gt: now,
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
         }),
         prisma.order.count({
           where: {
-            status: { notIn: ["DELIVERED", "CANCELLED", "RETURNED"] },
+            status: { notIn: ["DELIVERED", "CANCELLED", "RTO_DELIVERED"] },
             promisedDate: { lt: now },
           },
         }),
@@ -106,7 +106,7 @@ export async function GET(request: NextRequest) {
     }
 
     const where: any = {
-      status: { notIn: ["DELIVERED", "CANCELLED", "RETURNED"] },
+      status: { notIn: ["DELIVERED", "CANCELLED", "RTO_DELIVERED"] },
     };
 
     if (Object.keys(dateFilter).length > 0) {
@@ -117,11 +117,11 @@ export async function GET(request: NextRequest) {
       prisma.order.findMany({
         where,
         include: {
-          location: { select: { code: true, name: true } },
-          deliveries: {
+          Location: { select: { code: true, name: true } },
+          Delivery: {
             select: {
               awbNo: true,
-              transporter: { select: { code: true, name: true } },
+              Transporter: { select: { code: true, name: true } },
             },
             take: 1,
           },
@@ -146,9 +146,9 @@ export async function GET(request: NextRequest) {
             : o.promisedDate < now ? "BREACHED"
             : o.promisedDate < new Date(Date.now() + 4 * 60 * 60 * 1000) ? "AT_RISK"
             : "ON_TRACK",
-          location: o.location,
-          transporter: o.deliveries[0]?.transporter,
-          awbNo: o.deliveries[0]?.awbNo,
+          location: o.Location,
+          transporter: o.Delivery[0]?.Transporter,
+          awbNo: o.Delivery[0]?.awbNo,
         })),
         pagination: {
           page,

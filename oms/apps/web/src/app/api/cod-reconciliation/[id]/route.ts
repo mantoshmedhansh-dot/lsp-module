@@ -18,7 +18,7 @@ export async function GET(
     const reconciliation = await prisma.cODReconciliation.findUnique({
       where: { id },
       include: {
-        transactions: {
+        CODTransaction: {
           orderBy: { createdAt: "asc" },
         },
       },
@@ -59,7 +59,7 @@ export async function PATCH(
 
     const reconciliation = await prisma.cODReconciliation.findUnique({
       where: { id },
-      include: { transactions: true },
+      include: { CODTransaction: true },
     });
 
     if (!reconciliation) {
@@ -88,7 +88,7 @@ export async function PATCH(
         for (const tx of transactions) {
           const { transactionId, amount: txAmount, remarks: txRemarks } = tx;
 
-          const existingTx = reconciliation.transactions.find((t) => t.id === transactionId);
+          const existingTx = reconciliation.CODTransaction.find((t) => t.id === transactionId);
           if (!existingTx) continue;
 
           await prisma.cODTransaction.update({
@@ -117,7 +117,7 @@ export async function PATCH(
             remarks,
           },
           include: {
-            transactions: true,
+            CODTransaction: true,
           },
         });
 
@@ -160,7 +160,7 @@ export async function PATCH(
         }
 
         // Generate transaction number
-        const txCount = reconciliation.transactions.length + 1;
+        const txCount = reconciliation.CODTransaction.length + 1;
         const transactionNo = `${reconciliation.reconciliationNo}-ADJ-${String(txCount).padStart(3, "0")}`;
 
         // Create adjustment transaction
@@ -193,7 +193,7 @@ export async function PATCH(
             variance: totalCollected - expectedAmount,
           },
           include: {
-            transactions: true,
+            CODTransaction: true,
           },
         });
 

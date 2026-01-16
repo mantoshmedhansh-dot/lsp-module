@@ -19,24 +19,24 @@ export async function GET(
     const order = await prisma.order.findUnique({
       where: { id },
       include: {
-        location: true,
-        items: {
+        Location: true,
+        OrderItem: {
           include: {
-            sku: true,
+            SKU: true,
           },
         },
-        deliveries: {
+        Delivery: {
           include: {
-            transporter: true,
-            manifest: true,
+            Transporter: true,
+            Manifest: true,
           },
         },
-        picklists: {
+        Picklist: {
           include: {
-            items: true,
+            PicklistItem: true,
           },
         },
-        returns: true,
+        Return_Return_orderIdToOrder: true,
       },
     });
 
@@ -129,12 +129,12 @@ export async function PATCH(
       where: { id },
       data: updateData,
       include: {
-        items: {
+        OrderItem: {
           include: {
-            sku: true,
+            SKU: true,
           },
         },
-        location: true,
+        Location: true,
       },
     });
 
@@ -170,7 +170,7 @@ export async function DELETE(
     const order = await prisma.order.findUnique({
       where: { id },
       include: {
-        deliveries: true,
+        Delivery: true,
       },
     });
 

@@ -21,11 +21,11 @@ export async function GET(request: NextRequest) {
     const attributes = await prisma.variantAttribute.findMany({
       where,
       include: {
-        values: {
+        VariantAttributeValue: {
           orderBy: { sortOrder: "asc" },
         },
         _count: {
-          select: { values: true },
+          select: { VariantAttributeValue: true },
         },
       },
       orderBy: { displayOrder: "asc" },
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
     const completeAttribute = await prisma.variantAttribute.findUnique({
       where: { id: attribute.id },
       include: {
-        values: {
+        VariantAttributeValue: {
           orderBy: { sortOrder: "asc" },
         },
       },

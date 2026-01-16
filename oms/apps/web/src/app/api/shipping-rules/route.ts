@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
       prisma.shippingRule.findMany({
         where,
         include: {
-          conditions: true,
+          ShippingRuleCondition: true,
         },
         orderBy: [{ priority: "asc" }, { createdAt: "desc" }],
         skip,
@@ -118,22 +118,20 @@ export async function POST(request: NextRequest) {
         companyId,
         priority: priority || 0,
         description,
-        conditions: conditions && conditions.length > 0 ? {
+        ShippingRuleCondition: conditions && conditions.length > 0 ? {
           create: conditions.map((c: {
-            field: string;
+            conditionType: string;
             operator: string;
-            value: string;
-            logicalOperator?: string;
+            value: unknown;
           }) => ({
-            field: c.field,
+            conditionType: c.conditionType,
             operator: c.operator,
             value: c.value,
-            logicalOperator: c.logicalOperator || "AND",
           })),
         } : undefined,
       },
       include: {
-        conditions: true,
+        ShippingRuleCondition: true,
       },
     });
 

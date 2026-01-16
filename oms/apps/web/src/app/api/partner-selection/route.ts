@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     if (orderId) {
       const order = await prisma.order.findUnique({
         where: { id: orderId },
-        include: { location: true },
+        include: { Location: true },
       });
 
       if (!order) {
@@ -40,11 +40,12 @@ export async function GET(request: NextRequest) {
         }, { status: 404 });
       }
 
-      const shippingAddress = order.shippingAddress as any;
+      const shippingAddress = order.shippingAddress as { pincode?: string } | null;
+      const locationAddr = order.Location?.address as { pincode?: string } | null;
       const result = await selectOptimalPartner({
-        originPincode: order.location?.pincode || "110001",
+        originPincode: locationAddr?.pincode || "110001",
         destinationPincode: shippingAddress?.pincode || "560001",
-        weightKg: Number(order.totalWeight) || 0.5,
+        weightKg: 0.5, // Default weight if not available
         isCod: order.paymentMode === "COD",
         codAmount: order.paymentMode === "COD" ? Number(order.totalAmount) : 0,
       });
@@ -81,8 +82,6 @@ export async function GET(request: NextRequest) {
         id: true,
         code: true,
         name: true,
-        supportsCod: true,
-        trackingUrl: true,
       },
     });
 
@@ -173,7 +172,7 @@ export async function POST(request: NextRequest) {
           status: "PENDING",
         },
         include: {
-          transporter: { select: { code: true, name: true } },
+          Transporter: { select: { code: true, name: true } },
         },
       });
 
@@ -188,8 +187,8 @@ export async function POST(request: NextRequest) {
         data: {
           orderId,
           deliveryId: delivery.id,
-          transporterCode: delivery.transporter?.code,
-          transporterName: delivery.transporter?.name,
+          transporterCode: delivery.Transporter?.code,
+          transporterName: delivery.Transporter?.name,
           awbNo: delivery.awbNo,
         },
       });

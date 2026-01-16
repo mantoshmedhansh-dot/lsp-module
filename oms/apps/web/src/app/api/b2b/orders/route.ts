@@ -43,9 +43,9 @@ export async function GET(request: NextRequest) {
         skip,
         take: limit,
         include: {
-          items: { select: { id: true } },
-          deliveries: {
-            select: { status: true, awbNumber: true },
+          OrderItem: { select: { id: true } },
+          Delivery: {
+            select: { status: true, awbNo: true },
             take: 1,
             orderBy: { createdAt: "desc" },
           },
@@ -60,10 +60,10 @@ export async function GET(request: NextRequest) {
         orderNo: order.orderNo,
         status: order.status,
         totalAmount: Number(order.totalAmount),
-        itemCount: order.items.length,
+        itemCount: order.OrderItem.length,
         createdAt: order.createdAt.toISOString().split("T")[0],
-        deliveryStatus: order.deliveries[0]?.status || null,
-        awbNumber: order.deliveries[0]?.awbNumber || null,
+        deliveryStatus: order.Delivery[0]?.status || null,
+        awbNumber: order.Delivery[0]?.awbNo || null,
       })),
       total,
       page,
@@ -106,9 +106,9 @@ export async function POST(request: NextRequest) {
         ],
       },
       include: {
-        priceList: {
+        PriceList: {
           include: {
-            items: true,
+            PriceListItem: true,
           },
         },
       },
@@ -161,16 +161,16 @@ export async function POST(request: NextRequest) {
 
       // Check for price list pricing
       let unitPrice = Number(sku.sellingPrice);
-      if (customer.priceList) {
-        const priceListItem = customer.priceList.items.find(
+      if (customer.PriceList) {
+        const priceListItem = customer.PriceList.PriceListItem.find(
           (p: { skuId: string }) => p.skuId === item.skuId
         );
-        if (priceListItem) {
-          unitPrice = Number(priceListItem.price);
+        if (priceListItem && priceListItem.fixedPrice) {
+          unitPrice = Number(priceListItem.fixedPrice);
         }
       }
 
-      const itemTaxPercent = Number(sku.taxPercent || 18);
+      const itemTaxPercent = Number(sku.taxRate || 18);
       const lineTotal = unitPrice * item.quantity;
       const lineTax = lineTotal * (itemTaxPercent / 100);
 
@@ -239,9 +239,9 @@ export async function POST(request: NextRequest) {
         paymentTermDays: customer.paymentTermDays,
         poNumber,
         remarks: notes,
-        items: {
+        OrderItem: {
           create: orderItems.map((item) => ({
-            sku: { connect: { id: item.skuId } },
+            SKU: { connect: { id: item.skuId } },
             skuCode: item.skuCode,
             skuName: item.skuName,
             quantity: item.quantity,
@@ -253,7 +253,7 @@ export async function POST(request: NextRequest) {
         },
       },
       include: {
-        items: true,
+        OrderItem: true,
       },
     });
 
@@ -268,14 +268,20 @@ export async function POST(request: NextRequest) {
       });
 
       // Record credit transaction
+      const txnCount = await prisma.b2BCreditTransaction.count({
+        where: { customerId: customer.id },
+      });
       await prisma.b2BCreditTransaction.create({
         data: {
+          transactionNo: `CTX-${Date.now()}-${txnCount + 1}`,
           customerId: customer.id,
           type: "ORDER",
           amount: totalAmount,
-          reference: orderNo,
+          orderId: order.id,
+          balanceBefore: Number(customer.creditAvailable),
           balanceAfter: Number(customer.creditAvailable) - totalAmount,
-          description: `Order ${orderNo}`,
+          remarks: `Order ${orderNo}`,
+          createdById: session.user.id || "system",
         },
       });
     }
@@ -286,7 +292,7 @@ export async function POST(request: NextRequest) {
         id: order.id,
         orderNo: order.orderNo,
         totalAmount: Number(order.totalAmount),
-        itemCount: order.items.length,
+        itemCount: order.OrderItem.length,
       },
     });
   } catch (error) {

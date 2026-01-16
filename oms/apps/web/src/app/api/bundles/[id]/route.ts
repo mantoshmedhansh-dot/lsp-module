@@ -18,12 +18,12 @@ export async function GET(
     const bundle = await prisma.sKUBundle.findUnique({
       where: { id },
       include: {
-        bundleSku: {
+        SKU: {
           select: { id: true, code: true, name: true, mrp: true, sellingPrice: true },
         },
-        items: {
+        BundleItem: {
           include: {
-            componentSku: {
+            SKU: {
               select: { id: true, code: true, name: true, mrp: true, sellingPrice: true },
             },
           },
@@ -122,12 +122,12 @@ export async function PATCH(
     const completeBundle = await prisma.sKUBundle.findUnique({
       where: { id },
       include: {
-        bundleSku: {
+        SKU: {
           select: { id: true, code: true, name: true },
         },
-        items: {
+        BundleItem: {
           include: {
-            componentSku: {
+            SKU: {
               select: { id: true, code: true, name: true },
             },
           },

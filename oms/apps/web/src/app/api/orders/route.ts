@@ -83,16 +83,16 @@ export async function GET(request: NextRequest) {
       prisma.order.findMany({
         where,
         include: {
-          location: {
+          Location: {
             select: {
               id: true,
               code: true,
               name: true,
             },
           },
-          items: {
+          OrderItem: {
             include: {
-              sku: {
+              SKU: {
                 select: {
                   id: true,
                   code: true,
@@ -101,13 +101,13 @@ export async function GET(request: NextRequest) {
               },
             },
           },
-          deliveries: {
+          Delivery: {
             select: {
               id: true,
               deliveryNo: true,
               status: true,
               awbNo: true,
-              transporter: {
+              Transporter: {
                 select: {
                   code: true,
                   name: true,
@@ -117,8 +117,8 @@ export async function GET(request: NextRequest) {
           },
           _count: {
             select: {
-              items: true,
-              picklists: true,
+              OrderItem: true,
+              Picklist: true,
             },
           },
         },
@@ -262,17 +262,17 @@ export async function POST(request: NextRequest) {
         tags: tags || [],
         remarks,
         locationId: locationId || session.user.locationAccess?.[0],
-        items: {
+        OrderItem: {
           create: orderItems,
         },
       },
       include: {
-        items: {
+        OrderItem: {
           include: {
-            sku: true,
+            SKU: true,
           },
         },
-        location: true,
+        Location: true,
       },
     });
 

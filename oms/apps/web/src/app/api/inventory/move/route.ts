@@ -44,8 +44,8 @@ export async function POST(request: NextRequest) {
         batchNo: batchNo || null,
       },
       include: {
-        bin: {
-          include: { zone: true },
+        Bin: {
+          include: { Zone: true },
         },
       },
     });
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
     // Get destination bin details
     const destBin = await prisma.bin.findUnique({
       where: { id: toBinId },
-      include: { zone: true },
+      include: { Zone: true },
     });
 
     if (!destBin) {
@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
           data: {
             skuId,
             binId: toBinId,
-            locationId: destBin.zone.locationId,
+            locationId: destBin.Zone.locationId,
             quantity,
             batchNo: sourceInventory.batchNo,
             lotNo: sourceInventory.lotNo,
@@ -161,15 +161,15 @@ export async function POST(request: NextRequest) {
       prisma.inventory.findUnique({
         where: { id: sourceInventory.id },
         include: {
-          sku: true,
-          bin: { include: { zone: true } },
+          SKU: true,
+          Bin: { include: { Zone: true } },
         },
       }),
       prisma.inventory.findFirst({
         where: { skuId, binId: toBinId, batchNo: batchNo || null },
         include: {
-          sku: true,
-          bin: { include: { zone: true } },
+          SKU: true,
+          Bin: { include: { Zone: true } },
         },
       }),
     ]);
@@ -178,7 +178,7 @@ export async function POST(request: NextRequest) {
       success: true,
       fromInventory,
       toInventory,
-      message: `Moved ${quantity} units from ${sourceInventory.bin.code} to ${destBin.code}`,
+      message: `Moved ${quantity} units from ${sourceInventory.Bin.code} to ${destBin.code}`,
     });
   } catch (error) {
     console.error("Error moving inventory:", error);

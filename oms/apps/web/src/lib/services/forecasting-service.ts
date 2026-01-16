@@ -153,15 +153,15 @@ export async function generateSkuForecast(
   const orderItems = await prisma.orderItem.findMany({
     where: {
       skuId,
-      order: {
+      Order: {
         createdAt: { gte: startDate },
-        status: { notIn: ["CANCELLED", "FAILED"] },
+        status: { notIn: ["CANCELLED"] },
       },
     },
     select: {
       quantity: true,
       unitPrice: true,
-      order: {
+      Order: {
         select: { createdAt: true },
       },
     },
@@ -170,7 +170,7 @@ export async function generateSkuForecast(
   // Aggregate by day
   const dailyData = new Map<string, { quantity: number; revenue: number }>();
   for (const item of orderItems) {
-    const date = item.order.createdAt.toISOString().split("T")[0];
+    const date = item.Order.createdAt.toISOString().split("T")[0];
     const current = dailyData.get(date) || { quantity: 0, revenue: 0 };
     current.quantity += item.quantity;
     current.revenue += Number(item.unitPrice) * item.quantity;
@@ -313,7 +313,7 @@ export async function generateAllForecasts(
     orderBy: { _sum: { quantity: "desc" } },
     take: limit,
     where: {
-      order: {
+      Order: {
         createdAt: {
           gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
         },

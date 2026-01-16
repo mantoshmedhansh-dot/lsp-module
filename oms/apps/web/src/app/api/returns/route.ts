@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
       where.OR = [
         { returnNo: { contains: search, mode: "insensitive" } },
         { awbNo: { contains: search, mode: "insensitive" } },
-        { order: { orderNo: { contains: search, mode: "insensitive" } } },
+        { Order_Return_orderIdToOrder: { orderNo: { contains: search, mode: "insensitive" } } },
       ];
     }
 
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
       prisma.return.findMany({
         where,
         include: {
-          order: {
+          Order_Return_orderIdToOrder: {
             select: {
               id: true,
               orderNo: true,
@@ -62,13 +62,13 @@ export async function GET(request: NextRequest) {
               channel: true,
             },
           },
-          items: {
+          ReturnItem: {
             include: {
-              return: false,
+              Return: false,
             },
           },
           _count: {
-            select: { items: true },
+            select: { ReturnItem: true },
           },
         },
         orderBy: { createdAt: "desc" },
@@ -172,7 +172,7 @@ export async function POST(request: NextRequest) {
         awbNo,
         reason,
         remarks,
-        items: {
+        ReturnItem: {
           create: items.map((item: { skuId: string; quantity: number }) => ({
             skuId: item.skuId,
             quantity: item.quantity,
@@ -180,14 +180,14 @@ export async function POST(request: NextRequest) {
         },
       },
       include: {
-        order: {
+        Order_Return_orderIdToOrder: {
           select: {
             id: true,
             orderNo: true,
             customerName: true,
           },
         },
-        items: true,
+        ReturnItem: true,
       },
     });
 

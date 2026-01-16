@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     // Get client's company
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      include: { company: true },
+      include: { Company: true },
     });
 
     if (!user?.companyId) {
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     const locations = await prisma.location.findMany({
       where: { companyId: user.companyId, isActive: true },
       include: {
-        orders: {
+        Order: {
           select: {
             id: true,
             status: true,
@@ -33,26 +33,26 @@ export async function GET(request: NextRequest) {
             createdAt: true,
           },
         },
-        inventory: {
-          select: { available: true, reserved: true },
+        Inventory: {
+          select: { quantity: true, reservedQty: true },
         },
       },
     });
 
     // Calculate metrics for each location
     const locationMetrics = locations.map((location) => {
-      const totalOrders = location.orders.length;
-      const pendingOrders = location.orders.filter((o) =>
+      const totalOrders = location.Order.length;
+      const pendingOrders = location.Order.filter((o) =>
         ["PENDING", "CONFIRMED", "PROCESSING"].includes(o.status)
       ).length;
-      const shippedOrders = location.orders.filter((o) => o.status === "SHIPPED").length;
-      const deliveredOrders = location.orders.filter((o) => o.status === "DELIVERED").length;
-      const totalRevenue = location.orders
+      const shippedOrders = location.Order.filter((o) => o.status === "SHIPPED").length;
+      const deliveredOrders = location.Order.filter((o) => o.status === "DELIVERED").length;
+      const totalRevenue = location.Order
         .filter((o) => o.status === "DELIVERED")
         .reduce((sum, o) => sum + Number(o.totalAmount), 0);
 
-      const totalStock = location.inventory.reduce((sum, i) => sum + i.available, 0);
-      const reservedStock = location.inventory.reduce((sum, i) => sum + i.reserved, 0);
+      const totalStock = location.Inventory.reduce((sum, i) => sum + (i.quantity - i.reservedQty), 0);
+      const reservedStock = location.Inventory.reduce((sum, i) => sum + i.reservedQty, 0);
 
       // Calculate fulfillment rate
       const completedOrders = deliveredOrders + shippedOrders;
@@ -61,12 +61,13 @@ export async function GET(request: NextRequest) {
       // Calculate average processing time (mock calculation)
       const avgProcessingTime = 24; // hours
 
+      const address = location.address as Record<string, string> | null;
       return {
         id: location.id,
         name: location.name,
         code: location.code,
-        city: location.city,
-        state: location.state,
+        city: address?.city || "",
+        state: address?.state || "",
         type: location.type,
         metrics: {
           totalOrders,

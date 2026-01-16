@@ -29,14 +29,14 @@ export async function GET(request: NextRequest) {
       prisma.virtualInventory.findMany({
         where,
         include: {
-          sku: {
+          SKU: {
             select: {
               id: true,
               code: true,
               name: true,
             },
           },
-          location: {
+          Location: {
             select: {
               id: true,
               code: true,
@@ -90,7 +90,6 @@ export async function POST(request: NextRequest) {
       validTo,
       referenceType,
       referenceId,
-      notes,
     } = body;
 
     // Validate required fields
@@ -143,13 +142,13 @@ export async function POST(request: NextRequest) {
         validTo: validTo ? new Date(validTo) : null,
         referenceType,
         referenceId,
-        notes,
+        createdById: session.user.id,
       },
       include: {
-        sku: {
+        SKU: {
           select: { id: true, code: true, name: true },
         },
-        location: {
+        Location: {
           select: { id: true, code: true, name: true },
         },
       },

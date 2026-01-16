@@ -22,10 +22,10 @@ export async function POST(
     const picklist = await prisma.picklist.findUnique({
       where: { id },
       include: {
-        items: {
+        PicklistItem: {
           include: {
-            sku: true,
-            bin: true,
+            SKU: true,
+            Bin: true,
           },
         },
       },
@@ -43,13 +43,13 @@ export async function POST(
     }
 
     // Find the item to pick
-    let picklistItem = picklist.items.find((item) => item.id === itemId);
+    let picklistItem = picklist.PicklistItem.find((item) => item.id === itemId);
 
     // If itemId not provided, try to find by scanned barcode
     if (!picklistItem && scannedBarcode) {
-      picklistItem = picklist.items.find((item) =>
-        item.sku.barcodes.includes(scannedBarcode) ||
-        item.sku.code === scannedBarcode
+      picklistItem = picklist.PicklistItem.find((item) =>
+        item.SKU.barcodes.includes(scannedBarcode) ||
+        item.SKU.code === scannedBarcode
       );
     }
 
@@ -63,14 +63,14 @@ export async function POST(
     // Validate barcode if provided
     if (scannedBarcode) {
       const validBarcode =
-        picklistItem.sku.barcodes.includes(scannedBarcode) ||
-        picklistItem.sku.code === scannedBarcode;
+        picklistItem.SKU.barcodes.includes(scannedBarcode) ||
+        picklistItem.SKU.code === scannedBarcode;
 
       if (!validBarcode) {
         return NextResponse.json(
           {
             error: "Scanned barcode does not match the expected SKU",
-            expected: picklistItem.sku.code,
+            expected: picklistItem.SKU.code,
             scanned: scannedBarcode,
           },
           { status: 400 }
@@ -93,7 +93,7 @@ export async function POST(
     }
 
     // Validate serial numbers if SKU requires it
-    if (picklistItem.sku.isSerialised) {
+    if (picklistItem.SKU.isSerialised) {
       if (!serialNumbers || serialNumbers.length !== pickQty) {
         return NextResponse.json(
           {
@@ -116,10 +116,10 @@ export async function POST(
         batchNo: batchNo || picklistItem.batchNo,
       },
       include: {
-        sku: true,
-        bin: {
+        SKU: true,
+        Bin: {
           include: {
-            zone: true,
+            Zone: true,
           },
         },
       },
@@ -140,10 +140,10 @@ export async function POST(
     // Check if all items in picklist are picked
     const updatedPicklist = await prisma.picklist.findUnique({
       where: { id },
-      include: { items: true },
+      include: { PicklistItem: true },
     });
 
-    const allPicked = updatedPicklist?.items.every(
+    const allPicked = updatedPicklist?.PicklistItem.every(
       (item) => item.pickedQty >= item.requiredQty
     );
 
@@ -154,7 +154,7 @@ export async function POST(
       requiredQty: picklistItem.requiredQty,
       isComplete: newPickedQty >= picklistItem.requiredQty,
       allItemsPicked: allPicked,
-      message: `Picked ${pickQty}x ${picklistItem.sku.code}`,
+      message: `Picked ${pickQty}x ${picklistItem.SKU.code}`,
     });
   } catch (error) {
     console.error("Error picking item:", error);
@@ -193,16 +193,16 @@ export async function DELETE(
     const picklistItem = await prisma.picklistItem.findUnique({
       where: { id: itemId },
       include: {
-        picklist: true,
-        sku: true,
+        Picklist: true,
+        SKU: true,
       },
     });
 
-    if (!picklistItem || picklistItem.picklist.id !== id) {
+    if (!picklistItem || picklistItem.Picklist.id !== id) {
       return NextResponse.json({ error: "Item not found" }, { status: 404 });
     }
 
-    if (picklistItem.picklist.status !== "PROCESSING") {
+    if (picklistItem.Picklist.status !== "PROCESSING") {
       return NextResponse.json(
         { error: "Cannot undo pick - picklist is not in PROCESSING status" },
         { status: 400 }
@@ -240,7 +240,7 @@ export async function DELETE(
     return NextResponse.json({
       success: true,
       item: updatedItem,
-      message: `Undid pick of ${quantity}x ${picklistItem.sku.code}`,
+      message: `Undid pick of ${quantity}x ${picklistItem.SKU.code}`,
     });
   } catch (error) {
     console.error("Error undoing pick:", error);

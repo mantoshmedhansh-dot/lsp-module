@@ -21,13 +21,13 @@ async function testE2EFlow() {
 
     const location = await prisma.location.findFirst({
       where: { isActive: true },
-      include: { company: true },
+      include: { Company: true },
     });
 
     if (!location) {
       throw new Error("No active location found. Run seed first.");
     }
-    console.log(`   ✓ Location: ${location.name} (${location.company.name})`);
+    console.log(`   ✓ Location: ${location.name} (${location.Company.name})`);
 
     const skus = await prisma.sKU.findMany({ take: 2 });
     if (skus.length === 0) {
@@ -38,12 +38,12 @@ async function testE2EFlow() {
     // Check inventory
     const inventory = await prisma.inventory.findMany({
       where: { locationId: location.id, quantity: { gt: 0 } },
-      include: { sku: true, bin: true },
+      include: { SKU: true, Bin: true },
       take: 5,
     });
     console.log(`   ✓ Inventory records: ${inventory.length}`);
     inventory.forEach(inv => {
-      console.log(`      - ${inv.sku.code}: ${inv.quantity} units in ${inv.bin?.code || 'N/A'}`);
+      console.log(`      - ${inv.SKU.code}: ${inv.quantity} units in ${inv.Bin?.code || 'N/A'}`);
     });
 
     // Step 1: Create Order
@@ -80,7 +80,7 @@ async function testE2EFlow() {
         discount: 0,
         totalAmount: 1230,
         locationId: location.id,
-        items: {
+        OrderItem: {
           create: skus.slice(0, 1).map(sku => ({
             skuId: sku.id,
             quantity: 2,
@@ -92,24 +92,24 @@ async function testE2EFlow() {
           })),
         },
       },
-      include: { items: { include: { sku: true } } },
+      include: { OrderItem: { include: { SKU: true } } },
     });
 
     console.log(`   ✓ Order created: ${order.orderNo} (Status: ${order.status})`);
-    console.log(`   ✓ Items: ${order.items.map(i => `${i.sku.code} x ${i.quantity}`).join(", ")}`);
+    console.log(`   ✓ Items: ${order.OrderItem.map(i => `${i.SKU.code} x ${i.quantity}`).join(", ")}`);
 
     // Step 2: Allocate Inventory
     console.log("\n📊 Step 2: Allocating Inventory...");
 
     let allAllocated = true;
-    for (const item of order.items) {
+    for (const item of order.OrderItem) {
       const availableInventory = await prisma.inventory.findFirst({
         where: {
           skuId: item.skuId,
           locationId: location.id,
           quantity: { gte: item.quantity },
         },
-        include: { bin: true },
+        include: { Bin: true },
       });
 
       if (availableInventory) {
@@ -125,9 +125,9 @@ async function testE2EFlow() {
           data: { allocatedQty: item.quantity },
         });
 
-        console.log(`   ✓ Allocated ${item.quantity} x ${item.sku.code} from ${availableInventory.bin?.code}`);
+        console.log(`   ✓ Allocated ${item.quantity} x ${item.SKU.code} from ${availableInventory.Bin?.code}`);
       } else {
-        console.log(`   ⚠ No inventory for ${item.sku.code}`);
+        console.log(`   ⚠ No inventory for ${item.SKU.code}`);
         allAllocated = false;
       }
     }
@@ -152,7 +152,7 @@ async function testE2EFlow() {
     // Get allocated items with inventory locations
     const allocatedItems = await prisma.orderItem.findMany({
       where: { orderId: order.id, allocatedQty: { gt: 0 } },
-      include: { sku: true },
+      include: { SKU: true },
     });
 
     const picklistItems = [];
@@ -163,7 +163,7 @@ async function testE2EFlow() {
           locationId: location.id,
           reservedQty: { gt: 0 },
         },
-        include: { bin: true },
+        include: { Bin: true },
       });
 
       if (inv && inv.binId) {
@@ -181,9 +181,9 @@ async function testE2EFlow() {
         picklistNo,
         status: "PENDING",
         orderId: order.id,
-        items: { create: picklistItems },
+        PicklistItem: { create: picklistItems },
       },
-      include: { items: { include: { sku: true, bin: true } } },
+      include: { PicklistItem: { include: { SKU: true, Bin: true } } },
     });
 
     await prisma.order.update({
@@ -192,7 +192,7 @@ async function testE2EFlow() {
     });
 
     console.log(`   ✓ Picklist created: ${picklist.picklistNo}`);
-    console.log(`   ✓ Items to pick: ${picklist.items.map(i => `${i.sku.code} x ${i.requiredQty} from ${i.bin.code}`).join(", ")}`);
+    console.log(`   ✓ Items to pick: ${picklist.PicklistItem.map(i => `${i.SKU.code} x ${i.requiredQty} from ${i.Bin.code}`).join(", ")}`);
 
     // Step 4: Pick Items
     console.log("\n🛒 Step 4: Picking Items...");
@@ -208,7 +208,7 @@ async function testE2EFlow() {
     });
 
     // Pick each item
-    for (const item of picklist.items) {
+    for (const item of picklist.PicklistItem) {
       // Update picklist item
       await prisma.picklistItem.update({
         where: { id: item.id },
@@ -224,7 +224,7 @@ async function testE2EFlow() {
         },
       });
 
-      console.log(`   ✓ Picked ${item.requiredQty} x ${item.sku.code}`);
+      console.log(`   ✓ Picked ${item.requiredQty} x ${item.SKU.code}`);
     }
 
     // Complete picklist
@@ -234,7 +234,7 @@ async function testE2EFlow() {
     });
 
     // Update order items and status
-    for (const item of order.items) {
+    for (const item of order.OrderItem) {
       await prisma.orderItem.update({
         where: { id: item.id },
         data: { pickedQty: item.quantity, status: "PICKED" },
@@ -282,7 +282,7 @@ async function testE2EFlow() {
     });
 
     // Update order items and status
-    for (const item of order.items) {
+    for (const item of order.OrderItem) {
       await prisma.orderItem.update({
         where: { id: item.id },
         data: { packedQty: item.quantity, status: "PACKED" },
@@ -320,9 +320,9 @@ async function testE2EFlow() {
         manifestNo,
         status: "OPEN",
         transporterId: transporter?.id || "",
-        deliveries: { connect: { id: delivery.id } },
+        Delivery: { connect: { id: delivery.id } },
       },
-      include: { deliveries: true },
+      include: { Delivery: true },
     });
 
     // Update delivery and order
@@ -336,7 +336,7 @@ async function testE2EFlow() {
     });
 
     console.log(`   ✓ Manifest created: ${manifest.manifestNo}`);
-    console.log(`   ✓ Deliveries in manifest: ${manifest.deliveries.length}`);
+    console.log(`   ✓ Deliveries in manifest: ${manifest.Delivery.length}`);
 
     // Step 7: Ship (Close Manifest)
     console.log("\n✈️ Step 7: Shipping (Closing Manifest)...");
@@ -351,7 +351,7 @@ async function testE2EFlow() {
       data: { status: "SHIPPED", shipDate: new Date() },
     });
 
-    for (const item of order.items) {
+    for (const item of order.OrderItem) {
       await prisma.orderItem.update({
         where: { id: item.id },
         data: { shippedQty: item.quantity, status: "SHIPPED" },
@@ -400,7 +400,7 @@ async function testE2EFlow() {
       },
     });
 
-    for (const item of order.items) {
+    for (const item of order.OrderItem) {
       await prisma.orderItem.update({
         where: { id: item.id },
         data: { status: "DELIVERED" },
@@ -422,20 +422,20 @@ async function testE2EFlow() {
     const finalOrder = await prisma.order.findUnique({
       where: { id: order.id },
       include: {
-        items: { include: { sku: true } },
-        picklists: true,
-        deliveries: true,
+        OrderItem: { include: { SKU: true } },
+        Picklist: true,
+        Delivery: true,
       },
     });
 
     console.log(`\n📊 Final Order Summary:`);
     console.log(`   Order No: ${finalOrder?.orderNo}`);
     console.log(`   Status: ${finalOrder?.status}`);
-    console.log(`   Items: ${finalOrder?.items.length}`);
-    console.log(`   Picklists: ${finalOrder?.picklists.length}`);
-    console.log(`   Deliveries: ${finalOrder?.deliveries.length}`);
-    console.log(`   Delivery Status: ${finalOrder?.deliveries[0]?.status}`);
-    console.log(`   AWB: ${finalOrder?.deliveries[0]?.awbNo}`);
+    console.log(`   Items: ${finalOrder?.OrderItem.length}`);
+    console.log(`   Picklists: ${finalOrder?.Picklist.length}`);
+    console.log(`   Deliveries: ${finalOrder?.Delivery.length}`);
+    console.log(`   Delivery Status: ${finalOrder?.Delivery[0]?.status}`);
+    console.log(`   AWB: ${finalOrder?.Delivery[0]?.awbNo}`);
 
     console.log("\n🎯 All modules are properly connected and working!\n");
 

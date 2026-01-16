@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     const rateCards = await prisma.rateCard.findMany({
       where: rateCardWhere,
       include: {
-        slabs: {
+        RateCardSlab: {
           orderBy: { fromWeight: "asc" },
         },
       },
@@ -188,7 +188,7 @@ interface RateCardData {
   fuelSurcharge: { toNumber(): number } | null;
   codChargesPercent: { toNumber(): number } | null;
   codChargesMin: { toNumber(): number } | null;
-  slabs: {
+  RateCardSlab: {
     fromWeight: { toNumber(): number };
     toWeight: { toNumber(): number };
     rate: { toNumber(): number };
@@ -206,9 +206,9 @@ function calculateRate(
   let weightCharge = 0;
 
   // Check if using slab-based pricing
-  if (rateCard.slabs && rateCard.slabs.length > 0) {
+  if (rateCard.RateCardSlab && rateCard.RateCardSlab.length > 0) {
     // Find applicable slab
-    const applicableSlab = rateCard.slabs.find(
+    const applicableSlab = rateCard.RateCardSlab.find(
       (slab) => weight >= slab.fromWeight.toNumber() && weight <= slab.toWeight.toNumber()
     );
 
@@ -222,7 +222,7 @@ function calculateRate(
       }
     } else {
       // Use last slab for overflow
-      const lastSlab = rateCard.slabs[rateCard.slabs.length - 1];
+      const lastSlab = rateCard.RateCardSlab[rateCard.RateCardSlab.length - 1];
       baseRate = lastSlab.rate.toNumber();
       const additionalWeightRate = lastSlab.additionalWeightRate?.toNumber() || 0;
       const slabToWeight = lastSlab.toWeight.toNumber();

@@ -46,11 +46,11 @@ export async function GET(request: NextRequest) {
       prisma.brand.findMany({
         where,
         include: {
-          company: {
+          Company: {
             select: { id: true, name: true },
           },
           _count: {
-            select: { skus: true, orders: true },
+            select: { SKUBrand: true, BrandUser: true },
           },
         },
         orderBy: { createdAt: "desc" },
@@ -140,7 +140,7 @@ export async function POST(request: NextRequest) {
         isActive: isActive !== false,
       },
       include: {
-        company: {
+        Company: {
           select: { id: true, name: true },
         },
       },

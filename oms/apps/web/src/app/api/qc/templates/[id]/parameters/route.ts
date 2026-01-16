@@ -41,16 +41,21 @@ export async function POST(
     });
     const sequence = order ?? existingParams + 1;
 
+    // Generate code if not provided
+    const paramCode = `PARAM_${Date.now().toString(36).toUpperCase()}`;
+
     const parameter = await prisma.qCParameter.create({
       data: {
         templateId,
+        code: paramCode,
         name,
         type,
+        description,
         isMandatory: isMandatory ?? true,
         acceptableValues: expectedValue ? [expectedValue] : [],
         sequence,
         // Map frontend fields to schema fields
-        unitOfMeasure: tolerance,
+        tolerance: tolerance ? parseFloat(tolerance) : null,
         requiresPhoto: false,
       },
     });
@@ -60,10 +65,10 @@ export async function POST(
       id: parameter.id,
       name: parameter.name,
       type: parameter.type,
-      description: description || "",
+      description: parameter.description || "",
       isMandatory: parameter.isMandatory,
       expectedValue: parameter.acceptableValues?.[0] || "",
-      tolerance: parameter.unitOfMeasure || "",
+      tolerance: parameter.tolerance?.toString() || "",
       order: parameter.sequence,
     });
   } catch (error) {

@@ -33,7 +33,7 @@ async function testInboundFlow() {
   logModule("INBOUND / GRN (Goods Receipt Note)");
 
   try {
-    const location = await prisma.location.findFirst({ where: { isActive: true }, include: { company: true } });
+    const location = await prisma.location.findFirst({ where: { isActive: true }, include: { Company: true } });
     const sku = await prisma.sKU.findFirst();
     let vendor = await prisma.vendor.findFirst();
 
@@ -67,7 +67,7 @@ async function testInboundFlow() {
         subtotal: 5000,
         taxAmount: 900,
         totalAmount: 5900,
-        items: {
+        POItem: {
           create: [{
             skuId: sku.id,
             orderedQty: 50,
@@ -77,7 +77,7 @@ async function testInboundFlow() {
           }],
         },
       },
-      include: { items: true },
+      include: { POItem: true },
     });
     logStep("✓", `Purchase Order created: ${po.poNo}`);
 
@@ -102,8 +102,8 @@ async function testInboundFlow() {
         locationId: location.id,
         purchaseOrderId: po.id,
         receivedById: user.id,
-        items: {
-          create: po.items.map(item => ({
+        InboundItem: {
+          create: po.POItem.map(item => ({
             skuId: item.skuId,
             expectedQty: item.orderedQty,
             receivedQty: 0,
@@ -112,7 +112,7 @@ async function testInboundFlow() {
           })),
         },
       },
-      include: { items: { include: { sku: true } } },
+      include: { InboundItem: { include: { SKU: true } } },
     });
     logStep("✓", `GRN created: ${inbound.inboundNo}`);
 
@@ -125,10 +125,10 @@ async function testInboundFlow() {
 
     // Complete receiving with QC
     const bin = await prisma.bin.findFirst({
-      where: { zone: { locationId: location.id } },
+      where: { Zone: { locationId: location.id } },
     });
 
-    for (const item of inbound.items) {
+    for (const item of inbound.InboundItem) {
       // Accept all items
       const qty = item.expectedQty ?? item.receivedQty ?? 0;
       await prisma.inboundItem.update({
@@ -182,7 +182,7 @@ async function testInboundFlow() {
         },
       });
 
-      logStep("✓", `Received ${qty} x ${item.sku.code} into ${bin?.code}`);
+      logStep("✓", `Received ${qty} x ${item.SKU.code} into ${bin?.code}`);
     }
 
     // Complete inbound
@@ -248,7 +248,7 @@ async function testOrderFlow() {
         discount: 0,
         totalAmount: 1230,
         locationId: location.id,
-        items: {
+        OrderItem: {
           create: skus.slice(0, 1).map(sku => ({
             skuId: sku.id,
             quantity: 2,
@@ -260,15 +260,15 @@ async function testOrderFlow() {
           })),
         },
       },
-      include: { items: { include: { sku: true } } },
+      include: { OrderItem: { include: { SKU: true } } },
     });
     logStep("✓", `Order created: ${order.orderNo} (Status: ${order.status})`);
 
     // Step 2: Allocate
-    for (const item of order.items) {
+    for (const item of order.OrderItem) {
       const inv = await prisma.inventory.findFirst({
         where: { skuId: item.skuId, locationId: location.id, quantity: { gte: item.quantity } },
-        include: { bin: true },
+        include: { Bin: true },
       });
       if (inv) {
         await prisma.inventory.update({
@@ -279,7 +279,7 @@ async function testOrderFlow() {
           where: { id: item.id },
           data: { allocatedQty: item.quantity },
         });
-        logStep("✓", `Allocated ${item.quantity} x ${item.sku.code}`);
+        logStep("✓", `Allocated ${item.quantity} x ${item.SKU.code}`);
       }
     }
     await prisma.order.update({ where: { id: order.id }, data: { status: "ALLOCATED" } });
@@ -294,14 +294,14 @@ async function testOrderFlow() {
 
     const allocatedItems = await prisma.orderItem.findMany({
       where: { orderId: order.id, allocatedQty: { gt: 0 } },
-      include: { sku: true },
+      include: { SKU: true },
     });
 
     const picklistItemsData = [];
     for (const item of allocatedItems) {
       const inv = await prisma.inventory.findFirst({
         where: { skuId: item.skuId, locationId: location.id, reservedQty: { gt: 0 } },
-        include: { bin: true },
+        include: { Bin: true },
       });
       if (inv?.binId) {
         picklistItemsData.push({
@@ -318,9 +318,9 @@ async function testOrderFlow() {
         picklistNo,
         status: "PENDING",
         orderId: order.id,
-        items: { create: picklistItemsData },
+        PicklistItem: { create: picklistItemsData },
       },
-      include: { items: { include: { sku: true, bin: true } } },
+      include: { PicklistItem: { include: { SKU: true, Bin: true } } },
     });
     await prisma.order.update({ where: { id: order.id }, data: { status: "PICKLIST_GENERATED" } });
     logStep("✓", `Picklist created: ${picklist.picklistNo}`);
@@ -332,7 +332,7 @@ async function testOrderFlow() {
     });
     await prisma.order.update({ where: { id: order.id }, data: { status: "PICKING" } });
 
-    for (const item of picklist.items) {
+    for (const item of picklist.PicklistItem) {
       await prisma.picklistItem.update({
         where: { id: item.id },
         data: { pickedQty: item.requiredQty, pickedAt: new Date() },
@@ -341,14 +341,14 @@ async function testOrderFlow() {
         where: { skuId: item.skuId, binId: item.binId },
         data: { quantity: { decrement: item.requiredQty }, reservedQty: { decrement: item.requiredQty } },
       });
-      logStep("✓", `Picked ${item.requiredQty} x ${item.sku.code}`);
+      logStep("✓", `Picked ${item.requiredQty} x ${item.SKU.code}`);
     }
 
     await prisma.picklist.update({
       where: { id: picklist.id },
       data: { status: "COMPLETED", completedAt: new Date() },
     });
-    for (const item of order.items) {
+    for (const item of order.OrderItem) {
       await prisma.orderItem.update({
         where: { id: item.id },
         data: { pickedQty: item.quantity, status: "PICKED" },
@@ -384,7 +384,7 @@ async function testOrderFlow() {
       },
     });
 
-    for (const item of order.items) {
+    for (const item of order.OrderItem) {
       await prisma.orderItem.update({
         where: { id: item.id },
         data: { packedQty: item.quantity, status: "PACKED" },
@@ -413,7 +413,7 @@ async function testOrderFlow() {
         manifestNo,
         status: "OPEN",
         transporterId: transporter?.id || "",
-        deliveries: { connect: { id: delivery.id } },
+        Delivery: { connect: { id: delivery.id } },
       },
     });
     await prisma.delivery.update({ where: { id: delivery.id }, data: { status: "MANIFESTED" } });
@@ -426,7 +426,7 @@ async function testOrderFlow() {
       where: { id: delivery.id },
       data: { status: "SHIPPED", shipDate: new Date() },
     });
-    for (const item of order.items) {
+    for (const item of order.OrderItem) {
       await prisma.orderItem.update({
         where: { id: item.id },
         data: { shippedQty: item.quantity, status: "SHIPPED" },
@@ -446,7 +446,7 @@ async function testOrderFlow() {
       where: { id: delivery.id },
       data: { status: "DELIVERED", podSignature: "signature.jpg", receivedBy: "Customer", remarks: "Delivered" },
     });
-    for (const item of order.items) {
+    for (const item of order.OrderItem) {
       await prisma.orderItem.update({ where: { id: item.id }, data: { status: "DELIVERED" } });
     }
     await prisma.order.update({ where: { id: order.id }, data: { status: "DELIVERED" } });
@@ -469,7 +469,7 @@ async function testReturnFlow() {
     // Find a delivered order to return
     const deliveredOrder = await prisma.order.findFirst({
       where: { status: "DELIVERED" },
-      include: { items: { include: { sku: true } }, deliveries: true },
+      include: { OrderItem: { include: { SKU: true } }, Delivery: true },
     });
 
     if (!deliveredOrder || !location) throw new Error("No delivered order found for return test");
@@ -485,18 +485,18 @@ async function testReturnFlow() {
     const returnRecord = await prisma.return.create({
       data: {
         returnNo,
-        order: { connect: { id: deliveredOrder.id } },
+        orderId: deliveredOrder.id,
         type: "CUSTOMER_RETURN",
         reason: "Size not fitting",
         status: "INITIATED",
-        items: {
-          create: deliveredOrder.items.map(item => ({
+        ReturnItem: {
+          create: deliveredOrder.OrderItem.map(item => ({
             skuId: item.skuId,
             quantity: item.quantity,
           })),
         },
       },
-      include: { items: true },
+      include: { ReturnItem: true },
     });
     logStep("✓", `Return created: ${returnRecord.returnNo} (Type: ${returnRecord.type})`);
 
@@ -513,7 +513,7 @@ async function testReturnFlow() {
       data: { status: "QC_PENDING" },
     });
 
-    for (const item of returnRecord.items) {
+    for (const item of returnRecord.ReturnItem) {
       await prisma.returnItem.update({
         where: { id: item.id },
         data: { qcStatus: "PASSED", qcRemarks: "Item in good condition" },
@@ -527,9 +527,9 @@ async function testReturnFlow() {
     });
 
     // Restock items
-    const bin = await prisma.bin.findFirst({ where: { zone: { locationId: location.id } } });
+    const bin = await prisma.bin.findFirst({ where: { Zone: { locationId: location.id } } });
 
-    for (const item of returnRecord.items) {
+    for (const item of returnRecord.ReturnItem) {
       // Add back to inventory
       const existingInv = await prisma.inventory.findFirst({
         where: { skuId: item.skuId, binId: bin?.id },
@@ -596,7 +596,7 @@ async function testInventoryAdjustment() {
     const location = await prisma.location.findFirst({ where: { isActive: true } });
     const inventory = await prisma.inventory.findFirst({
       where: { locationId: location?.id, quantity: { gt: 0 } },
-      include: { sku: true, bin: true },
+      include: { SKU: true, Bin: true },
     });
     const user = await prisma.user.findFirst();
 
@@ -621,7 +621,7 @@ async function testInventoryAdjustment() {
         reason: "DAMAGE",
         remarks: "Damaged during storage",
         adjustedById: user.id,
-        items: {
+        StockAdjustmentItem: {
           create: [{
             skuId: inventory.skuId,
             binId: inventory.binId,
@@ -631,7 +631,7 @@ async function testInventoryAdjustment() {
           }],
         },
       },
-      include: { items: true },
+      include: { StockAdjustmentItem: true },
     });
     logStep("✓", `Adjustment created: ${adjustment.adjustmentNo}`);
 
@@ -643,7 +643,7 @@ async function testInventoryAdjustment() {
     logStep("✓", `Adjustment approved`);
 
     // Apply adjustment to inventory
-    for (const item of adjustment.items) {
+    for (const item of adjustment.StockAdjustmentItem) {
       await prisma.inventory.update({
         where: { id: inventory.id },
         data: { quantity: { increment: item.adjustedQty } },
@@ -689,7 +689,7 @@ async function testCycleCount() {
     // Get inventories that have bins
     const allInventories = await prisma.inventory.findMany({
       where: { locationId: location?.id },
-      include: { sku: true, bin: true },
+      include: { SKU: true, Bin: true },
       take: 10,
     });
     const inventories = allInventories.filter(inv => inv.binId !== null);
@@ -712,7 +712,7 @@ async function testCycleCount() {
         status: "PLANNED",
         scheduledDate: new Date(),
         initiatedById: user.id,
-        items: {
+        CycleCountItem: {
           create: inventories.filter(inv => inv.binId).map(inv => ({
             skuId: inv.skuId,
             binId: inv.binId!,
@@ -720,7 +720,7 @@ async function testCycleCount() {
           })),
         },
       },
-      include: { items: true },
+      include: { CycleCountItem: true },
     });
     logStep("✓", `Cycle Count created: ${cycleCount.cycleCountNo}`);
 
@@ -732,7 +732,7 @@ async function testCycleCount() {
     logStep("✓", `Counting started`);
 
     // Record counts (simulate physical count)
-    for (const item of cycleCount.items) {
+    for (const item of cycleCount.CycleCountItem) {
       const expected = item.expectedQty ?? 0;
       const countedQty = expected - 1; // Simulate 1 item variance
       const varianceQty = countedQty - expected;
@@ -794,7 +794,7 @@ async function testGatePass() {
         vehicleNumber: "MH01AB1234",
         purpose: "Material delivery",
         entryTime: new Date(),
-        items: sku ? {
+        GatePassItem: sku ? {
           create: [{
             skuId: sku.id,
             quantity: 10,
@@ -802,7 +802,7 @@ async function testGatePass() {
           }],
         } : undefined,
       },
-      include: { items: true },
+      include: { GatePassItem: true },
     });
     logStep("✓", `Gate Pass created: ${gatePass.gatePassNo} (Type: ${gatePass.type})`);
 
@@ -832,7 +832,7 @@ async function testCODReconciliation() {
   logModule("COD RECONCILIATION");
 
   try {
-    const location = await prisma.location.findFirst({ where: { isActive: true }, include: { company: true } });
+    const location = await prisma.location.findFirst({ where: { isActive: true }, include: { Company: true } });
     const transporter = await prisma.transporter.findFirst({ where: { isActive: true } });
 
     if (!location) throw new Error("No location found");

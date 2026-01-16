@@ -33,14 +33,14 @@ export async function GET(request: NextRequest) {
       const order = await prisma.order.findUnique({
         where: { id: orderId },
         include: {
-          items: { include: { sku: true } },
-          location: true,
-          deliveries: {
-            include: { transporter: true },
+          OrderItem: { include: { SKU: true } },
+          Location: true,
+          Delivery: {
+            include: { Transporter: true },
             orderBy: { createdAt: "desc" },
             take: 1,
           },
-          picklists: {
+          Picklist: {
             orderBy: { createdAt: "desc" },
             take: 1,
           },
@@ -76,12 +76,12 @@ export async function GET(request: NextRequest) {
         });
       }
 
-      if (order.picklists.length > 0) {
+      if (order.Picklist.length > 0) {
         timeline.push({
           step: "PICKLIST_CREATED",
-          status: order.picklists[0].status === "COMPLETED" ? "COMPLETED" : "IN_PROGRESS",
-          timestamp: order.picklists[0].createdAt,
-          details: `Picklist ${order.picklists[0].picklistNo}`,
+          status: order.Picklist[0].status === "COMPLETED" ? "COMPLETED" : "IN_PROGRESS",
+          timestamp: order.Picklist[0].createdAt,
+          details: `Picklist ${order.Picklist[0].picklistNo}`,
         });
       }
 
@@ -103,12 +103,12 @@ export async function GET(request: NextRequest) {
         });
       }
 
-      if (order.deliveries.length > 0 && order.deliveries[0].awbNo) {
+      if (order.Delivery.length > 0 && order.Delivery[0].awbNo) {
         timeline.push({
           step: "LABEL_GENERATED",
           status: "COMPLETED",
-          timestamp: order.deliveries[0].createdAt,
-          details: `AWB: ${order.deliveries[0].awbNo}`,
+          timestamp: order.Delivery[0].createdAt,
+          details: `AWB: ${order.Delivery[0].awbNo}`,
         });
       }
 
@@ -117,7 +117,7 @@ export async function GET(request: NextRequest) {
           step: "DISPATCHED",
           status: "COMPLETED",
           timestamp: order.updatedAt,
-          details: `Handed to ${order.deliveries[0]?.transporter?.name || "courier"}`,
+          details: `Handed to ${order.Delivery[0]?.Transporter?.name || "courier"}`,
         });
       }
 
@@ -144,10 +144,10 @@ export async function GET(request: NextRequest) {
             promisedDate: slaTracking.promisedDate,
             delayMinutes: slaTracking.delayMinutes,
           } : null,
-          delivery: order.deliveries[0] ? {
-            awbNo: order.deliveries[0].awbNo,
-            transporter: order.deliveries[0].transporter?.name,
-            status: order.deliveries[0].status,
+          delivery: order.Delivery[0] ? {
+            awbNo: order.Delivery[0].awbNo,
+            transporter: order.Delivery[0].Transporter?.name,
+            status: order.Delivery[0].status,
           } : null,
         },
       });
@@ -169,7 +169,7 @@ export async function GET(request: NextRequest) {
         prisma.order.count({ where: { status: "ALLOCATED" } }),
         prisma.order.count({ where: { status: "PICKED" } }),
         prisma.order.count({ where: { status: "PACKED" } }),
-        prisma.order.count({ where: { status: "DISPATCHED" } }),
+        prisma.order.count({ where: { status: "SHIPPED" } }),
         prisma.order.count({
           where: {
             status: "DELIVERED",
@@ -234,8 +234,8 @@ export async function POST(request: NextRequest) {
       const order = await prisma.order.findUnique({
         where: { id: orderId },
         include: {
-          items: { include: { sku: true } },
-          location: true,
+          OrderItem: { include: { SKU: true } },
+          Location: true,
         },
       });
 
@@ -248,7 +248,8 @@ export async function POST(request: NextRequest) {
 
       const shippingAddress = order.shippingAddress as any;
       const destinationPincode = shippingAddress?.pincode || "000000";
-      const originPincode = order.location?.pincode || "110001";
+      const locationAddress = order.Location?.address as any;
+      const originPincode = locationAddress?.pincode || "110001";
       const results: any[] = [];
 
       // Step 1: Serviceability check
@@ -295,7 +296,7 @@ export async function POST(request: NextRequest) {
       // Step 3: Inventory allocation with hopping
       const allocation = await allocateWithHopping({
         orderId,
-        items: order.items.map(i => ({ skuId: i.skuId, quantity: i.quantity })),
+        items: order.OrderItem.map(i => ({ skuId: i.skuId, quantity: i.quantity })),
         destinationPincode,
         preferredLocationId: order.locationId || undefined,
         config: { enableHopping: true, maxHops: 3 },
@@ -311,11 +312,17 @@ export async function POST(request: NextRequest) {
         },
       });
 
+      // Calculate total weight from order items
+      const totalWeight = order.OrderItem.reduce((sum, item) => {
+        const itemWeight = item.SKU?.weight ? Number(item.SKU.weight) : 0;
+        return sum + (itemWeight * item.quantity);
+      }, 0) || 0.5;
+
       // Step 4: Partner selection
       const partnerSelection = await selectOptimalPartner({
         originPincode,
         destinationPincode,
-        weightKg: Number(order.totalWeight) || 0.5,
+        weightKg: totalWeight,
         isCod: order.paymentMode === "COD",
         codAmount: order.paymentMode === "COD" ? Number(order.totalAmount) : 0,
       });

@@ -218,7 +218,7 @@ export async function POST(request: NextRequest) {
             dataSourceType: "CSV_IMPORT",
             priority: firstRow.priority || 0,
             remarks: firstRow.remarks,
-            items: {
+            OrderItem: {
               create: items,
             },
           },

@@ -24,14 +24,14 @@ export async function POST(request: NextRequest) {
     const order = await prisma.order.findUnique({
       where: { id: orderId },
       include: {
-        items: {
+        OrderItem: {
           include: {
-            sku: true,
+            SKU: true,
           },
         },
-        location: {
+        Location: {
           include: {
-            company: true,
+            Company: true,
           },
         },
       },
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
       pincode?: string;
     };
 
-    const locationAddr = order.location.address as {
+    const locationAddr = order.Location.address as {
       addressLine1?: string;
       addressLine2?: string;
       city?: string;
@@ -196,10 +196,10 @@ interface OrderData {
   customerEmail?: string | null;
   paymentMode: string;
   totalAmount: { toNumber(): number };
-  items: { quantity: number; sku: { code: string; name: string } }[];
-  location: {
+  OrderItem: { quantity: number; SKU: { code: string; name: string } }[];
+  Location: {
     name: string;
-    company: { name: string; phone?: string | null; email?: string | null };
+    Company: { name: string; phone?: string | null; email?: string | null };
   };
 }
 
@@ -244,7 +244,7 @@ async function createShiprocketShipment(
   const orderPayload = {
     order_id: order.orderNo,
     order_date: new Date().toISOString().split("T")[0],
-    pickup_location: order.location.name,
+    pickup_location: order.Location.name,
     channel_id: "",
     billing_customer_name: order.customerName,
     billing_last_name: "",
@@ -257,11 +257,11 @@ async function createShiprocketShipment(
     billing_email: order.customerEmail || "",
     billing_phone: order.customerPhone,
     shipping_is_billing: true,
-    order_items: order.items.map((item) => ({
-      name: item.sku.name,
-      sku: item.sku.code,
+    order_items: order.OrderItem.map((item) => ({
+      name: item.SKU.name,
+      sku: item.SKU.code,
       units: item.quantity,
-      selling_price: order.totalAmount.toNumber() / order.items.length,
+      selling_price: order.totalAmount.toNumber() / order.OrderItem.length,
     })),
     payment_method: order.paymentMode === "COD" ? "COD" : "Prepaid",
     sub_total: order.totalAmount.toNumber(),
@@ -359,12 +359,12 @@ async function createDelhiveryShipment(
       },
     ],
     pickup_location: {
-      name: order.location.company.name,
+      name: order.Location.Company.name,
       add: pickupAddr.addressLine1,
       city: pickupAddr.city,
       state: pickupAddr.state,
       pin: pickupAddr.pincode,
-      phone: order.location.company.phone || "",
+      phone: order.Location.Company.phone || "",
     },
   };
 

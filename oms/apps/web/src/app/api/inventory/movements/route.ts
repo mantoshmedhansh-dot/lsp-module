@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
                 select: {
                   id: true,
                   code: true,
-                  zone: { select: { code: true, name: true } },
+                  Zone: { select: { code: true, name: true } },
                 },
               })
             : null,
@@ -92,7 +92,7 @@ export async function GET(request: NextRequest) {
                 select: {
                   id: true,
                   code: true,
-                  zone: { select: { code: true, name: true } },
+                  Zone: { select: { code: true, name: true } },
                 },
               })
             : null,

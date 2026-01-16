@@ -19,11 +19,11 @@ export async function GET(
     const brand = await prisma.brand.findUnique({
       where: { id },
       include: {
-        company: {
+        Company: {
           select: { id: true, name: true },
         },
         _count: {
-          select: { skus: true, orders: true },
+          select: { SKUBrand: true, BrandUser: true },
         },
       },
     });
@@ -84,7 +84,7 @@ export async function PATCH(
         ...(isActive !== undefined && { isActive }),
       },
       include: {
-        company: {
+        Company: {
           select: { id: true, name: true },
         },
       },
@@ -124,7 +124,7 @@ export async function DELETE(
       where: { id },
       include: {
         _count: {
-          select: { skus: true, orders: true },
+          select: { SKUBrand: true, BrandUser: true },
         },
       },
     });
@@ -134,9 +134,9 @@ export async function DELETE(
     }
 
     // Check if brand has related data
-    if (existingBrand._count.skus > 0 || existingBrand._count.orders > 0) {
+    if (existingBrand._count.SKUBrand > 0 || existingBrand._count.BrandUser > 0) {
       return NextResponse.json(
-        { error: "Cannot delete brand with existing SKUs or orders. Deactivate it instead." },
+        { error: "Cannot delete brand with existing SKUs or users. Deactivate it instead." },
         { status: 400 }
       );
     }

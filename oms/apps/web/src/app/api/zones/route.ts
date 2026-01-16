@@ -35,14 +35,14 @@ export async function GET(request: NextRequest) {
     const zones = await prisma.zone.findMany({
       where,
       include: {
-        location: {
+        Location: {
           select: {
             id: true,
             code: true,
             name: true,
           },
         },
-        bins: includeBins
+        Bin: includeBins
           ? {
               where: { isActive: true },
               select: {
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
                 capacity: true,
                 _count: {
                   select: {
-                    inventory: true,
+                    Inventory: true,
                   },
                 },
               },
@@ -61,11 +61,11 @@ export async function GET(request: NextRequest) {
           : false,
         _count: {
           select: {
-            bins: true,
+            Bin: true,
           },
         },
       },
-      orderBy: [{ location: { code: "asc" } }, { code: "asc" }],
+      orderBy: [{ Location: { code: "asc" } }, { code: "asc" }],
     });
 
     return NextResponse.json(zones);
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
         description,
       },
       include: {
-        location: true,
+        Location: true,
       },
     });
 

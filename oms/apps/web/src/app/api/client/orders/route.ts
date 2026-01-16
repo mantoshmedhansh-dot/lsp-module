@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     const where: Record<string, unknown> = {};
 
     if (companyId) {
-      where.location = { companyId };
+      where.Location = { companyId };
     }
 
     if (search) {
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
         { externalOrderNo: { contains: search, mode: "insensitive" } },
         { customerName: { contains: search, mode: "insensitive" } },
         { customerPhone: { contains: search } },
-        { deliveries: { some: { awbNo: { contains: search } } } },
+        { Delivery: { some: { awbNo: { contains: search } } } },
       ];
     }
 
@@ -74,9 +74,9 @@ export async function GET(request: NextRequest) {
       const allOrders = await prisma.order.findMany({
         where,
         include: {
-          items: { include: { sku: true } },
-          deliveries: true,
-          location: true,
+          OrderItem: { include: { SKU: true } },
+          Delivery: true,
+          Location: true,
         },
         orderBy: { orderDate: "desc" },
       });
@@ -113,15 +113,15 @@ export async function GET(request: NextRequest) {
         order.customerName,
         order.customerPhone,
         order.customerEmail || "",
-        order.items.map((i) => i.sku.code).join(";"),
-        order.items.reduce((sum, i) => sum + i.quantity, 0),
+        order.OrderItem.map((i) => i.SKU.code).join(";"),
+        order.OrderItem.reduce((sum, i) => sum + i.quantity, 0),
         order.subtotal,
         order.taxAmount,
         order.discount,
         order.totalAmount,
-        order.deliveries[0]?.awbNo || "",
-        order.deliveries[0]?.status || "",
-        order.location.name,
+        order.Delivery[0]?.awbNo || "",
+        order.Delivery[0]?.status || "",
+        order.Location.name,
       ]);
 
       const csv = [
@@ -143,12 +143,12 @@ export async function GET(request: NextRequest) {
     const orders = await prisma.order.findMany({
       where,
       include: {
-        items: {
+        OrderItem: {
           include: {
-            sku: { select: { id: true, code: true, name: true } },
+            SKU: { select: { id: true, code: true, name: true } },
           },
         },
-        deliveries: {
+        Delivery: {
           select: { id: true, awbNo: true, status: true },
         },
       },

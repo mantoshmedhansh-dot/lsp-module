@@ -20,7 +20,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const ndr = await prisma.nDR.findUnique({
       where: { id },
       include: {
-        order: {
+        Order: {
           select: {
             id: true,
             orderNo: true,
@@ -33,41 +33,40 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             billingAddress: true,
             paymentMode: true,
             totalAmount: true,
-            items: {
+            OrderItem: {
               include: {
-                sku: {
+                SKU: {
                   select: {
                     id: true,
                     code: true,
                     name: true,
-                    imageUrl: true,
+                    images: true,
                   },
                 },
               },
             },
           },
         },
-        delivery: {
+        Delivery: {
           select: {
             id: true,
             deliveryNo: true,
             awbNo: true,
             status: true,
-            estimatedDelivery: true,
-            transporter: {
+            shipDate: true,
+            Transporter: {
               select: {
                 id: true,
                 code: true,
                 name: true,
               },
             },
-            trackingHistory: true,
           },
         },
-        outreachAttempts: {
+        NDROutreach: {
           orderBy: { createdAt: "desc" },
         },
-        aiActions: {
+        AIActionLog: {
           orderBy: { createdAt: "desc" },
           take: 10,
         },
@@ -115,7 +114,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     // Find existing NDR
     const existingNDR = await prisma.nDR.findUnique({
       where: { id },
-      include: { delivery: true },
+      include: { Delivery: true },
     });
 
     if (!existingNDR) {
@@ -149,13 +148,13 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       where: { id },
       data: updateData,
       include: {
-        order: true,
-        delivery: {
+        Order: true,
+        Delivery: {
           include: {
-            transporter: true,
+            Transporter: true,
           },
         },
-        outreachAttempts: {
+        NDROutreach: {
           orderBy: { createdAt: "desc" },
           take: 5,
         },
@@ -164,7 +163,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
     // Update delivery status based on NDR status
     if (status === "RESOLVED" && resolutionType) {
-      let deliveryStatus = existingNDR.delivery.status;
+      let deliveryStatus = existingNDR.Delivery?.status || "PENDING";
 
       switch (resolutionType) {
         case "REATTEMPT_SCHEDULED":

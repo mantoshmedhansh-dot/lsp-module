@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
         { customerName: { contains: search, mode: "insensitive" } },
         { customerPhone: { contains: search } },
         { customerEmail: { contains: search, mode: "insensitive" } },
-        { order: { orderNo: { contains: search, mode: "insensitive" } } },
+        { Order: { orderNo: { contains: search, mode: "insensitive" } } },
       ];
     }
 
@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
       prisma.proactiveCommunication.findMany({
         where,
         include: {
-          order: {
+          Order: {
             select: {
               id: true,
               orderNo: true,
@@ -196,13 +196,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Determine company ID
-    let companyId = session.user.companyId;
+    let companyId: string | undefined | null = session.user.companyId;
     if (orderId && !companyId) {
       const order = await prisma.order.findUnique({
         where: { id: orderId },
-        select: { companyId: true },
+        select: { Location: { select: { companyId: true } } },
       });
-      companyId = order?.companyId;
+      companyId = order?.Location?.companyId;
     }
 
     // Create communication record
@@ -214,7 +214,7 @@ export async function POST(request: NextRequest) {
         customerName,
         customerPhone,
         customerEmail,
-        trigger: trigger as "ORDER_CONFIRMED" | "SHIPPED" | "OUT_FOR_DELIVERY" | "DELAY_PREDICTED" | "SLA_BREACH_RISK" | "DELIVERY_ATTEMPT" | "DELIVERED" | "FEEDBACK_REQUEST" | "PROMOTIONAL",
+        trigger: trigger as "ORDER_CONFIRMED" | "ORDER_SHIPPED" | "OUT_FOR_DELIVERY" | "DELAY_PREDICTED" | "SLA_BREACH_RISK" | "DELIVERY_ATTEMPTED" | "DELIVERED" | "FEEDBACK_REQUEST" | "CUSTOM",
         channel: channel as "WHATSAPP" | "SMS" | "EMAIL" | "AI_VOICE" | "MANUAL_CALL" | "IVR",
         templateId,
         content,
@@ -225,7 +225,7 @@ export async function POST(request: NextRequest) {
         companyId: companyId || "",
       },
       include: {
-        order: {
+        Order: {
           select: {
             id: true,
             orderNo: true,
@@ -313,7 +313,7 @@ async function sendProactiveCommunication(communicationId: string) {
         providerMessageId: result.providerMessageId,
       },
       status: result.success ? "SUCCESS" : "FAILED",
-      errorMessage: result.error,
+      executionError: result.error,
       companyId: communication.companyId,
     },
   });

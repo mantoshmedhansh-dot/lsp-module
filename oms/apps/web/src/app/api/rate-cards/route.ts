@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
       prisma.rateCard.findMany({
         where,
         include: {
-          slabs: {
+          RateCardSlab: {
             orderBy: { fromWeight: "asc" },
           },
         },
@@ -139,22 +139,22 @@ export async function POST(request: NextRequest) {
         awbCharges,
         rtoChargesPercent,
         remarks,
-        slabs: slabs && slabs.length > 0 ? {
+        RateCardSlab: slabs && slabs.length > 0 ? {
           create: slabs.map((s: {
             fromWeight: number;
             toWeight: number;
             rate: number;
-            additionalPerKg?: number;
+            additionalWeightRate?: number;
           }) => ({
             fromWeight: s.fromWeight,
             toWeight: s.toWeight,
             rate: s.rate,
-            additionalPerKg: s.additionalPerKg,
+            additionalWeightRate: s.additionalWeightRate,
           })),
         } : undefined,
       },
       include: {
-        slabs: {
+        RateCardSlab: {
           orderBy: { fromWeight: "asc" },
         },
       },

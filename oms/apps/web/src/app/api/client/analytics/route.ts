@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     // Get client's company
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      include: { company: true },
+      include: { Company: true },
     });
 
     if (!user?.companyId) {
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     // Get current period orders
     const currentOrders = await prisma.order.findMany({
       where: {
-        companyId: user.companyId,
+        Location: { companyId: user.companyId },
         createdAt: { gte: startDate },
         status: { not: "CANCELLED" },
       },
@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
     // Get previous period orders for comparison
     const previousOrders = await prisma.order.findMany({
       where: {
-        companyId: user.companyId,
+        Location: { companyId: user.companyId },
         createdAt: { gte: previousStartDate, lt: startDate },
         status: { not: "CANCELLED" },
       },
@@ -105,7 +105,7 @@ export async function GET(request: NextRequest) {
     const channelMetrics = await prisma.order.groupBy({
       by: ["channel"],
       where: {
-        companyId: user.companyId,
+        Location: { companyId: user.companyId },
         createdAt: { gte: startDate },
         status: { not: "CANCELLED" },
       },

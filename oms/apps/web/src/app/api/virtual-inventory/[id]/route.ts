@@ -18,13 +18,12 @@ export async function GET(
     const virtualInventory = await prisma.virtualInventory.findUnique({
       where: { id },
       include: {
-        sku: {
+        SKU: {
           select: { id: true, code: true, name: true },
         },
-        location: {
+        Location: {
           select: { id: true, code: true, name: true },
         },
-        holds: true,
       },
     });
 
@@ -71,7 +70,7 @@ export async function PATCH(
       );
     }
 
-    const { quantity, validFrom, validTo, notes, isActive } = body;
+    const { quantity, validFrom, validTo, isActive } = body;
 
     const updated = await prisma.virtualInventory.update({
       where: { id },
@@ -79,14 +78,13 @@ export async function PATCH(
         ...(quantity !== undefined && { quantity }),
         ...(validFrom !== undefined && { validFrom: validFrom ? new Date(validFrom) : null }),
         ...(validTo !== undefined && { validTo: validTo ? new Date(validTo) : null }),
-        ...(notes !== undefined && { notes }),
         ...(isActive !== undefined && { isActive }),
       },
       include: {
-        sku: {
+        SKU: {
           select: { id: true, code: true, name: true },
         },
-        location: {
+        Location: {
           select: { id: true, code: true, name: true },
         },
       },
@@ -121,7 +119,6 @@ export async function DELETE(
 
     const existing = await prisma.virtualInventory.findUnique({
       where: { id },
-      include: { holds: true },
     });
 
     if (!existing) {
@@ -130,24 +127,6 @@ export async function DELETE(
         { status: 404 }
       );
     }
-
-    // Check if there are active holds
-    if (existing.holds && existing.holds.length > 0) {
-      const activeHolds = existing.holds.filter(
-        (h) => h.status === "ACTIVE" || h.status === "PENDING"
-      );
-      if (activeHolds.length > 0) {
-        return NextResponse.json(
-          { error: "Cannot delete virtual inventory with active holds" },
-          { status: 400 }
-        );
-      }
-    }
-
-    // Delete holds first
-    await prisma.virtualInventoryHold.deleteMany({
-      where: { virtualInventoryId: id },
-    });
 
     // Delete virtual inventory
     await prisma.virtualInventory.delete({ where: { id } });

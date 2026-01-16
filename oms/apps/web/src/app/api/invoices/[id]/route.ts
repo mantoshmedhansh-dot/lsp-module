@@ -39,23 +39,23 @@ export async function GET(
           { id },
           { invoiceNo: id },
         ],
-        order: {
-          location: {
+        Order: {
+          Location: {
             companyId,
           },
         },
       },
       include: {
-        order: {
+        Order: {
           include: {
-            items: {
+            OrderItem: {
               include: {
-                sku: true,
+                SKU: true,
               },
             },
-            location: {
+            Location: {
               include: {
-                company: true,
+                Company: true,
               },
             },
           },
@@ -101,8 +101,8 @@ export async function GET(
       data: {
         invoiceNo: delivery.invoiceNo,
         invoiceDate: delivery.invoiceDate,
-        orderNo: delivery.order.orderNo,
-        customerName: delivery.order.customerName,
+        orderNo: delivery.Order.orderNo,
+        customerName: delivery.Order.customerName,
         awbNo: delivery.awbNo,
         invoiceData: result.invoiceData,
       },

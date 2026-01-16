@@ -18,11 +18,11 @@ export async function GET(
     const template = await prisma.qCTemplate.findUnique({
       where: { id },
       include: {
-        parameters: {
+        QCParameter: {
           orderBy: { sequence: "asc" },
         },
         _count: {
-          select: { executions: true },
+          select: { QCExecution: true },
         },
       },
     });
@@ -90,19 +90,21 @@ export async function PATCH(
         await tx.qCParameter.deleteMany({ where: { templateId: id } });
 
         // Create new parameters
-        for (const param of parameters) {
+        for (let i = 0; i < parameters.length; i++) {
+          const param = parameters[i];
           await tx.qCParameter.create({
             data: {
               templateId: id,
+              code: param.code || `PARAM_${i + 1}`,
               name: param.name,
               type: param.type,
               isMandatory: param.isMandatory ?? true,
-              acceptableValues: param.acceptableValues,
+              acceptableValues: param.acceptableValues || [],
               minValue: param.minValue,
               maxValue: param.maxValue,
-              unitOfMeasure: param.unitOfMeasure,
+              tolerance: param.tolerance,
               requiresPhoto: param.requiresPhoto ?? false,
-              sequence: param.sequence,
+              sequence: param.sequence ?? i + 1,
             },
           });
         }
@@ -115,11 +117,11 @@ export async function PATCH(
     const completeTemplate = await prisma.qCTemplate.findUnique({
       where: { id },
       include: {
-        parameters: {
+        QCParameter: {
           orderBy: { sequence: "asc" },
         },
         _count: {
-          select: { executions: true, parameters: true },
+          select: { QCExecution: true, QCParameter: true },
         },
       },
     });

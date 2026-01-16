@@ -35,10 +35,10 @@ export async function GET(
     const order = await prisma.order.findUnique({
       where: { id: orderId },
       include: {
-        location: true,
-        items: {
+        Location: true,
+        OrderItem: {
           include: {
-            sku: {
+            SKU: {
               select: {
                 id: true,
                 code: true,
@@ -52,9 +52,9 @@ export async function GET(
             },
           },
         },
-        deliveries: {
+        Delivery: {
           include: {
-            transporter: {
+            Transporter: {
               select: {
                 id: true,
                 code: true,
@@ -63,12 +63,12 @@ export async function GET(
             },
           },
         },
-        picklists: {
+        Picklist: {
           where: { status: "COMPLETED" },
           include: {
-            items: {
+            PicklistItem: {
               include: {
-                sku: true,
+                SKU: true,
               },
             },
           },
@@ -109,8 +109,8 @@ export async function POST(
     const order = await prisma.order.findUnique({
       where: { id: orderId },
       include: {
-        items: true,
-        deliveries: true,
+        OrderItem: true,
+        Delivery: true,
       },
     });
 
@@ -150,7 +150,7 @@ export async function POST(
         }
 
         // Check if all items are picked
-        const allPicked = order.items.every(
+        const allPicked = order.OrderItem.every(
           (item) => item.pickedQty >= item.quantity
         );
 
@@ -168,7 +168,7 @@ export async function POST(
             : null;
 
         // Create or update delivery
-        let delivery = order.deliveries[0];
+        let delivery = order.Delivery[0];
 
         if (delivery) {
           // Update existing delivery
@@ -209,7 +209,7 @@ export async function POST(
 
         // Update order items packed quantity
         await Promise.all(
-          order.items.map((item) =>
+          order.OrderItem.map((item) =>
             prisma.orderItem.update({
               where: { id: item.id },
               data: {
@@ -225,10 +225,10 @@ export async function POST(
           where: { id: orderId },
           data: { status: "PACKED" },
           include: {
-            items: true,
-            deliveries: {
+            OrderItem: true,
+            Delivery: {
               include: {
-                transporter: true,
+                Transporter: true,
               },
             },
           },
@@ -276,7 +276,7 @@ export async function PATCH(
     const order = await prisma.order.findUnique({
       where: { id: orderId },
       include: {
-        deliveries: true,
+        Delivery: true,
       },
     });
 
@@ -284,7 +284,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 
-    const delivery = order.deliveries[0];
+    const delivery = order.Delivery[0];
 
     if (!delivery) {
       return NextResponse.json(
@@ -312,7 +312,7 @@ export async function PATCH(
         remarks: remarks !== undefined ? remarks : delivery.remarks,
       },
       include: {
-        transporter: true,
+        Transporter: true,
       },
     });
 

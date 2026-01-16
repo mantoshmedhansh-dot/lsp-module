@@ -28,13 +28,13 @@ export async function GET(request: NextRequest) {
         id: true,
         status: true,
         createdAt: true,
-        expectedDeliveryDate: true,
+        promisedDate: true,
         channel: true,
-        shipments: {
+        Delivery: {
           select: {
             createdAt: true,
             status: true,
-            deliveredAt: true,
+            deliveryDate: true,
           },
         },
       },
@@ -58,22 +58,22 @@ export async function GET(request: NextRequest) {
 
     for (const order of orders) {
       const orderDate = new Date(order.createdAt);
-      const expectedDate = order.expectedDeliveryDate
-        ? new Date(order.expectedDeliveryDate)
+      const expectedDate = order.promisedDate
+        ? new Date(order.promisedDate)
         : null;
 
-      // Check if order has shipments
-      if (order.shipments.length > 0) {
-        const firstShipment = order.shipments[0];
-        const shipmentDate = new Date(firstShipment.createdAt);
+      // Check if order has deliveries
+      if (order.Delivery.length > 0) {
+        const firstDelivery = order.Delivery[0];
+        const deliveryCreatedDate = new Date(firstDelivery.createdAt);
 
         // Order to ship time
-        const orderToShip = (shipmentDate.getTime() - orderDate.getTime()) / (1000 * 60 * 60);
+        const orderToShip = (deliveryCreatedDate.getTime() - orderDate.getTime()) / (1000 * 60 * 60);
         orderToShipTimes.push(orderToShip);
 
         // Check if delivered
-        if (firstShipment.deliveredAt) {
-          const deliveredDate = new Date(firstShipment.deliveredAt);
+        if (firstDelivery.deliveryDate) {
+          const deliveredDate = new Date(firstDelivery.deliveryDate);
           const deliveryDays =
             (deliveredDate.getTime() - orderDate.getTime()) / (1000 * 60 * 60 * 24);
           deliveryTimes.push(deliveryDays);
@@ -105,13 +105,13 @@ export async function GET(request: NextRequest) {
           }
         }
       } else {
-        // No shipment yet
+        // No delivery yet
         pendingOrders++;
 
         // Check order aging for SLA breach
         const orderAge = (now.getTime() - orderDate.getTime()) / (1000 * 60 * 60);
         if (orderAge > 24) {
-          // More than 24 hours without shipment
+          // More than 24 hours without delivery
           slaBreaches++;
         }
       }
@@ -135,12 +135,12 @@ export async function GET(request: NextRequest) {
       const current = channelSLA.get(channel) || { total: 0, onTime: 0 };
       current.total++;
 
-      if (order.shipments.length > 0 && order.shipments[0].deliveredAt) {
-        const deliveredDate = new Date(order.shipments[0].deliveredAt);
-        const expectedDate = order.expectedDeliveryDate
-          ? new Date(order.expectedDeliveryDate)
+      if (order.Delivery.length > 0 && order.Delivery[0].deliveryDate) {
+        const deliveredDate = new Date(order.Delivery[0].deliveryDate);
+        const promisedDate = order.promisedDate
+          ? new Date(order.promisedDate)
           : null;
-        if (expectedDate && deliveredDate <= expectedDate) {
+        if (promisedDate && deliveredDate <= promisedDate) {
           current.onTime++;
         }
       }
@@ -158,7 +158,7 @@ export async function GET(request: NextRequest) {
     // Fill rate calculation
     const orderItems = await prisma.orderItem.findMany({
       where: {
-        order: {
+        Order: {
           createdAt: { gte: startDate },
         },
       },

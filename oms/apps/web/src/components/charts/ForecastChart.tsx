@@ -134,14 +134,14 @@ export function ForecastChart({
             stroke="#9ca3af"
           />
           <Tooltip
-            formatter={(value: number, name: string) => {
+            formatter={(value: number | undefined, name: string | undefined) => {
               const labels: Record<string, string> = {
                 actual: "Historical",
                 forecast: "Forecast",
                 highEstimate: "High Estimate",
                 lowEstimate: "Low Estimate",
               };
-              return [valueFormatter(value), labels[name] || name];
+              return [valueFormatter(value ?? 0), labels[name ?? ""] || name || ""];
             }}
             labelFormatter={(label) => {
               const date = new Date(label);

@@ -1,15 +1,15 @@
-import { prisma, ReportFrequency, Prisma } from "@oms/database";
+import { prisma, ReportFrequency, ReportFormat, Prisma } from "@oms/database";
 
 export interface ScheduledReportConfig {
   name: string;
   reportType: string;
   frequency: ReportFrequency;
   recipients: string[];
-  filters?: Record<string, string>;
-  format?: "excel" | "csv" | "pdf";
+  reportConfig?: Record<string, unknown>;
+  format?: ReportFormat;
   dayOfWeek?: number; // 0-6 for weekly
   dayOfMonth?: number; // 1-31 for monthly
-  hourOfDay?: number; // 0-23
+  time?: string; // HH:mm format, e.g. "08:00"
 }
 
 export interface ReportExecutionResult {
@@ -26,7 +26,7 @@ export class ReportSchedulerService {
    */
   async createScheduledReport(
     companyId: string,
-    createdBy: string,
+    createdById: string,
     config: ScheduledReportConfig
   ) {
     return prisma.scheduledReport.create({
@@ -36,13 +36,13 @@ export class ReportSchedulerService {
         reportType: config.reportType,
         frequency: config.frequency,
         recipients: config.recipients,
-        filters: (config.filters || {}) as Prisma.InputJsonValue,
-        format: config.format || "excel",
+        reportConfig: (config.reportConfig || {}) as Prisma.InputJsonValue,
+        format: config.format || "EXCEL",
         dayOfWeek: config.dayOfWeek,
         dayOfMonth: config.dayOfMonth,
-        hourOfDay: config.hourOfDay ?? 8, // Default to 8 AM
+        time: config.time || "08:00",
         isActive: true,
-        createdBy,
+        createdById,
       },
     });
   }
@@ -60,11 +60,11 @@ export class ReportSchedulerService {
     if (updates.reportType !== undefined) data.reportType = updates.reportType;
     if (updates.frequency !== undefined) data.frequency = updates.frequency;
     if (updates.recipients !== undefined) data.recipients = updates.recipients;
-    if (updates.filters !== undefined) data.filters = updates.filters as Prisma.InputJsonValue;
+    if (updates.reportConfig !== undefined) data.reportConfig = updates.reportConfig as Prisma.InputJsonValue;
     if (updates.format !== undefined) data.format = updates.format;
     if (updates.dayOfWeek !== undefined) data.dayOfWeek = updates.dayOfWeek;
     if (updates.dayOfMonth !== undefined) data.dayOfMonth = updates.dayOfMonth;
-    if (updates.hourOfDay !== undefined) data.hourOfDay = updates.hourOfDay;
+    if (updates.time !== undefined) data.time = updates.time;
     if (updates.isActive !== undefined) data.isActive = updates.isActive;
 
     return prisma.scheduledReport.update({
@@ -84,11 +84,11 @@ export class ReportSchedulerService {
       reportType: string;
       frequency: ReportFrequency;
       recipients: string[];
-      filters: Record<string, string>;
-      format: string;
+      reportConfig: Record<string, unknown>;
+      format: ReportFormat;
       dayOfWeek: number | null;
       dayOfMonth: number | null;
-      hourOfDay: number;
+      time: string;
       lastRunAt: Date | null;
     }>
   > {
@@ -115,8 +115,9 @@ export class ReportSchedulerService {
         }
       }
 
-      // Check hour
-      if (report.hourOfDay !== currentHour) {
+      // Parse time string (HH:mm) to get hour
+      const reportHour = parseInt(report.time.split(":")[0], 10);
+      if (reportHour !== currentHour) {
         return false;
       }
 
@@ -147,11 +148,11 @@ export class ReportSchedulerService {
       reportType: report.reportType,
       frequency: report.frequency,
       recipients: report.recipients as string[],
-      filters: (report.filters as Record<string, string>) || {},
-      format: report.format || "excel",
+      reportConfig: (report.reportConfig as Record<string, unknown>) || {},
+      format: report.format,
       dayOfWeek: report.dayOfWeek,
       dayOfMonth: report.dayOfMonth,
-      hourOfDay: report.hourOfDay,
+      time: report.time,
       lastRunAt: report.lastRunAt,
     }));
   }
@@ -168,18 +169,22 @@ export class ReportSchedulerService {
       data: {
         scheduledReportId: reportId,
         status: result.success ? "COMPLETED" : "FAILED",
+        startedAt: new Date(),
         fileUrl: result.fileUrl,
         error: result.error,
         completedAt: result.success ? new Date() : undefined,
       },
     });
 
+    // Calculate next run time
+    const nextRunAt = await this.calculateNextRun(reportId);
+
     // Update last run time on scheduled report
     await prisma.scheduledReport.update({
       where: { id: reportId },
       data: {
         lastRunAt: new Date(),
-        nextRunAt: this.calculateNextRun(reportId),
+        nextRunAt,
       },
     });
 
@@ -200,7 +205,9 @@ export class ReportSchedulerService {
 
     const now = new Date();
     const next = new Date(now);
-    next.setHours(report.hourOfDay, 0, 0, 0);
+    // Parse time string (HH:mm) to set hours and minutes
+    const [hours, minutes] = report.time.split(":").map(Number);
+    next.setHours(hours, minutes || 0, 0, 0);
 
     switch (report.frequency) {
       case "DAILY":
@@ -238,7 +245,7 @@ export class ReportSchedulerService {
   ) {
     return prisma.reportExecution.findMany({
       where: { scheduledReportId: reportId },
-      orderBy: { createdAt: "desc" },
+      orderBy: { startedAt: "desc" },
       take: limit,
     });
   }
@@ -252,7 +259,7 @@ export class ReportSchedulerService {
       orderBy: { createdAt: "desc" },
       include: {
         _count: {
-          select: { executions: true },
+          select: { ReportExecution: true },
         },
       },
     });

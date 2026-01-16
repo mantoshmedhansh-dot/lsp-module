@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@oms/database";
 import { auth } from "@/lib/auth";
 
-// GET /api/client/inventory/inbound - Get inbound inventory/purchase orders
+// GET /api/client/inventory/inbound - Get inbound inventory
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();
@@ -21,58 +21,58 @@ export async function GET(request: NextRequest) {
     // Get client's company
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      include: { company: true },
+      include: { Company: true },
     });
 
     if (!user?.companyId) {
       return NextResponse.json({ inboundOrders: [], total: 0 });
     }
 
-    // Build where clause for GRNs
+    // Build where clause for Inbounds
     const where: Record<string, unknown> = {
-      companyId: user.companyId,
+      Location: { companyId: user.companyId },
     };
 
     if (search) {
-      where.grnNo = { contains: search, mode: "insensitive" };
+      where.OR = [
+        { inboundNo: { contains: search, mode: "insensitive" } },
+        { grnNo: { contains: search, mode: "insensitive" } },
+      ];
     }
 
     if (status && status !== "all") {
       where.status = status.toUpperCase();
     }
 
-    const [grns, total] = await Promise.all([
-      prisma.gRN.findMany({
+    const [inbounds, total] = await Promise.all([
+      prisma.inbound.findMany({
         where,
         include: {
-          location: {
+          Location: {
             select: { id: true, name: true, code: true },
           },
-          vendor: {
-            select: { id: true, name: true },
+          User: {
+            select: { name: true },
           },
-          items: {
+          InboundItem: {
             include: {
-              sku: {
+              SKU: {
                 select: { id: true, code: true, name: true },
               },
             },
-          },
-          createdByUser: {
-            select: { name: true },
           },
         },
         orderBy: { createdAt: "desc" },
         skip,
         take: limit,
       }),
-      prisma.gRN.count({ where }),
+      prisma.inbound.count({ where }),
     ]);
 
     // Get status counts
-    const statusCounts = await prisma.gRN.groupBy({
+    const statusCounts = await prisma.inbound.groupBy({
       by: ["status"],
-      where: { companyId: user.companyId },
+      where: { Location: { companyId: user.companyId } },
       _count: { _all: true },
     });
 
@@ -85,25 +85,27 @@ export async function GET(request: NextRequest) {
     );
 
     return NextResponse.json({
-      inboundOrders: grns.map((grn) => ({
-        id: grn.id,
-        grnNo: grn.grnNo,
-        status: grn.status,
-        vendor: grn.vendor,
-        location: grn.location,
-        totalItems: grn.items.length,
-        totalUnits: grn.items.reduce((sum, item) => sum + item.receivedQuantity, 0),
-        expectedUnits: grn.items.reduce((sum, item) => sum + item.expectedQuantity, 0),
-        receivedAt: grn.receivedAt?.toISOString().split("T")[0],
-        createdAt: grn.createdAt.toISOString().split("T")[0],
-        createdBy: grn.createdByUser?.name,
-        items: grn.items.map((item) => ({
+      inboundOrders: inbounds.map((inbound) => ({
+        id: inbound.id,
+        inboundNo: inbound.inboundNo,
+        grnNo: inbound.grnNo,
+        status: inbound.status,
+        type: inbound.type,
+        location: inbound.Location,
+        totalItems: inbound.InboundItem.length,
+        totalUnits: inbound.InboundItem.reduce((sum, item) => sum + item.receivedQty, 0),
+        expectedUnits: inbound.InboundItem.reduce((sum, item) => sum + (item.expectedQty || 0), 0),
+        completedAt: inbound.completedAt?.toISOString().split("T")[0],
+        createdAt: inbound.createdAt.toISOString().split("T")[0],
+        createdBy: inbound.User?.name,
+        items: inbound.InboundItem.map((item) => ({
           id: item.id,
-          sku: item.sku,
-          expectedQuantity: item.expectedQuantity,
-          receivedQuantity: item.receivedQuantity,
-          damagedQuantity: item.damagedQuantity,
-          status: item.status,
+          sku: item.SKU,
+          expectedQuantity: item.expectedQty,
+          receivedQuantity: item.receivedQty,
+          acceptedQuantity: item.acceptedQty,
+          rejectedQuantity: item.rejectedQty,
+          qcStatus: item.qcStatus,
         })),
       })),
       total,
@@ -112,9 +114,9 @@ export async function GET(request: NextRequest) {
       totalPages: Math.ceil(total / limit),
       statusCounts: {
         all: total,
-        draft: statusCountMap.draft || 0,
         pending: statusCountMap.pending || 0,
         in_progress: statusCountMap.in_progress || 0,
+        qc_pending: statusCountMap.qc_pending || 0,
         completed: statusCountMap.completed || 0,
         cancelled: statusCountMap.cancelled || 0,
       },

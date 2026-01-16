@@ -35,7 +35,7 @@ export interface AreaChartProps {
   showGrid?: boolean;
   showLegend?: boolean;
   yAxisFormatter?: (value: number) => string;
-  tooltipFormatter?: (value: number, name: string) => [string, string];
+  tooltipFormatter?: (value: number | undefined, name: string | undefined) => [string, string];
 }
 
 const COLORS = [

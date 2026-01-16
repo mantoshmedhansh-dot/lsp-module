@@ -35,7 +35,7 @@ export interface LineChartProps {
   showGrid?: boolean;
   showLegend?: boolean;
   yAxisFormatter?: (value: number) => string;
-  tooltipFormatter?: (value: number, name: string) => [string, string];
+  tooltipFormatter?: (value: number | undefined, name: string) => [string, string];
 }
 
 const COLORS = {
@@ -86,7 +86,7 @@ export function LineChart({
             borderRadius: "8px",
             fontSize: "12px",
           }}
-          formatter={tooltipFormatter}
+          formatter={tooltipFormatter as never}
         />
         {showLegend && <Legend />}
         {lines.map((line, index) => (

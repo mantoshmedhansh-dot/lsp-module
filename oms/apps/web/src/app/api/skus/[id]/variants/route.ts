@@ -29,7 +29,7 @@ export async function GET(
     const variants = await prisma.sKUVariant.findMany({
       where: { parentSkuId },
       include: {
-        variantSku: {
+        SKU_SKUVariant_variantSkuIdToSKU: {
           select: {
             id: true,
             code: true,
@@ -39,11 +39,11 @@ export async function GET(
             isActive: true,
           },
         },
-        attributeValues: {
+        SKUVariantValue: {
           include: {
-            attributeValue: {
+            VariantAttributeValue: {
               include: {
-                attribute: {
+                VariantAttribute: {
                   select: { id: true, code: true, name: true, type: true },
                 },
               },
@@ -56,15 +56,15 @@ export async function GET(
     // Transform data for easier consumption
     const transformedVariants = variants.map((v) => ({
       id: v.id,
-      variantSku: v.variantSku,
-      attributes: v.attributeValues.map((av) => ({
-        attributeId: av.attributeValue.attribute.id,
-        attributeCode: av.attributeValue.attribute.code,
-        attributeName: av.attributeValue.attribute.name,
-        attributeType: av.attributeValue.attribute.type,
-        valueId: av.attributeValue.id,
-        value: av.attributeValue.value,
-        displayName: av.attributeValue.displayName,
+      variantSku: v.SKU_SKUVariant_variantSkuIdToSKU,
+      attributes: v.SKUVariantValue.map((av) => ({
+        attributeId: av.VariantAttributeValue.VariantAttribute.id,
+        attributeCode: av.VariantAttributeValue.VariantAttribute.code,
+        attributeName: av.VariantAttributeValue.VariantAttribute.name,
+        attributeType: av.VariantAttributeValue.VariantAttribute.type,
+        valueId: av.VariantAttributeValue.id,
+        value: av.VariantAttributeValue.value,
+        displayName: av.VariantAttributeValue.displayName,
       })),
     }));
 
@@ -173,14 +173,14 @@ export async function POST(
     const completeVariant = await prisma.sKUVariant.findUnique({
       where: { id: variant.id },
       include: {
-        variantSku: {
+        SKU_SKUVariant_variantSkuIdToSKU: {
           select: { id: true, code: true, name: true },
         },
-        attributeValues: {
+        SKUVariantValue: {
           include: {
-            attributeValue: {
+            VariantAttributeValue: {
               include: {
-                attribute: true,
+                VariantAttribute: true,
               },
             },
           },

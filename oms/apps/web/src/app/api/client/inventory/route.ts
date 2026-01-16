@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
         quantity: true,
         reservedQty: true,
       },
-      where: companyId ? { location: { companyId } } : {},
+      where: companyId ? { Location: { companyId } } : {},
     });
 
     const totalSaleableQty =
@@ -55,8 +55,8 @@ export async function GET(request: NextRequest) {
     const damagedInventory = await prisma.inventory.aggregate({
       _sum: { quantity: true },
       where: {
-        bin: { zone: { type: "DAMAGED" } },
-        ...(companyId ? { location: { companyId } } : {}),
+        Bin: { Zone: { type: "DAMAGED" } },
+        ...(companyId ? { Location: { companyId } } : {}),
       },
     });
     const totalDamagedQty = damagedInventory._sum.quantity || 0;
@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
       by: ["skuId"],
       where: {
         quantity: { gt: 0 },
-        ...(companyId ? { location: { companyId } } : {}),
+        ...(companyId ? { Location: { companyId } } : {}),
       },
     });
     const distinctSkuInStock = skusInStock.length;
@@ -82,10 +82,10 @@ export async function GET(request: NextRequest) {
       where: {
         createdAt: { gte: startDate },
         status: "COMPLETED",
-        ...(companyId ? { location: { companyId } } : {}),
+        ...(companyId ? { Location: { companyId } } : {}),
       },
       include: {
-        items: true,
+        InboundItem: true,
       },
     });
 
@@ -101,7 +101,7 @@ export async function GET(request: NextRequest) {
         skuSet: new Set<string>(),
       };
 
-      inbound.items.forEach((item) => {
+      inbound.InboundItem.forEach((item) => {
         existing.quantity += item.receivedQty;
         existing.skuSet.add(item.skuId);
       });
@@ -124,7 +124,7 @@ export async function GET(request: NextRequest) {
         reorderLevel: { not: null },
       },
       include: {
-        inventory: {
+        Inventory: {
           select: { quantity: true, reservedQty: true },
         },
       },
@@ -132,7 +132,7 @@ export async function GET(request: NextRequest) {
 
     const lowStockSkus = skusWithInventory
       .map((sku) => {
-        const totalQty = sku.inventory.reduce(
+        const totalQty = sku.Inventory.reduce(
           (sum, inv) => sum + inv.quantity - inv.reservedQty,
           0
         );
@@ -154,7 +154,7 @@ export async function GET(request: NextRequest) {
       _count: { skuId: true },
       where: {
         quantity: { gt: 0 },
-        ...(companyId ? { location: { companyId } } : {}),
+        ...(companyId ? { Location: { companyId } } : {}),
       },
     });
 

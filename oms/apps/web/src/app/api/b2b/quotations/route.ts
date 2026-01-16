@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
         skip,
         take: limit,
         include: {
-          items: { select: { id: true } },
+          QuotationItem: { select: { id: true } },
         },
       }),
       prisma.quotation.count({ where }),
@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
           quotationNo: quote.quotationNo,
           status: quote.status,
           totalAmount: Number(quote.totalAmount),
-          itemCount: quote.items.length,
+          itemCount: quote.QuotationItem.length,
           createdAt: quote.createdAt.toISOString().split("T")[0],
           expiresAt: quote.validUntil.toISOString().split("T")[0],
           validDays: daysUntilExpiry,
@@ -159,7 +159,7 @@ export async function POST(request: NextRequest) {
 
       const listPrice = Number(sku.mrp || sku.sellingPrice);
       const unitPrice = Number(sku.sellingPrice);
-      const itemTaxPercent = Number(sku.taxPercent || 18);
+      const itemTaxPercent = Number(sku.taxRate || 18);
       const lineTotal = unitPrice * item.quantity;
       const lineTax = lineTotal * (itemTaxPercent / 100);
 
@@ -198,17 +198,17 @@ export async function POST(request: NextRequest) {
         customerId: customer.id,
         quotationNo,
         status: "PENDING_APPROVAL",
-        shippingAddress: customer.shippingAddresses[0] || customer.billingAddress,
-        billingAddress: customer.billingAddress,
+        shippingAddress: (customer.shippingAddresses[0] || customer.billingAddress) as object,
+        billingAddress: customer.billingAddress as object,
         subtotal,
         taxAmount,
         totalAmount,
         validUntil,
         remarks: notes,
         createdById: session.user.id || "system",
-        items: {
+        QuotationItem: {
           create: quotationItems.map((item) => ({
-            sku: { connect: { id: item.skuId } },
+            SKU: { connect: { id: item.skuId } },
             skuCode: item.skuCode,
             skuName: item.skuName,
             quantity: item.quantity,
@@ -221,7 +221,7 @@ export async function POST(request: NextRequest) {
         },
       },
       include: {
-        items: true,
+        QuotationItem: true,
       },
     });
 
@@ -231,7 +231,7 @@ export async function POST(request: NextRequest) {
         id: quotation.id,
         quotationNo: quotation.quotationNo,
         totalAmount: Number(quotation.totalAmount),
-        itemCount: quotation.items.length,
+        itemCount: quotation.QuotationItem.length,
         validUntil: quotation.validUntil.toISOString().split("T")[0],
       },
     });

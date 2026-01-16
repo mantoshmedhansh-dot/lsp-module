@@ -20,17 +20,17 @@ export async function GET(
     const order = await prisma.order.findUnique({
       where: { id },
       include: {
-        items: {
+        OrderItem: {
           include: {
-            sku: true,
+            SKU: true,
           },
         },
-        location: {
+        Location: {
           include: {
-            company: true,
+            Company: true,
           },
         },
-        deliveries: {
+        Delivery: {
           take: 1,
           orderBy: { createdAt: "desc" },
         },
@@ -42,12 +42,39 @@ export async function GET(
     }
 
     // Generate invoice number if not exists
-    const delivery = order.deliveries[0];
+    const delivery = order.Delivery[0];
     const invoiceNo = delivery?.invoiceNo || `INV-${order.orderNo}`;
     const invoiceDate = delivery?.invoiceDate || new Date();
 
+    // Prepare order data for PDF generation
+    const orderDataForPdf = {
+      ...order,
+      items: order.OrderItem.map(item => ({
+        sku: { code: item.SKU.code, name: item.SKU.name, hsn: item.SKU.hsn },
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        taxAmount: item.taxAmount,
+        discount: item.discount,
+        totalPrice: item.totalPrice,
+      })),
+      location: {
+        company: {
+          name: order.Location.Company.name,
+          legalName: order.Location.Company.legalName,
+          address: order.Location.Company.address,
+          gst: order.Location.Company.gst,
+          phone: order.Location.Company.phone,
+          email: order.Location.Company.email,
+        },
+      },
+      deliveries: order.Delivery.map(d => ({
+        invoiceNo: d.invoiceNo,
+        awbNo: d.awbNo,
+      })),
+    };
+
     // Generate PDF
-    const pdfBuffer = await generateInvoicePDF(order, invoiceNo, invoiceDate);
+    const pdfBuffer = await generateInvoicePDF(orderDataForPdf as Parameters<typeof generateInvoicePDF>[0], invoiceNo, invoiceDate);
 
     // Return PDF - convert Buffer to Uint8Array for NextResponse compatibility
     return new NextResponse(new Uint8Array(pdfBuffer), {

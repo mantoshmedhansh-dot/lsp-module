@@ -34,7 +34,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           const user = await prisma.user.findUnique({
             where: { email },
             include: {
-              company: {
+              Company: {
                 select: {
                   id: true,
                   code: true,
@@ -70,8 +70,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             name: user.name,
             role: user.role,
             companyId: user.companyId,
-            companyName: user.company?.name ?? null,
-            companyCode: user.company?.code ?? null,
+            companyName: user.Company?.name ?? null,
+            companyCode: user.Company?.code ?? null,
             locationAccess: user.locationAccess,
           };
         } catch (error) {
@@ -88,7 +88,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     async jwt({ token, user, trigger }) {
       // On sign in, add user data to token
-      if (user) {
+      if (user && user.id) {
         token.id = user.id;
         token.role = user.role;
         token.companyId = user.companyId;

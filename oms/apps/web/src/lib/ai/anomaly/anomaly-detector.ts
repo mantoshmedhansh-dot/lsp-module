@@ -79,8 +79,8 @@ export class AnomalyDetector {
     const order = await prisma.order.findUnique({
       where: { id: orderId },
       include: {
-        items: { include: { sku: true } },
-        location: true,
+        OrderItem: { include: { SKU: true } },
+        Location: true,
       },
     });
 
@@ -255,17 +255,25 @@ export class AnomalyDetector {
     const orderValue = Number(order.totalAmount);
 
     // Get average order value
+    // Calculate average order value
     const avgResult = await prisma.order.aggregate({
       where: {
         status: { notIn: ['CANCELLED'] },
         createdAt: { gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000) },
       },
       _avg: { totalAmount: true },
-      _stddev: { totalAmount: true },
     });
 
     const avgValue = Number(avgResult._avg.totalAmount) || 1000;
-    const stdDev = Number(avgResult._stddev.totalAmount) || 500;
+
+    // Calculate standard deviation manually using raw query (Prisma doesn't support _stddev)
+    const stdDevResult = await prisma.$queryRaw<[{ stddev: number }]>`
+      SELECT COALESCE(STDDEV("totalAmount"), 500) as stddev
+      FROM "Order"
+      WHERE status NOT IN ('CANCELLED')
+        AND "createdAt" >= NOW() - INTERVAL '90 days'
+    `;
+    const stdDev = Number(stdDevResult[0]?.stddev) || 500;
 
     let score = 0;
 
@@ -428,7 +436,7 @@ export class AnomalyDetector {
   private async calculatePatternScore(order: any): Promise<number> {
     let score = 0;
 
-    const items = order.items || [];
+    const items = order.OrderItem || [];
 
     // Check for unusual quantities
     const maxQuantity = Math.max(...items.map((i: any) => i.quantity), 0);

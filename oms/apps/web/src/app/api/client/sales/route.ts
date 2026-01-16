@@ -42,12 +42,12 @@ export async function GET(request: NextRequest) {
     const orders = await prisma.order.findMany({
       where: {
         orderDate: { gte: startDate },
-        ...(companyId ? { location: { companyId } } : {}),
+        ...(companyId ? { Location: { companyId } } : {}),
       },
       include: {
-        items: {
+        OrderItem: {
           include: {
-            sku: { select: { code: true, name: true, category: true } },
+            SKU: { select: { code: true, name: true, category: true } },
           },
         },
       },
@@ -55,9 +55,9 @@ export async function GET(request: NextRequest) {
 
     // Calculate summary
     const totalOrders = orders.length;
-    const totalOrderLines = orders.reduce((sum, o) => sum + o.items.length, 0);
+    const totalOrderLines = orders.reduce((sum, o) => sum + o.OrderItem.length, 0);
     const totalOrderQuantity = orders.reduce(
-      (sum, o) => sum + o.items.reduce((isum, i) => isum + i.quantity, 0),
+      (sum, o) => sum + o.OrderItem.reduce((isum, i) => isum + i.quantity, 0),
       0
     );
     const totalOrderAmount = orders.reduce(
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
 
     // Distinct SKUs sold
     const skuIds = new Set<string>();
-    orders.forEach((o) => o.items.forEach((i) => skuIds.add(i.skuId)));
+    orders.forEach((o) => o.OrderItem.forEach((i) => skuIds.add(i.skuId)));
     const distinctSkuSold = skuIds.size;
 
     // Orders by date
@@ -104,11 +104,11 @@ export async function GET(request: NextRequest) {
       { skuCode: string; skuName: string; quantity: number; amount: number }
     >();
     orders.forEach((o) => {
-      o.items.forEach((item) => {
+      o.OrderItem.forEach((item) => {
         const key = item.skuId;
         const existing = skuSalesMap.get(key) || {
-          skuCode: item.sku.code,
-          skuName: item.sku.name,
+          skuCode: item.SKU.code,
+          skuName: item.SKU.name,
           quantity: 0,
           amount: 0,
         };
@@ -129,8 +129,8 @@ export async function GET(request: NextRequest) {
       { category: string; quantity: number; amount: number }
     >();
     orders.forEach((o) => {
-      o.items.forEach((item) => {
-        const category = item.sku.category || "Uncategorized";
+      o.OrderItem.forEach((item) => {
+        const category = item.SKU.category || "Uncategorized";
         const existing = categorySalesMap.get(category) || {
           category,
           quantity: 0,

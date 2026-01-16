@@ -37,11 +37,11 @@ export async function GET(request: NextRequest) {
         const orders = await prisma.order.findMany({
           where: {
             orderDate: { gte: startDate, lte: endDate },
-            ...(companyId ? { location: { companyId } } : {}),
+            ...(companyId ? { Location: { companyId } } : {}),
           },
           include: {
-            items: { include: { sku: true } },
-            location: true,
+            OrderItem: { include: { SKU: true } },
+            Location: true,
           },
           orderBy: { orderDate: "desc" },
         });
@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
           o.taxAmount,
           o.discount,
           o.totalAmount,
-          o.location.name,
+          o.Location.name,
         ]);
 
         csvContent = [
@@ -89,10 +89,10 @@ export async function GET(request: NextRequest) {
         const orders = await prisma.order.findMany({
           where: {
             orderDate: { gte: startDate, lte: endDate },
-            ...(companyId ? { location: { companyId } } : {}),
+            ...(companyId ? { Location: { companyId } } : {}),
           },
           include: {
-            items: { include: { sku: true } },
+            OrderItem: { include: { SKU: true } },
           },
         });
 
@@ -108,11 +108,11 @@ export async function GET(request: NextRequest) {
         >();
 
         orders.forEach((o) => {
-          o.items.forEach((item) => {
+          o.OrderItem.forEach((item) => {
             const existing = skuSales.get(item.skuId) || {
-              code: item.sku.code,
-              name: item.sku.name,
-              category: item.sku.category || "",
+              code: item.SKU.code,
+              name: item.SKU.name,
+              category: item.SKU.category || "",
               qty: 0,
               amount: 0,
             };
@@ -144,12 +144,12 @@ export async function GET(request: NextRequest) {
         const inventory = await prisma.inventory.findMany({
           where: {
             quantity: { gt: 0 },
-            ...(companyId ? { location: { companyId } } : {}),
+            ...(companyId ? { Location: { companyId } } : {}),
           },
           include: {
-            sku: true,
-            bin: { include: { zone: true } },
-            location: true,
+            SKU: true,
+            Bin: { include: { Zone: true } },
+            Location: true,
           },
         });
 
@@ -167,11 +167,11 @@ export async function GET(request: NextRequest) {
         ];
 
         const rows = inventory.map((inv) => [
-          inv.sku.code,
-          inv.sku.name,
-          inv.location.name,
-          inv.bin?.zone?.name || "",
-          inv.bin?.code || "",
+          inv.SKU.code,
+          inv.SKU.name,
+          inv.Location.name,
+          inv.Bin?.Zone?.name || "",
+          inv.Bin?.code || "",
           inv.quantity,
           inv.reservedQty,
           inv.quantity - inv.reservedQty,
@@ -194,11 +194,11 @@ export async function GET(request: NextRequest) {
         const orders = await prisma.order.findMany({
           where: {
             orderDate: { gte: startDate, lte: endDate },
-            ...(companyId ? { location: { companyId } } : {}),
+            ...(companyId ? { Location: { companyId } } : {}),
           },
           include: {
-            deliveries: { include: { transporter: true } },
-            location: true,
+            Delivery: { include: { Transporter: true } },
+            Location: true,
           },
           orderBy: { orderDate: "desc" },
         });
@@ -216,15 +216,15 @@ export async function GET(request: NextRequest) {
         ];
 
         const rows = orders.map((o) => {
-          const delivery = o.deliveries[0];
+          const delivery = o.Delivery[0];
           return [
             o.orderNo,
             new Date(o.orderDate).toISOString().split("T")[0],
             o.channel,
             o.status,
-            o.location.name,
+            o.Location.name,
             delivery?.awbNo || "",
-            delivery?.transporter?.name || "",
+            delivery?.Transporter?.name || "",
             delivery?.shipDate
               ? new Date(delivery.shipDate).toISOString().split("T")[0]
               : "",
@@ -249,17 +249,17 @@ export async function GET(request: NextRequest) {
         const returns = await prisma.return.findMany({
           where: {
             initiatedAt: { gte: startDate, lte: endDate },
-            ...(companyId ? { order: { location: { companyId } } } : {}),
+            ...(companyId ? { Order_Return_orderIdToOrder: { Location: { companyId } } } : {}),
           },
           include: {
-            items: true,
-            order: true,
+            ReturnItem: true,
+            Order_Return_orderIdToOrder: true,
           },
           orderBy: { initiatedAt: "desc" },
         });
 
         // Fetch SKU data for return items
-        const returnSkuIds = [...new Set(returns.flatMap((r) => r.items.map((i) => i.skuId)))];
+        const returnSkuIds = [...new Set(returns.flatMap((r) => r.ReturnItem.map((i) => i.skuId)))];
         const returnSkus = await prisma.sKU.findMany({
           where: { id: { in: returnSkuIds } },
           select: { id: true, code: true },
@@ -280,13 +280,13 @@ export async function GET(request: NextRequest) {
 
         const rows = returns.map((r) => [
           r.returnNo,
-          r.order?.orderNo || "",
+          r.Order_Return_orderIdToOrder?.orderNo || "",
           new Date(r.initiatedAt).toISOString().split("T")[0],
           r.type,
           r.status,
           r.reason || "",
-          r.items.map((i) => returnSkuMap.get(i.skuId) || i.skuId).join(";"),
-          r.items.reduce((sum, i) => sum + i.quantity, 0),
+          r.ReturnItem.map((i) => returnSkuMap.get(i.skuId) || i.skuId).join(";"),
+          r.ReturnItem.reduce((sum, i) => sum + i.quantity, 0),
           r.refundAmount || 0,
         ]);
 
@@ -306,17 +306,17 @@ export async function GET(request: NextRequest) {
         const deliveries = await prisma.delivery.findMany({
           where: {
             shipDate: { gte: startDate, lte: endDate },
-            ...(companyId ? { order: { location: { companyId } } } : {}),
+            ...(companyId ? { Order: { Location: { companyId } } } : {}),
           },
           include: {
-            order: {
+            Order: {
               include: {
-                location: true,
-                items: { include: { sku: true } },
+                Location: true,
+                OrderItem: { include: { SKU: true } },
               },
             },
-            transporter: true,
-            manifest: true,
+            Transporter: true,
+            Manifest: true,
           },
           orderBy: { shipDate: "desc" },
         });
@@ -340,22 +340,22 @@ export async function GET(request: NextRequest) {
         ];
 
         const rows = deliveries.map((d) => {
-          const shippingAddr = d.order.shippingAddress as Record<string, string> | null;
+          const shippingAddr = d.Order.shippingAddress as Record<string, string> | null;
           return [
             d.awbNo || "",
-            d.order.orderNo,
+            d.Order.orderNo,
             d.shipDate ? new Date(d.shipDate).toISOString().split("T")[0] : "",
-            d.transporter?.name || "",
-            d.manifest?.manifestNo || "",
-            d.manifest?.vehicleNo || "",
-            d.manifest?.driverName || "",
+            d.Transporter?.name || "",
+            d.Manifest?.manifestNo || "",
+            d.Manifest?.vehicleNo || "",
+            d.Manifest?.driverName || "",
             d.status,
-            d.order.location.name,
-            d.order.customerName,
+            d.Order.Location.name,
+            d.Order.customerName,
             shippingAddr?.city || "",
             shippingAddr?.pincode || "",
             d.weight || "",
-            d.order.paymentMode === "COD" ? d.order.totalAmount : 0,
+            d.Order.paymentMode === "COD" ? d.Order.totalAmount : 0,
             d.deliveryDate ? new Date(d.deliveryDate).toISOString().split("T")[0] : "",
           ];
         });
@@ -377,14 +377,14 @@ export async function GET(request: NextRequest) {
           where: {
             type: "RTO",
             initiatedAt: { gte: startDate, lte: endDate },
-            ...(companyId ? { order: { location: { companyId } } } : {}),
+            ...(companyId ? { Order_Return_orderIdToOrder: { Location: { companyId } } } : {}),
           },
           include: {
-            items: true,
-            order: {
+            ReturnItem: true,
+            Order_Return_orderIdToOrder: {
               include: {
-                location: true,
-                deliveries: { include: { transporter: true } },
+                Location: true,
+                Delivery: { include: { Transporter: true } },
               },
             },
           },
@@ -392,7 +392,7 @@ export async function GET(request: NextRequest) {
         });
 
         // Fetch SKU data for RTO items
-        const rtoSkuIds = [...new Set(rtoReturns.flatMap((r) => r.items.map((i) => i.skuId)))];
+        const rtoSkuIds = [...new Set(rtoReturns.flatMap((r) => r.ReturnItem.map((i) => i.skuId)))];
         const rtoSkus = await prisma.sKU.findMany({
           where: { id: { in: rtoSkuIds } },
           select: { id: true, code: true, name: true },
@@ -417,8 +417,8 @@ export async function GET(request: NextRequest) {
         ];
 
         const rows = rtoReturns.map((r) => {
-          const delivery = r.order?.deliveries[0];
-          const orderDate = r.order ? new Date(r.order.orderDate) : null;
+          const delivery = r.Order_Return_orderIdToOrder?.Delivery[0];
+          const orderDate = r.Order_Return_orderIdToOrder ? new Date(r.Order_Return_orderIdToOrder.orderDate) : null;
           const rtoDate = new Date(r.initiatedAt);
           const daysToRto = orderDate
             ? Math.ceil((rtoDate.getTime() - orderDate.getTime()) / (1000 * 60 * 60 * 24))
@@ -426,18 +426,18 @@ export async function GET(request: NextRequest) {
 
           return [
             r.returnNo,
-            r.order?.orderNo || "",
+            r.Order_Return_orderIdToOrder?.orderNo || "",
             orderDate ? orderDate.toISOString().split("T")[0] : "",
             rtoDate.toISOString().split("T")[0],
-            r.order?.channel || "",
-            r.order?.location?.name || "",
-            delivery?.transporter?.name || "",
+            r.Order_Return_orderIdToOrder?.channel || "",
+            r.Order_Return_orderIdToOrder?.Location?.name || "",
+            delivery?.Transporter?.name || "",
             delivery?.awbNo || "",
             r.reason || "",
             r.status,
-            r.items.map((i) => rtoSkuMap.get(i.skuId)?.code || i.skuId).join(";"),
-            r.items.reduce((sum, i) => sum + i.quantity, 0),
-            r.order?.totalAmount || 0,
+            r.ReturnItem.map((i) => rtoSkuMap.get(i.skuId)?.code || i.skuId).join(";"),
+            r.ReturnItem.reduce((sum, i) => sum + i.quantity, 0),
+            r.Order_Return_orderIdToOrder?.totalAmount || 0,
             daysToRto,
           ];
         });
@@ -458,12 +458,12 @@ export async function GET(request: NextRequest) {
         const orders = await prisma.order.findMany({
           where: {
             orderDate: { gte: startDate, lte: endDate },
-            ...(companyId ? { location: { companyId } } : {}),
+            ...(companyId ? { Location: { companyId } } : {}),
           },
           include: {
-            location: true,
-            deliveries: { include: { transporter: true } },
-            items: true,
+            Location: true,
+            Delivery: { include: { Transporter: true } },
+            OrderItem: true,
           },
           orderBy: { orderDate: "desc" },
         });
@@ -485,7 +485,7 @@ export async function GET(request: NextRequest) {
         ];
 
         const rows = orders.map((o) => {
-          const delivery = o.deliveries[0];
+          const delivery = o.Delivery[0];
           const orderTime = new Date(o.orderDate);
           const shipTime = delivery?.shipDate ? new Date(delivery.shipDate) : null;
           const deliverTime = delivery?.deliveryDate ? new Date(delivery.deliveryDate) : null;
@@ -505,8 +505,8 @@ export async function GET(request: NextRequest) {
             delivery?.shipDate ? new Date(delivery.shipDate).toISOString().replace("T", " ").split(".")[0] : "",
             delivery?.deliveryDate ? new Date(delivery.deliveryDate).toISOString().replace("T", " ").split(".")[0] : "",
             o.status,
-            o.location.name,
-            delivery?.transporter?.name || "",
+            o.Location.name,
+            delivery?.Transporter?.name || "",
             delivery?.awbNo || "",
             o.totalAmount,
             orderToShipHrs,
@@ -530,12 +530,12 @@ export async function GET(request: NextRequest) {
         const inventory = await prisma.inventory.findMany({
           where: {
             quantity: { gt: 0 },
-            ...(companyId ? { location: { companyId } } : {}),
+            ...(companyId ? { Location: { companyId } } : {}),
           },
           include: {
-            sku: true,
-            bin: { include: { zone: true } },
-            location: true,
+            SKU: true,
+            Bin: { include: { Zone: true } },
+            Location: true,
           },
         });
 
@@ -581,12 +581,12 @@ export async function GET(request: NextRequest) {
           }
 
           return [
-            inv.sku.code,
-            inv.sku.name,
-            inv.sku.category || "",
-            inv.location.name,
-            inv.bin?.zone?.name || "",
-            inv.bin?.code || "",
+            inv.SKU.code,
+            inv.SKU.name,
+            inv.SKU.category || "",
+            inv.Location.name,
+            inv.Bin?.Zone?.name || "",
+            inv.Bin?.code || "",
             inv.quantity,
             receivedDate.toISOString().split("T")[0],
             ageDays,

@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
         name: true,
         email: true,
         phone: true,
-        company: {
+        Company: {
           select: {
             id: true,
             name: true,
@@ -39,8 +39,8 @@ export async function GET(request: NextRequest) {
       name: user.name,
       email: user.email,
       phone: user.phone || "",
-      company: user.company?.name || user.company?.legalName || "",
-      companyId: user.company?.id,
+      company: user.Company?.name || user.Company?.legalName || "",
+      companyId: user.Company?.id,
       memberSince: user.createdAt,
     });
   } catch (error) {
@@ -91,7 +91,7 @@ export async function PATCH(request: NextRequest) {
         name: true,
         email: true,
         phone: true,
-        company: {
+        Company: {
           select: {
             id: true,
             name: true,
@@ -105,7 +105,7 @@ export async function PATCH(request: NextRequest) {
       name: updatedUser.name,
       email: updatedUser.email,
       phone: updatedUser.phone || "",
-      company: updatedUser.company?.name || "",
+      company: updatedUser.Company?.name || "",
       message: "Profile updated successfully",
     });
   } catch (error) {

@@ -36,7 +36,7 @@ export interface BarChartProps {
   showLegend?: boolean;
   layout?: "horizontal" | "vertical";
   yAxisFormatter?: (value: number) => string;
-  tooltipFormatter?: (value: number, name: string) => [string, string];
+  tooltipFormatter?: (value: number | undefined, name: string | undefined) => [string, string];
   colorByValue?: (value: number) => string;
 }
 

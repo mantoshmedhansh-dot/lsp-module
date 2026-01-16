@@ -65,14 +65,21 @@ export function PieChart({
     percent,
     name,
   }: {
-    cx: number;
-    cy: number;
-    midAngle: number;
-    innerRadius: number;
-    outerRadius: number;
-    percent: number;
-    name: string;
+    cx?: number;
+    cy?: number;
+    midAngle?: number;
+    innerRadius?: number;
+    outerRadius?: number;
+    percent?: number;
+    name?: string;
   }) => {
+    // Handle undefined values
+    if (cx === undefined || cy === undefined || midAngle === undefined ||
+        innerRadius === undefined || outerRadius === undefined ||
+        percent === undefined || name === undefined) {
+      return null;
+    }
+
     const RADIAN = Math.PI / 180;
     const radius = innerRadius + (outerRadius - innerRadius) * 1.4;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
@@ -92,11 +99,14 @@ export function PieChart({
     ) : null;
   };
 
+  // Cast data for recharts compatibility
+  const chartData = data as Array<{ name: string; value: number; [key: string]: unknown }>;
+
   const chart = (
     <ResponsiveContainer width="100%" height={height}>
       <RechartsPieChart>
         <Pie
-          data={data}
+          data={chartData}
           cx="50%"
           cy="50%"
           innerRadius={innerRadius}
@@ -120,9 +130,9 @@ export function PieChart({
             borderRadius: "8px",
             fontSize: "12px",
           }}
-          formatter={(value: number) => [
-            valueFormatter(value),
-            `${((value / total) * 100).toFixed(1)}%`,
+          formatter={(value: number | undefined) => [
+            valueFormatter(value ?? 0),
+            `${(((value ?? 0) / total) * 100).toFixed(1)}%`,
           ]}
         />
         {showLegend && (

@@ -16,13 +16,13 @@ model AIActionLog {
   entityType       String
   entityId         String
   ndrId            String?        @db.Uuid
-  decision         String
-  reasoning        String
-  confidence       Float
+  decision         String         @default("Auto-generated")
+  reasoning        String         @default("Automated action")
+  confidence       Float?
   riskLevel        String         @default("LOW")
   impactScore      Int?
   status           AIActionStatus @default(PENDING_APPROVAL)
-  approvalRequired Boolean        @default(true)
+  approvalRequired Boolean        @default(false)
   approvedBy       String?
   approvedAt       DateTime?
   rejectionReason  String?
@@ -32,9 +32,11 @@ model AIActionLog {
   recommendations  Json?
   feedbackScore    Int?
   feedbackNotes    String?
+  actionDetails    Json?
+  processingTime   Int?
   companyId        String         @db.Uuid
   createdAt        DateTime       @default(now())
-  updatedAt        DateTime
+  updatedAt        DateTime  @updatedAt
   NDR              NDR?           @relation(fields: [ndrId], references: [id])
 
   @@index([actionType])
@@ -147,7 +149,7 @@ model Bin {
   isActive     Boolean        @default(true)
   zoneId       String         @db.Uuid
   createdAt    DateTime       @default(now())
-  updatedAt    DateTime
+  updatedAt    DateTime  @updatedAt
   Zone         Zone           @relation(fields: [zoneId], references: [id], onDelete: Cascade)
   Inventory    Inventory[]
   PicklistItem PicklistItem[]
@@ -172,7 +174,7 @@ model Brand {
   isActive      Boolean     @default(true)
   companyId     String      @db.Uuid
   createdAt     DateTime    @default(now())
-  updatedAt     DateTime
+  updatedAt     DateTime  @updatedAt
   Company       Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
   BrandUser     BrandUser[]
   SKUBrand      SKUBrand[]
@@ -189,7 +191,7 @@ model BrandUser {
   dashboardConfig Json?
   isActive        Boolean       @default(true)
   createdAt       DateTime      @default(now())
-  updatedAt       DateTime
+  updatedAt       DateTime  @updatedAt
   Brand           Brand         @relation(fields: [brandId], references: [id], onDelete: Cascade)
 
   @@unique([brandId, userId])
@@ -234,7 +236,7 @@ model CODReconciliation {
   approvedAt         DateTime?
   approvedBy         String?                 @db.Uuid
   createdAt          DateTime                @default(now())
-  updatedAt          DateTime
+  updatedAt          DateTime  @updatedAt
   CODTransaction     CODTransaction[]
 
   @@index([companyId])
@@ -285,7 +287,7 @@ model ChannelConfig {
   lastErrorMessage String?
   lastErrorAt      DateTime?
   createdAt        DateTime      @default(now())
-  updatedAt        DateTime
+  updatedAt        DateTime  @updatedAt
   Company          Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@unique([companyId, channel])
@@ -309,7 +311,7 @@ model CommunicationTemplate {
   isDefault            Boolean              @default(false)
   companyId            String               @db.Uuid
   createdAt            DateTime             @default(now())
-  updatedAt            DateTime
+  updatedAt            DateTime  @updatedAt
 
   @@unique([companyId, trigger, channel, language, isDefault])
   @@index([channel])
@@ -332,7 +334,7 @@ model Company {
   settings          Json?
   isActive          Boolean             @default(true)
   createdAt         DateTime            @default(now())
-  updatedAt         DateTime
+  updatedAt         DateTime  @updatedAt
   Brand             Brand[]
   ChannelConfig     ChannelConfig[]
   Customer          Customer[]
@@ -381,7 +383,7 @@ model Customer {
   portalEnabled        Boolean                @default(false)
   portalUserId         String?                @db.Uuid
   createdAt            DateTime               @default(now())
-  updatedAt            DateTime
+  updatedAt            DateTime  @updatedAt
   B2BCreditTransaction B2BCreditTransaction[]
   Company              Company                @relation(fields: [companyId], references: [id], onDelete: Cascade)
   CustomerGroup        CustomerGroup?         @relation(fields: [customerGroupId], references: [id])
@@ -411,7 +413,7 @@ model CustomerGroup {
   companyId              String          @db.Uuid
   isActive               Boolean         @default(true)
   createdAt              DateTime        @default(now())
-  updatedAt              DateTime
+  updatedAt              DateTime  @updatedAt
   Customer               Customer[]
   Company                Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
   PriceList              PriceList?      @relation(fields: [priceListId], references: [id])
@@ -435,7 +437,7 @@ model CycleCount {
   varianceValue  Decimal?         @db.Decimal(14, 2)
   remarks        String?
   createdAt      DateTime         @default(now())
-  updatedAt      DateTime
+  updatedAt      DateTime  @updatedAt
   CycleCountItem CycleCountItem[]
 
   @@index([locationId])
@@ -490,7 +492,7 @@ model Delivery {
   manifestId       String?        @db.Uuid
   remarks          String?
   createdAt        DateTime       @default(now())
-  updatedAt        DateTime
+  updatedAt        DateTime  @updatedAt
   Manifest         Manifest?      @relation(fields: [manifestId], references: [id])
   Order            Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
   Transporter      Transporter?   @relation(fields: [transporterId], references: [id])
@@ -552,7 +554,7 @@ model Exception {
   escalatedAt    DateTime?
   companyId      String    @db.Uuid
   createdAt      DateTime  @default(now())
-  updatedAt      DateTime
+  updatedAt      DateTime  @updatedAt
   Order          Order?    @relation(fields: [orderId], references: [id])
 
   @@index([companyId])
@@ -591,7 +593,7 @@ model GatePass {
   securityRemarks  String?
   photoUrl         String?
   createdAt        DateTime       @default(now())
-  updatedAt        DateTime
+  updatedAt        DateTime  @updatedAt
   GatePassItem     GatePassItem[]
 
   @@index([entryTime])
@@ -626,7 +628,7 @@ model Inbound {
   remarks         String?
   createdAt       DateTime       @default(now())
   completedAt     DateTime?
-  updatedAt       DateTime
+  updatedAt       DateTime  @updatedAt
   Location        Location       @relation(fields: [locationId], references: [id])
   PurchaseOrder   PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
   User            User           @relation(fields: [receivedById], references: [id])
@@ -677,7 +679,7 @@ model Inventory {
   binId           String                   @db.Uuid
   locationId      String                   @db.Uuid
   createdAt       DateTime                 @default(now())
-  updatedAt       DateTime
+  updatedAt       DateTime  @updatedAt
   Bin             Bin                      @relation(fields: [binId], references: [id], onDelete: Cascade)
   Location        Location                 @relation(fields: [locationId], references: [id], onDelete: Cascade)
   SKU             SKU                      @relation(fields: [skuId], references: [id], onDelete: Cascade)
@@ -725,7 +727,7 @@ model Location {
   settings         Json?
   companyId        String             @db.Uuid
   createdAt        DateTime           @default(now())
-  updatedAt        DateTime
+  updatedAt        DateTime  @updatedAt
   Inbound          Inbound[]
   Inventory        Inventory[]
   Company          Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -751,7 +753,7 @@ model Manifest {
   confirmedAt   DateTime?
   confirmedBy   String?        @db.Uuid
   createdAt     DateTime       @default(now())
-  updatedAt     DateTime
+  updatedAt     DateTime  @updatedAt
   Delivery      Delivery[]
 
   @@index([status])
@@ -785,7 +787,7 @@ model NDR {
   updatedPhone     String?
   companyId        String          @db.Uuid
   createdAt        DateTime        @default(now())
-  updatedAt        DateTime
+  updatedAt        DateTime  @updatedAt
   AIActionLog      AIActionLog[]
   Delivery         Delivery        @relation(fields: [deliveryId], references: [id])
   Order            Order           @relation(fields: [orderId], references: [id])
@@ -821,7 +823,7 @@ model NDROutreach {
   errorMessage      String?
   providerMessageId String?
   createdAt         DateTime        @default(now())
-  updatedAt         DateTime
+  updatedAt         DateTime  @updatedAt
   NDR               NDR             @relation(fields: [ndrId], references: [id], onDelete: Cascade)
 
   @@index([channel])
@@ -869,7 +871,7 @@ model Order {
   eWayBillNo                                  String?
   irnNo                                       String?
   createdAt                                   DateTime                 @default(now())
-  updatedAt                                   DateTime
+  updatedAt                                   DateTime  @updatedAt
   Delivery                                    Delivery[]
   Exception                                   Exception[]
   NDR                                         NDR[]
@@ -910,7 +912,7 @@ model OrderImport {
   startedAt     DateTime?
   completedAt   DateTime?
   createdAt     DateTime     @default(now())
-  updatedAt     DateTime
+  updatedAt     DateTime  @updatedAt
   Order         Order[]
 
   @@index([locationId])
@@ -935,7 +937,7 @@ model OrderItem {
   serialNumbers  String[]
   batchNo        String?
   createdAt      DateTime   @default(now())
-  updatedAt      DateTime
+  updatedAt      DateTime  @updatedAt
   Order          Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
   SKU            SKU        @relation(fields: [skuId], references: [id])
 
@@ -968,7 +970,7 @@ model Picklist {
   startedAt    DateTime?
   completedAt  DateTime?
   createdAt    DateTime       @default(now())
-  updatedAt    DateTime
+  updatedAt    DateTime  @updatedAt
   User         User?          @relation(fields: [assignedToId], references: [id])
   Order        Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
   PicklistItem PicklistItem[]
@@ -1008,7 +1010,7 @@ model PriceList {
   companyId      String          @db.Uuid
   isActive       Boolean         @default(true)
   createdAt      DateTime        @default(now())
-  updatedAt      DateTime
+  updatedAt      DateTime  @updatedAt
   Customer       Customer[]
   CustomerGroup  CustomerGroup[]
   Company        Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -1029,7 +1031,7 @@ model PriceListItem {
   minOrderQty     Int?
   maxOrderQty     Int?
   createdAt       DateTime      @default(now())
-  updatedAt       DateTime
+  updatedAt       DateTime  @updatedAt
   PriceList       PriceList     @relation(fields: [priceListId], references: [id], onDelete: Cascade)
   PricingTier     PricingTier[]
 
@@ -1076,7 +1078,7 @@ model ProactiveCommunication {
   retryCount        Int                  @default(0)
   companyId         String               @db.Uuid
   createdAt         DateTime             @default(now())
-  updatedAt         DateTime
+  updatedAt         DateTime  @updatedAt
   Order             Order?               @relation(fields: [orderId], references: [id])
 
   @@index([companyId])
@@ -1099,7 +1101,7 @@ model PurchaseOrder {
   approvedAt   DateTime?
   approvedBy   String?   @db.Uuid
   createdAt    DateTime  @default(now())
-  updatedAt    DateTime
+  updatedAt    DateTime  @updatedAt
   Inbound      Inbound[]
   POItem       POItem[]
   Vendor       Vendor    @relation(fields: [vendorId], references: [id])
@@ -1152,7 +1154,7 @@ model QCExecution {
   completedAt      DateTime?
   remarks          String?
   createdAt        DateTime   @default(now())
-  updatedAt        DateTime
+  updatedAt        DateTime  @updatedAt
   QCDefect         QCDefect[]
   SKU              SKU        @relation(fields: [skuId], references: [id])
   QCTemplate       QCTemplate @relation(fields: [templateId], references: [id])
@@ -1215,7 +1217,7 @@ model QCTemplate {
   isActive       Boolean       @default(true)
   isMandatory    Boolean       @default(false)
   createdAt      DateTime      @default(now())
-  updatedAt      DateTime
+  updatedAt      DateTime  @updatedAt
   QCExecution    QCExecution[]
   QCParameter    QCParameter[]
   Company        Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -1255,7 +1257,7 @@ model Quotation {
   locationId       String           @db.Uuid
   createdById      String           @db.Uuid
   createdAt        DateTime         @default(now())
-  updatedAt        DateTime
+  updatedAt        DateTime  @updatedAt
   Order            Order?           @relation(fields: [convertedOrderId], references: [id])
   Customer         Customer         @relation(fields: [customerId], references: [id])
   QuotationItem    QuotationItem[]
@@ -1270,6 +1272,8 @@ model QuotationItem {
   id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   quotationId     String    @db.Uuid
   skuId           String    @db.Uuid
+  skuCode         String?
+  skuName         String?
   quantity        Int
   listPrice       Decimal   @db.Decimal(12, 2)
   unitPrice       Decimal   @db.Decimal(12, 2)
@@ -1280,6 +1284,7 @@ model QuotationItem {
   totalPrice      Decimal   @db.Decimal(12, 2)
   remarks         String?
   Quotation       Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  SKU             SKU       @relation(fields: [skuId], references: [id])
 
   @@index([quotationId])
   @@index([skuId])
@@ -1306,7 +1311,7 @@ model RateCard {
   approvedAt        DateTime?
   approvedBy        String?        @db.Uuid
   createdAt         DateTime       @default(now())
-  updatedAt         DateTime
+  updatedAt         DateTime  @updatedAt
   RateCardSlab      RateCardSlab[]
 
   @@index([companyId])
@@ -1367,7 +1372,7 @@ model Return {
   refundAmount                               Decimal?     @db.Decimal(12, 2)
   refundStatus                               String?
   createdAt                                  DateTime     @default(now())
-  updatedAt                                  DateTime
+  updatedAt                                  DateTime  @updatedAt
   Order_Order_replacementForReturnIdToReturn Order?       @relation("Order_replacementForReturnIdToReturn")
   Order_Return_orderIdToOrder                Order?       @relation("Return_orderIdToOrder", fields: [orderId], references: [id])
   ReturnItem                                 ReturnItem[]
@@ -1424,7 +1429,7 @@ model SKU {
   isVariantParent                         Boolean            @default(false)
   isVariant                               Boolean            @default(false)
   createdAt                               DateTime           @default(now())
-  updatedAt                               DateTime
+  updatedAt                               DateTime  @updatedAt
   BundleItem                              BundleItem[]
   InboundItem                             InboundItem[]
   Inventory                               Inventory[]
@@ -1436,6 +1441,7 @@ model SKU {
   SKUBundle                               SKUBundle?
   SKUVariant_SKUVariant_parentSkuIdToSKU  SKUVariant[]       @relation("SKUVariant_parentSkuIdToSKU")
   SKUVariant_SKUVariant_variantSkuIdToSKU SKUVariant?        @relation("SKUVariant_variantSkuIdToSKU")
+  QuotationItem                           QuotationItem[]
   VirtualInventory                        VirtualInventory[]
   WaveItem                                WaveItem[]
 
@@ -1472,7 +1478,7 @@ model SKUBundle {
   validTo         DateTime?
   isActive        Boolean      @default(true)
   createdAt       DateTime     @default(now())
-  updatedAt       DateTime
+  updatedAt       DateTime  @updatedAt
   BundleItem      BundleItem[]
   SKU             SKU          @relation(fields: [bundleSkuId], references: [id], onDelete: Cascade)
 
@@ -1488,7 +1494,7 @@ model SKUVariant {
   priceOverride                    Decimal?          @db.Decimal(12, 2)
   isActive                         Boolean           @default(true)
   createdAt                        DateTime          @default(now())
-  updatedAt                        DateTime
+  updatedAt                        DateTime  @updatedAt
   SKU_SKUVariant_parentSkuIdToSKU  SKU               @relation("SKUVariant_parentSkuIdToSKU", fields: [parentSkuId], references: [id], onDelete: Cascade)
   SKU_SKUVariant_variantSkuIdToSKU SKU               @relation("SKUVariant_variantSkuIdToSKU", fields: [variantSkuId], references: [id], onDelete: Cascade)
   SKUVariantValue                  SKUVariantValue[]
@@ -1528,7 +1534,7 @@ model ScheduledReport {
   createdById     String            @db.Uuid
   isActive        Boolean           @default(true)
   createdAt       DateTime          @default(now())
-  updatedAt       DateTime
+  updatedAt       DateTime  @updatedAt
   ReportExecution ReportExecution[]
 
   @@index([companyId])
@@ -1542,7 +1548,7 @@ model Sequence {
   prefix        String?
   currentValue  Int      @default(0)
   paddingLength Int      @default(6)
-  updatedAt     DateTime
+  updatedAt     DateTime  @updatedAt
 }
 
 model ServicePincode {
@@ -1588,7 +1594,7 @@ model ShippingRule {
   effectiveTo           DateTime?
   companyId             String                  @db.Uuid
   createdAt             DateTime                @default(now())
-  updatedAt             DateTime
+  updatedAt             DateTime  @updatedAt
   ShippingRuleCondition ShippingRuleCondition[]
 
   @@index([companyId])
@@ -1650,7 +1656,7 @@ model Transporter {
   trackingUrlTemplate String?
   isActive            Boolean             @default(true)
   createdAt           DateTime            @default(now())
-  updatedAt           DateTime
+  updatedAt           DateTime  @updatedAt
   AWB                 AWB[]
   Delivery            Delivery[]
   ServicePincode      ServicePincode[]
@@ -1666,7 +1672,7 @@ model TransporterConfig {
   credentials   Json?
   priority      Int         @default(0)
   createdAt     DateTime    @default(now())
-  updatedAt     DateTime
+  updatedAt     DateTime  @updatedAt
   Company       Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
   Transporter   Transporter @relation(fields: [transporterId], references: [id], onDelete: Cascade)
 
@@ -1687,7 +1693,7 @@ model User {
   companyId       String?           @db.Uuid
   locationAccess  String[]          @db.Uuid
   createdAt       DateTime          @default(now())
-  updatedAt       DateTime
+  updatedAt       DateTime  @updatedAt
   AuditLog        AuditLog[]
   Inbound         Inbound[]
   Picklist        Picklist[]
@@ -1708,7 +1714,7 @@ model VariantAttribute {
   isActive              Boolean                 @default(true)
   displayOrder          Int                     @default(0)
   createdAt             DateTime                @default(now())
-  updatedAt             DateTime
+  updatedAt             DateTime  @updatedAt
   Company               Company                 @relation(fields: [companyId], references: [id], onDelete: Cascade)
   VariantAttributeValue VariantAttributeValue[]
 
@@ -1745,7 +1751,7 @@ model Vendor {
   isActive      Boolean         @default(true)
   companyId     String          @db.Uuid
   createdAt     DateTime        @default(now())
-  updatedAt     DateTime
+  updatedAt     DateTime  @updatedAt
   PurchaseOrder PurchaseOrder[]
   Company       Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
@@ -1769,7 +1775,7 @@ model VirtualInventory {
   isActive        Boolean              @default(true)
   createdById     String               @db.Uuid
   createdAt       DateTime             @default(now())
-  updatedAt       DateTime
+  updatedAt       DateTime  @updatedAt
   Location        Location             @relation(fields: [locationId], references: [id])
   SKU             SKU                  @relation(fields: [skuId], references: [id], onDelete: Cascade)
 
@@ -1809,7 +1815,7 @@ model Wave {
   createdById    String      @db.Uuid
   remarks        String?
   createdAt      DateTime    @default(now())
-  updatedAt      DateTime
+  updatedAt      DateTime  @updatedAt
   User           User?       @relation(fields: [assignedToId], references: [id])
   Location       Location    @relation(fields: [locationId], references: [id])
   WaveItem       WaveItem[]
@@ -1882,7 +1888,7 @@ model Zone {
   isActive    Boolean  @default(true)
   locationId  String   @db.Uuid
   createdAt   DateTime @default(now())
-  updatedAt   DateTime
+  updatedAt   DateTime  @updatedAt
   Bin         Bin[]
   Location    Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
 
@@ -1898,6 +1904,9 @@ enum AIActionStatus {
   EXECUTED
   FAILED
   EXPIRED
+  SUCCESS
+  PENDING
+  SKIPPED
 }
 
 enum AIActionType {
@@ -1911,6 +1920,16 @@ enum AIActionType {
   ROUTE_OPTIMIZATION
   INVENTORY_REALLOCATION
   SLA_ALERT
+  AUTO_CLASSIFY
+  AUTO_OUTREACH
+  AUTO_RESOLVE
+  AUTO_SEND
+  SENTIMENT_ANALYSIS
+  PREDICTION
+  MANUAL_UPDATE
+  OUTREACH_ATTEMPT
+  PROACTIVE_TRIGGER
+  PRIORITY_UPDATE
 }
 
 enum AdjustmentReason {
@@ -1967,6 +1986,7 @@ enum Channel {
   WOOCOMMERCE
   WEBSITE
   MANUAL
+  B2B
 }
 
 enum CommunicationStatus {
@@ -1978,6 +1998,7 @@ enum CommunicationStatus {
   RESPONDED
   FAILED
   CANCELLED
+  PENDING
 }
 
 enum CommunicationTrigger {
@@ -2010,6 +2031,9 @@ enum CreditTransactionType {
   REFUND
   WRITE_OFF
   INTEREST_DEBIT
+  PAYMENT
+  ORDER
+  CREDIT_NOTE
 }
 
 enum CustomerStatus {
@@ -2048,6 +2072,8 @@ enum DeliveryStatus {
   RTO_IN_TRANSIT
   RTO_DELIVERED
   CANCELLED
+  NDR
+  RTO
 }
 
 enum GatePassStatus {
@@ -2141,6 +2167,9 @@ enum NDRReason {
   CUSTOMER_OUT_OF_STATION
   ADDRESS_NOT_FOUND
   OTHER
+  PHONE_UNREACHABLE
+  REFUSED
+  CUSTOMER_RESCHEDULE
 }
 
 enum NDRStatus {
@@ -2152,6 +2181,7 @@ enum NDRStatus {
   ESCALATED
   RTO_INITIATED
   CLOSED
+  CONTACTED
 }
 
 enum OrderStatus {
@@ -2174,6 +2204,7 @@ enum OrderStatus {
   RTO_DELIVERED
   CANCELLED
   ON_HOLD
+  PROCESSING
 }
 
 enum OrderType {
@@ -2211,6 +2242,7 @@ enum POStatus {
 enum PaymentMode {
   PREPAID
   COD
+  CREDIT
 }
 
 enum PaymentTermType {

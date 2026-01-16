@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     // Get client's company
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      include: { company: true },
+      include: { Company: true },
     });
 
     if (!user?.companyId) {
@@ -45,28 +45,29 @@ export async function GET(request: NextRequest) {
     // Get returns for the period
     const returns = await prisma.return.findMany({
       where: {
-        order: { companyId: user.companyId },
+        Order_Return_orderIdToOrder: { Location: { companyId: user.companyId } },
         createdAt: { gte: startDate },
       },
       include: {
-        order: {
+        Order_Return_orderIdToOrder: {
           select: { id: true, orderNo: true, totalAmount: true, channel: true },
         },
-        items: {
-          include: {
-            sku: { select: { id: true, code: true, name: true, category: true } },
-          },
-        },
-        location: {
-          select: { id: true, name: true },
-        },
+        ReturnItem: true,
       },
     });
+
+    // Fetch SKU data for all return items
+    const skuIds = [...new Set(returns.flatMap((r) => r.ReturnItem.map((i) => i.skuId)))];
+    const skus = await prisma.sKU.findMany({
+      where: { id: { in: skuIds } },
+      select: { id: true, code: true, name: true, category: true },
+    });
+    const skuMap = new Map(skus.map((s) => [s.id, s]));
 
     // Get total orders for return rate calculation
     const totalOrders = await prisma.order.count({
       where: {
-        companyId: user.companyId,
+        Location: { companyId: user.companyId },
         createdAt: { gte: startDate },
         status: { not: "CANCELLED" },
       },
@@ -76,7 +77,7 @@ export async function GET(request: NextRequest) {
     const totalReturns = returns.length;
     const returnRate = totalOrders > 0 ? (totalReturns / totalOrders) * 100 : 0;
 
-    const totalReturnValue = returns.reduce((sum, r) => sum + Number(r.totalAmount), 0);
+    const totalReturnValue = returns.reduce((sum, r) => sum + Number(r.refundAmount || 0), 0);
     const avgReturnValue = totalReturns > 0 ? totalReturnValue / totalReturns : 0;
 
     // Returns by status
@@ -101,12 +102,12 @@ export async function GET(request: NextRequest) {
     // Returns by channel
     const channelReturns = returns.reduce(
       (acc, r) => {
-        const channel = r.order.channel || "Direct";
+        const channel = r.Order_Return_orderIdToOrder?.channel || "Direct";
         if (!acc[channel]) {
           acc[channel] = { count: 0, value: 0 };
         }
         acc[channel].count += 1;
-        acc[channel].value += Number(r.totalAmount);
+        acc[channel].value += Number(r.refundAmount || 0);
         return acc;
       },
       {} as Record<string, { count: number; value: number }>
@@ -115,12 +116,13 @@ export async function GET(request: NextRequest) {
     // Top returned SKUs
     const skuReturnMap: Record<string, { code: string; name: string; count: number; units: number }> = {};
     returns.forEach((r) => {
-      r.items.forEach((item) => {
+      r.ReturnItem.forEach((item) => {
         const skuId = item.skuId;
+        const sku = skuMap.get(skuId);
         if (!skuReturnMap[skuId]) {
           skuReturnMap[skuId] = {
-            code: item.sku.code,
-            name: item.sku.name,
+            code: sku?.code || skuId,
+            name: sku?.name || "Unknown",
             count: 0,
             units: 0,
           };
@@ -138,8 +140,9 @@ export async function GET(request: NextRequest) {
     // Returns by category
     const categoryReturns: Record<string, { count: number; units: number }> = {};
     returns.forEach((r) => {
-      r.items.forEach((item) => {
-        const category = item.sku.category || "Uncategorized";
+      r.ReturnItem.forEach((item) => {
+        const sku = skuMap.get(item.skuId);
+        const category = sku?.category || "Uncategorized";
         if (!categoryReturns[category]) {
           categoryReturns[category] = { count: 0, units: 0 };
         }
@@ -150,13 +153,13 @@ export async function GET(request: NextRequest) {
 
     // Processing time
     const processedReturns = returns.filter((r) =>
-      ["COMPLETED", "REFUNDED", "RESTOCKED"].includes(r.status)
+      ["RESTOCKED", "DISPOSED", "REFUNDED"].includes(r.status)
     );
     const processingTimes = processedReturns
-      .filter((r) => r.completedAt)
+      .filter((r) => r.processedAt)
       .map((r) => {
         const created = new Date(r.createdAt);
-        const completed = new Date(r.completedAt!);
+        const completed = new Date(r.processedAt!);
         return (completed.getTime() - created.getTime()) / (1000 * 60 * 60 * 24);
       });
     const avgProcessingTime = processingTimes.length > 0
@@ -170,7 +173,7 @@ export async function GET(request: NextRequest) {
         avgReturnValue: Math.round(avgReturnValue),
         returnRate: Math.round(returnRate * 10) / 10,
         avgProcessingTime: Math.round(avgProcessingTime * 10) / 10,
-        pendingReturns: (statusCounts["PENDING"] || 0) + (statusCounts["IN_PROGRESS"] || 0),
+        pendingReturns: (statusCounts["INITIATED"] || 0) + (statusCounts["IN_TRANSIT"] || 0) + (statusCounts["RECEIVED"] || 0),
         completedReturns: processedReturns.length,
       },
       byStatus: Object.entries(statusCounts).map(([status, count]) => ({

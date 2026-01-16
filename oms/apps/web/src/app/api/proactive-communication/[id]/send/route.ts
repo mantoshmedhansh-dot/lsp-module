@@ -73,7 +73,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       data: {
         entityType: "ProactiveCommunication",
         entityId: id,
-        actionType: "MANUAL_SEND",
+        actionType: "MANUAL_UPDATE",
         actionDetails: {
           channel: communication.channel,
           trigger: communication.trigger,
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
           sentBy: session.user.id || "MANUAL",
         },
         status: result.success ? "SUCCESS" : "FAILED",
-        errorMessage: result.error,
+        executionError: result.error,
         companyId: communication.companyId,
       },
     });

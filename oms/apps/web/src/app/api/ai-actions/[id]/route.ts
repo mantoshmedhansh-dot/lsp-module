@@ -20,14 +20,14 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const action = await prisma.aIActionLog.findUnique({
       where: { id },
       include: {
-        ndr: {
+        NDR: {
           select: {
             id: true,
             ndrCode: true,
             status: true,
             reason: true,
             priority: true,
-            order: {
+            Order: {
               select: {
                 orderNo: true,
                 customerName: true,

@@ -79,14 +79,14 @@ export async function GET(request: NextRequest) {
       // Total Order Lines
       prisma.orderItem.count({
         where: {
-          order: whereClause,
+          Order: whereClause,
         },
       }),
 
       // Total Order Quantity (sum of all item quantities)
       prisma.orderItem.aggregate({
         where: {
-          order: whereClause,
+          Order: whereClause,
         },
         _sum: { quantity: true },
       }),
@@ -95,7 +95,7 @@ export async function GET(request: NextRequest) {
       prisma.orderItem.groupBy({
         by: ["skuId"],
         where: {
-          order: whereClause,
+          Order: whereClause,
         },
       }),
 
@@ -142,7 +142,7 @@ export async function GET(request: NextRequest) {
       // Unfulfillable Line Level Orders (items with 0 allocation and inventory issue)
       prisma.orderItem.count({
         where: {
-          order: {
+          Order: {
             ...whereClause,
             status: { in: ["CREATED", "CONFIRMED", "PARTIALLY_ALLOCATED"] },
           },
@@ -155,7 +155,7 @@ export async function GET(request: NextRequest) {
         where: {
           ...whereClause,
           status: { in: ["CREATED", "CONFIRMED", "PARTIALLY_ALLOCATED"] },
-          items: {
+          OrderItem: {
             some: {
               allocatedQty: 0,
             },

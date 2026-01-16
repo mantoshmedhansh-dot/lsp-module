@@ -42,25 +42,25 @@ export async function GET(request: NextRequest) {
     const orders = await prisma.order.findMany({
       where: {
         orderDate: { gte: startDate },
-        ...(companyId ? { location: { companyId } } : {}),
+        ...(companyId ? { Location: { companyId } } : {}),
       },
       include: {
-        items: true,
-        deliveries: true,
+        OrderItem: true,
+        Delivery: true,
       },
     });
 
     // Calculate sales statistics
     const totalOrders = orders.length;
-    const totalOrderLines = orders.reduce((sum, o) => sum + o.items.length, 0);
+    const totalOrderLines = orders.reduce((sum, o) => sum + o.OrderItem.length, 0);
     const totalOrderQuantity = orders.reduce(
-      (sum, o) => sum + o.items.reduce((isum, i) => isum + i.quantity, 0),
+      (sum, o) => sum + o.OrderItem.reduce((isum, i) => isum + i.quantity, 0),
       0
     );
 
     // Distinct SKUs sold
     const skuIds = new Set<string>();
-    orders.forEach((o) => o.items.forEach((i) => skuIds.add(i.skuId)));
+    orders.forEach((o) => o.OrderItem.forEach((i) => skuIds.add(i.skuId)));
     const distinctSkuSold = skuIds.size;
 
     const avgLinesPerOrder = totalOrders > 0 ? totalOrderLines / totalOrders : 0;
@@ -97,7 +97,7 @@ export async function GET(request: NextRequest) {
     );
     const totalUnfulfillable = unfulfillableOrders.length;
     const unfulfillableLineLevel = unfulfillableOrders.reduce(
-      (sum, o) => sum + o.items.filter((i) => i.allocatedQty < i.quantity).length,
+      (sum, o) => sum + o.OrderItem.filter((i) => i.allocatedQty < i.quantity).length,
       0
     );
 
@@ -133,7 +133,7 @@ export async function GET(request: NextRequest) {
         quantity: true,
         reservedQty: true,
       },
-      where: companyId ? { location: { companyId } } : {},
+      where: companyId ? { Location: { companyId } } : {},
     });
 
     const totalSaleableQty = (inventoryData._sum.quantity || 0) - (inventoryData._sum.reservedQty || 0);
@@ -143,8 +143,8 @@ export async function GET(request: NextRequest) {
     const damagedInventory = await prisma.inventory.aggregate({
       _sum: { quantity: true },
       where: {
-        bin: { zone: { type: "DAMAGED" } },
-        ...(companyId ? { location: { companyId } } : {}),
+        Bin: { Zone: { type: "DAMAGED" } },
+        ...(companyId ? { Location: { companyId } } : {}),
       },
     });
     const totalDamagedQty = damagedInventory._sum.quantity || 0;
@@ -154,7 +154,7 @@ export async function GET(request: NextRequest) {
       by: ["skuId"],
       where: {
         quantity: { gt: 0 },
-        ...(companyId ? { location: { companyId } } : {}),
+        ...(companyId ? { Location: { companyId } } : {}),
       },
     });
     const distinctSkuInStock = skusInStock.length;
@@ -169,11 +169,11 @@ export async function GET(request: NextRequest) {
     const returns = await prisma.return.findMany({
       where: {
         initiatedAt: { gte: startDate },
-        ...(companyId ? { order: { location: { companyId } } } : {}),
+        ...(companyId ? { Order_Return_orderIdToOrder: { Location: { companyId } } } : {}),
       },
       include: {
-        items: true,
-        order: true,
+        ReturnItem: true,
+        Order_Return_orderIdToOrder: true,
       },
     });
 
@@ -181,7 +181,7 @@ export async function GET(request: NextRequest) {
     const rtoReturns = returns.filter((r) => r.type === "RTO").length;
     const rtoPercent = totalReturns > 0 ? (rtoReturns / totalReturns) * 100 : 0;
     const returnQty = returns.reduce(
-      (sum, r) => sum + r.items.reduce((isum, i) => isum + i.quantity, 0),
+      (sum, r) => sum + r.ReturnItem.reduce((isum, i) => isum + i.quantity, 0),
       0
     );
     const returnAmount = returns.reduce(
@@ -191,9 +191,9 @@ export async function GET(request: NextRequest) {
 
     // Average return days (from order date to return initiation)
     const returnDays = returns
-      .filter((r) => r.order)
+      .filter((r) => r.Order_Return_orderIdToOrder)
       .map((r) => {
-        const orderDate = new Date(r.order!.orderDate);
+        const orderDate = new Date(r.Order_Return_orderIdToOrder!.orderDate);
         const returnDate = new Date(r.initiatedAt);
         return Math.ceil(
           (returnDate.getTime() - orderDate.getTime()) / (1000 * 60 * 60 * 24)

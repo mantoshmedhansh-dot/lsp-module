@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
               skuId: { in: skuIds },
             },
             include: {
-              pricingTiers: {
+              PricingTier: {
                 orderBy: { minQty: "asc" },
               },
             },
@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
               ? Number(item.discountPercent)
               : null,
             markup: item.markup ? Number(item.markup) : null,
-            pricingTiers: item.pricingTiers.map((tier) => ({
+            pricingTiers: item.PricingTier.map((tier) => ({
               minQty: tier.minQty,
               maxQty: tier.maxQty,
               price: Number(tier.price),

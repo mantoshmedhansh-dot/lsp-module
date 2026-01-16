@@ -19,9 +19,9 @@ export async function GET(
     const manifest = await prisma.manifest.findUnique({
       where: { id },
       include: {
-        deliveries: {
+        Delivery: {
           include: {
-            order: {
+            Order: {
               select: {
                 id: true,
                 orderNo: true,
@@ -31,7 +31,7 @@ export async function GET(
                 shippingAddress: true,
                 paymentMode: true,
                 totalAmount: true,
-                location: {
+                Location: {
                   select: {
                     code: true,
                     name: true,
@@ -43,7 +43,7 @@ export async function GET(
         },
         _count: {
           select: {
-            deliveries: true,
+            Delivery: true,
           },
         },
       },
@@ -93,7 +93,7 @@ export async function PATCH(
     const manifest = await prisma.manifest.findUnique({
       where: { id },
       include: {
-        deliveries: true,
+        Delivery: true,
       },
     });
 
@@ -153,8 +153,8 @@ export async function PATCH(
         const updated = await prisma.manifest.findUnique({
           where: { id },
           include: {
-            deliveries: true,
-            _count: { select: { deliveries: true } },
+            Delivery: true,
+            _count: { select: { Delivery: true } },
           },
         });
 
@@ -207,8 +207,8 @@ export async function PATCH(
         const updated = await prisma.manifest.findUnique({
           where: { id },
           include: {
-            deliveries: true,
-            _count: { select: { deliveries: true } },
+            Delivery: true,
+            _count: { select: { Delivery: true } },
           },
         });
 
@@ -235,8 +235,8 @@ export async function PATCH(
             driverPhone: driverPhone !== undefined ? driverPhone : undefined,
           },
           include: {
-            deliveries: true,
-            _count: { select: { deliveries: true } },
+            Delivery: true,
+            _count: { select: { Delivery: true } },
           },
         });
 
@@ -256,7 +256,7 @@ export async function PATCH(
           );
         }
 
-        if (manifest.deliveries.length === 0) {
+        if (manifest.Delivery.length === 0) {
           return NextResponse.json(
             { error: "Cannot confirm empty manifest" },
             { status: 400 }
@@ -271,8 +271,8 @@ export async function PATCH(
             confirmedBy: session.user.id,
           },
           include: {
-            deliveries: true,
-            _count: { select: { deliveries: true } },
+            Delivery: true,
+            _count: { select: { Delivery: true } },
           },
         });
 
@@ -301,13 +301,13 @@ export async function PATCH(
             confirmedBy: manifest.confirmedBy || session.user.id,
           },
           include: {
-            deliveries: true,
-            _count: { select: { deliveries: true } },
+            Delivery: true,
+            _count: { select: { Delivery: true } },
           },
         });
 
         // Update all deliveries to SHIPPED
-        const deliveryIds = manifest.deliveries.map((d) => d.id);
+        const deliveryIds = manifest.Delivery.map((d) => d.id);
         await prisma.delivery.updateMany({
           where: { id: { in: deliveryIds } },
           data: {
@@ -317,7 +317,7 @@ export async function PATCH(
         });
 
         // Update all orders to SHIPPED
-        const orderIds = manifest.deliveries.map((d) => d.orderId);
+        const orderIds = manifest.Delivery.map((d) => d.orderId);
         await prisma.order.updateMany({
           where: { id: { in: orderIds } },
           data: { status: "SHIPPED" },
@@ -367,7 +367,7 @@ export async function DELETE(
     const manifest = await prisma.manifest.findUnique({
       where: { id },
       include: {
-        deliveries: true,
+        Delivery: true,
       },
     });
 
@@ -383,7 +383,7 @@ export async function DELETE(
     }
 
     // Remove deliveries from manifest
-    const deliveryIds = manifest.deliveries.map((d) => d.id);
+    const deliveryIds = manifest.Delivery.map((d) => d.id);
     await prisma.delivery.updateMany({
       where: { id: { in: deliveryIds } },
       data: {
@@ -393,7 +393,7 @@ export async function DELETE(
     });
 
     // Update order statuses
-    const orderIds = manifest.deliveries.map((d) => d.orderId);
+    const orderIds = manifest.Delivery.map((d) => d.orderId);
     await prisma.order.updateMany({
       where: { id: { in: orderIds } },
       data: { status: "PACKED" },

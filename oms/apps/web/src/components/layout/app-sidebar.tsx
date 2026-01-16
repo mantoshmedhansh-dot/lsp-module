@@ -57,9 +57,16 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { LucideIcon } from "lucide-react";
+
+// Type definitions for navigation items
+type NavSubItem = { title: string; href: string };
+type NavItemWithSub = { title: string; icon: LucideIcon; items: NavSubItem[] };
+type NavItemWithHref = { title: string; icon: LucideIcon; href: string };
+type NavItem = NavItemWithSub | NavItemWithHref;
 
 // Analytics Section - Dashboard & Monitoring
-const analyticsNav = [
+const analyticsNav: NavItem[] = [
   {
     title: "Dashboard",
     icon: LayoutDashboard,
@@ -81,7 +88,7 @@ const analyticsNav = [
 ];
 
 // Channels Section - Marketplace Integrations
-const channelsNav = [
+const channelsNav: NavItem[] = [
   {
     title: "Channels",
     icon: Layers,
@@ -93,7 +100,7 @@ const channelsNav = [
 ];
 
 // Order Management Section
-const ordersNav = [
+const ordersNav: NavItemWithHref[] = [
   {
     title: "Orders",
     icon: ShoppingCart,
@@ -102,7 +109,7 @@ const ordersNav = [
 ];
 
 // Inventory Management Section
-const inventoryNav = [
+const inventoryNav: NavItem[] = [
   {
     title: "Inventory",
     icon: Boxes,
@@ -126,7 +133,7 @@ const inventoryNav = [
 ];
 
 // WMS Section - Warehouse Operations (includes Locations, SKU Master, Bundles)
-const wmsNav = [
+const wmsNav: NavItem[] = [
   {
     title: "WMS",
     icon: Warehouse,
@@ -146,7 +153,7 @@ const wmsNav = [
 ];
 
 // Logistics Section - Expanded (Industry Standard) - Includes Integrations
-const logisticsNav = [
+const logisticsNav: NavItem[] = [
   {
     title: "Logistics",
     icon: Truck,
@@ -165,7 +172,7 @@ const logisticsNav = [
 ];
 
 // Returns & RTO Section - Expanded
-const returnsNav = [
+const returnsNav: NavItem[] = [
   {
     title: "Returns & RTO",
     icon: RotateCcw,
@@ -179,7 +186,7 @@ const returnsNav = [
 ];
 
 // Finance & Reconciliation Section - Expanded
-const financeNav = [
+const financeNav: NavItem[] = [
   {
     title: "Finance",
     icon: CreditCard,
@@ -195,7 +202,7 @@ const financeNav = [
 ];
 
 // B2B Section
-const b2bNav = [
+const b2bNav: NavItem[] = [
   {
     title: "B2B",
     icon: Building2,
@@ -209,7 +216,7 @@ const b2bNav = [
 ];
 
 // Reports Section
-const reportsNav = [
+const reportsNav: NavItem[] = [
   {
     title: "Reports",
     icon: BarChart3,
@@ -224,7 +231,7 @@ const reportsNav = [
 ];
 
 // Master Panel - Only Clients/Brands (Companies rarely needed, accessible via direct URL)
-const masterPanelNav = [
+const masterPanelNav: NavItemWithHref[] = [
   {
     title: "Clients/Brands",
     icon: Users,
@@ -233,7 +240,7 @@ const masterPanelNav = [
 ];
 
 // Configuration Section - Slimmed (only Company Profile and User Management)
-const settingsNav = [
+const settingsNav: NavItemWithHref[] = [
   {
     title: "Company Profile",
     icon: Building2,
@@ -306,7 +313,7 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {analyticsNav.map((item) =>
-                item.items ? (
+                'items' in item ? (
                   <Collapsible key={item.title} className="group/collapsible">
                     <SidebarMenuItem>
                       <CollapsibleTrigger asChild>
@@ -350,7 +357,7 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {channelsNav.map((item) =>
-                item.items ? (
+                'items' in item ? (
                   <Collapsible key={item.title} className="group/collapsible">
                     <SidebarMenuItem>
                       <CollapsibleTrigger asChild>
@@ -413,7 +420,7 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {inventoryNav.map((item) =>
-                item.items ? (
+                'items' in item ? (
                   <Collapsible key={item.title} className="group/collapsible">
                     <SidebarMenuItem>
                       <CollapsibleTrigger asChild>
@@ -457,7 +464,7 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {wmsNav.map((item) =>
-                item.items ? (
+                'items' in item ? (
                   <Collapsible key={item.title} className="group/collapsible">
                     <SidebarMenuItem>
                       <CollapsibleTrigger asChild>
@@ -501,7 +508,7 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {logisticsNav.map((item) =>
-                item.items ? (
+                'items' in item ? (
                   <Collapsible key={item.title} className="group/collapsible">
                     <SidebarMenuItem>
                       <CollapsibleTrigger asChild>
@@ -545,7 +552,7 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {returnsNav.map((item) =>
-                item.items ? (
+                'items' in item ? (
                   <Collapsible key={item.title} className="group/collapsible">
                     <SidebarMenuItem>
                       <CollapsibleTrigger asChild>
@@ -589,7 +596,7 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {financeNav.map((item) =>
-                item.items ? (
+                'items' in item ? (
                   <Collapsible key={item.title} className="group/collapsible">
                     <SidebarMenuItem>
                       <CollapsibleTrigger asChild>
@@ -633,7 +640,7 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {b2bNav.map((item) =>
-                item.items ? (
+                'items' in item ? (
                   <Collapsible key={item.title} className="group/collapsible">
                     <SidebarMenuItem>
                       <CollapsibleTrigger asChild>
@@ -677,7 +684,7 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {reportsNav.map((item) =>
-                item.items ? (
+                'items' in item ? (
                   <Collapsible key={item.title} className="group/collapsible">
                     <SidebarMenuItem>
                       <CollapsibleTrigger asChild>

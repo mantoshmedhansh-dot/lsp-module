@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
       prisma.cycleCount.findMany({
         where,
         include: {
-          _count: { select: { items: true } },
+          _count: { select: { CycleCountItem: true } },
         },
         orderBy: { createdAt: "desc" },
         skip,
@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
         initiatedById: session.user.id!,
         scheduledDate: new Date(scheduledDate),
         remarks,
-        items: {
+        CycleCountItem: {
           create: inventoryItems.map((item) => ({
             skuId: item.skuId,
             binId: item.binId,
@@ -146,8 +146,8 @@ export async function POST(request: NextRequest) {
         },
       },
       include: {
-        items: true,
-        _count: { select: { items: true } },
+        CycleCountItem: true,
+        _count: { select: { CycleCountItem: true } },
       },
     });
 

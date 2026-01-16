@@ -27,9 +27,9 @@ export async function GET(request: NextRequest) {
         ],
       },
       include: {
-        priceList: {
+        PriceList: {
           include: {
-            items: true,
+            PriceListItem: true,
           },
         },
       },
@@ -71,11 +71,12 @@ export async function GET(request: NextRequest) {
           brand: true,
           mrp: true,
           sellingPrice: true,
-          taxPercent: true,
-          imageUrl: true,
-          inventory: {
+          taxRate: true,
+          images: true,
+          Inventory: {
             select: {
-              available: true,
+              quantity: true,
+              reservedQty: true,
             },
           },
         },
@@ -84,16 +85,16 @@ export async function GET(request: NextRequest) {
     ]);
 
     // Get price list items for quick lookup
-    const priceListItems = customer.priceList?.items || [];
+    const priceListItems = customer.PriceList?.PriceListItem || [];
     const priceMap = new Map(
-      priceListItems.map((item: { skuId: string; price: { toString: () => string } }) => [item.skuId, Number(item.price)])
+      priceListItems.map((item: { skuId: string; fixedPrice: { toString: () => string } | null }) => [item.skuId, item.fixedPrice ? Number(item.fixedPrice) : null])
     );
 
     return NextResponse.json({
       products: skus.map((sku) => {
         // Calculate available stock
-        const availableStock = sku.inventory.reduce(
-          (sum: number, inv: { available: number }) => sum + inv.available,
+        const availableStock = sku.Inventory.reduce(
+          (sum: number, inv: { quantity: number; reservedQty: number }) => sum + (inv.quantity - inv.reservedQty),
           0
         );
 
@@ -109,8 +110,8 @@ export async function GET(request: NextRequest) {
           brand: sku.brand,
           mrp: Number(sku.mrp || sku.sellingPrice),
           price: customerPrice,
-          taxPercent: Number(sku.taxPercent || 18),
-          imageUrl: sku.imageUrl,
+          taxPercent: Number(sku.taxRate || 18),
+          imageUrl: sku.images?.[0] || null,
           availableStock,
           inStock: availableStock > 0,
         };

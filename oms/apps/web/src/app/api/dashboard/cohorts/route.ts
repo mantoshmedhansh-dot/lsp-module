@@ -154,22 +154,28 @@ export async function GET(request: NextRequest) {
       case "sku": {
         // Top SKUs cohort analysis
         const topSkus = await prisma.orderItem.groupBy({
-          by: ["skuCode"],
+          by: ["skuId"],
           _sum: { quantity: true },
           orderBy: { _sum: { quantity: "desc" } },
           take: 10,
         });
 
         for (const sku of topSkus) {
-          if (!sku.skuCode) continue;
+          if (!sku.skuId) continue;
+
+          // Get SKU details for the code
+          const skuDetails = await prisma.sKU.findUnique({
+            where: { id: sku.skuId },
+            select: { code: true },
+          });
 
           const skuOrders = await prisma.orderItem.findMany({
             where: {
-              skuCode: sku.skuCode,
-              order: { createdAt: { gte: sixMonthsAgo } },
+              skuId: sku.skuId,
+              Order: { createdAt: { gte: sixMonthsAgo } },
             },
             include: {
-              order: {
+              Order: {
                 select: { createdAt: true },
               },
             },
@@ -177,7 +183,7 @@ export async function GET(request: NextRequest) {
 
           const monthMap = new Map<string, { orders: number; revenue: number }>();
           for (const item of skuOrders) {
-            const month = `${item.order.createdAt.getFullYear()}-${String(item.order.createdAt.getMonth() + 1).padStart(2, "0")}`;
+            const month = `${item.Order.createdAt.getFullYear()}-${String(item.Order.createdAt.getMonth() + 1).padStart(2, "0")}`;
             const current = monthMap.get(month) || { orders: 0, revenue: 0 };
             current.orders += item.quantity;
             current.revenue += Number(item.unitPrice) * item.quantity;
@@ -191,7 +197,7 @@ export async function GET(request: NextRequest) {
           }));
 
           cohortData.push({
-            cohort: sku.skuCode,
+            cohort: skuDetails?.code || sku.skuId,
             data,
             totals: {
               orders: data.reduce((sum, d) => sum + d.orders, 0),

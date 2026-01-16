@@ -30,7 +30,7 @@ export async function getAuthOrInternal(request: NextRequest): Promise<InternalS
     const company = await prisma.company.findFirst({
       where: { isActive: true },
       include: {
-        locations: {
+        Location: {
           where: { isActive: true },
           select: { id: true },
         },
@@ -44,7 +44,7 @@ export async function getAuthOrInternal(request: NextRequest): Promise<InternalS
         name: "Internal Service",
         role: "SUPER_ADMIN",
         companyId: company?.id || null,
-        locationAccess: company?.locations.map(l => l.id) || [],
+        locationAccess: company?.Location.map(l => l.id) || [],
       },
       isInternal: true,
     };

@@ -57,20 +57,17 @@ export async function GET(request: NextRequest) {
       prisma.wave.findMany({
         where,
         include: {
-          location: {
+          Location: {
             select: { id: true, code: true, name: true },
           },
-          createdByUser: {
+          User: {
             select: { id: true, name: true },
           },
-          assignedToUser: {
-            select: { id: true, name: true },
-          },
-          waveItems: {
-            select: { pickedQuantity: true, totalQuantity: true },
+          WaveItem: {
+            select: { pickedQty: true, totalQty: true },
           },
           _count: {
-            select: { waveOrders: true, waveItems: true },
+            select: { WaveOrder: true, WaveItem: true },
           },
         },
         orderBy: { createdAt: "desc" },
@@ -82,17 +79,18 @@ export async function GET(request: NextRequest) {
 
     // Transform waves to match frontend expected format
     const waves = wavesRaw.map((wave) => {
-      const totalItems = wave.waveItems.reduce((sum, item) => sum + item.totalQuantity, 0);
-      const pickedItems = wave.waveItems.reduce((sum, item) => sum + item.pickedQuantity, 0);
+      const totalItems = wave.WaveItem.reduce((sum, item) => sum + item.totalQty, 0);
+      const pickedItems = wave.WaveItem.reduce((sum, item) => sum + item.pickedQty, 0);
       const completionPercentage = totalItems > 0 ? Math.round((pickedItems / totalItems) * 100) : 0;
 
       return {
         ...wave,
         waveType: wave.type, // Map type to waveType for frontend
-        createdBy: wave.createdByUser, // Map createdByUser to createdBy
+        location: wave.Location, // Map Location to location for frontend
+        assignedToUser: wave.User, // Map User to assignedToUser
         _count: {
-          orders: wave._count.waveOrders,
-          items: wave._count.waveItems,
+          orders: wave._count.WaveOrder,
+          items: wave._count.WaveItem,
         },
         stats: {
           totalOrders: wave.totalOrders,
@@ -100,7 +98,7 @@ export async function GET(request: NextRequest) {
           pickedItems,
           completionPercentage,
         },
-        waveItems: undefined, // Remove raw waveItems from response
+        WaveItem: undefined, // Remove raw WaveItem from response
       };
     });
 
@@ -181,9 +179,9 @@ export async function POST(request: NextRequest) {
         status: { in: ["CONFIRMED", "PROCESSING"] },
       },
       include: {
-        items: {
+        OrderItem: {
           include: {
-            sku: true,
+            SKU: true,
           },
         },
       },
@@ -207,15 +205,14 @@ export async function POST(request: NextRequest) {
           type,
           status: "DRAFT",
           locationId,
-          priority,
           totalOrders: orders.length,
-          totalItems: orders.reduce((sum, o) => sum + o.items.length, 0),
+          totalItems: orders.reduce((sum, o) => sum + o.OrderItem.length, 0),
           totalUnits: orders.reduce(
-            (sum, o) => sum + o.items.reduce((s, i) => s + i.quantity, 0),
+            (sum, o) => sum + o.OrderItem.reduce((s, i) => s + i.quantity, 0),
             0
           ),
-          createdBy: session.user.id,
-          assignedTo: assignedToId || null,
+          createdById: session.user.id,
+          assignedToId: assignedToId || null,
         },
       });
 
@@ -234,7 +231,7 @@ export async function POST(request: NextRequest) {
       const skuItemMap = new Map<string, { skuId: string; totalQty: number; pickedQty: number }>();
 
       for (const order of orders) {
-        for (const item of order.items) {
+        for (const item of order.OrderItem) {
           const existing = skuItemMap.get(item.skuId);
           if (existing) {
             existing.totalQty += item.quantity;
@@ -255,23 +252,24 @@ export async function POST(request: NextRequest) {
           where: {
             skuId,
             locationId,
-            binId: { not: null },
           },
           include: {
-            bin: true,
+            Bin: true,
           },
         });
 
-        await tx.waveItem.create({
-          data: {
-            waveId: newWave.id,
-            skuId,
-            binId: inventory?.binId || null,
-            totalQuantity: itemData.totalQty,
-            pickedQuantity: 0,
-            pickSequence: 0, // Will be optimized
-          },
-        });
+        if (inventory?.binId) {
+          await tx.waveItem.create({
+            data: {
+              waveId: newWave.id,
+              skuId,
+              binId: inventory.binId,
+              totalQty: itemData.totalQty,
+              pickedQty: 0,
+              sequence: 0, // Will be optimized
+            },
+          });
+        }
       }
 
       return newWave;
@@ -281,26 +279,26 @@ export async function POST(request: NextRequest) {
     const completeWave = await prisma.wave.findUnique({
       where: { id: wave.id },
       include: {
-        location: true,
-        waveOrders: {
+        Location: true,
+        WaveOrder: {
           include: {
-            order: {
+            Order: {
               select: { id: true, orderNo: true, status: true },
             },
           },
         },
-        waveItems: {
+        WaveItem: {
           include: {
-            sku: {
+            SKU: {
               select: { id: true, code: true, name: true },
             },
-            bin: {
-              select: { id: true, code: true, zone: true, aisle: true, rack: true, shelf: true },
+            Bin: {
+              select: { id: true, code: true },
             },
           },
         },
         _count: {
-          select: { waveOrders: true, waveItems: true },
+          select: { WaveOrder: true, WaveItem: true },
         },
       },
     });
@@ -328,31 +326,26 @@ async function optimizeWaveSequence(waveId: string): Promise<void> {
     const waveItems = await prisma.waveItem.findMany({
       where: { waveId },
       include: {
-        bin: true,
+        Bin: true,
       },
     });
 
-    // Sort by zone -> aisle -> rack -> shelf for optimal picking path
+    // Sort by zone code -> aisle -> rack -> level for optimal picking path
     const sortedItems = [...waveItems].sort((a, b) => {
-      // Items without bins go last
-      if (!a.bin && !b.bin) return 0;
-      if (!a.bin) return 1;
-      if (!b.bin) return -1;
-
-      // Sort by zone first
-      const zoneCompare = (a.bin.zone || "").localeCompare(b.bin.zone || "");
+      // Sort by zone code first (stored in WaveItem)
+      const zoneCompare = (a.zoneCode || "").localeCompare(b.zoneCode || "");
       if (zoneCompare !== 0) return zoneCompare;
 
-      // Then by aisle
-      const aisleCompare = (a.bin.aisle || "").localeCompare(b.bin.aisle || "");
+      // Then by aisle (stored in WaveItem)
+      const aisleCompare = (a.aisle || "").localeCompare(b.aisle || "");
       if (aisleCompare !== 0) return aisleCompare;
 
-      // Then by rack
-      const rackCompare = (a.bin.rack || "").localeCompare(b.bin.rack || "");
+      // Then by rack (stored in WaveItem)
+      const rackCompare = (a.rack || "").localeCompare(b.rack || "");
       if (rackCompare !== 0) return rackCompare;
 
-      // Finally by shelf
-      return (a.bin.shelf || "").localeCompare(b.bin.shelf || "");
+      // Finally by level (stored in WaveItem)
+      return (a.level || "").localeCompare(b.level || "");
     });
 
     // Update sequences
@@ -360,7 +353,7 @@ async function optimizeWaveSequence(waveId: string): Promise<void> {
       sortedItems.map((item, index) =>
         prisma.waveItem.update({
           where: { id: item.id },
-          data: { pickSequence: index + 1 },
+          data: { sequence: index + 1 },
         })
       )
     );

@@ -11,7 +11,6 @@
  */
 
 import { prisma } from '@oms/database';
-import { Decimal } from '@prisma/client/runtime/library';
 
 // GST Rate by HSN Chapter
 const HSN_TAX_RATES: Record<string, number> = {
@@ -173,20 +172,25 @@ class InvoiceService {
       const order = await prisma.order.findUnique({
         where: { id: request.orderId },
         include: {
-          items: {
+          OrderItem: {
             include: {
-              sku: true,
+              SKU: true,
             },
           },
-          location: {
+          Location: {
             include: {
-              company: true,
+              Company: true,
             },
           },
-          deliveries: {
+          Delivery: {
             where: request.deliveryId ? { id: request.deliveryId } : undefined,
             take: 1,
             orderBy: { createdAt: 'desc' },
+            include: {
+              Transporter: {
+                select: { name: true },
+              },
+            },
           },
         },
       });
@@ -195,8 +199,8 @@ class InvoiceService {
         return { success: false, error: 'Order not found' };
       }
 
-      const company = order.location.company;
-      const delivery = order.deliveries[0];
+      const company = order.Location.Company;
+      const delivery = order.Delivery[0];
 
       // Validate company GST
       if (!company.gst) {
@@ -219,8 +223,8 @@ class InvoiceService {
 
       // Calculate line items with GST
       const lineItems = this.calculateLineItems(
-        order.items as Array<{
-          sku: { id: string; code: string; name: string; hsn?: string | null };
+        order.OrderItem as Array<{
+          SKU: { id: string; code: string; name: string; hsn?: string | null };
           quantity: number;
           unitPrice: { toNumber(): number };
           discount: { toNumber(): number };
@@ -259,7 +263,7 @@ class InvoiceService {
         orderDate: order.orderDate,
 
         awbNo: delivery?.awbNo || undefined,
-        transporterName: delivery?.transporterCode || undefined,
+        transporterName: delivery?.Transporter?.name || undefined,
         vehicleNo: undefined,
         ewayBillNo: undefined,
 
@@ -315,7 +319,7 @@ class InvoiceService {
    */
   private calculateLineItems(
     items: Array<{
-      sku: { id: string; code: string; name: string; hsn?: string | null };
+      SKU: { id: string; code: string; name: string; hsn?: string | null };
       quantity: number;
       unitPrice: { toNumber(): number };
       discount: { toNumber(): number };
@@ -324,7 +328,7 @@ class InvoiceService {
     isInterState: boolean
   ): InvoiceLineItem[] {
     return items.map((item) => {
-      const hsnCode = item.sku.hsn || '62';
+      const hsnCode = item.SKU.hsn || '62';
       const hsnChapter = hsnCode.substring(0, 2);
       const gstRate = HSN_TAX_RATES[hsnChapter] || 18;
 
@@ -334,9 +338,9 @@ class InvoiceService {
       const gstAmount = (taxableValue * gstRate) / 100;
 
       return {
-        skuId: item.sku.id,
-        skuCode: item.sku.code,
-        skuName: item.sku.name,
+        skuId: item.SKU.id,
+        skuCode: item.SKU.code,
+        skuName: item.SKU.name,
         hsnCode,
         quantity: item.quantity,
         unitPrice,
@@ -408,34 +412,21 @@ class InvoiceService {
    */
   private async getNextInvoiceNumber(prefix: string): Promise<string> {
     const financialYear = this.getCurrentFinancialYear();
-    const sequenceKey = `${prefix}-${financialYear}`;
+    const sequenceName = `invoice_${prefix}_${this.companyId}_${financialYear}`;
 
-    // Get current sequence
-    const sequence = await prisma.systemConfig.findFirst({
-      where: {
-        key: `invoice_sequence_${sequenceKey}`,
-        companyId: this.companyId,
+    // Use upsert to atomically get and increment the sequence
+    const sequence = await prisma.sequence.upsert({
+      where: { name: sequenceName },
+      update: { currentValue: { increment: 1 } },
+      create: {
+        name: sequenceName,
+        prefix: prefix,
+        currentValue: 1,
+        paddingLength: 6,
       },
     });
 
-    let nextNumber = 1;
-    if (sequence) {
-      nextNumber = parseInt(sequence.value as string, 10) + 1;
-      await prisma.systemConfig.update({
-        where: { id: sequence.id },
-        data: { value: nextNumber.toString() },
-      });
-    } else {
-      await prisma.systemConfig.create({
-        data: {
-          key: `invoice_sequence_${sequenceKey}`,
-          value: '1',
-          companyId: this.companyId,
-        },
-      });
-    }
-
-    return `${prefix}/${financialYear}/${nextNumber.toString().padStart(6, '0')}`;
+    return `${prefix}/${financialYear}/${sequence.currentValue.toString().padStart(6, '0')}`;
   }
 
   /**
@@ -614,8 +605,8 @@ class InvoiceService {
     const skip = (page - 1) * limit;
 
     const where: Record<string, unknown> = {
-      order: {
-        location: {
+      Order: {
+        Location: {
           companyId: this.companyId,
         },
       },
@@ -629,7 +620,7 @@ class InvoiceService {
       where.invoiceDate = { ...(where.invoiceDate as object), lte: params.toDate };
     }
     if (params.orderNo) {
-      where.order = { ...(where.order as object), orderNo: { contains: params.orderNo, mode: 'insensitive' } };
+      where.Order = { ...(where.Order as object), orderNo: { contains: params.orderNo, mode: 'insensitive' } };
     }
     if (params.invoiceNo) {
       where.invoiceNo = { contains: params.invoiceNo, mode: 'insensitive' };
@@ -642,7 +633,7 @@ class InvoiceService {
         take: limit,
         orderBy: { invoiceDate: 'desc' },
         include: {
-          order: {
+          Order: {
             select: {
               orderNo: true,
               customerName: true,
@@ -659,9 +650,9 @@ class InvoiceService {
         id: d.id,
         invoiceNo: d.invoiceNo!,
         invoiceDate: d.invoiceDate!,
-        orderNo: d.order.orderNo,
-        customerName: d.order.customerName,
-        totalAmount: d.order.totalAmount.toNumber(),
+        orderNo: d.Order.orderNo,
+        customerName: d.Order.customerName,
+        totalAmount: d.Order.totalAmount.toNumber(),
         awbNo: d.awbNo || undefined,
       })),
       total,

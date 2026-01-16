@@ -19,26 +19,26 @@ export async function GET(
     const picklist = await prisma.picklist.findUnique({
       where: { id },
       include: {
-        order: {
+        Order: {
           include: {
-            location: true,
-            items: {
+            Location: true,
+            OrderItem: {
               include: {
-                sku: true,
+                SKU: true,
               },
             },
           },
         },
-        assignedTo: {
+        User: {
           select: {
             id: true,
             name: true,
             email: true,
           },
         },
-        items: {
+        PicklistItem: {
           include: {
-            sku: {
+            SKU: {
               select: {
                 id: true,
                 code: true,
@@ -48,9 +48,9 @@ export async function GET(
                 isSerialised: true,
               },
             },
-            bin: {
+            Bin: {
               include: {
-                zone: {
+                Zone: {
                   select: {
                     id: true,
                     code: true,
@@ -61,8 +61,8 @@ export async function GET(
             },
           },
           orderBy: [
-            { bin: { zone: { code: "asc" } } },
-            { bin: { code: "asc" } },
+            { Bin: { Zone: { code: "asc" } } },
+            { Bin: { code: "asc" } },
           ],
         },
       },
@@ -101,8 +101,8 @@ export async function PATCH(
     const picklist = await prisma.picklist.findUnique({
       where: { id },
       include: {
-        items: true,
-        order: true,
+        PicklistItem: true,
+        Order: true,
       },
     });
 
@@ -155,7 +155,7 @@ export async function PATCH(
 
       case "complete": {
         // Check if all items are picked
-        const allPicked = picklist.items.every(
+        const allPicked = picklist.PicklistItem.every(
           (item) => item.pickedQty >= item.requiredQty
         );
 
@@ -181,7 +181,7 @@ export async function PATCH(
         });
 
         // Update order items pickedQty
-        for (const plItem of picklist.items) {
+        for (const plItem of picklist.PicklistItem) {
           await prisma.orderItem.updateMany({
             where: {
               orderId: picklist.orderId,

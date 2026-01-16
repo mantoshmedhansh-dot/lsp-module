@@ -176,21 +176,21 @@ export async function checkPincodeServiceability(
   }
 
   // Check transporter serviceability
-  const transporterServices = await prisma.transporterServicePincode.findMany({
+  const servicePincodes = await prisma.servicePincode.findMany({
     where: {
       pincode,
-      transporter: { isActive: true },
+      Transporter: { isActive: true },
     },
     include: {
-      transporter: { select: { id: true, code: true, name: true } },
+      Transporter: { select: { id: true, code: true, name: true } },
     },
   });
 
-  const isServiceable = transporterServices.length > 0;
-  const codAvailable = transporterServices.some(t => t.codAvailable);
-  const prepaidAvailable = transporterServices.some(t => t.prepaidAvailable);
-  const deliveryDays = transporterServices.length > 0
-    ? Math.min(...transporterServices.filter(t => t.deliveryDays).map(t => t.deliveryDays!))
+  const isServiceable = servicePincodes.length > 0;
+  const codAvailable = servicePincodes.some(t => t.codAvailable);
+  const prepaidAvailable = servicePincodes.some(t => t.prepaidAvailable);
+  const deliveryDays = servicePincodes.length > 0
+    ? Math.min(...servicePincodes.filter(t => t.deliveryDays).map(t => t.deliveryDays!))
     : null;
 
   return {
@@ -201,7 +201,7 @@ export async function checkPincodeServiceability(
     deliveryDays,
     zone: getZoneType(pincode),
     hub: null, // Would query hub mapping
-    serviceableTransporters: transporterServices.map(t => t.transporter.code),
+    serviceableTransporters: servicePincodes.map(t => t.Transporter.code),
     lastMileAvailable: isServiceable,
   };
 }
@@ -224,36 +224,59 @@ export async function checkRouteServiceability(
   const destTransporters = destCheck.serviceableTransporters;
   const commonTransporters = destTransporters.filter(t => originTransporters.has(t));
 
-  // Get rate cards for common transporters
+  // Get transporters
   const transporters = await prisma.transporter.findMany({
     where: {
       code: { in: commonTransporters },
       isActive: true,
-      ...(paymentMode === "COD" ? { supportsCod: true } : {}),
-    },
-    include: {
-      rateCards: {
-        where: { isActive: true },
-        take: 1,
-      },
     },
   });
 
+  // Get rate cards for these transporters
+  const rateCards = await prisma.rateCard.findMany({
+    where: {
+      transporterId: { in: transporters.map(t => t.id) },
+      status: "ACTIVE",
+    },
+    include: {
+      RateCardSlab: true,
+    },
+  });
+
+  const rateCardMap = new Map(rateCards.map(rc => [rc.transporterId, rc]));
+
+  // Check COD availability from destination service pincodes
+  const destServicePincodes = await prisma.servicePincode.findMany({
+    where: {
+      pincode: destinationPincode,
+      transporterId: { in: transporters.map(t => t.id) },
+    },
+  });
+  const codAvailableMap = new Map(destServicePincodes.map(sp => [sp.transporterId, sp.codAvailable]));
+
   const routeType = getRouteType(originCheck.zone || "TIER2", destCheck.zone || "TIER2");
+
+  // Filter transporters based on payment mode
+  const filteredTransporters = paymentMode === "COD"
+    ? transporters.filter(t => codAvailableMap.get(t.id) === true)
+    : transporters;
 
   return {
     originPincode,
     destinationPincode,
-    isServiceable: transporters.length > 0,
-    transporters: transporters.map(t => ({
-      id: t.id,
-      code: t.code,
-      name: t.name,
-      codAvailable: t.supportsCod,
-      estimatedTatDays: destCheck.deliveryDays || 5,
-      baseRate: t.rateCards[0] ? Number(t.rateCards[0].baseRate) : 50,
-      ratePerKg: t.rateCards[0] ? Number(t.rateCards[0].ratePerKg) : 15,
-    })),
+    isServiceable: filteredTransporters.length > 0,
+    transporters: filteredTransporters.map(t => {
+      const rateCard = rateCardMap.get(t.id);
+      return {
+        id: t.id,
+        code: t.code,
+        name: t.name,
+        codAvailable: codAvailableMap.get(t.id) ?? false,
+        estimatedTatDays: destCheck.deliveryDays || 5,
+        baseRate: rateCard ? Number(rateCard.baseCost) : 50,
+        ratePerKg: 15, // Default rate per kg - would come from RateCardSlab
+      };
+    }),
     routeType,
     estimatedTatDays: destCheck.deliveryDays || 5,
   };
@@ -311,10 +334,10 @@ export async function allocateWithHopping(
 
     // Get location details
     const locationIds = inventoryByLocation.map(i => i.locationId);
-    const locations = await prisma.location.findMany({
+    const locationsData = await prisma.location.findMany({
       where: { id: { in: locationIds }, isActive: true },
     });
-    const locationMap = new Map(locations.map(l => [l.id, l]));
+    const locationMap = new Map(locationsData.map(l => [l.id, l]));
 
     // Sort by preference: preferred location first, then by distance to destination
     const sortedInventory = inventoryByLocation.sort((a, b) => {
@@ -489,7 +512,7 @@ export async function trackSLACompliance(orderId: string): Promise<{
 }> {
   const order = await prisma.order.findUnique({
     where: { id: orderId },
-    include: { location: true },
+    include: { Location: true },
   });
 
   if (!order) {
@@ -634,10 +657,14 @@ export async function generateLabelData(orderId: string): Promise<LabelData> {
   const order = await prisma.order.findUnique({
     where: { id: orderId },
     include: {
-      items: true,
-      location: true,
-      deliveries: {
-        include: { transporter: true },
+      OrderItem: {
+        include: {
+          SKU: true,
+        },
+      },
+      Location: true,
+      Delivery: {
+        include: { Transporter: true },
         take: 1,
       },
     },
@@ -647,7 +674,7 @@ export async function generateLabelData(orderId: string): Promise<LabelData> {
     throw new Error("Order not found");
   }
 
-  const delivery = order.deliveries[0];
+  const delivery = order.Delivery[0];
   if (!delivery?.awbNo) {
     throw new Error("AWB not assigned");
   }
@@ -656,15 +683,23 @@ export async function generateLabelData(orderId: string): Promise<LabelData> {
   const destZone = getZoneType(shippingAddress?.pincode || "000000");
   const routingCode = `${destZone}-${(shippingAddress?.pincode || "000000").substring(0, 3)}`;
 
+  const locationAddress = order.Location?.address as any;
+
+  // Calculate total weight from order items
+  const totalWeight = order.OrderItem.reduce((sum, item) => {
+    const itemWeight = item.SKU?.weight ? Number(item.SKU.weight) : 0;
+    return sum + (itemWeight * item.quantity);
+  }, 0) || 0.5;
+
   return {
     orderId: order.id,
     orderNo: order.orderNo,
     awbNo: delivery.awbNo,
-    transporterName: delivery.transporter?.name || "Courier",
-    senderName: order.location?.name || "Seller",
-    senderAddress: order.location?.address || "",
-    senderPincode: order.location?.pincode || "",
-    senderPhone: order.location?.phone || "",
+    transporterName: delivery.Transporter?.name || "Courier",
+    senderName: order.Location?.name || "Seller",
+    senderAddress: locationAddress ? [locationAddress.addressLine1, locationAddress.city, locationAddress.state].filter(Boolean).join(", ") : "",
+    senderPincode: locationAddress?.pincode || "",
+    senderPhone: order.Location?.contactPhone || "",
     receiverName: order.customerName,
     receiverAddress: [
       shippingAddress?.addressLine1,
@@ -674,11 +709,11 @@ export async function generateLabelData(orderId: string): Promise<LabelData> {
     ].filter(Boolean).join(", "),
     receiverPincode: shippingAddress?.pincode || "",
     receiverPhone: order.customerPhone,
-    weight: Number(order.totalWeight) || 0.5,
-    dimensions: `${order.length || 0}x${order.width || 0}x${order.height || 0} cm`,
+    weight: totalWeight,
+    dimensions: "N/A",
     paymentMode: order.paymentMode,
     codAmount: order.paymentMode === "COD" ? Number(order.totalAmount) : undefined,
-    itemCount: order.items.reduce((sum, i) => sum + i.quantity, 0),
+    itemCount: order.OrderItem.reduce((sum, i) => sum + i.quantity, 0),
     barcode: delivery.awbNo,
     routingCode,
   };

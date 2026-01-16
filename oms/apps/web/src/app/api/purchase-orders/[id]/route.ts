@@ -19,21 +19,21 @@ export async function GET(
     const purchaseOrder = await prisma.purchaseOrder.findUnique({
       where: { id },
       include: {
-        vendor: true,
-        items: {
+        Vendor: true,
+        POItem: {
           include: {
-            sku: {
+            SKU: {
               select: { id: true, code: true, name: true, barcodes: true },
             },
           },
         },
-        inbounds: {
+        Inbound: {
           include: {
-            receivedBy: {
+            User: {
               select: { id: true, name: true },
             },
             _count: {
-              select: { items: true },
+              select: { InboundItem: true },
             },
           },
           orderBy: { createdAt: "desc" },
@@ -76,7 +76,7 @@ export async function PATCH(
 
     const purchaseOrder = await prisma.purchaseOrder.findUnique({
       where: { id },
-      include: { items: true },
+      include: { POItem: true },
     });
 
     if (!purchaseOrder) {
@@ -103,7 +103,7 @@ export async function PATCH(
             approvedAt: new Date(),
             approvedBy: session.user.id,
           },
-          include: { vendor: true, items: true },
+          include: { Vendor: true, POItem: true },
         });
 
         return NextResponse.json(updated);
@@ -120,7 +120,7 @@ export async function PATCH(
         const updated = await prisma.purchaseOrder.update({
           where: { id },
           data: { status: "CANCELLED" },
-          include: { vendor: true, items: true },
+          include: { Vendor: true, POItem: true },
         });
 
         return NextResponse.json(updated);
@@ -184,10 +184,10 @@ export async function PATCH(
             totalAmount: subtotal + taxAmount,
           },
           include: {
-            vendor: true,
-            items: {
+            Vendor: true,
+            POItem: {
               include: {
-                sku: {
+                SKU: {
                   select: { id: true, code: true, name: true },
                 },
               },
@@ -215,7 +215,7 @@ export async function PATCH(
             expectedDate: expectedDate ? new Date(expectedDate) : undefined,
             remarks,
           },
-          include: { vendor: true, items: true },
+          include: { Vendor: true, POItem: true },
         });
 
         return NextResponse.json(updated);
@@ -251,7 +251,7 @@ export async function DELETE(
     const purchaseOrder = await prisma.purchaseOrder.findUnique({
       where: { id },
       include: {
-        _count: { select: { inbounds: true } },
+        _count: { select: { Inbound: true } },
       },
     });
 
@@ -262,7 +262,7 @@ export async function DELETE(
       );
     }
 
-    if (purchaseOrder._count.inbounds > 0) {
+    if (purchaseOrder._count.Inbound > 0) {
       return NextResponse.json(
         { error: "Cannot delete PO with inbounds" },
         { status: 400 }

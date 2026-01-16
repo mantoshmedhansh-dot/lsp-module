@@ -97,10 +97,10 @@ export async function POST(request: NextRequest) {
     await prisma.auditLog.create({
       data: {
         action: "PASSWORD_CHANGED",
-        entity: "User",
+        entityType: "User",
         entityId: user.id,
         userId: user.id,
-        details: {
+        changes: {
           timestamp: new Date().toISOString(),
           message: "Password changed successfully",
         },

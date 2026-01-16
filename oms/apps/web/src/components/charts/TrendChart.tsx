@@ -131,7 +131,7 @@ export function TrendChart({
             stroke="#9ca3af"
           />
           <Tooltip
-            formatter={(value: number) => [valueFormatter(value), valueLabel]}
+            formatter={(value: number | undefined) => [valueFormatter(value ?? 0), valueLabel]}
             labelFormatter={(label) => {
               const date = new Date(label);
               return date.toLocaleDateString();

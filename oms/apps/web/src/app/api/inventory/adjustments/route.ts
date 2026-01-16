@@ -54,28 +54,24 @@ export async function GET(request: NextRequest) {
       prisma.stockAdjustment.findMany({
         where,
         include: {
-          location: {
+          Location: {
             select: {
               id: true,
               code: true,
               name: true,
             },
           },
-          adjustedBy: {
+          User: {
             select: {
               id: true,
               name: true,
               email: true,
             },
           },
-          items: {
-            include: {
-              adjustment: false,
-            },
-          },
+          StockAdjustmentItem: true,
           _count: {
             select: {
-              items: true,
+              StockAdjustmentItem: true,
             },
           },
         },
@@ -90,7 +86,7 @@ export async function GET(request: NextRequest) {
     const adjustmentsWithSku = await Promise.all(
       adjustments.map(async (adj) => {
         const itemsWithSku = await Promise.all(
-          adj.items.map(async (item) => {
+          adj.StockAdjustmentItem.map(async (item) => {
             const sku = await prisma.sKU.findUnique({
               where: { id: item.skuId },
               select: { id: true, code: true, name: true },
@@ -102,7 +98,7 @@ export async function GET(request: NextRequest) {
             return { ...item, sku, bin };
           })
         );
-        return { ...adj, items: itemsWithSku };
+        return { ...adj, items: itemsWithSku, location: adj.Location, adjustedBy: adj.User };
       })
     );
 
@@ -184,7 +180,7 @@ export async function POST(request: NextRequest) {
           remarks,
           locationId,
           adjustedById: session.user.id!,
-          items: {
+          StockAdjustmentItem: {
             create: validatedItems.map((item) => ({
               skuId: item.skuId,
               binId: item.binId,
@@ -196,9 +192,9 @@ export async function POST(request: NextRequest) {
           },
         },
         include: {
-          items: true,
-          location: true,
-          adjustedBy: {
+          StockAdjustmentItem: true,
+          Location: true,
+          User: {
             select: { name: true },
           },
         },
@@ -216,7 +212,7 @@ export async function POST(request: NextRequest) {
           // Create new inventory record if quantity is positive
           const bin = await tx.bin.findUnique({
             where: { id: item.binId },
-            include: { zone: true },
+            include: { Zone: true },
           });
 
           if (bin) {
@@ -224,7 +220,7 @@ export async function POST(request: NextRequest) {
               data: {
                 skuId: item.skuId,
                 binId: item.binId,
-                locationId: bin.zone.locationId,
+                locationId: bin.Zone.locationId,
                 quantity: item.newQty,
                 batchNo: item.batchNo,
               },

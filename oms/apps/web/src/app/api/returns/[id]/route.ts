@@ -31,16 +31,16 @@ export async function GET(
     const returnRecord = await prisma.return.findUnique({
       where: { id },
       include: {
-        order: {
+        Order_Return_orderIdToOrder: {
           include: {
-            items: {
+            OrderItem: {
               include: {
-                sku: { select: { id: true, code: true, name: true } },
+                SKU: { select: { id: true, code: true, name: true } },
               },
             },
           },
         },
-        items: {
+        ReturnItem: {
           select: {
             id: true,
             skuId: true,
@@ -62,14 +62,14 @@ export async function GET(
     }
 
     // Get SKU details for items
-    const skuIds = returnRecord.items.map((item) => item.skuId);
+    const skuIds = returnRecord.ReturnItem.map((item) => item.skuId);
     const skus = await prisma.sKU.findMany({
       where: { id: { in: skuIds } },
       select: { id: true, code: true, name: true, barcodes: true },
     });
 
     const skuMap = new Map(skus.map((sku) => [sku.id, sku]));
-    const itemsWithSku = returnRecord.items.map((item) => ({
+    const itemsWithSku = returnRecord.ReturnItem.map((item) => ({
       ...item,
       sku: skuMap.get(item.skuId),
     }));
@@ -105,7 +105,7 @@ export async function PATCH(
 
     const returnRecord = await prisma.return.findUnique({
       where: { id },
-      include: { items: true },
+      include: { ReturnItem: true },
     });
 
     if (!returnRecord) {
@@ -153,7 +153,7 @@ export async function PATCH(
             status: "RECEIVED",
             receivedAt: new Date(),
           },
-          include: { items: true },
+          include: { ReturnItem: true },
         });
 
         return NextResponse.json(updated);
@@ -199,7 +199,7 @@ export async function PATCH(
         const updated = await prisma.return.update({
           where: { id },
           data: { status: newStatus },
-          include: { items: true },
+          include: { ReturnItem: true },
         });
 
         return NextResponse.json(updated);
@@ -218,7 +218,7 @@ export async function PATCH(
 
         const result = await prisma.$transaction(async (tx) => {
           for (const item of items) {
-            const returnItem = returnRecord.items.find((ri) => ri.id === item.id);
+            const returnItem = returnRecord.ReturnItem.find((ri) => ri.id === item.id);
             if (!returnItem) continue;
 
             // Update return item action
@@ -285,7 +285,7 @@ export async function PATCH(
               status: "RESTOCKED",
               processedAt: new Date(),
             },
-            include: { items: true },
+            include: { ReturnItem: true },
           });
         });
 
@@ -330,7 +330,7 @@ export async function PATCH(
         const updated = await prisma.return.update({
           where: { id },
           data: { reason, remarks },
-          include: { items: true },
+          include: { ReturnItem: true },
         });
 
         return NextResponse.json(updated);

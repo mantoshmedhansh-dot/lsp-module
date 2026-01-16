@@ -41,11 +41,11 @@ export async function GET(request: NextRequest) {
       prisma.qCTemplate.findMany({
         where,
         include: {
-          parameters: {
+          QCParameter: {
             orderBy: { sequence: "asc" },
           },
           _count: {
-            select: { executions: true, parameters: true },
+            select: { QCExecution: true, QCParameter: true },
           },
         },
         orderBy: { createdAt: "desc" },
@@ -107,9 +107,11 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const {
+      code,
       name,
       description,
       type,
+      companyId,
       parameters,
       isActive = true,
     } = body;
@@ -121,38 +123,43 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Generate code if not provided
+    const templateCode = code || `QCT_${Date.now().toString(36).toUpperCase()}`;
+
     const template = await prisma.qCTemplate.create({
       data: {
+        code: templateCode,
         name,
         description,
         type,
+        companyId,
         isActive,
-        parameters: {
+        QCParameter: {
           create: parameters.map((param: {
+            code?: string;
             name: string;
             type: string;
             isMandatory?: boolean;
-            acceptableValues?: string;
+            acceptableValues?: string[];
             minValue?: number;
             maxValue?: number;
-            unitOfMeasure?: string;
             requiresPhoto?: boolean;
             sequence: number;
           }, index: number) => ({
+            code: param.code || `PARAM_${index + 1}`,
             name: param.name,
             type: param.type,
             isMandatory: param.isMandatory ?? true,
-            acceptableValues: param.acceptableValues,
+            acceptableValues: param.acceptableValues || [],
             minValue: param.minValue,
             maxValue: param.maxValue,
-            unitOfMeasure: param.unitOfMeasure,
             requiresPhoto: param.requiresPhoto ?? false,
             sequence: param.sequence ?? index + 1,
           })),
         },
       },
       include: {
-        parameters: {
+        QCParameter: {
           orderBy: { sequence: "asc" },
         },
       },

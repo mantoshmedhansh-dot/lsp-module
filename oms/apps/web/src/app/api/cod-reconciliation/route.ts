@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
       prisma.cODReconciliation.findMany({
         where,
         include: {
-          _count: { select: { transactions: true } },
+          _count: { select: { CODTransaction: true } },
         },
         orderBy: { createdAt: "desc" },
         skip,
@@ -122,12 +122,12 @@ export async function POST(request: NextRequest) {
       where: {
         id: { in: deliveryIds },
         transporterId,
-        order: {
+        Order: {
           paymentMode: "COD",
         },
       },
       include: {
-        order: {
+        Order: {
           select: {
             id: true,
             orderNo: true,
@@ -147,7 +147,7 @@ export async function POST(request: NextRequest) {
 
     // Calculate expected amount
     const expectedAmount = deliveries.reduce((sum, d) => {
-      return sum + (d.order.totalAmount?.toNumber() || 0);
+      return sum + (d.Order.totalAmount?.toNumber() || 0);
     }, 0);
 
     // Generate reconciliation number
@@ -181,21 +181,21 @@ export async function POST(request: NextRequest) {
         deliveredOrders: deliveries.length,
         pendingOrders: 0,
         remarks,
-        transactions: {
+        CODTransaction: {
           create: deliveries.map((d, idx) => ({
             transactionNo: `${reconciliationNo}-${String(idx + 1).padStart(3, "0")}`,
             deliveryId: d.id,
-            orderId: d.order.id,
+            orderId: d.Order.id,
             awbNo: d.awbNo,
-            amount: d.order.totalAmount?.toNumber() || 0,
+            amount: d.Order.totalAmount?.toNumber() || 0,
             type: "COLLECTION" as CODTransactionType,
             transactionDate: now,
           })),
         },
       },
       include: {
-        transactions: true,
-        _count: { select: { transactions: true } },
+        CODTransaction: true,
+        _count: { select: { CODTransaction: true } },
       },
     });
 

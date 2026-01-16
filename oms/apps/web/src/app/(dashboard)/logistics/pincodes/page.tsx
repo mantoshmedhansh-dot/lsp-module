@@ -84,6 +84,7 @@ interface Transporter {
   id: string;
   name: string;
   code: string;
+  isActive: boolean;
 }
 
 const zones = ["North", "South", "East", "West", "Central", "North-East"];

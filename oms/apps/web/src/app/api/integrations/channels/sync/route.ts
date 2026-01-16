@@ -28,9 +28,9 @@ export async function POST(request: NextRequest) {
     const channelConfig = await prisma.channelConfig.findUnique({
       where: { id: channelConfigId },
       include: {
-        company: {
+        Company: {
           include: {
-            locations: {
+            Location: {
               where: { isActive: true },
               take: 1,
             },
@@ -191,9 +191,9 @@ export async function POST(request: NextRequest) {
             shippingCharges,
             discount,
             totalAmount,
-            locationId: body.locationId || channelConfig.company.locations[0]?.id,
+            locationId: body.locationId || channelConfig.Company.Location[0]?.id,
             dataSourceType: "CHANNEL_SYNC",
-            items: {
+            OrderItem: {
               create: items,
             },
           },

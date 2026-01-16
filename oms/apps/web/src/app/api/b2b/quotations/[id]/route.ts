@@ -35,14 +35,14 @@ export async function GET(
         customerId: customer.id,
       },
       include: {
-        items: {
+        QuotationItem: {
           include: {
-            sku: {
-              select: { id: true, code: true, name: true, imageUrl: true },
+            SKU: {
+              select: { id: true, code: true, name: true, images: true },
             },
           },
         },
-        convertedOrder: {
+        Order: {
           select: { id: true, orderNo: true, status: true },
         },
       },
@@ -73,14 +73,14 @@ export async function GET(
       shippingAddress: quotation.shippingAddress,
       billingAddress: quotation.billingAddress,
       rejectionReason: quotation.rejectionReason,
-      convertedOrder: quotation.convertedOrder,
-      items: quotation.items.map((item) => ({
+      convertedOrder: quotation.Order,
+      items: quotation.QuotationItem.map((item) => ({
         id: item.id,
         sku: {
-          id: item.sku.id,
-          code: item.sku.code,
-          name: item.sku.name,
-          imageUrl: item.sku.imageUrl,
+          id: item.SKU.id,
+          code: item.SKU.code,
+          name: item.SKU.name,
+          imageUrl: item.SKU.images?.[0] || null,
         },
         skuCode: item.skuCode,
         skuName: item.skuName,
@@ -136,12 +136,12 @@ export async function POST(
         customerId: customer.id,
       },
       include: {
-        items: {
+        QuotationItem: {
           include: {
-            sku: true,
+            SKU: true,
           },
         },
-        customer: true,
+        Customer: true,
       },
     });
 
@@ -156,7 +156,7 @@ export async function POST(
       );
     }
 
-    if (quotation.convertedToOrderId) {
+    if (quotation.convertedOrderId) {
       return NextResponse.json(
         { error: "Quotation already converted to order" },
         { status: 400 }
@@ -185,25 +185,28 @@ export async function POST(
       const order = await tx.order.create({
         data: {
           orderNo,
-          companyId: quotation.companyId,
           locationId: quotation.locationId,
           channel: "B2B",
           status: "CONFIRMED",
           paymentMode: "CREDIT",
           customerId: quotation.customerId,
+          customerName: quotation.Customer.name,
+          customerPhone: quotation.Customer.phone,
+          customerEmail: quotation.Customer.email,
+          orderDate: new Date(),
           paymentTermType: quotation.paymentTermType,
           paymentTermDays: quotation.paymentTermDays,
-          shippingAddress: quotation.shippingAddress,
-          billingAddress: quotation.billingAddress,
+          shippingAddress: quotation.shippingAddress as object,
+          billingAddress: quotation.billingAddress as object,
           subtotal: quotation.subtotal,
           taxAmount: quotation.taxAmount,
           discount: quotation.discountAmount,
           totalAmount: quotation.totalAmount,
-          items: {
-            create: quotation.items.map((item) => ({
+          OrderItem: {
+            create: quotation.QuotationItem.map((item) => ({
               skuId: item.skuId,
-              skuCode: item.skuCode || item.sku.code,
-              skuName: item.skuName || item.sku.name,
+              skuCode: item.skuCode || item.SKU.code,
+              skuName: item.skuName || item.SKU.name,
               quantity: item.quantity,
               unitPrice: item.unitPrice,
               discount: item.discountAmount,
@@ -219,13 +222,13 @@ export async function POST(
         where: { id },
         data: {
           status: "CONVERTED",
-          convertedToOrderId: order.id,
+          convertedOrderId: order.id,
           convertedAt: new Date(),
         },
       });
 
       // Update customer credit if credit is enabled
-      if (quotation.customer.creditEnabled) {
+      if (quotation.Customer.creditEnabled) {
         await tx.customer.update({
           where: { id: quotation.customerId },
           data: {
@@ -234,22 +237,26 @@ export async function POST(
         });
 
         // Create credit transaction
-        const creditUsed = Number(quotation.customer.creditUsed);
-        const creditLimit = Number(quotation.customer.creditLimit);
+        const creditUsed = Number(quotation.Customer.creditUsed);
+        const creditLimit = Number(quotation.Customer.creditLimit);
         const orderAmount = Number(quotation.totalAmount);
+        const balanceBefore = creditLimit - creditUsed;
 
-        await tx.creditTransaction.create({
+        const txnCount = await tx.b2BCreditTransaction.count({
+          where: { customerId: quotation.customerId },
+        });
+
+        await tx.b2BCreditTransaction.create({
           data: {
+            transactionNo: `CTX-${Date.now()}-${txnCount + 1}`,
             customerId: quotation.customerId,
-            type: "UTILIZATION",
+            type: "ORDER",
             amount: orderAmount,
-            balanceBefore: creditLimit - creditUsed,
-            balanceAfter: creditLimit - creditUsed - orderAmount,
-            referenceType: "ORDER",
-            referenceId: order.id,
-            referenceNo: orderNo,
-            description: `Order created from quotation ${quotation.quotationNo}`,
-            createdBy: session.user.id || "system",
+            orderId: order.id,
+            balanceBefore,
+            balanceAfter: balanceBefore - orderAmount,
+            remarks: `Order created from quotation ${quotation.quotationNo}`,
+            createdById: session.user.id || "system",
           },
         });
       }

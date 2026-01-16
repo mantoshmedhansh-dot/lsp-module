@@ -298,8 +298,8 @@ async function getInventoryReport(locationFilter: Record<string, unknown>) {
       quantity: { gt: 0 },
     },
     include: {
-      sku: { select: { id: true, code: true, name: true } },
-      bin: { select: { code: true, zone: { select: { code: true, name: true } } } },
+      SKU: { select: { id: true, code: true, name: true } },
+      Bin: { select: { code: true, Zone: { select: { code: true, name: true } } } },
     },
     orderBy: { expiryDate: "asc" },
     take: 50,

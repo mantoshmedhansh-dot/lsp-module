@@ -42,12 +42,13 @@ export async function GET(request: NextRequest) {
         );
 
         // Build export URL params
+        const reportFilters = (report.reportConfig as Record<string, string>) || {};
         const params = new URLSearchParams({
           format: report.format,
           type: report.reportType,
           fromDate: dateRange.fromDate,
           toDate: dateRange.toDate,
-          ...report.filters,
+          ...reportFilters,
         });
 
         // Generate the report (in production, this would upload to S3/storage)
@@ -159,9 +160,9 @@ export async function POST(request: NextRequest) {
     );
 
     // Build export URL params
-    const filters = (report.filters as Record<string, string>) || {};
+    const filters = (report.reportConfig as Record<string, string>) || {};
     const params = new URLSearchParams({
-      format: report.format || "excel",
+      format: report.format || "EXCEL",
       type: report.reportType,
       fromDate: dateRange.fromDate,
       toDate: dateRange.toDate,

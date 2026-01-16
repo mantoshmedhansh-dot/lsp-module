@@ -50,13 +50,13 @@ export async function GET(request: NextRequest) {
       prisma.manifest.findMany({
         where,
         include: {
-          deliveries: {
+          Delivery: {
             select: {
               id: true,
               deliveryNo: true,
               awbNo: true,
               status: true,
-              order: {
+              Order: {
                 select: {
                   orderNo: true,
                   customerName: true,
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
           },
           _count: {
             select: {
-              deliveries: true,
+              Delivery: true,
             },
           },
         },
@@ -188,14 +188,14 @@ export async function POST(request: NextRequest) {
         vehicleNo,
         driverName,
         driverPhone,
-        deliveries: {
+        Delivery: {
           connect: deliveryIds.map((id: string) => ({ id })),
         },
       },
       include: {
-        deliveries: {
+        Delivery: {
           include: {
-            order: {
+            Order: {
               select: {
                 orderNo: true,
                 customerName: true,
@@ -205,7 +205,7 @@ export async function POST(request: NextRequest) {
         },
         _count: {
           select: {
-            deliveries: true,
+            Delivery: true,
           },
         },
       },

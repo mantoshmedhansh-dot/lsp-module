@@ -22,12 +22,12 @@ export async function GET(
     const bundle = await prisma.sKUBundle.findUnique({
       where: { id },
       include: {
-        bundleSku: {
+        SKU: {
           select: { id: true, code: true, name: true },
         },
-        items: {
+        BundleItem: {
           include: {
-            componentSku: {
+            SKU: {
               select: { id: true, code: true, name: true },
             },
           },
@@ -40,7 +40,7 @@ export async function GET(
     }
 
     // Get inventory for all component SKUs
-    const componentSkuIds = bundle.items.map((item) => item.componentSkuId);
+    const componentSkuIds = bundle.BundleItem.map((item) => item.componentSkuId);
 
     const inventoryWhere: Record<string, unknown> = {
       skuId: { in: componentSkuIds },
@@ -52,14 +52,14 @@ export async function GET(
     const inventory = await prisma.inventory.findMany({
       where: inventoryWhere,
       include: {
-        location: {
+        Location: {
           select: { id: true, code: true, name: true },
         },
       },
     });
 
     // Calculate availability for each component
-    const componentAvailability = bundle.items.map((item) => {
+    const componentAvailability = bundle.BundleItem.map((item) => {
       const componentInventory = inventory.filter((inv) => inv.skuId === item.componentSkuId);
 
       const totalAvailable = componentInventory.reduce(
@@ -73,16 +73,16 @@ export async function GET(
 
       return {
         componentSkuId: item.componentSkuId,
-        componentSku: item.componentSku,
+        componentSku: item.SKU,
         requiredPerBundle: item.quantity,
         requiredTotal: requiredQty,
         availableTotal: totalAvailable,
-        isOptional: item.isOptional,
+        isOptional: item.allowSubstitute,
         canFulfill,
         maxBundles,
         locations: componentInventory.map((inv) => ({
           locationId: inv.locationId,
-          locationName: inv.location.name,
+          locationName: inv.Location.name,
           available: inv.quantity - inv.reservedQty,
         })),
       };
@@ -102,8 +102,8 @@ export async function GET(
     } else if (bundle.pricingType === "COMPONENT_SUM") {
       // Sum of component prices - would need to fetch prices
       bundlePrice = componentAvailability.reduce((sum, c) => {
-        const componentMrp = bundle.items.find((i) => i.componentSkuId === c.componentSkuId);
-        return sum + (Number(componentMrp?.componentSku) || 0) * c.requiredPerBundle;
+        const componentMrp = bundle.BundleItem.find((i) => i.componentSkuId === c.componentSkuId);
+        return sum + (Number(componentMrp?.SKU) || 0) * c.requiredPerBundle;
       }, 0);
 
       if (bundle.discountPercent) {
@@ -116,7 +116,7 @@ export async function GET(
         id: bundle.id,
         name: bundle.name,
         type: bundle.type,
-        bundleSku: bundle.bundleSku,
+        bundleSku: bundle.SKU,
         price: bundlePrice,
       },
       requestedQuantity: quantity,
@@ -124,9 +124,9 @@ export async function GET(
       maxAvailable: maxBundlesAvailable,
       components: componentAvailability,
       summary: {
-        totalComponents: bundle.items.length,
+        totalComponents: bundle.BundleItem.length,
         requiredComponents: requiredComponents.length,
-        optionalComponents: bundle.items.length - requiredComponents.length,
+        optionalComponents: bundle.BundleItem.length - requiredComponents.length,
         componentsAvailable: componentAvailability.filter((c) => c.canFulfill).length,
       },
     });

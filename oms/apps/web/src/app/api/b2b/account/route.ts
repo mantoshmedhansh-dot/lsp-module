@@ -20,7 +20,7 @@ export async function GET() {
         ],
       },
       include: {
-        priceList: { select: { name: true } },
+        PriceList: { select: { name: true } },
       },
     });
 
@@ -48,7 +48,7 @@ export async function GET() {
         creditLimit: Number(customer.creditLimit || 0),
         creditUsed: Number(customer.creditUsed || 0),
         creditAvailable: Number(customer.creditAvailable || 0),
-        priceList: customer.priceList?.name,
+        priceList: customer.PriceList?.name,
       },
     });
   } catch (error) {

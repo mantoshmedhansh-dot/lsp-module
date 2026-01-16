@@ -41,7 +41,7 @@ export async function GET() {
       where: {
         customerId: customer.id,
         paymentMode: "CREDIT",
-        paymentStatus: { in: ["PENDING", "PARTIAL"] },
+        status: { notIn: ["DELIVERED", "CANCELLED", "RTO_DELIVERED"] },
         createdAt: {
           lt: new Date(Date.now() - paymentDays * 24 * 60 * 60 * 1000),
         },
@@ -79,7 +79,7 @@ export async function GET() {
         id: txn.id,
         date: txn.createdAt.toISOString().split("T")[0],
         type: txn.type,
-        reference: txn.reference,
+        reference: txn.transactionNo,
         amount: txn.type === "PAYMENT" || txn.type === "CREDIT_NOTE"
           ? Number(txn.amount)
           : -Number(txn.amount),

@@ -46,10 +46,7 @@ export async function GET(request: NextRequest) {
       prisma.channelConfig.findMany({
         where,
         include: {
-          location: {
-            select: { id: true, code: true, name: true },
-          },
-          company: {
+          Company: {
             select: { id: true, name: true },
           },
         },
@@ -64,13 +61,12 @@ export async function GET(request: NextRequest) {
     const formattedChannels = channels.map((ch) => ({
       id: ch.id,
       channel: ch.channel,
-      name: ch.name,
+      name: ch.displayName,
       isActive: ch.isActive,
-      apiSyncStatus: ch.apiSyncStatus,
+      apiSyncStatus: ch.syncStatus,
       syncFrequency: ch.syncFrequency,
       webhookUrl: ch.webhookUrl,
-      location: ch.location,
-      company: ch.company,
+      company: ch.Company,
       lastSyncAt: ch.lastSyncAt,
       createdAt: ch.createdAt,
     }));
@@ -104,7 +100,6 @@ export async function POST(request: NextRequest) {
     const {
       channel,
       name,
-      locationId,
       syncFrequency,
       credentials,
       webhookUrl,
@@ -131,43 +126,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify location exists and belongs to company
-    if (locationId) {
-      const location = await prisma.location.findFirst({
-        where: { id: locationId, companyId },
-      });
-
-      if (!location) {
-        return NextResponse.json(
-          { error: "Location not found or does not belong to company" },
-          { status: 400 }
-        );
-      }
-    }
-
-    // Encrypt credentials if provided
-    let apiCredentials = null;
-    if (credentials) {
-      // In production, this should be encrypted
-      apiCredentials = JSON.stringify(credentials);
-    }
-
     const channelConfig = await prisma.channelConfig.create({
       data: {
         channel,
-        name,
+        displayName: name,
         companyId,
-        locationId: locationId || null,
-        syncFrequency: syncFrequency || "MANUAL",
-        apiCredentials,
+        syncFrequency: syncFrequency || "HOURLY",
+        credentials: credentials || undefined,
         webhookUrl: webhookUrl || null,
         isActive: isActive !== false,
       },
       include: {
-        location: {
-          select: { id: true, code: true, name: true },
-        },
-        company: {
+        Company: {
           select: { id: true, name: true },
         },
       },
@@ -176,11 +146,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       id: channelConfig.id,
       channel: channelConfig.channel,
-      name: channelConfig.name,
+      name: channelConfig.displayName,
       isActive: channelConfig.isActive,
       syncFrequency: channelConfig.syncFrequency,
-      location: channelConfig.location,
-      company: channelConfig.company,
+      company: channelConfig.Company,
     }, { status: 201 });
   } catch (error) {
     console.error("Error creating channel:", error);

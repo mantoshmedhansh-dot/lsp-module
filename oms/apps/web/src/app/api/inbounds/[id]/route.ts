@@ -31,21 +31,21 @@ export async function GET(
     const inbound = await prisma.inbound.findUnique({
       where: { id },
       include: {
-        location: true,
-        receivedBy: { select: { id: true, name: true } },
-        purchaseOrder: {
+        Location: true,
+        User: { select: { id: true, name: true } },
+        PurchaseOrder: {
           include: {
-            vendor: true,
-            items: {
+            Vendor: true,
+            POItem: {
               include: {
-                sku: { select: { id: true, code: true, name: true } },
+                SKU: { select: { id: true, code: true, name: true } },
               },
             },
           },
         },
-        items: {
+        InboundItem: {
           include: {
-            sku: {
+            SKU: {
               select: {
                 id: true,
                 code: true,
@@ -93,11 +93,11 @@ export async function PATCH(
     const inbound = await prisma.inbound.findUnique({
       where: { id },
       include: {
-        items: true,
-        purchaseOrder: {
-          include: { items: true },
+        InboundItem: true,
+        PurchaseOrder: {
+          include: { POItem: true },
         },
-        location: true,
+        Location: true,
       },
     });
 
@@ -140,9 +140,9 @@ export async function PATCH(
         const updated = await prisma.inbound.findUnique({
           where: { id },
           include: {
-            items: {
+            InboundItem: {
               include: {
-                sku: { select: { id: true, code: true, name: true } },
+                SKU: { select: { id: true, code: true, name: true } },
               },
             },
           },
@@ -182,9 +182,9 @@ export async function PATCH(
         const updated = await prisma.inbound.findUnique({
           where: { id },
           include: {
-            items: {
+            InboundItem: {
               include: {
-                sku: { select: { id: true, code: true, name: true } },
+                SKU: { select: { id: true, code: true, name: true } },
               },
             },
           },
@@ -198,7 +198,7 @@ export async function PATCH(
         const result = await prisma.$transaction(async (tx) => {
           const inboundItems = await tx.inboundItem.findMany({
             where: { inboundId: id },
-            include: { sku: true },
+            include: { SKU: true },
           });
 
           // Add items to inventory and create movements
@@ -210,7 +210,7 @@ export async function PATCH(
             // Get bin to find location
             const bin = await tx.bin.findUnique({
               where: { id: item.binId },
-              include: { zone: true },
+              include: { Zone: true },
             });
 
             if (!bin) continue;
@@ -267,11 +267,11 @@ export async function PATCH(
           }
 
           // Update PO received quantities if linked
-          if (inbound.purchaseOrderId && inbound.purchaseOrder) {
+          if (inbound.purchaseOrderId && inbound.PurchaseOrder) {
             for (const item of inboundItems) {
               const qtyReceived = item.acceptedQty > 0 ? item.acceptedQty : item.receivedQty;
 
-              const poItem = inbound.purchaseOrder.items.find(
+              const poItem = inbound.PurchaseOrder.POItem.find(
                 (pi) => pi.skuId === item.skuId
               );
 
@@ -317,9 +317,9 @@ export async function PATCH(
               completedAt: new Date(),
             },
             include: {
-              items: {
+              InboundItem: {
                 include: {
-                  sku: { select: { id: true, code: true, name: true } },
+                  SKU: { select: { id: true, code: true, name: true } },
                 },
               },
             },
@@ -353,9 +353,9 @@ export async function PATCH(
           where: { id },
           data: { remarks },
           include: {
-            items: {
+            InboundItem: {
               include: {
-                sku: { select: { id: true, code: true, name: true } },
+                SKU: { select: { id: true, code: true, name: true } },
               },
             },
           },

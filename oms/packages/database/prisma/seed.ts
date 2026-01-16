@@ -85,7 +85,11 @@ async function main() {
 
   const admin = await prisma.user.upsert({
     where: { email: "admin@demo.com" },
-    update: { updatedAt: new Date() },
+    update: {
+      password: hashedPassword,  // Always update password on seed
+      isActive: true,
+      updatedAt: new Date()
+    },
     create: {
       email: "admin@demo.com",
       password: hashedPassword,
@@ -130,7 +134,11 @@ async function main() {
 
     await prisma.user.upsert({
       where: { email: user.email },
-      update: { updatedAt: new Date() },
+      update: {
+        password: userPassword,  // Always update password on seed
+        isActive: true,
+        updatedAt: new Date()
+      },
       create: {
         email: user.email,
         password: userPassword,

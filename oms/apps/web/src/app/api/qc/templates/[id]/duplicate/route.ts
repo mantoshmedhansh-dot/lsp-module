@@ -23,7 +23,7 @@ export async function POST(
     const original = await prisma.qCTemplate.findUnique({
       where: { id: templateId },
       include: {
-        parameters: true,
+        QCParameter: true,
       },
     });
 
@@ -33,9 +33,14 @@ export async function POST(
 
     // Create the duplicate in a transaction
     const duplicated = await prisma.$transaction(async (tx) => {
+      // Generate a unique code for the duplicate template
+      const timestamp = Date.now().toString(36).toUpperCase();
+      const duplicateCode = `${original.code}_COPY_${timestamp}`;
+
       // Create new template
       const newTemplate = await tx.qCTemplate.create({
         data: {
+          code: duplicateCode,
           companyId: original.companyId,
           name: `${original.name} (Copy)`,
           description: original.description,
@@ -45,17 +50,18 @@ export async function POST(
       });
 
       // Copy parameters
-      if (original.parameters.length > 0) {
+      if (original.QCParameter.length > 0) {
         await tx.qCParameter.createMany({
-          data: original.parameters.map((param) => ({
+          data: original.QCParameter.map((param) => ({
             templateId: newTemplate.id,
+            code: param.code,
             name: param.name,
             type: param.type,
             isMandatory: param.isMandatory,
             acceptableValues: param.acceptableValues,
             minValue: param.minValue,
             maxValue: param.maxValue,
-            unitOfMeasure: param.unitOfMeasure,
+            tolerance: param.tolerance,
             requiresPhoto: param.requiresPhoto,
             sequence: param.sequence,
           })),
@@ -69,11 +75,11 @@ export async function POST(
     const completeTemplate = await prisma.qCTemplate.findUnique({
       where: { id: duplicated.id },
       include: {
-        parameters: {
+        QCParameter: {
           orderBy: { sequence: "asc" },
         },
         _count: {
-          select: { executions: true },
+          select: { QCExecution: true },
         },
       },
     });

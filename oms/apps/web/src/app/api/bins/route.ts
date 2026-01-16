@@ -53,13 +53,13 @@ export async function GET(request: NextRequest) {
     const bins = await prisma.bin.findMany({
       where,
       include: {
-        zone: {
+        Zone: {
           select: {
             id: true,
             code: true,
             name: true,
             type: true,
-            location: {
+            Location: {
               select: {
                 id: true,
                 code: true,
@@ -70,13 +70,13 @@ export async function GET(request: NextRequest) {
         },
         _count: {
           select: {
-            inventory: true,
+            Inventory: true,
           },
         },
       },
       orderBy: [
-        { zone: { location: { code: "asc" } } },
-        { zone: { code: "asc" } },
+        { Zone: { Location: { code: "asc" } } },
+        { Zone: { code: "asc" } },
         { code: "asc" },
       ],
     });
@@ -135,9 +135,9 @@ export async function POST(request: NextRequest) {
         capacity,
       },
       include: {
-        zone: {
+        Zone: {
           include: {
-            location: true,
+            Location: true,
           },
         },
       },

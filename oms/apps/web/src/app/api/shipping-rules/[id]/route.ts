@@ -18,7 +18,7 @@ export async function GET(
     const rule = await prisma.shippingRule.findUnique({
       where: { id },
       include: {
-        conditions: true,
+        ShippingRuleCondition: true,
       },
     });
 
@@ -57,7 +57,7 @@ export async function PATCH(
 
     const existingRule = await prisma.shippingRule.findUnique({
       where: { id },
-      include: { conditions: true },
+      include: { ShippingRuleCondition: true },
     });
 
     if (!existingRule) {
@@ -84,16 +84,14 @@ export async function PATCH(
       if (conditions.length > 0) {
         await prisma.shippingRuleCondition.createMany({
           data: conditions.map((c: {
-            field: string;
+            conditionType: string;
             operator: string;
-            value: string;
-            logicalOperator?: string;
+            value: unknown;
           }) => ({
             ruleId: id,
-            field: c.field,
+            conditionType: c.conditionType,
             operator: c.operator,
             value: c.value,
-            logicalOperator: c.logicalOperator || "AND",
           })),
         });
       }
@@ -103,7 +101,7 @@ export async function PATCH(
       where: { id },
       data: updateData,
       include: {
-        conditions: true,
+        ShippingRuleCondition: true,
       },
     });
 

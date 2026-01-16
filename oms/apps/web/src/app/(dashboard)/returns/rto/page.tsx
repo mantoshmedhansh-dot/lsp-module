@@ -71,13 +71,15 @@ export default function RTOManagementPage() {
 
   const statusColors: Record<string, string> = {
     INITIATED: "bg-yellow-100 text-yellow-800",
+    PICKUP_SCHEDULED: "bg-blue-100 text-blue-800",
+    PICKED_UP: "bg-indigo-100 text-indigo-800",
     IN_TRANSIT: "bg-purple-100 text-purple-800",
     RECEIVED: "bg-blue-100 text-blue-800",
     QC_PENDING: "bg-orange-100 text-orange-800",
     QC_PASSED: "bg-green-100 text-green-800",
     QC_FAILED: "bg-red-100 text-red-800",
-    RESTOCKED: "bg-green-100 text-green-800",
-    DISPOSED: "bg-gray-100 text-gray-800",
+    REFUND_INITIATED: "bg-cyan-100 text-cyan-800",
+    CANCELLED: "bg-gray-100 text-gray-800",
   };
 
   // Extract returns from response
@@ -144,9 +146,9 @@ export default function RTOManagementPage() {
                   <Package className="h-5 w-5 text-green-600" />
                   <div>
                     <p className="text-2xl font-bold">
-                      {summaryData?.byStatus?.RESTOCKED || 0}
+                      {summaryData?.byStatus?.QC_PASSED || 0}
                     </p>
-                    <p className="text-sm text-muted-foreground">Restocked</p>
+                    <p className="text-sm text-muted-foreground">QC Passed</p>
                   </div>
                 </div>
               </CardContent>
@@ -240,11 +242,13 @@ export default function RTOManagementPage() {
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="INITIATED">Initiated</SelectItem>
+                <SelectItem value="PICKUP_SCHEDULED">Pickup Scheduled</SelectItem>
+                <SelectItem value="PICKED_UP">Picked Up</SelectItem>
                 <SelectItem value="IN_TRANSIT">In Transit</SelectItem>
                 <SelectItem value="RECEIVED">Received</SelectItem>
                 <SelectItem value="QC_PENDING">QC Pending</SelectItem>
                 <SelectItem value="QC_PASSED">QC Passed</SelectItem>
-                <SelectItem value="RESTOCKED">Restocked</SelectItem>
+                <SelectItem value="QC_FAILED">QC Failed</SelectItem>
               </SelectContent>
             </Select>
           </div>

@@ -418,14 +418,15 @@ export default function ReturnsPage() {
   const getStatusBadge = (status: string) => {
     const colors: Record<string, string> = {
       INITIATED: "bg-gray-100 text-gray-800",
+      PICKUP_SCHEDULED: "bg-indigo-100 text-indigo-800",
+      PICKED_UP: "bg-violet-100 text-violet-800",
       IN_TRANSIT: "bg-blue-100 text-blue-800",
       RECEIVED: "bg-cyan-100 text-cyan-800",
       QC_PENDING: "bg-yellow-100 text-yellow-800",
       QC_PASSED: "bg-green-100 text-green-800",
       QC_FAILED: "bg-red-100 text-red-800",
-      RESTOCKED: "bg-emerald-100 text-emerald-800",
-      DISPOSED: "bg-gray-100 text-gray-800",
-      REFUNDED: "bg-purple-100 text-purple-800",
+      REFUND_INITIATED: "bg-purple-100 text-purple-800",
+      CANCELLED: "bg-gray-100 text-gray-800",
     };
 
     return (
@@ -526,12 +527,12 @@ export default function ReturnsPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Restocked</CardTitle>
+            <CardTitle className="text-sm font-medium">QC Passed</CardTitle>
             <CheckCircle className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {statusCounts["RESTOCKED"] || 0}
+              {statusCounts["QC_PASSED"] || 0}
             </div>
           </CardContent>
         </Card>
@@ -561,7 +562,7 @@ export default function ReturnsPage() {
                 <SelectItem value="all">All Types</SelectItem>
                 <SelectItem value="CUSTOMER_RETURN">Customer Return</SelectItem>
                 <SelectItem value="RTO">RTO</SelectItem>
-                <SelectItem value="VENDOR_RETURN">Vendor Return</SelectItem>
+                <SelectItem value="EXCHANGE">Exchange</SelectItem>
               </SelectContent>
             </Select>
             <Select value={statusFilter} onValueChange={(value) => { setStatusFilter(value); setPage(1); }}>
@@ -571,13 +572,14 @@ export default function ReturnsPage() {
               <SelectContent>
                 <SelectItem value="all">All Statuses</SelectItem>
                 <SelectItem value="INITIATED">Initiated</SelectItem>
+                <SelectItem value="PICKUP_SCHEDULED">Pickup Scheduled</SelectItem>
+                <SelectItem value="PICKED_UP">Picked Up</SelectItem>
                 <SelectItem value="IN_TRANSIT">In Transit</SelectItem>
                 <SelectItem value="RECEIVED">Received</SelectItem>
                 <SelectItem value="QC_PENDING">QC Pending</SelectItem>
                 <SelectItem value="QC_PASSED">QC Passed</SelectItem>
                 <SelectItem value="QC_FAILED">QC Failed</SelectItem>
-                <SelectItem value="RESTOCKED">Restocked</SelectItem>
-                <SelectItem value="REFUNDED">Refunded</SelectItem>
+                <SelectItem value="REFUND_INITIATED">Refund Initiated</SelectItem>
               </SelectContent>
             </Select>
             <Button onClick={handleSearch}>
@@ -995,7 +997,7 @@ export default function ReturnsPage() {
                                 updated[index] = { ...updated[index], qcStatus: value };
                                 setQcItems(updated);
                               }}
-                              disabled={selectedReturn.status === "RESTOCKED"}
+                              disabled={selectedReturn.status === "QC_PASSED"}
                             >
                               <SelectTrigger className="w-[120px]">
                                 <SelectValue placeholder="Select" />
@@ -1014,7 +1016,7 @@ export default function ReturnsPage() {
                                 updated[index] = { ...updated[index], qcGrade: value };
                                 setQcItems(updated);
                               }}
-                              disabled={selectedReturn.status === "RESTOCKED"}
+                              disabled={selectedReturn.status === "QC_PASSED"}
                             >
                               <SelectTrigger className="w-[80px]">
                                 <SelectValue placeholder="Grade" />
@@ -1036,7 +1038,7 @@ export default function ReturnsPage() {
                                 setQcItems(updated);
                               }}
                               placeholder="Remarks"
-                              disabled={selectedReturn.status === "RESTOCKED"}
+                              disabled={selectedReturn.status === "QC_PASSED"}
                             />
                           </TableCell>
                         </TableRow>
@@ -1116,7 +1118,7 @@ export default function ReturnsPage() {
                                 updated[index] = { ...updated[index], action: value };
                                 setProcessItems(updated);
                               }}
-                              disabled={selectedReturn.status === "RESTOCKED"}
+                              disabled={selectedReturn.status === "QC_PASSED"}
                             >
                               <SelectTrigger className="w-[120px]">
                                 <SelectValue />
@@ -1141,7 +1143,7 @@ export default function ReturnsPage() {
                                 };
                                 setProcessItems(updated);
                               }}
-                              disabled={selectedReturn.status === "RESTOCKED"}
+                              disabled={selectedReturn.status === "QC_PASSED"}
                             />
                           </TableCell>
                         </TableRow>

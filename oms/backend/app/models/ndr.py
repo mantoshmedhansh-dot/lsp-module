@@ -438,6 +438,63 @@ class AIActionLogResponse(ResponseBase):
     updatedAt: datetime
 
 
+# --- List Response Schemas (for OpenAPI documentation) ---
+
+class NDROrderInfo(SQLModel):
+    """Order info embedded in NDR list response"""
+    id: str
+    orderNo: str
+    customerName: str
+    customerPhone: str
+    customerEmail: Optional[str] = None
+    shippingAddress: Optional[dict] = None
+    paymentMode: str
+    totalAmount: float
+
+
+class NDRDeliveryInfo(SQLModel):
+    """Delivery info embedded in NDR list response"""
+    id: str
+    deliveryNo: str
+    awbNo: str
+    status: str
+    transporter: Optional[dict] = None
+
+
+class NDRListItem(SQLModel):
+    """Single NDR item in list response"""
+    id: str
+    ndrCode: str
+    reason: str
+    aiClassification: Optional[str] = None
+    confidence: Optional[float] = None
+    status: str
+    priority: str
+    riskScore: Optional[int] = None
+    attemptNumber: int
+    attemptDate: Optional[str] = None
+    carrierRemark: Optional[str] = None
+    createdAt: Optional[str] = None
+    order: Optional[NDROrderInfo] = None
+    delivery: Optional[NDRDeliveryInfo] = None
+    outreachAttempts: List[dict] = []
+    _count: Optional[dict] = None
+
+
+class NDRListResponse(SQLModel):
+    """
+    Response schema for NDR list endpoint.
+    Includes paginated NDRs with aggregated statistics.
+    """
+    ndrs: List[NDRListItem]
+    total: int
+    statusCounts: dict
+    priorityCounts: dict
+    reasonCounts: dict
+    avgResolutionHours: float
+    outreachSuccessRate: float
+
+
 # --- Summary Schemas ---
 
 class NDRSummary(SQLModel):

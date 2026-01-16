@@ -12,6 +12,7 @@ from app.core.database import get_session
 from app.core.deps import get_current_user, require_manager, CompanyFilter
 from app.models import (
     NDR, NDRCreate, NDRUpdate, NDRResponse, NDRBrief,
+    NDRListResponse, NDRListItem, NDROrderInfo, NDRDeliveryInfo,
     NDROutreach, NDROutreachCreate, NDROutreachUpdate, NDROutreachResponse,
     AIActionLog, AIActionLogCreate, AIActionLogUpdate, AIActionLogResponse,
     User, NDRStatus, NDRPriority, NDRReason, ResolutionType,
@@ -25,7 +26,7 @@ router = APIRouter(prefix="/ndr", tags=["NDR"])
 # NDR Endpoints
 # ============================================================================
 
-@router.get("")
+@router.get("", response_model=NDRListResponse)
 def list_ndrs(
     page: int = Query(1, ge=1),
     limit: int = Query(50, ge=1, le=100),

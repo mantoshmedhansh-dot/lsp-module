@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start -p 3001",
     "lint": "eslint",
-    "generate-api": "openapi-ts -i ./openapi.json -o ./src/lib/api/generated -c legacy/fetch"
+    "generate-api": "openapi-ts",
+    "generate-api:local": "openapi-ts -i http://localhost:8000/openapi.json -o ./src/lib/api/generated -c legacy/fetch",
+    "generate-api:prod": "openapi-ts -i https://cjdquick-api-vr4w.onrender.com/openapi.json -o ./src/lib/api/generated -c legacy/fetch"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

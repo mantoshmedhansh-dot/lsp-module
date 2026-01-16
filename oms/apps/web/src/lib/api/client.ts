@@ -1,66 +1,43 @@
 /**
  * API Client Configuration
  *
- * Configures the generated OpenAPI client with:
- * - Base URL pointing to FastAPI backend
- * - JWT token authentication
- * - Request/response interceptors
+ * This module configures the OpenAPI client to work with the
+ * backend-centric architecture:
+ *
+ * Architecture Flow:
+ * 1. Frontend calls /api/v1/* (relative URL)
+ * 2. Next.js catch-all proxy at /api/v1/[...path]/route.ts
+ * 3. Proxy extracts NextAuth session and adds headers:
+ *    - X-User-Id
+ *    - X-User-Role
+ *    - X-Company-Id
+ * 4. Request forwarded to FastAPI backend
+ *
+ * This approach:
+ * - Uses cookie-based NextAuth session (no JWT token management)
+ * - Centralizes auth handling in the proxy
+ * - Works seamlessly with SSR and client-side rendering
  */
 
 import { OpenAPI } from './generated';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://cjdquick-api-vr4w.onrender.com';
-
-// Token storage key
-const TOKEN_KEY = 'auth_token';
-
 /**
- * Get stored authentication token
- */
-export function getAuthToken(): string | null {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem(TOKEN_KEY);
-  }
-  return null;
-}
-
-/**
- * Set authentication token
- */
-export function setAuthToken(token: string | null): void {
-  if (typeof window !== 'undefined') {
-    if (token) {
-      localStorage.setItem(TOKEN_KEY, token);
-    } else {
-      localStorage.removeItem(TOKEN_KEY);
-    }
-  }
-}
-
-/**
- * Clear authentication token
- */
-export function clearAuthToken(): void {
-  setAuthToken(null);
-}
-
-/**
- * Configure the API client with base URL and auth token
+ * Configure the API client
+ * Uses relative URLs to go through Next.js proxy
  */
 export function configureApiClient(): void {
-  // Set base URL
-  OpenAPI.BASE = API_BASE_URL;
+  // Empty BASE = relative URLs = goes through Next.js proxy
+  // The proxy at /api/v1/[...path] handles auth and forwards to backend
+  OpenAPI.BASE = '';
 
-  // Set token resolver - called before each request
-  OpenAPI.TOKEN = async () => {
-    return getAuthToken() || '';
-  };
+  // Include credentials for cookie-based session
+  OpenAPI.CREDENTIALS = 'include';
+  OpenAPI.WITH_CREDENTIALS = true;
 
   // Add response interceptor for error handling
   OpenAPI.interceptors.response.use((response: Response) => {
-    // Handle 401 Unauthorized - clear token and redirect to login
+    // Handle 401 Unauthorized - redirect to login
     if (response.status === 401) {
-      clearAuthToken();
       if (typeof window !== 'undefined') {
         // Don't redirect if already on login page
         if (!window.location.pathname.includes('/login')) {
@@ -72,6 +49,28 @@ export function configureApiClient(): void {
   });
 }
 
+/**
+ * Configure client for server-side requests (Server Components, API routes)
+ * Allows passing user context directly without going through proxy
+ */
+export function configureServerClient(options?: {
+  baseUrl?: string;
+  userId?: string;
+  userRole?: string;
+  companyId?: string;
+}): void {
+  if (options?.baseUrl) {
+    OpenAPI.BASE = options.baseUrl;
+  }
+
+  OpenAPI.HEADERS = {
+    'Content-Type': 'application/json',
+    ...(options?.userId && { 'X-User-Id': options.userId }),
+    ...(options?.userRole && { 'X-User-Role': options.userRole }),
+    ...(options?.companyId && { 'X-Company-Id': options.companyId }),
+  };
+}
+
 // Auto-configure on import (client-side only)
 if (typeof window !== 'undefined') {
   configureApiClient();
@@ -80,5 +79,5 @@ if (typeof window !== 'undefined') {
 // Re-export the OpenAPI configuration
 export { OpenAPI };
 
-// Re-export all generated services and types
+// Re-export all generated services and types for convenient imports
 export * from './generated';

@@ -83,6 +83,8 @@ def get_return_summary(
     current_user: User = Depends(get_current_user)
 ):
     """Get return summary statistics."""
+    from app.models import Order
+
     returns = session.exec(select(Return)).all()
 
     pending = sum(1 for r in returns if r.status in [ReturnStatus.INITIATED, ReturnStatus.PICKUP_SCHEDULED])
@@ -91,9 +93,22 @@ def get_return_summary(
 
     by_type = {}
     by_status = {}
+    by_reason = {}
+    rto_count = 0
+
     for r in returns:
         by_type[r.type.value] = by_type.get(r.type.value, 0) + 1
         by_status[r.status.value] = by_status.get(r.status.value, 0) + 1
+
+        # Track RTO reasons
+        if r.type == ReturnType.RTO:
+            rto_count += 1
+            reason = r.reason or "Unknown"
+            by_reason[reason] = by_reason.get(reason, 0) + 1
+
+    # Calculate RTO rate (RTOs / total orders)
+    total_orders = session.exec(select(func.count(Order.id))).one() or 1
+    rto_rate = rto_count / total_orders if total_orders > 0 else 0
 
     return {
         "totalReturns": len(returns),
@@ -101,7 +116,10 @@ def get_return_summary(
         "receivedReturns": received,
         "processedReturns": processed,
         "byType": by_type,
-        "byStatus": by_status
+        "byStatus": by_status,
+        "byReason": by_reason,
+        "rtoRate": round(rto_rate, 4),
+        "rtoCount": rto_count
     }
 
 

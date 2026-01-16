@@ -86,6 +86,28 @@ async def debug_db():
     return result
 
 
+@app.post("/admin/seed-returns")
+async def seed_returns_data(secret: str = ""):
+    """Admin endpoint to seed RTO/Return test data"""
+    from .core.config import settings
+
+    # Simple protection - require secret key
+    if secret != settings.SECRET_KEY[:8]:
+        return {"error": "Invalid secret key", "hint": "Use first 8 chars of SECRET_KEY"}
+
+    try:
+        from .scripts.seed_returns import seed_returns
+        seed_returns()
+        return {"status": "success", "message": "Returns data seeded successfully"}
+    except Exception as e:
+        import traceback
+        return {
+            "status": "error",
+            "error": str(e),
+            "traceback": traceback.format_exc()
+        }
+
+
 @app.get("/debug/verify/{email}")
 async def debug_verify(email: str, password: str = "admin123"):
     """Debug endpoint to test password verification"""

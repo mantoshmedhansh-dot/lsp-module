@@ -138,7 +138,7 @@ export default function QCTemplatesPage() {
       params.set("page", page.toString());
       params.set("limit", "25");
 
-      const response = await fetch(`/api/qc/templates?${params}`);
+      const response = await fetch(`/api/v1/qc/templates?${params}`);
       if (!response.ok) throw new Error("Failed to fetch templates");
       const result = await response.json();
       setData(result);
@@ -164,7 +164,7 @@ export default function QCTemplatesPage() {
     }
 
     try {
-      const response = await fetch("/api/qc/templates", {
+      const response = await fetch("/api/v1/qc/templates", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newTemplate),
@@ -193,7 +193,7 @@ export default function QCTemplatesPage() {
 
   async function handleToggleActive(templateId: string, isActive: boolean) {
     try {
-      const response = await fetch(`/api/qc/templates/${templateId}`, {
+      const response = await fetch(`/api/v1/qc/templates/${templateId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isActive: !isActive }),
@@ -215,7 +215,7 @@ export default function QCTemplatesPage() {
     if (!confirm("Are you sure you want to delete this template?")) return;
 
     try {
-      const response = await fetch(`/api/qc/templates/${templateId}`, {
+      const response = await fetch(`/api/v1/qc/templates/${templateId}`, {
         method: "DELETE",
       });
 

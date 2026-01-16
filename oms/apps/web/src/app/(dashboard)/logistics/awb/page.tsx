@@ -118,7 +118,7 @@ export default function AWBManagementPage() {
 
   const fetchTransporters = useCallback(async () => {
     try {
-      const response = await fetch("/api/transporters?limit=100");
+      const response = await fetch("/api/v1/transporters?limit=100");
       if (!response.ok) throw new Error("Failed to fetch transporters");
       const result = await response.json();
       setTransporters(result.data || []);
@@ -138,7 +138,7 @@ export default function AWBManagementPage() {
 
       // This would call an AWB-specific API
       // For now, we'll use deliveries API as a proxy
-      const response = await fetch(`/api/deliveries?${params}`);
+      const response = await fetch(`/api/v1/deliveries?${params}`);
       if (!response.ok) throw new Error("Failed to fetch AWBs");
       const result = await response.json();
 

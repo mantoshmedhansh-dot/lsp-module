@@ -84,7 +84,7 @@ export default function ShipmentsPage() {
       if (search) params.set("search", search);
       if (statusFilter !== "all") params.set("status", statusFilter);
 
-      const response = await fetch(`/api/client/shipments?${params.toString()}`);
+      const response = await fetch(`/api/v1/client/shipments?${params.toString()}`);
       if (!response.ok) throw new Error("Failed to fetch shipments");
 
       const data = await response.json();

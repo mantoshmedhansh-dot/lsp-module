@@ -83,7 +83,7 @@ export default function FulfillmentOverviewPage() {
   const fetchFulfillmentData = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/client/fulfillment?range=${dateRange}`);
+      const response = await fetch(`/api/v1/client/fulfillment?range=${dateRange}`);
       if (response.ok) {
         const result = await response.json();
         setData(result);

@@ -203,9 +203,9 @@ export default function ControlTowerPage() {
     try {
       // Fetch all data in parallel
       const [snapshotRes, insightsRes, capacityRes] = await Promise.all([
-        fetch("/api/control-tower"),
-        fetch("/api/control-tower/insights"),
-        fetch("/api/control-tower/capacity"),
+        fetch("/api/v1/control-tower"),
+        fetch("/api/v1/control-tower/insights"),
+        fetch("/api/v1/control-tower/capacity"),
       ]);
 
       if (snapshotRes.ok) {

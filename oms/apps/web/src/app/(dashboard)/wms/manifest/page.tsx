@@ -154,7 +154,7 @@ export default function ManifestPage() {
       params.set("page", page.toString());
       params.set("limit", "25");
 
-      const response = await fetch(`/api/manifests?${params}`);
+      const response = await fetch(`/api/v1/manifests?${params}`);
       if (!response.ok) throw new Error("Failed to fetch manifests");
       const result = await response.json();
       setData(result);
@@ -168,7 +168,7 @@ export default function ManifestPage() {
 
   const fetchTransporters = useCallback(async () => {
     try {
-      const response = await fetch("/api/transporters");
+      const response = await fetch("/api/v1/transporters");
       if (response.ok) {
         const result = await response.json();
         setTransporters(result);
@@ -191,7 +191,7 @@ export default function ManifestPage() {
 
   async function handleConfirm(manifestId: string) {
     try {
-      const response = await fetch(`/api/manifests/${manifestId}`, {
+      const response = await fetch(`/api/v1/manifests/${manifestId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "confirm" }),
@@ -213,7 +213,7 @@ export default function ManifestPage() {
 
   async function handleClose(manifestId: string) {
     try {
-      const response = await fetch(`/api/manifests/${manifestId}`, {
+      const response = await fetch(`/api/v1/manifests/${manifestId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "close" }),
@@ -237,7 +237,7 @@ export default function ManifestPage() {
     if (!manifestToDelete) return;
 
     try {
-      const response = await fetch(`/api/manifests/${manifestToDelete.id}`, {
+      const response = await fetch(`/api/v1/manifests/${manifestToDelete.id}`, {
         method: "DELETE",
       });
 

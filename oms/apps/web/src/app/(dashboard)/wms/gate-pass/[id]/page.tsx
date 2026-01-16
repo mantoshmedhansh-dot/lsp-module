@@ -131,7 +131,7 @@ export default function GatePassDetailPage() {
   const { data: gatePass, isLoading, error } = useQuery<GatePass>({
     queryKey: ["gate-pass", gatePassId],
     queryFn: async () => {
-      const res = await fetch(`/api/gate-passes/${gatePassId}`);
+      const res = await fetch(`/api/v1/gate-passes/${gatePassId}`);
       if (!res.ok) throw new Error("Failed to fetch gate pass");
       return res.json();
     },
@@ -140,7 +140,7 @@ export default function GatePassDetailPage() {
   // Action mutation
   const actionMutation = useMutation({
     mutationFn: async ({ action, remarks }: { action: string; remarks?: string }) => {
-      const res = await fetch(`/api/gate-passes/${gatePassId}`, {
+      const res = await fetch(`/api/v1/gate-passes/${gatePassId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action, remarks }),
@@ -178,7 +178,7 @@ export default function GatePassDetailPage() {
   // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: async () => {
-      const res = await fetch(`/api/gate-passes/${gatePassId}`, {
+      const res = await fetch(`/api/v1/gate-passes/${gatePassId}`, {
         method: "DELETE",
       });
       if (!res.ok) {

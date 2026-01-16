@@ -36,7 +36,7 @@ export default function ByLocationPage() {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/client/fulfillment/by-location");
+      const response = await fetch("/api/v1/client/fulfillment/by-location");
       if (!response.ok) throw new Error("Failed to fetch location data");
 
       const data = await response.json();

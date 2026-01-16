@@ -184,8 +184,8 @@ export default function ClientControlTowerPage() {
     setIsLoading(true);
     try {
       const [snapshotRes, insightsRes] = await Promise.all([
-        fetch("/api/control-tower"),
-        fetch("/api/control-tower/insights"),
+        fetch("/api/v1/control-tower"),
+        fetch("/api/v1/control-tower/insights"),
       ]);
 
       if (snapshotRes.ok) {

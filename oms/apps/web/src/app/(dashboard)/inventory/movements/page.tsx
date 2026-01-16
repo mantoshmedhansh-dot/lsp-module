@@ -102,7 +102,7 @@ export default function MovementHistoryPage() {
       params.append("page", page.toString());
       params.append("limit", "20");
 
-      const response = await fetch(`/api/inventory/movements?${params}`);
+      const response = await fetch(`/api/v1/inventory/movements?${params}`);
       const data: MovementsResponse = await response.json();
 
       setMovements(data.movements || []);

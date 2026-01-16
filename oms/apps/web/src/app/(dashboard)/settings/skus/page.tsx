@@ -142,7 +142,7 @@ export default function SKUMasterPage() {
       params.set("page", page.toString());
       params.set("limit", "25");
 
-      const response = await fetch(`/api/skus?${params}`);
+      const response = await fetch(`/api/v1/v1/skus?${params}`);
       if (!response.ok) throw new Error("Failed to fetch SKUs");
       const result = await response.json();
       setData(result);
@@ -165,7 +165,7 @@ export default function SKUMasterPage() {
     e.preventDefault();
 
     try {
-      const url = editingSku ? `/api/skus/${editingSku.id}` : "/api/skus";
+      const url = editingSku ? `/api/v1/skus/${editingSku.id}` : "/api/v1/skus";
       const method = editingSku ? "PATCH" : "POST";
 
       const payload = {
@@ -216,7 +216,7 @@ export default function SKUMasterPage() {
     if (!confirm(`Are you sure you want to delete ${sku.name}?`)) return;
 
     try {
-      const response = await fetch(`/api/skus/${sku.id}`, {
+      const response = await fetch(`/api/v1/v1/skus/${sku.id}`, {
         method: "DELETE",
       });
 

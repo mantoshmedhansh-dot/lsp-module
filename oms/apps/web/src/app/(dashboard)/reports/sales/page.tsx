@@ -46,7 +46,7 @@ export default function SalesReportsPage() {
         toDate: dateRange.to,
         type: "sales",
       });
-      const res = await fetch(`/api/reports?${params}`);
+      const res = await fetch(`/api/v1/reports?${params}`);
       if (!res.ok) throw new Error("Failed to fetch reports");
       return res.json();
     },

@@ -101,7 +101,7 @@ export default function B2BQuotationDetailPage() {
 
   const fetchQuotation = async () => {
     try {
-      const response = await fetch(`/api/b2b/quotations/${params.id}`);
+      const response = await fetch(`/api/v1/b2b/quotations/${params.id}`);
       if (response.ok) {
         const result = await response.json();
         setQuotation(result);
@@ -116,7 +116,7 @@ export default function B2BQuotationDetailPage() {
   const handleConvertToOrder = async () => {
     setConverting(true);
     try {
-      const response = await fetch(`/api/b2b/quotations/${params.id}`, {
+      const response = await fetch(`/api/v1/b2b/quotations/${params.id}`, {
         method: "POST",
       });
 

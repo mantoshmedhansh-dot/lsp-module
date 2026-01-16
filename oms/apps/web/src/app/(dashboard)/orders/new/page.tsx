@@ -123,7 +123,7 @@ export default function NewOrderPage() {
 
   async function fetchLocations() {
     try {
-      const response = await fetch("/api/locations");
+      const response = await fetch("/api/v1/locations");
       if (response.ok) {
         const data = await response.json();
         setLocations(data);
@@ -143,7 +143,7 @@ export default function NewOrderPage() {
     }
 
     try {
-      const response = await fetch(`/api/skus?search=${encodeURIComponent(query)}&limit=10`);
+      const response = await fetch(`/api/v1/skus?search=${encodeURIComponent(query)}&limit=10`);
       if (response.ok) {
         const data = await response.json();
         setSkuResults(data.skus);
@@ -233,7 +233,7 @@ export default function NewOrderPage() {
         })),
       };
 
-      const response = await fetch("/api/orders", {
+      const response = await fetch("/api/v1/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

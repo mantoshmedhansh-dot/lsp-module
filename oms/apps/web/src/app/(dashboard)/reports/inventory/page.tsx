@@ -34,7 +34,7 @@ export default function InventoryReportsPage() {
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["inventory-reports"],
     queryFn: async () => {
-      const res = await fetch("/api/reports?type=inventory");
+      const res = await fetch("/api/v1/reports?type=inventory");
       if (!res.ok) throw new Error("Failed to fetch reports");
       return res.json();
     },

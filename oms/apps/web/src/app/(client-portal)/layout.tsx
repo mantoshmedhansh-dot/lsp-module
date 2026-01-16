@@ -390,7 +390,7 @@ export default function ClientPortalLayout({
                 <p className="text-xs text-slate-400 truncate">{session.user?.email}</p>
               </div>
               <button
-                onClick={() => router.push("/api/auth/signout")}
+                onClick={() => router.push("/api/v1/auth/signout")}
                 className="text-slate-400 hover:text-white"
               >
                 <LogOut className="w-5 h-5" />
@@ -398,7 +398,7 @@ export default function ClientPortalLayout({
             </div>
           ) : (
             <button
-              onClick={() => router.push("/api/auth/signout")}
+              onClick={() => router.push("/api/v1/auth/signout")}
               className="mx-auto block text-slate-400 hover:text-white"
             >
               <LogOut className="w-5 h-5" />

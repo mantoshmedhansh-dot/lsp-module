@@ -171,7 +171,7 @@ function InboundReceivingContent() {
       params.append("page", page.toString());
       params.append("limit", "20");
 
-      const response = await fetch(`/api/inbounds?${params}`);
+      const response = await fetch(`/api/v1/inbounds?${params}`);
       const data = await response.json();
 
       setInbounds(data.inbounds || []);
@@ -189,9 +189,9 @@ function InboundReceivingContent() {
   const fetchFormData = async () => {
     try {
       const [locRes, poRes, skuRes] = await Promise.all([
-        fetch("/api/locations"),
-        fetch("/api/purchase-orders?status=APPROVED&limit=100"),
-        fetch("/api/skus?limit=500"),
+        fetch("/api/v1/locations"),
+        fetch("/api/v1/purchase-orders?status=APPROVED&limit=100"),
+        fetch("/api/v1/skus?limit=500"),
       ]);
 
       const [locData, poData, skuData] = await Promise.all([
@@ -210,7 +210,7 @@ function InboundReceivingContent() {
 
   const fetchZones = async (locationId: string) => {
     try {
-      const response = await fetch(`/api/zones?locationId=${locationId}&includeBins=true`);
+      const response = await fetch(`/api/v1/zones?locationId=${locationId}&includeBins=true`);
       const data = await response.json();
       setZones(data || []);
     } catch (error) {
@@ -220,7 +220,7 @@ function InboundReceivingContent() {
 
   const fetchInboundDetails = async (id: string) => {
     try {
-      const response = await fetch(`/api/inbounds/${id}`);
+      const response = await fetch(`/api/v1/inbounds/${id}`);
       const data = await response.json();
       setSelectedInbound(data);
 
@@ -283,7 +283,7 @@ function InboundReceivingContent() {
 
     setCreating(true);
     try {
-      const response = await fetch("/api/inbounds", {
+      const response = await fetch("/api/v1/inbounds", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -318,7 +318,7 @@ function InboundReceivingContent() {
 
     setProcessing(true);
     try {
-      const response = await fetch(`/api/inbounds/${selectedInbound.id}`, {
+      const response = await fetch(`/api/v1/inbounds/${selectedInbound.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -353,7 +353,7 @@ function InboundReceivingContent() {
     setProcessing(true);
     try {
       // First save the receive items
-      await fetch(`/api/inbounds/${selectedInbound.id}`, {
+      await fetch(`/api/v1/inbounds/${selectedInbound.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -363,7 +363,7 @@ function InboundReceivingContent() {
       });
 
       // Then complete
-      const response = await fetch(`/api/inbounds/${selectedInbound.id}`, {
+      const response = await fetch(`/api/v1/inbounds/${selectedInbound.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "complete" }),

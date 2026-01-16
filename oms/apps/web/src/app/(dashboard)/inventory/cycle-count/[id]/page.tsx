@@ -95,7 +95,7 @@ export default function CycleCountDetailPage({
   const { data: cycleCount, isLoading } = useQuery<CycleCount>({
     queryKey: ["cycle-count", id],
     queryFn: async () => {
-      const res = await fetch(`/api/cycle-counts/${id}`);
+      const res = await fetch(`/api/v1/cycle-counts/${id}`);
       if (!res.ok) throw new Error("Failed to fetch cycle count");
       return res.json();
     },
@@ -110,7 +110,7 @@ export default function CycleCountDetailPage({
       action: string;
       data?: Record<string, unknown>;
     }) => {
-      const res = await fetch(`/api/cycle-counts/${id}`, {
+      const res = await fetch(`/api/v1/cycle-counts/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action, ...data }),

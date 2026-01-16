@@ -118,7 +118,7 @@ export default function VirtualInventoryPage() {
   const { data: locationsData } = useQuery({
     queryKey: ["locations"],
     queryFn: async () => {
-      const res = await fetch("/api/locations?limit=100");
+      const res = await fetch("/api/v1/locations?limit=100");
       if (!res.ok) throw new Error("Failed to fetch locations");
       return res.json();
     },
@@ -128,7 +128,7 @@ export default function VirtualInventoryPage() {
   const { data: skusData } = useQuery({
     queryKey: ["skus"],
     queryFn: async () => {
-      const res = await fetch("/api/skus?limit=100");
+      const res = await fetch("/api/v1/skus?limit=100");
       if (!res.ok) throw new Error("Failed to fetch SKUs");
       return res.json();
     },
@@ -137,7 +137,7 @@ export default function VirtualInventoryPage() {
   // Create mutation
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      const res = await fetch("/api/virtual-inventory", {
+      const res = await fetch("/api/v1/virtual-inventory", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),

@@ -164,7 +164,7 @@ export default function WavesPage() {
       params.set("page", page.toString());
       params.set("limit", "25");
 
-      const response = await fetch(`/api/waves?${params}`);
+      const response = await fetch(`/api/v1/waves?${params}`);
       if (!response.ok) throw new Error("Failed to fetch waves");
       const result = await response.json();
       setData(result);
@@ -185,7 +185,7 @@ export default function WavesPage() {
 
   async function handleCreateWave() {
     try {
-      const response = await fetch("/api/waves", {
+      const response = await fetch("/api/v1/waves", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newWave),
@@ -209,7 +209,7 @@ export default function WavesPage() {
 
   async function handleAction(waveId: string, action: string) {
     try {
-      const response = await fetch(`/api/waves/${waveId}`, {
+      const response = await fetch(`/api/v1/waves/${waveId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action }),

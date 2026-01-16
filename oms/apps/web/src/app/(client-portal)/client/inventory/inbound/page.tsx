@@ -64,7 +64,7 @@ export default function InboundPage() {
       if (search) params.set("search", search);
       if (statusFilter !== "all") params.set("status", statusFilter);
 
-      const response = await fetch(`/api/client/inventory/inbound?${params.toString()}`);
+      const response = await fetch(`/api/v1/client/inventory/inbound?${params.toString()}`);
       if (!response.ok) throw new Error("Failed to fetch inbound data");
 
       const data = await response.json();

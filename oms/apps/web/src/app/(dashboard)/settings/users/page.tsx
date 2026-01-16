@@ -102,7 +102,7 @@ export default function UsersPage() {
 
   async function fetchUsers() {
     try {
-      const response = await fetch("/api/users");
+      const response = await fetch("/api/v1/users");
       if (!response.ok) throw new Error("Failed to fetch users");
       const data = await response.json();
       setUsers(data);
@@ -118,7 +118,7 @@ export default function UsersPage() {
     e.preventDefault();
 
     try {
-      const url = editingUser ? `/api/users/${editingUser.id}` : "/api/users";
+      const url = editingUser ? `/api/v1/users/${editingUser.id}` : "/api/v1/users";
       const method = editingUser ? "PATCH" : "POST";
 
       const payload = editingUser
@@ -155,7 +155,7 @@ export default function UsersPage() {
 
   async function handleToggleActive(user: User) {
     try {
-      const response = await fetch(`/api/users/${user.id}`, {
+      const response = await fetch(`/api/v1/v1/users/${user.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isActive: !user.isActive }),
@@ -175,7 +175,7 @@ export default function UsersPage() {
     if (!confirm(`Are you sure you want to delete ${user.name}?`)) return;
 
     try {
-      const response = await fetch(`/api/users/${user.id}`, {
+      const response = await fetch(`/api/v1/v1/users/${user.id}`, {
         method: "DELETE",
       });
 

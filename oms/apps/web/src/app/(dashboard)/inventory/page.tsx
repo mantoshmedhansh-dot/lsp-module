@@ -167,7 +167,7 @@ export default function InventoryPage() {
       params.set("page", page.toString());
       params.set("limit", "50");
 
-      const response = await fetch(`/api/inventory?${params}`);
+      const response = await fetch(`/api/v1/inventory?${params}`);
       if (!response.ok) throw new Error("Failed to fetch inventory");
       const result = await response.json();
       setData(result);
@@ -181,7 +181,7 @@ export default function InventoryPage() {
 
   const fetchLocations = useCallback(async () => {
     try {
-      const response = await fetch("/api/locations");
+      const response = await fetch("/api/v1/locations");
       if (response.ok) {
         const result = await response.json();
         setLocations(result.locations || result);
@@ -197,7 +197,7 @@ export default function InventoryPage() {
       if (locationFilter) params.set("locationId", locationFilter);
       params.set("includeBins", "true");
 
-      const response = await fetch(`/api/zones?${params}`);
+      const response = await fetch(`/api/v1/zones?${params}`);
       if (response.ok) {
         const result = await response.json();
         setZones(result);
@@ -257,7 +257,7 @@ export default function InventoryPage() {
     }
 
     try {
-      const response = await fetch("/api/inventory/move", {
+      const response = await fetch("/api/v1/inventory/move", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

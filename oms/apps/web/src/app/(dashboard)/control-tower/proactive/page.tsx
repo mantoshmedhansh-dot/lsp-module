@@ -112,7 +112,7 @@ export default function ProactiveCommunicationPage() {
         ...(channelFilter && { channel: channelFilter }),
       });
 
-      const response = await fetch(`/api/proactive-communication?${params}`);
+      const response = await fetch(`/api/v1/proactive-communication?${params}`);
       if (response.ok) {
         const data = await response.json();
         setCommunications(data.communications);

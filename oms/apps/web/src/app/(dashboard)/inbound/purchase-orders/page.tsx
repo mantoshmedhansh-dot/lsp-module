@@ -129,7 +129,7 @@ export default function PurchaseOrdersPage() {
       params.append("page", page.toString());
       params.append("limit", "20");
 
-      const response = await fetch(`/api/purchase-orders?${params}`);
+      const response = await fetch(`/api/v1/purchase-orders?${params}`);
       const data = await response.json();
 
       setPurchaseOrders(data.purchaseOrders || []);
@@ -145,7 +145,7 @@ export default function PurchaseOrdersPage() {
 
   const fetchVendors = async () => {
     try {
-      const response = await fetch("/api/vendors?limit=100");
+      const response = await fetch("/api/v1/vendors?limit=100");
       const data = await response.json();
       setVendors(data.vendors || []);
     } catch (error) {
@@ -155,7 +155,7 @@ export default function PurchaseOrdersPage() {
 
   const fetchSKUs = async () => {
     try {
-      const response = await fetch("/api/skus?limit=500");
+      const response = await fetch("/api/v1/skus?limit=500");
       const data = await response.json();
       setSkus(data.skus || []);
     } catch (error) {
@@ -165,7 +165,7 @@ export default function PurchaseOrdersPage() {
 
   const fetchPODetails = async (id: string) => {
     try {
-      const response = await fetch(`/api/purchase-orders/${id}`);
+      const response = await fetch(`/api/v1/purchase-orders/${id}`);
       const data = await response.json();
       setSelectedPO(data);
       setViewDialogOpen(true);
@@ -204,7 +204,7 @@ export default function PurchaseOrdersPage() {
 
     setCreating(true);
     try {
-      const response = await fetch("/api/purchase-orders", {
+      const response = await fetch("/api/v1/purchase-orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -234,7 +234,7 @@ export default function PurchaseOrdersPage() {
 
   const handleApprovePO = async (id: string) => {
     try {
-      const response = await fetch(`/api/purchase-orders/${id}`, {
+      const response = await fetch(`/api/v1/purchase-orders/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "approve" }),
@@ -255,7 +255,7 @@ export default function PurchaseOrdersPage() {
     if (!confirm("Are you sure you want to cancel this PO?")) return;
 
     try {
-      const response = await fetch(`/api/purchase-orders/${id}`, {
+      const response = await fetch(`/api/v1/purchase-orders/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "cancel" }),

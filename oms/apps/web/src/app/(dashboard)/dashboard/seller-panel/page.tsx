@@ -253,7 +253,7 @@ export default function SellerPanelDashboard() {
         setLoading(true);
       }
 
-      const response = await fetch(`/api/dashboard/seller-panel?period=${period}`);
+      const response = await fetch(`/api/v1/dashboard/seller-panel?period=${period}`);
       if (!response.ok) {
         throw new Error("Failed to fetch dashboard data");
       }

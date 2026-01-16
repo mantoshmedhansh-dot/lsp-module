@@ -161,7 +161,7 @@ export default function ReturnsPage() {
       params.append("page", page.toString());
       params.append("limit", "20");
 
-      const response = await fetch(`/api/returns?${params}`);
+      const response = await fetch(`/api/v1/returns?${params}`);
       const data = await response.json();
 
       setReturns(data.returns || []);
@@ -179,9 +179,9 @@ export default function ReturnsPage() {
   const fetchFormData = async () => {
     try {
       const [orderRes, skuRes, locRes] = await Promise.all([
-        fetch("/api/orders?status=DELIVERED&limit=100"),
-        fetch("/api/skus?limit=500"),
-        fetch("/api/locations"),
+        fetch("/api/v1/orders?status=DELIVERED&limit=100"),
+        fetch("/api/v1/skus?limit=500"),
+        fetch("/api/v1/locations"),
       ]);
 
       const [orderData, skuData, locData] = await Promise.all([
@@ -196,7 +196,7 @@ export default function ReturnsPage() {
       // Fetch zones for first location
       if (locData.locations?.length > 0) {
         setSelectedLocationId(locData.locations[0].id);
-        const zoneRes = await fetch(`/api/zones?locationId=${locData.locations[0].id}&includeBins=true`);
+        const zoneRes = await fetch(`/api/v1/zones?locationId=${locData.locations[0].id}&includeBins=true`);
         const zoneData = await zoneRes.json();
         setZones(zoneData || []);
       }
@@ -207,7 +207,7 @@ export default function ReturnsPage() {
 
   const fetchReturnDetails = async (id: string) => {
     try {
-      const response = await fetch(`/api/returns/${id}`);
+      const response = await fetch(`/api/v1/returns/${id}`);
       const data = await response.json();
       setSelectedReturn(data);
 
@@ -265,7 +265,7 @@ export default function ReturnsPage() {
 
     setCreating(true);
     try {
-      const response = await fetch("/api/returns", {
+      const response = await fetch("/api/v1/returns", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -300,7 +300,7 @@ export default function ReturnsPage() {
 
     setProcessing(true);
     try {
-      const response = await fetch(`/api/returns/${selectedReturn.id}`, {
+      const response = await fetch(`/api/v1/returns/${selectedReturn.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -327,7 +327,7 @@ export default function ReturnsPage() {
 
     setProcessing(true);
     try {
-      const response = await fetch(`/api/returns/${selectedReturn.id}`, {
+      const response = await fetch(`/api/v1/returns/${selectedReturn.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -354,7 +354,7 @@ export default function ReturnsPage() {
 
     setProcessing(true);
     try {
-      const response = await fetch(`/api/returns/${selectedReturn.id}`, {
+      const response = await fetch(`/api/v1/returns/${selectedReturn.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

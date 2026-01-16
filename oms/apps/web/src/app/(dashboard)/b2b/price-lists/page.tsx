@@ -145,7 +145,7 @@ export default function PriceListsPage() {
   const fetchPriceLists = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await fetch("/api/price-lists?limit=100");
+      const response = await fetch("/api/v1/price-lists?limit=100");
       if (!response.ok) throw new Error("Failed to fetch price lists");
       const result = await response.json();
       setPriceLists(result.data || []);
@@ -168,7 +168,7 @@ export default function PriceListsPage() {
 
   const fetchSKUs = useCallback(async () => {
     try {
-      const response = await fetch("/api/skus?limit=500");
+      const response = await fetch("/api/v1/skus?limit=500");
       if (!response.ok) throw new Error("Failed to fetch SKUs");
       const result = await response.json();
       setSKUs(result.skus || []);
@@ -187,8 +187,8 @@ export default function PriceListsPage() {
 
     try {
       const url = editingPriceList
-        ? `/api/price-lists/${editingPriceList.id}`
-        : "/api/price-lists";
+        ? `/api/v1/price-lists/${editingPriceList.id}`
+        : "/api/v1/price-lists";
       const method = editingPriceList ? "PATCH" : "POST";
 
       const payload = {
@@ -231,7 +231,7 @@ export default function PriceListsPage() {
     if (!confirm(`Are you sure you want to delete "${priceList.name}"?`)) return;
 
     try {
-      const response = await fetch(`/api/price-lists/${priceList.id}`, {
+      const response = await fetch(`/api/v1/v1/price-lists/${priceList.id}`, {
         method: "DELETE",
       });
 
@@ -256,7 +256,7 @@ export default function PriceListsPage() {
     try {
       const validItems = priceItems.filter((item) => item.skuId);
 
-      const response = await fetch(`/api/price-lists/${selectedPriceList.id}`, {
+      const response = await fetch(`/api/v1/v1/price-lists/${selectedPriceList.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -293,7 +293,7 @@ export default function PriceListsPage() {
     setSelectedPriceList(priceList);
 
     try {
-      const response = await fetch(`/api/price-lists/${priceList.id}`);
+      const response = await fetch(`/api/v1/v1/price-lists/${priceList.id}`);
       if (!response.ok) throw new Error("Failed to fetch price list");
       const data = await response.json();
 

@@ -49,7 +49,7 @@ export default function FulfillmentReportPage() {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/client/reports/fulfillment?period=${dateRange}`);
+      const response = await fetch(`/api/v1/client/reports/fulfillment?period=${dateRange}`);
       if (!response.ok) throw new Error("Failed to fetch fulfillment report");
 
       const data = await response.json();

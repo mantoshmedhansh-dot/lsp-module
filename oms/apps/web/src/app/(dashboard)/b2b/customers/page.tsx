@@ -177,7 +177,7 @@ export default function CustomersPage() {
       params.set("page", page.toString());
       params.set("limit", "25");
 
-      const response = await fetch(`/api/customers?${params}`);
+      const response = await fetch(`/api/v1/customers?${params}`);
       if (!response.ok) throw new Error("Failed to fetch customers");
       const result = await response.json();
       setData(result);
@@ -203,7 +203,7 @@ export default function CustomersPage() {
     }
 
     try {
-      const response = await fetch("/api/customers", {
+      const response = await fetch("/api/v1/customers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newCustomer),
@@ -238,7 +238,7 @@ export default function CustomersPage() {
 
   async function handleStatusChange(customerId: string, newStatus: string) {
     try {
-      const response = await fetch(`/api/customers/${customerId}`, {
+      const response = await fetch(`/api/v1/customers/${customerId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),

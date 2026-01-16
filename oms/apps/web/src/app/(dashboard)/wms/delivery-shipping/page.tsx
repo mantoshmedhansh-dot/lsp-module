@@ -185,7 +185,7 @@ export default function DeliveryShippingPage() {
       params.set("page", page.toString());
       params.set("limit", "25");
 
-      const response = await fetch(`/api/deliveries?${params}`);
+      const response = await fetch(`/api/v1/deliveries?${params}`);
       if (!response.ok) throw new Error("Failed to fetch deliveries");
       const result = await response.json();
       setData(result);
@@ -199,7 +199,7 @@ export default function DeliveryShippingPage() {
 
   const fetchTransporters = useCallback(async () => {
     try {
-      const response = await fetch("/api/transporters");
+      const response = await fetch("/api/v1/transporters");
       if (response.ok) {
         const result = await response.json();
         setTransporters(result);
@@ -238,7 +238,7 @@ export default function DeliveryShippingPage() {
     }
 
     try {
-      const response = await fetch(`/api/deliveries/${selectedDelivery.id}`, {
+      const response = await fetch(`/api/v1/deliveries/${selectedDelivery.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -265,7 +265,7 @@ export default function DeliveryShippingPage() {
 
   async function handleShip(deliveryId: string) {
     try {
-      const response = await fetch(`/api/deliveries/${deliveryId}`, {
+      const response = await fetch(`/api/v1/deliveries/${deliveryId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "ship" }),
@@ -322,7 +322,7 @@ export default function DeliveryShippingPage() {
     }
 
     try {
-      const response = await fetch("/api/manifests", {
+      const response = await fetch("/api/v1/manifests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

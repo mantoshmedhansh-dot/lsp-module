@@ -150,7 +150,7 @@ export default function SKUVariantsPage({
   const fetchVariants = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/skus/${id}/variants`);
+      const response = await fetch(`/api/v1/skus/${id}/variants`);
       if (!response.ok) throw new Error("Failed to fetch variants");
       const result = await response.json();
       setVariantData(result);
@@ -175,7 +175,7 @@ export default function SKUVariantsPage({
 
   const fetchAvailableSKUs = useCallback(async () => {
     try {
-      const response = await fetch(`/api/skus?limit=100`);
+      const response = await fetch(`/api/v1/skus?limit=100`);
       if (!response.ok) throw new Error("Failed to fetch SKUs");
       const result = await response.json();
       // Filter out current SKU and already linked variants
@@ -215,7 +215,7 @@ export default function SKUVariantsPage({
     }
 
     try {
-      const response = await fetch(`/api/skus/${id}/variants`, {
+      const response = await fetch(`/api/v1/skus/${id}/variants`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -244,7 +244,7 @@ export default function SKUVariantsPage({
     if (!confirm("Are you sure you want to remove this variant?")) return;
 
     try {
-      const response = await fetch(`/api/skus/${id}/variants?variantId=${variantId}`, {
+      const response = await fetch(`/api/v1/skus/${id}/variants?variantId=${variantId}`, {
         method: "DELETE",
       });
 

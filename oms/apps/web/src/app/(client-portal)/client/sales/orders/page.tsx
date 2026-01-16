@@ -94,7 +94,7 @@ export default function ClientOrdersPage() {
         ...(filters.dateTo && { dateTo: filters.dateTo }),
       });
 
-      const response = await fetch(`/api/client/orders?${params}`);
+      const response = await fetch(`/api/v1/client/orders?${params}`);
       if (response.ok) {
         const data = await response.json();
         setOrders(data.orders || []);
@@ -126,7 +126,7 @@ export default function ClientOrdersPage() {
         ...(filters.dateTo && { dateTo: filters.dateTo }),
       });
 
-      const response = await fetch(`/api/client/orders?${params}`);
+      const response = await fetch(`/api/v1/client/orders?${params}`);
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);

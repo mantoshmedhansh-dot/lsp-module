@@ -107,7 +107,7 @@ export default function CODReconciliationPage() {
       if (status) params.append("status", status);
       if (transporterId) params.append("transporterId", transporterId);
 
-      const res = await fetch(`/api/cod-reconciliation?${params}`);
+      const res = await fetch(`/api/v1/cod-reconciliation?${params}`);
       if (!res.ok) throw new Error("Failed to fetch reconciliations");
       return res.json();
     },
@@ -117,7 +117,7 @@ export default function CODReconciliationPage() {
   const { data: transportersData } = useQuery({
     queryKey: ["transporters"],
     queryFn: async () => {
-      const res = await fetch("/api/transporters?limit=100");
+      const res = await fetch("/api/v1/transporters?limit=100");
       if (!res.ok) throw new Error("Failed to fetch transporters");
       return res.json();
     },
@@ -135,7 +135,7 @@ export default function CODReconciliationPage() {
         codReconciled: "false",
         limit: "100",
       });
-      const res = await fetch(`/api/deliveries?${params}`);
+      const res = await fetch(`/api/v1/deliveries?${params}`);
       if (!res.ok) throw new Error("Failed to fetch deliveries");
       return res.json();
     },
@@ -145,7 +145,7 @@ export default function CODReconciliationPage() {
   // Create mutation
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      const res = await fetch("/api/cod-reconciliation", {
+      const res = await fetch("/api/v1/cod-reconciliation", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),

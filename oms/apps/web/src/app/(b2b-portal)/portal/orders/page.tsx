@@ -68,7 +68,7 @@ export default function B2BOrdersPage() {
       const params = new URLSearchParams();
       if (statusFilter !== "all") params.set("status", statusFilter);
 
-      const response = await fetch(`/api/b2b/orders?${params.toString()}`);
+      const response = await fetch(`/api/v1/b2b/orders?${params.toString()}`);
       if (response.ok) {
         const result = await response.json();
         setOrders(result.orders || []);

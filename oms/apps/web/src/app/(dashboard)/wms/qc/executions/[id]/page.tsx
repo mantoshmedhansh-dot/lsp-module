@@ -141,7 +141,7 @@ export default function QCExecutionDetailPage() {
   const fetchExecution = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/qc/executions/${executionId}`);
+      const response = await fetch(`/api/v1/v1/qc/executions/${executionId}`);
       if (!response.ok) {
         if (response.status === 404) {
           toast.error("QC execution not found");
@@ -169,7 +169,7 @@ export default function QCExecutionDetailPage() {
 
   const handleStartExecution = async () => {
     try {
-      const response = await fetch(`/api/qc/executions/${executionId}/start`, {
+      const response = await fetch(`/api/v1/v1/qc/executions/${executionId}/start`, {
         method: "POST",
       });
 
@@ -198,7 +198,7 @@ export default function QCExecutionDetailPage() {
   const handleSaveResults = async () => {
     try {
       setSaving(true);
-      const response = await fetch(`/api/qc/executions/${executionId}/results`, {
+      const response = await fetch(`/api/v1/v1/qc/executions/${executionId}/results`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ results, notes }),
@@ -231,7 +231,7 @@ export default function QCExecutionDetailPage() {
     try {
       setSaving(true);
       const response = await fetch(
-        `/api/qc/executions/${executionId}/complete`,
+        `/api/v1/qc/executions/${executionId}/complete`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -253,7 +253,7 @@ export default function QCExecutionDetailPage() {
 
   const handlePutOnHold = async () => {
     try {
-      const response = await fetch(`/api/qc/executions/${executionId}/hold`, {
+      const response = await fetch(`/api/v1/v1/qc/executions/${executionId}/hold`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ notes }),

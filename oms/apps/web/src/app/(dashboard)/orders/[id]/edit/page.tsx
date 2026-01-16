@@ -137,7 +137,7 @@ export default function OrderEditPage() {
   const fetchOrder = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/orders/${orderId}`);
+      const response = await fetch(`/api/v1/orders/${orderId}`);
       if (!response.ok) {
         if (response.status === 404) {
           toast.error("Order not found");
@@ -185,7 +185,7 @@ export default function OrderEditPage() {
 
   const fetchSKUs = useCallback(async () => {
     try {
-      const response = await fetch("/api/skus?limit=100");
+      const response = await fetch("/api/v1/skus?limit=100");
       if (!response.ok) throw new Error("Failed to fetch SKUs");
       const data = await response.json();
       setSkus(data.skus || []);
@@ -265,7 +265,7 @@ export default function OrderEditPage() {
 
     setIsSaving(true);
     try {
-      const response = await fetch(`/api/orders/${orderId}`, {
+      const response = await fetch(`/api/v1/orders/${orderId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

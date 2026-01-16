@@ -120,7 +120,7 @@ export default function OrderImportPage() {
         page: page.toString(),
         limit: "20",
       });
-      const res = await fetch(`/api/orders/import?${params}`);
+      const res = await fetch(`/api/v1/orders/import?${params}`);
       if (!res.ok) throw new Error("Failed to fetch imports");
       return res.json();
     },
@@ -130,7 +130,7 @@ export default function OrderImportPage() {
   const { data: locationsData } = useQuery({
     queryKey: ["locations"],
     queryFn: async () => {
-      const res = await fetch("/api/locations?limit=100");
+      const res = await fetch("/api/v1/locations?limit=100");
       if (!res.ok) throw new Error("Failed to fetch locations");
       return res.json();
     },
@@ -139,7 +139,7 @@ export default function OrderImportPage() {
   // Import mutation
   const importMutation = useMutation({
     mutationFn: async (data: { locationId: string; rows: CSVRow[]; fileName: string }) => {
-      const res = await fetch("/api/orders/import", {
+      const res = await fetch("/api/v1/orders/import", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),

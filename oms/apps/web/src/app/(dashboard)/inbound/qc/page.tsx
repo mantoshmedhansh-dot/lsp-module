@@ -142,7 +142,7 @@ export default function InboundQCPage() {
       params.set("limit", "50");
 
       // Fetch from inbounds API
-      const response = await fetch(`/api/inbounds?${params}`);
+      const response = await fetch(`/api/v1/inbounds?${params}`);
       if (!response.ok) throw new Error("Failed to fetch QC items");
       const result = await response.json();
 

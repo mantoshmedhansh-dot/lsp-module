@@ -86,7 +86,7 @@ export default function B2BOrderDetailPage() {
 
   const fetchOrder = async () => {
     try {
-      const response = await fetch(`/api/b2b/orders/${params.id}`);
+      const response = await fetch(`/api/v1/b2b/orders/${params.id}`);
       if (response.ok) {
         const result = await response.json();
         setOrder(result);

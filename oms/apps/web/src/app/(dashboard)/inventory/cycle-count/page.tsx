@@ -110,7 +110,7 @@ export default function CycleCountPage() {
       });
       if (status) params.append("status", status);
 
-      const res = await fetch(`/api/cycle-counts?${params}`);
+      const res = await fetch(`/api/v1/cycle-counts?${params}`);
       if (!res.ok) throw new Error("Failed to fetch cycle counts");
       return res.json();
     },
@@ -120,7 +120,7 @@ export default function CycleCountPage() {
   const { data: locationsData } = useQuery({
     queryKey: ["locations"],
     queryFn: async () => {
-      const res = await fetch("/api/locations?limit=100");
+      const res = await fetch("/api/v1/locations?limit=100");
       if (!res.ok) throw new Error("Failed to fetch locations");
       return res.json();
     },
@@ -132,7 +132,7 @@ export default function CycleCountPage() {
     queryFn: async () => {
       const params = new URLSearchParams({ limit: "100" });
       if (formData.locationId) params.append("locationId", formData.locationId);
-      const res = await fetch(`/api/zones?${params}`);
+      const res = await fetch(`/api/v1/zones?${params}`);
       if (!res.ok) throw new Error("Failed to fetch zones");
       return res.json();
     },
@@ -142,7 +142,7 @@ export default function CycleCountPage() {
   // Create cycle count mutation
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      const res = await fetch("/api/cycle-counts", {
+      const res = await fetch("/api/v1/cycle-counts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),

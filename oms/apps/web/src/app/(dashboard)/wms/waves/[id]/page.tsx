@@ -135,7 +135,7 @@ export default function WaveDetailPage() {
   const fetchWave = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/waves/${waveId}`);
+      const response = await fetch(`/api/v1/waves/${waveId}`);
       if (!response.ok) {
         if (response.status === 404) {
           toast.error("Wave not found");
@@ -160,7 +160,7 @@ export default function WaveDetailPage() {
 
   async function handleAction(action: string) {
     try {
-      const response = await fetch(`/api/waves/${waveId}`, {
+      const response = await fetch(`/api/v1/waves/${waveId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action }),
@@ -181,7 +181,7 @@ export default function WaveDetailPage() {
 
   async function handlePickItem(itemId: string, pickedQty: number) {
     try {
-      const response = await fetch(`/api/waves/${waveId}/pick`, {
+      const response = await fetch(`/api/v1/waves/${waveId}/pick`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ itemId, pickedQty }),

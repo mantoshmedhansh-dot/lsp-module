@@ -168,7 +168,7 @@ export default function PackingPage() {
       params.set("page", page.toString());
       params.set("limit", "25");
 
-      const response = await fetch(`/api/packing?${params}`);
+      const response = await fetch(`/api/v1/packing?${params}`);
       if (!response.ok) throw new Error("Failed to fetch orders");
       const result = await response.json();
       setData(result);
@@ -182,7 +182,7 @@ export default function PackingPage() {
 
   const fetchTransporters = useCallback(async () => {
     try {
-      const response = await fetch("/api/transporters");
+      const response = await fetch("/api/v1/transporters");
       if (response.ok) {
         const result = await response.json();
         setTransporters(result);
@@ -205,7 +205,7 @@ export default function PackingPage() {
 
   async function handleStartPacking(orderId: string) {
     try {
-      const response = await fetch(`/api/packing/${orderId}`, {
+      const response = await fetch(`/api/v1/packing/${orderId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "start" }),
@@ -253,7 +253,7 @@ export default function PackingPage() {
     if (!selectedOrder) return;
 
     try {
-      const response = await fetch(`/api/packing/${selectedOrder.id}`, {
+      const response = await fetch(`/api/v1/packing/${selectedOrder.id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

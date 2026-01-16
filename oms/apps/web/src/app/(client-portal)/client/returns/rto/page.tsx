@@ -40,7 +40,7 @@ export default function RTOAnalysisPage() {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/client/returns/rto?period=${dateRange}`);
+      const response = await fetch(`/api/v1/client/returns/rto?period=${dateRange}`);
       if (!response.ok) throw new Error("Failed to fetch RTO data");
 
       const data = await response.json();

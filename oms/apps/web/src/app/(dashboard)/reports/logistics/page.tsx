@@ -47,7 +47,7 @@ export default function LogisticsReportsPage() {
         toDate: dateRange.to,
         type: "logistics",
       });
-      const res = await fetch(`/api/reports?${params}`);
+      const res = await fetch(`/api/v1/reports?${params}`);
       if (!res.ok) throw new Error("Failed to fetch reports");
       return res.json();
     },

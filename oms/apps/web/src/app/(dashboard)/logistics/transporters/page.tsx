@@ -113,7 +113,7 @@ export default function TransportersPage() {
       if (search) params.set("search", search);
       params.set("limit", "100");
 
-      const response = await fetch(`/api/transporters?${params}`);
+      const response = await fetch(`/api/v1/v1/transporters?${params}`);
       if (!response.ok) throw new Error("Failed to fetch transporters");
       const result = await response.json();
       setTransporters(result.data || []);
@@ -185,8 +185,8 @@ export default function TransportersPage() {
   async function handleSave() {
     try {
       const url = editingTransporter
-        ? `/api/transporters/${editingTransporter.id}`
-        : "/api/transporters";
+        ? `/api/v1/transporters/${editingTransporter.id}`
+        : "/api/v1/transporters";
       const method = editingTransporter ? "PATCH" : "POST";
 
       const response = await fetch(url, {
@@ -222,7 +222,7 @@ export default function TransportersPage() {
 
   async function handleToggleActive(transporter: Transporter) {
     try {
-      const response = await fetch(`/api/transporters/${transporter.id}`, {
+      const response = await fetch(`/api/v1/v1/transporters/${transporter.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isActive: !transporter.isActive }),

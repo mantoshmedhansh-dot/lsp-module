@@ -71,7 +71,7 @@ export default function ScheduledReportsPage() {
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["scheduled-reports"],
     queryFn: async () => {
-      const res = await fetch("/api/reports/scheduled");
+      const res = await fetch("/api/v1/reports/scheduled");
       if (!res.ok) throw new Error("Failed to fetch scheduled reports");
       return res.json();
     },
@@ -79,7 +79,7 @@ export default function ScheduledReportsPage() {
 
   const toggleMutation = useMutation({
     mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
-      const res = await fetch(`/api/reports/scheduled/${id}`, {
+      const res = await fetch(`/api/v1/reports/scheduled/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isActive }),
@@ -98,7 +98,7 @@ export default function ScheduledReportsPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetch(`/api/reports/scheduled/${id}`, {
+      const res = await fetch(`/api/v1/reports/scheduled/${id}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Failed to delete report");

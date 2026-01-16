@@ -186,7 +186,7 @@ export default function OrderDetailPage({
   async function fetchOrder() {
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/orders/${id}`);
+      const response = await fetch(`/api/v1/orders/${id}`);
       if (!response.ok) throw new Error("Failed to fetch order");
       const data = await response.json();
       setOrder(data);
@@ -200,7 +200,7 @@ export default function OrderDetailPage({
 
   async function handleAllocate() {
     try {
-      const response = await fetch(`/api/orders/${id}/allocate`, {
+      const response = await fetch(`/api/v1/orders/${id}/allocate`, {
         method: "POST",
       });
 
@@ -224,7 +224,7 @@ export default function OrderDetailPage({
 
   async function handleStatusChange(newStatus: string) {
     try {
-      const response = await fetch(`/api/orders/${id}`, {
+      const response = await fetch(`/api/v1/orders/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),

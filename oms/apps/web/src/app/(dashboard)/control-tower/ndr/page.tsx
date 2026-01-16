@@ -143,7 +143,7 @@ export default function NDRCommandCenterPage() {
         ...(reasonFilter && { reason: reasonFilter }),
       });
 
-      const response = await fetch(`/api/ndr?${params}`);
+      const response = await fetch(`/api/v1/ndr?${params}`);
       if (response.ok) {
         const data = await response.json();
         setNdrs(data.ndrs);
@@ -187,7 +187,7 @@ export default function NDRCommandCenterPage() {
     setIsSending(true);
 
     try {
-      const response = await fetch(`/api/ndr/${selectedNDR.id}/outreach`, {
+      const response = await fetch(`/api/v1/ndr/${selectedNDR.id}/outreach`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

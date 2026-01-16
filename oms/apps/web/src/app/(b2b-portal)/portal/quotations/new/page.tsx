@@ -69,7 +69,7 @@ export default function B2BNewQuotationPage() {
       if (categoryFilter !== "all") params.set("category", categoryFilter);
       params.set("limit", "50");
 
-      const response = await fetch(`/api/b2b/catalog?${params.toString()}`);
+      const response = await fetch(`/api/v1/b2b/catalog?${params.toString()}`);
       if (response.ok) {
         const result = await response.json();
         setProducts(result.products || []);
@@ -191,7 +191,7 @@ export default function B2BNewQuotationPage() {
 
     setSubmitting(true);
     try {
-      const response = await fetch("/api/b2b/quotations", {
+      const response = await fetch("/api/v1/b2b/quotations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

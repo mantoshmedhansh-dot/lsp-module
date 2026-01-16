@@ -124,7 +124,7 @@ export default function QCTemplateDetailPage() {
   const fetchTemplate = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/qc/templates/${templateId}`);
+      const response = await fetch(`/api/v1/v1/qc/templates/${templateId}`);
       if (!response.ok) {
         if (response.status === 404) {
           toast.error("Template not found");
@@ -168,7 +168,7 @@ export default function QCTemplateDetailPage() {
         description: formData.description,
         isActive: formData.isActive,
       };
-      const response = await fetch(`/api/qc/templates/${templateId}`, {
+      const response = await fetch(`/api/v1/v1/qc/templates/${templateId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(apiData),
@@ -195,7 +195,7 @@ export default function QCTemplateDetailPage() {
     }
 
     try {
-      const response = await fetch(`/api/qc/templates/${templateId}/parameters`, {
+      const response = await fetch(`/api/v1/v1/qc/templates/${templateId}/parameters`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -224,7 +224,7 @@ export default function QCTemplateDetailPage() {
 
     try {
       const response = await fetch(
-        `/api/qc/templates/${templateId}/parameters/${editingParameter.id}`,
+        `/api/v1/qc/templates/${templateId}/parameters/${editingParameter.id}`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -249,7 +249,7 @@ export default function QCTemplateDetailPage() {
 
     try {
       const response = await fetch(
-        `/api/qc/templates/${templateId}/parameters/${parameterId}`,
+        `/api/v1/qc/templates/${templateId}/parameters/${parameterId}`,
         { method: "DELETE" }
       );
 
@@ -265,7 +265,7 @@ export default function QCTemplateDetailPage() {
 
   const handleDuplicateTemplate = async () => {
     try {
-      const response = await fetch(`/api/qc/templates/${templateId}/duplicate`, {
+      const response = await fetch(`/api/v1/v1/qc/templates/${templateId}/duplicate`, {
         method: "POST",
       });
 

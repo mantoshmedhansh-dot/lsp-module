@@ -41,7 +41,7 @@ export default function ReturnsReportPage() {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/client/reports/returns?period=${dateRange}`);
+      const response = await fetch(`/api/v1/client/reports/returns?period=${dateRange}`);
       if (!response.ok) throw new Error("Failed to fetch returns report");
 
       const data = await response.json();

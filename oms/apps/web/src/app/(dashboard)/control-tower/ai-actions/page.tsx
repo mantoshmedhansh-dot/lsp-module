@@ -98,7 +98,7 @@ export default function AIActionsPage() {
         ...(statusFilter && { status: statusFilter }),
       });
 
-      const response = await fetch(`/api/ai-actions?${params}`);
+      const response = await fetch(`/api/v1/ai-actions?${params}`);
       if (response.ok) {
         const data = await response.json();
         setActions(data.actions);

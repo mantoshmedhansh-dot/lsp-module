@@ -115,7 +115,7 @@ export default function ShippingRulesPage() {
         page: page.toString(),
         limit: "20",
       });
-      const res = await fetch(`/api/shipping-rules?${params}`);
+      const res = await fetch(`/api/v1/v1/shipping-rules?${params}`);
       if (!res.ok) throw new Error("Failed to fetch shipping rules");
       return res.json();
     },
@@ -125,7 +125,7 @@ export default function ShippingRulesPage() {
   const { data: locationsData } = useQuery({
     queryKey: ["locations"],
     queryFn: async () => {
-      const res = await fetch("/api/locations?limit=100");
+      const res = await fetch("/api/v1/locations?limit=100");
       if (!res.ok) throw new Error("Failed to fetch locations");
       return res.json();
     },
@@ -135,7 +135,7 @@ export default function ShippingRulesPage() {
   const { data: transportersData } = useQuery({
     queryKey: ["transporters"],
     queryFn: async () => {
-      const res = await fetch("/api/transporters?limit=100");
+      const res = await fetch("/api/v1/transporters?limit=100");
       if (!res.ok) throw new Error("Failed to fetch transporters");
       return res.json();
     },
@@ -144,7 +144,7 @@ export default function ShippingRulesPage() {
   // Create/Update mutation
   const saveMutation = useMutation({
     mutationFn: async (data: typeof formData & { id?: string }) => {
-      const url = data.id ? `/api/shipping-rules/${data.id}` : "/api/shipping-rules";
+      const url = data.id ? `/api/v1/shipping-rules/${data.id}` : "/api/v1/shipping-rules";
       const method = data.id ? "PATCH" : "POST";
       const res = await fetch(url, {
         method,
@@ -179,7 +179,7 @@ export default function ShippingRulesPage() {
   // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetch(`/api/shipping-rules/${id}`, {
+      const res = await fetch(`/api/v1/v1/shipping-rules/${id}`, {
         method: "DELETE",
       });
       if (!res.ok) {

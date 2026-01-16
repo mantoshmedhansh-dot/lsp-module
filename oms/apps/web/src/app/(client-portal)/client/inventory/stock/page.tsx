@@ -50,7 +50,7 @@ export default function StockLevelsPage() {
       if (statusFilter !== "all") params.set("status", statusFilter);
       if (locationFilter !== "all") params.set("location", locationFilter);
 
-      const response = await fetch(`/api/client/inventory/stock?${params.toString()}`);
+      const response = await fetch(`/api/v1/client/inventory/stock?${params.toString()}`);
       if (!response.ok) throw new Error("Failed to fetch stock data");
 
       const data = await response.json();

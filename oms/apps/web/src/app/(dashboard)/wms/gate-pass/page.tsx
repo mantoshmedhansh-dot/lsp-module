@@ -136,7 +136,7 @@ export default function GatePassPage() {
       if (status) params.append("status", status);
       if (date) params.append("date", date);
 
-      const res = await fetch(`/api/gate-passes?${params}`);
+      const res = await fetch(`/api/v1/gate-passes?${params}`);
       if (!res.ok) throw new Error("Failed to fetch gate passes");
       return res.json();
     },
@@ -146,7 +146,7 @@ export default function GatePassPage() {
   const { data: locationsData } = useQuery({
     queryKey: ["locations"],
     queryFn: async () => {
-      const res = await fetch("/api/locations?limit=100");
+      const res = await fetch("/api/v1/locations?limit=100");
       if (!res.ok) throw new Error("Failed to fetch locations");
       return res.json();
     },
@@ -155,7 +155,7 @@ export default function GatePassPage() {
   // Create gate pass mutation
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      const res = await fetch("/api/gate-passes", {
+      const res = await fetch("/api/v1/gate-passes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -187,7 +187,7 @@ export default function GatePassPage() {
   // Check in/out mutation
   const actionMutation = useMutation({
     mutationFn: async ({ id, action }: { id: string; action: string }) => {
-      const res = await fetch(`/api/gate-passes/${id}`, {
+      const res = await fetch(`/api/v1/gate-passes/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action }),

@@ -183,7 +183,7 @@ export default function CustomerDetailPage() {
   const fetchCustomer = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/customers/${customerId}`);
+      const response = await fetch(`/api/v1/v1/customers/${customerId}`);
       if (!response.ok) {
         if (response.status === 404) {
           toast.error("Customer not found");
@@ -236,7 +236,7 @@ export default function CustomerDetailPage() {
 
   const fetchOrders = useCallback(async () => {
     try {
-      const response = await fetch(`/api/customers/${customerId}/orders?limit=10`);
+      const response = await fetch(`/api/v1/v1/customers/${customerId}/orders?limit=10`);
       if (response.ok) {
         const data = await response.json();
         setOrders(data.data || []);
@@ -249,7 +249,7 @@ export default function CustomerDetailPage() {
   const fetchTransactions = useCallback(async () => {
     try {
       const response = await fetch(
-        `/api/customers/${customerId}/credit-transactions?limit=10`
+        `/api/v1/customers/${customerId}/credit-transactions?limit=10`
       );
       if (response.ok) {
         const data = await response.json();
@@ -280,7 +280,7 @@ export default function CustomerDetailPage() {
 
     try {
       setSaving(true);
-      const response = await fetch(`/api/customers/${customerId}`, {
+      const response = await fetch(`/api/v1/v1/customers/${customerId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

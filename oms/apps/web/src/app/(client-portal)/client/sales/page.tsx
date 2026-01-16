@@ -92,7 +92,7 @@ export default function SalesOverviewPage() {
   const fetchSalesData = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/client/sales?range=${dateRange}`);
+      const response = await fetch(`/api/v1/client/sales?range=${dateRange}`);
       if (response.ok) {
         const result = await response.json();
         setData(result);

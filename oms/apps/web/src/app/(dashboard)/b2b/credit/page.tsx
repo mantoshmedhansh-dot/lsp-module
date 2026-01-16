@@ -151,8 +151,8 @@ export default function CreditManagementPage() {
     try {
       setIsLoading(true);
       const [creditRes, customersRes] = await Promise.all([
-        fetch("/api/credit?limit=50"),
-        fetch("/api/customers?creditEnabled=true&limit=100"),
+        fetch("/api/v1/credit?limit=50"),
+        fetch("/api/v1/customers?creditEnabled=true&limit=100"),
       ]);
 
       if (creditRes.ok) {
@@ -187,7 +187,7 @@ export default function CreditManagementPage() {
     e.preventDefault();
 
     try {
-      const response = await fetch("/api/credit", {
+      const response = await fetch("/api/v1/credit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -226,7 +226,7 @@ export default function CreditManagementPage() {
 
   async function viewCustomerCredit(customerId: string) {
     try {
-      const response = await fetch(`/api/credit/customers/${customerId}`);
+      const response = await fetch(`/api/v1/credit/customers/${customerId}`);
       if (!response.ok) throw new Error("Failed to fetch customer credit");
       const data = await response.json();
       setSelectedCustomer(data);

@@ -124,7 +124,7 @@ export default function LocationsPage() {
 
   async function fetchLocations() {
     try {
-      const response = await fetch("/api/locations");
+      const response = await fetch("/api/v1/locations");
       if (!response.ok) throw new Error("Failed to fetch locations");
       const data = await response.json();
       setLocations(data);
@@ -141,8 +141,8 @@ export default function LocationsPage() {
 
     try {
       const url = editingLocation
-        ? `/api/locations/${editingLocation.id}`
-        : "/api/locations";
+        ? `/api/v1/locations/${editingLocation.id}`
+        : "/api/v1/locations";
       const method = editingLocation ? "PATCH" : "POST";
 
       const response = await fetch(url, {
@@ -171,7 +171,7 @@ export default function LocationsPage() {
 
   async function handleToggleActive(location: Location) {
     try {
-      const response = await fetch(`/api/locations/${location.id}`, {
+      const response = await fetch(`/api/v1/v1/locations/${location.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isActive: !location.isActive }),
@@ -198,7 +198,7 @@ export default function LocationsPage() {
       return;
 
     try {
-      const response = await fetch(`/api/locations/${location.id}`, {
+      const response = await fetch(`/api/v1/v1/locations/${location.id}`, {
         method: "DELETE",
       });
 

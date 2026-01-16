@@ -45,7 +45,7 @@ export default function SalesReportPage() {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/client/reports/sales?period=${dateRange}`);
+      const response = await fetch(`/api/v1/client/reports/sales?period=${dateRange}`);
       if (!response.ok) throw new Error("Failed to fetch sales report");
 
       const data = await response.json();

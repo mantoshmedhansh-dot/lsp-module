@@ -69,7 +69,7 @@ export default function B2BCatalogPage() {
       const params = new URLSearchParams();
       if (categoryFilter !== "all") params.set("category", categoryFilter);
 
-      const response = await fetch(`/api/b2b/catalog?${params.toString()}`);
+      const response = await fetch(`/api/v1/b2b/catalog?${params.toString()}`);
       if (response.ok) {
         const result = await response.json();
         setProducts(result.products || []);
@@ -143,7 +143,7 @@ export default function B2BCatalogPage() {
     if (cart.length === 0) return;
 
     try {
-      const response = await fetch("/api/b2b/orders", {
+      const response = await fetch("/api/v1/b2b/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

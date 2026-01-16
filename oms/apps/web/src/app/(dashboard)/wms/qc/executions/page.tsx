@@ -154,7 +154,7 @@ export default function QCExecutionsPage() {
       params.set("page", page.toString());
       params.set("limit", "25");
 
-      const response = await fetch(`/api/qc/executions?${params}`);
+      const response = await fetch(`/api/v1/qc/executions?${params}`);
       if (!response.ok) throw new Error("Failed to fetch executions");
       const result = await response.json();
       setData(result);
@@ -175,7 +175,7 @@ export default function QCExecutionsPage() {
 
   async function handleAction(executionId: string, action: string) {
     try {
-      const response = await fetch(`/api/qc/executions/${executionId}`, {
+      const response = await fetch(`/api/v1/qc/executions/${executionId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action }),

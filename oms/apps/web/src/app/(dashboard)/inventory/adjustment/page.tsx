@@ -178,7 +178,7 @@ export default function StockAdjustmentPage() {
 
   const fetchLocations = useCallback(async () => {
     try {
-      const response = await fetch("/api/locations");
+      const response = await fetch("/api/v1/locations");
       if (response.ok) {
         const result = await response.json();
         setLocations(result.locations || result);
@@ -194,7 +194,7 @@ export default function StockAdjustmentPage() {
       return;
     }
     try {
-      const response = await fetch(`/api/bins?locationId=${selectedLocation}`);
+      const response = await fetch(`/api/v1/v1/bins?locationId=${selectedLocation}`);
       if (response.ok) {
         const result = await response.json();
         setBins(result);
@@ -210,7 +210,7 @@ export default function StockAdjustmentPage() {
       if (skuSearch) params.set("search", skuSearch);
       params.set("limit", "50");
 
-      const response = await fetch(`/api/skus?${params}`);
+      const response = await fetch(`/api/v1/v1/skus?${params}`);
       if (response.ok) {
         const result = await response.json();
         setSkus(result.skus || result);
@@ -228,7 +228,7 @@ export default function StockAdjustmentPage() {
       params.set("page", historyPage.toString());
       params.set("limit", "20");
 
-      const response = await fetch(`/api/inventory/adjustments?${params}`);
+      const response = await fetch(`/api/v1/v1/inventory/adjustments?${params}`);
       if (response.ok) {
         const result = await response.json();
         setHistoryData(result);
@@ -262,7 +262,7 @@ export default function StockAdjustmentPage() {
   async function getCurrentStock(skuId: string, binId: string) {
     try {
       const response = await fetch(
-        `/api/inventory?skuId=${skuId}&binId=${binId}&limit=1`
+        `/api/v1/inventory?skuId=${skuId}&binId=${binId}&limit=1`
       );
       if (response.ok) {
         const result = await response.json();
@@ -340,7 +340,7 @@ export default function StockAdjustmentPage() {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch("/api/inventory/adjustments", {
+      const response = await fetch("/api/v1/inventory/adjustments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

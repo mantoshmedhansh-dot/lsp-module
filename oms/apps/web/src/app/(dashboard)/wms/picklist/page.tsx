@@ -160,7 +160,7 @@ export default function PicklistPage() {
         params.set("status", activeTab);
       }
 
-      const response = await fetch(`/api/picklists?${params}`);
+      const response = await fetch(`/api/v1/picklists?${params}`);
       if (!response.ok) throw new Error("Failed to fetch picklists");
       const result = await response.json();
       setData(result);
@@ -181,7 +181,7 @@ export default function PicklistPage() {
 
   async function handleAction(picklistId: string, action: string) {
     try {
-      const response = await fetch(`/api/picklists/${picklistId}`, {
+      const response = await fetch(`/api/v1/picklists/${picklistId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action }),
@@ -205,7 +205,7 @@ export default function PicklistPage() {
     if (!session?.user?.id) return;
 
     try {
-      const response = await fetch(`/api/picklists/${picklistId}`, {
+      const response = await fetch(`/api/v1/picklists/${picklistId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "assign", assignedToId: session.user.id }),

@@ -83,7 +83,7 @@ export default function ReportsPage() {
       if (channel) params.append("channel", channel);
       if (locationId) params.append("locationId", locationId);
 
-      const res = await fetch(`/api/reports?${params}`);
+      const res = await fetch(`/api/v1/v1/reports?${params}`);
       if (!res.ok) throw new Error("Failed to fetch reports");
       return res.json();
     },
@@ -93,7 +93,7 @@ export default function ReportsPage() {
   const { data: locationsData } = useQuery({
     queryKey: ["locations"],
     queryFn: async () => {
-      const res = await fetch("/api/locations?limit=100");
+      const res = await fetch("/api/v1/locations?limit=100");
       if (!res.ok) throw new Error("Failed to fetch locations");
       return res.json();
     },
@@ -117,7 +117,7 @@ export default function ReportsPage() {
     if (channel) params.append("channel", channel);
     if (locationId) params.append("locationId", locationId);
 
-    window.open(`/api/reports/export?${params}`, "_blank");
+    window.open(`/api/v1/reports/export?${params}`, "_blank");
   };
 
   return (

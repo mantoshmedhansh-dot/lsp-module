@@ -84,7 +84,7 @@ export default function CompanyPage() {
 
   async function fetchCompanies() {
     try {
-      const response = await fetch("/api/companies");
+      const response = await fetch("/api/v1/companies");
       if (!response.ok) throw new Error("Failed to fetch companies");
       const data = await response.json();
       setCompanies(data);
@@ -101,8 +101,8 @@ export default function CompanyPage() {
 
     try {
       const url = editingCompany
-        ? `/api/companies/${editingCompany.id}`
-        : "/api/companies";
+        ? `/api/v1/companies/${editingCompany.id}`
+        : "/api/v1/companies";
       const method = editingCompany ? "PATCH" : "POST";
 
       const response = await fetch(url, {
@@ -145,7 +145,7 @@ export default function CompanyPage() {
       return;
 
     try {
-      const response = await fetch(`/api/companies/${company.id}`, {
+      const response = await fetch(`/api/v1/v1/companies/${company.id}`, {
         method: "DELETE",
       });
 

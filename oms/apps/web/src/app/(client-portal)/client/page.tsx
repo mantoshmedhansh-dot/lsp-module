@@ -426,11 +426,11 @@ export default function ClientDashboard() {
     setLoading(true);
     try {
       const [dashboardRes, salesRes, fulfillmentRes, inventoryRes, returnsRes] = await Promise.all([
-        fetch(`/api/client/dashboard?range=${dateRange}`),
-        fetch(`/api/client/sales?range=${dateRange}`),
-        fetch(`/api/client/fulfillment?range=${dateRange}`),
-        fetch(`/api/client/inventory?range=${dateRange}`),
-        fetch(`/api/client/returns?range=${dateRange}`),
+        fetch(`/api/v1/client/dashboard?range=${dateRange}`),
+        fetch(`/api/v1/client/sales?range=${dateRange}`),
+        fetch(`/api/v1/client/fulfillment?range=${dateRange}`),
+        fetch(`/api/v1/client/inventory?range=${dateRange}`),
+        fetch(`/api/v1/client/returns?range=${dateRange}`),
       ]);
 
       if (dashboardRes.ok) setStats(await dashboardRes.json());

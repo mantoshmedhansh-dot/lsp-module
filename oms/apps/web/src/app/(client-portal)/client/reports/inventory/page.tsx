@@ -42,7 +42,7 @@ export default function InventoryReportPage() {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/client/reports/inventory?period=${dateRange}`);
+      const response = await fetch(`/api/v1/client/reports/inventory?period=${dateRange}`);
       if (!response.ok) throw new Error("Failed to fetch inventory report");
 
       const data = await response.json();

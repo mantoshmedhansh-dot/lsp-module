@@ -58,7 +58,7 @@ export default function AnalyticsPage() {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/client/analytics?period=${dateRange}`);
+      const response = await fetch(`/api/v1/client/analytics?period=${dateRange}`);
       if (!response.ok) throw new Error("Failed to fetch analytics data");
 
       const data = await response.json();

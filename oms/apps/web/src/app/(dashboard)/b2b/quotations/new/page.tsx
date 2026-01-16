@@ -122,7 +122,7 @@ function NewQuotationPageContent() {
     try {
       setSearchingCustomers(true);
       const response = await fetch(
-        `/api/customers?search=${encodeURIComponent(search)}&limit=10`
+        `/api/v1/customers?search=${encodeURIComponent(search)}&limit=10`
       );
       if (response.ok) {
         const data = await response.json();
@@ -139,7 +139,7 @@ function NewQuotationPageContent() {
     try {
       setSearchingSKUs(true);
       const response = await fetch(
-        `/api/skus?search=${encodeURIComponent(search)}&limit=10`
+        `/api/v1/skus?search=${encodeURIComponent(search)}&limit=10`
       );
       if (response.ok) {
         const data = await response.json();
@@ -154,7 +154,7 @@ function NewQuotationPageContent() {
 
   const fetchCustomerById = useCallback(async (customerId: string) => {
     try {
-      const response = await fetch(`/api/customers/${customerId}`);
+      const response = await fetch(`/api/v1/v1/customers/${customerId}`);
       if (response.ok) {
         const customer = await response.json();
         setFormData((prev) => ({
@@ -303,7 +303,7 @@ function NewQuotationPageContent() {
       setSaving(true);
       const totals = calculateTotals();
 
-      const response = await fetch("/api/quotations", {
+      const response = await fetch("/api/v1/quotations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

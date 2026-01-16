@@ -54,7 +54,7 @@ export default function B2BAccountPage() {
 
   const fetchAccount = async () => {
     try {
-      const response = await fetch("/api/b2b/account");
+      const response = await fetch("/api/v1/b2b/account");
       if (response.ok) {
         const result = await response.json();
         setAccount(result.account);

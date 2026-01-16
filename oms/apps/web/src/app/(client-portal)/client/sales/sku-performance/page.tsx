@@ -50,7 +50,7 @@ export default function SKUPerformancePage() {
       params.set("sortBy", sortBy);
       params.set("sortOrder", sortOrder);
 
-      const response = await fetch(`/api/client/sku-performance?${params.toString()}`);
+      const response = await fetch(`/api/v1/client/sku-performance?${params.toString()}`);
       if (!response.ok) throw new Error("Failed to fetch SKU performance");
 
       const data = await response.json();

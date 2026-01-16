@@ -140,7 +140,7 @@ export default function QuotationsPage() {
       params.set("page", page.toString());
       params.set("limit", "25");
 
-      const response = await fetch(`/api/quotations?${params}`);
+      const response = await fetch(`/api/v1/quotations?${params}`);
       if (!response.ok) throw new Error("Failed to fetch quotations");
       const result = await response.json();
       setData(result);
@@ -161,7 +161,7 @@ export default function QuotationsPage() {
 
   async function handleAction(quotationId: string, action: string) {
     try {
-      const response = await fetch(`/api/quotations/${quotationId}`, {
+      const response = await fetch(`/api/v1/quotations/${quotationId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action }),

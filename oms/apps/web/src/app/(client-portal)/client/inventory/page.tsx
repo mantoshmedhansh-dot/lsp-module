@@ -70,7 +70,7 @@ export default function InventoryOverviewPage() {
   const fetchInventoryData = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/client/inventory?range=${dateRange}`);
+      const response = await fetch(`/api/v1/client/inventory?range=${dateRange}`);
       if (response.ok) {
         const result = await response.json();
         setData(result);

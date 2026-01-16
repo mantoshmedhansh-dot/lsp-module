@@ -71,7 +71,7 @@ export default function ReturnsOverviewPage() {
   const fetchReturnsData = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/client/returns?range=${dateRange}`);
+      const response = await fetch(`/api/v1/client/returns?range=${dateRange}`);
       if (response.ok) {
         const result = await response.json();
         setData(result);

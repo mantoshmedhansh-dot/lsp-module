@@ -191,7 +191,7 @@ export default function OrdersPage() {
         }
       }
 
-      const response = await fetch(`/api/orders?${params}`);
+      const response = await fetch(`/api/v1/orders?${params}`);
       if (!response.ok) throw new Error("Failed to fetch orders");
       const result = await response.json();
       setData(result);
@@ -217,7 +217,7 @@ export default function OrdersPage() {
     }
 
     try {
-      const response = await fetch("/api/orders/bulk", {
+      const response = await fetch("/api/v1/orders/bulk", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action, orderIds: selectedOrders }),
@@ -245,7 +245,7 @@ export default function OrdersPage() {
     }
 
     try {
-      const response = await fetch("/api/picklists", {
+      const response = await fetch("/api/v1/picklists", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ orderIds: selectedOrders }),

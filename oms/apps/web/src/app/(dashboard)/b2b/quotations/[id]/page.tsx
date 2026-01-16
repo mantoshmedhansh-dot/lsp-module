@@ -112,7 +112,7 @@ export default function QuotationDetailPage() {
   const fetchQuotation = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/quotations/${quotationId}`);
+      const response = await fetch(`/api/v1/quotations/${quotationId}`);
       if (!response.ok) {
         if (response.status === 404) {
           toast.error("Quotation not found");
@@ -138,7 +138,7 @@ export default function QuotationDetailPage() {
   const handleSubmitForApproval = async () => {
     try {
       setSaving(true);
-      const response = await fetch(`/api/quotations/${quotationId}/submit`, {
+      const response = await fetch(`/api/v1/quotations/${quotationId}/submit`, {
         method: "POST",
       });
 
@@ -157,7 +157,7 @@ export default function QuotationDetailPage() {
   const handleApprove = async () => {
     try {
       setSaving(true);
-      const response = await fetch(`/api/quotations/${quotationId}/approve`, {
+      const response = await fetch(`/api/v1/quotations/${quotationId}/approve`, {
         method: "POST",
       });
 
@@ -181,7 +181,7 @@ export default function QuotationDetailPage() {
 
     try {
       setSaving(true);
-      const response = await fetch(`/api/quotations/${quotationId}/reject`, {
+      const response = await fetch(`/api/v1/quotations/${quotationId}/reject`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ reason: rejectReason }),
@@ -204,7 +204,7 @@ export default function QuotationDetailPage() {
   const handleConvertToOrder = async () => {
     try {
       setSaving(true);
-      const response = await fetch(`/api/quotations/${quotationId}/convert`, {
+      const response = await fetch(`/api/v1/quotations/${quotationId}/convert`, {
         method: "POST",
       });
 
@@ -224,7 +224,7 @@ export default function QuotationDetailPage() {
 
   const handleDuplicate = async () => {
     try {
-      const response = await fetch(`/api/quotations/${quotationId}/duplicate`, {
+      const response = await fetch(`/api/v1/quotations/${quotationId}/duplicate`, {
         method: "POST",
       });
 
@@ -241,7 +241,7 @@ export default function QuotationDetailPage() {
 
   const handleSendEmail = async () => {
     try {
-      const response = await fetch(`/api/quotations/${quotationId}/send`, {
+      const response = await fetch(`/api/v1/quotations/${quotationId}/send`, {
         method: "POST",
       });
 

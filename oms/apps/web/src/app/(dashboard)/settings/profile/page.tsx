@@ -85,7 +85,7 @@ export default function ProfileSettingsPage() {
 
     setIsSaving(true);
     try {
-      const response = await fetch(`/api/users/${session?.user?.id}`, {
+      const response = await fetch(`/api/v1/users/${session?.user?.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -129,7 +129,7 @@ export default function ProfileSettingsPage() {
 
     setIsSaving(true);
     try {
-      const response = await fetch(`/api/users/${session?.user?.id}/password`, {
+      const response = await fetch(`/api/v1/users/${session?.user?.id}/password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

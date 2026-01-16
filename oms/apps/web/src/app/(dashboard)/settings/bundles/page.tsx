@@ -120,7 +120,7 @@ export default function BundlesPage() {
       const params = new URLSearchParams({ page: page.toString(), limit: "20" });
       if (typeFilter !== "all") params.set("type", typeFilter);
       if (searchQuery) params.set("search", searchQuery);
-      const res = await fetch(`/api/bundles?${params}`);
+      const res = await fetch(`/api/v1/bundles?${params}`);
       if (!res.ok) throw new Error("Failed to fetch");
       return res.json();
     },
@@ -130,7 +130,7 @@ export default function BundlesPage() {
   const { data: skusData } = useQuery({
     queryKey: ["skus"],
     queryFn: async () => {
-      const res = await fetch("/api/skus?limit=200");
+      const res = await fetch("/api/v1/skus?limit=200");
       if (!res.ok) throw new Error("Failed to fetch SKUs");
       return res.json();
     },
@@ -139,7 +139,7 @@ export default function BundlesPage() {
   // Create mutation
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      const res = await fetch("/api/bundles", {
+      const res = await fetch("/api/v1/bundles", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -164,7 +164,7 @@ export default function BundlesPage() {
   // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetch(`/api/bundles/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/v1/bundles/${id}`, { method: "DELETE" });
       if (!res.ok) {
         const error = await res.json();
         throw new Error(error.error || "Failed to delete");

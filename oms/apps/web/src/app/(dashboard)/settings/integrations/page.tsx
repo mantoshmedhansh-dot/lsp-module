@@ -108,7 +108,7 @@ export default function IntegrationsPage() {
   const { data: channelsData, isLoading: channelsLoading } = useQuery({
     queryKey: ["channel-configs"],
     queryFn: async () => {
-      const res = await fetch("/api/channels?limit=50");
+      const res = await fetch("/api/v1/channels?limit=50");
       if (!res.ok) throw new Error("Failed to fetch channels");
       return res.json();
     },
@@ -118,7 +118,7 @@ export default function IntegrationsPage() {
   const { data: transportersData, isLoading: transportersLoading } = useQuery({
     queryKey: ["transporters"],
     queryFn: async () => {
-      const res = await fetch("/api/transporters?limit=50");
+      const res = await fetch("/api/v1/transporters?limit=50");
       if (!res.ok) throw new Error("Failed to fetch transporters");
       return res.json();
     },
@@ -128,7 +128,7 @@ export default function IntegrationsPage() {
   const { data: locationsData } = useQuery({
     queryKey: ["locations"],
     queryFn: async () => {
-      const res = await fetch("/api/locations?limit=100");
+      const res = await fetch("/api/v1/locations?limit=100");
       if (!res.ok) throw new Error("Failed to fetch locations");
       return res.json();
     },
@@ -137,7 +137,7 @@ export default function IntegrationsPage() {
   // Save channel mutation
   const saveChannelMutation = useMutation({
     mutationFn: async (data: typeof channelForm & { id?: string }) => {
-      const url = data.id ? `/api/channels/${data.id}` : "/api/channels";
+      const url = data.id ? `/api/v1/channels/${data.id}` : "/api/v1/channels";
       const method = data.id ? "PATCH" : "POST";
       const res = await fetch(url, {
         method,
@@ -168,7 +168,7 @@ export default function IntegrationsPage() {
   // Save transporter mutation
   const saveTransporterMutation = useMutation({
     mutationFn: async (data: typeof transporterForm & { id?: string }) => {
-      const url = data.id ? `/api/transporters/${data.id}` : "/api/transporters";
+      const url = data.id ? `/api/v1/transporters/${data.id}` : "/api/v1/transporters";
       const method = data.id ? "PATCH" : "POST";
       const res = await fetch(url, {
         method,
@@ -202,7 +202,7 @@ export default function IntegrationsPage() {
   // Sync mutation
   const syncMutation = useMutation({
     mutationFn: async (channelConfigId: string) => {
-      const res = await fetch("/api/integrations/channels/sync", {
+      const res = await fetch("/api/v1/integrations/channels/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ channelConfigId }),

@@ -90,7 +90,7 @@ export default function CompaniesPage() {
   async function fetchCompanies() {
     try {
       setIsLoading(true);
-      const response = await fetch("/api/companies");
+      const response = await fetch("/api/v1/companies");
       if (!response.ok) throw new Error("Failed to fetch companies");
       const data = await response.json();
       setCompanies(data);
@@ -150,7 +150,7 @@ export default function CompaniesPage() {
 
     try {
       setIsSaving(true);
-      const url = editingCompany ? `/api/companies/${editingCompany.id}` : "/api/companies";
+      const url = editingCompany ? `/api/v1/companies/${editingCompany.id}` : "/api/v1/companies";
       const method = editingCompany ? "PATCH" : "POST";
 
       const response = await fetch(url, {
@@ -177,7 +177,7 @@ export default function CompaniesPage() {
 
   async function handleToggleActive(company: Company) {
     try {
-      const response = await fetch(`/api/companies/${company.id}`, {
+      const response = await fetch(`/api/v1/v1/companies/${company.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isActive: company.isActive === false }),
@@ -197,7 +197,7 @@ export default function CompaniesPage() {
     if (!confirm(`Are you sure you want to delete ${company.name}?`)) return;
 
     try {
-      const response = await fetch(`/api/companies/${company.id}`, {
+      const response = await fetch(`/api/v1/v1/companies/${company.id}`, {
         method: "DELETE",
       });
 

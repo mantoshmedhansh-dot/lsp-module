@@ -106,7 +106,7 @@ export default function ReportsPage() {
         format: "csv",
       });
 
-      const response = await fetch(`/api/client/reports?${params}`);
+      const response = await fetch(`/api/v1/client/reports?${params}`);
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);

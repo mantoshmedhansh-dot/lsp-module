@@ -160,7 +160,7 @@ export async function GET(request: NextRequest) {
       };
     }
 
-    const [ndrs, total] = await Promise.all([
+    const [ndrsRaw, total] = await Promise.all([
       prisma.nDR.findMany({
         where,
         include: {
@@ -211,6 +211,31 @@ export async function GET(request: NextRequest) {
       }),
       prisma.nDR.count({ where }),
     ]);
+
+    // Transform to match frontend interface (lowercase property names)
+    const ndrs = ndrsRaw.map((ndr) => ({
+      ...ndr,
+      order: ndr.Order,
+      delivery: ndr.Delivery ? {
+        ...ndr.Delivery,
+        transporter: ndr.Delivery.Transporter,
+      } : null,
+      outreachAttempts: ndr.NDROutreach.map((o) => ({
+        id: o.id,
+        channel: o.channel,
+        status: o.status,
+        sentAt: o.sentAt,
+        response: o.customerResponse,
+      })),
+      _count: {
+        outreachAttempts: ndr._count.NDROutreach,
+        aiActions: ndr._count.AIActionLog,
+      },
+      // Remove capitalized versions
+      Order: undefined,
+      Delivery: undefined,
+      NDROutreach: undefined,
+    }));
 
     // Get status counts for dashboard
     const companyFilter = where.companyId;

@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
       };
     }
 
-    const [actions, total] = await Promise.all([
+    const [actionsRaw, total] = await Promise.all([
       prisma.aIActionLog.findMany({
         where,
         include: {
@@ -78,6 +78,15 @@ export async function GET(request: NextRequest) {
       }),
       prisma.aIActionLog.count({ where }),
     ]);
+
+    // Transform to match frontend interface (lowercase property names)
+    const actions = actionsRaw.map((action) => ({
+      ...action,
+      ndr: action.NDR,
+      errorMessage: action.executionError,
+      NDR: undefined,
+      executionError: undefined,
+    }));
 
     // Get aggregated stats
     const companyFilter = where.companyId;

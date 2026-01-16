@@ -83,53 +83,55 @@ def get_return_summary(
     current_user: User = Depends(get_current_user)
 ):
     """Get return summary statistics."""
-    from app.models import Order
+    try:
+        returns = session.exec(select(Return)).all()
 
-    returns = session.exec(select(Return)).all()
+        # Use string comparison to avoid enum issues
+        def get_status_str(r):
+            return r.status.value if hasattr(r.status, 'value') else str(r.status)
 
-    # Use string comparison to avoid enum issues
-    def get_status_str(r):
-        return r.status.value if hasattr(r.status, 'value') else str(r.status)
+        def get_type_str(r):
+            return r.type.value if hasattr(r.type, 'value') else str(r.type)
 
-    def get_type_str(r):
-        return r.type.value if hasattr(r.type, 'value') else str(r.type)
+        pending = sum(1 for r in returns if get_status_str(r) in ["INITIATED", "PICKUP_SCHEDULED", "IN_TRANSIT"])
+        received = sum(1 for r in returns if get_status_str(r) in ["RECEIVED", "QC_PENDING"])
+        processed = sum(1 for r in returns if get_status_str(r) in ["QC_PASSED", "QC_FAILED"])
 
-    pending = sum(1 for r in returns if get_status_str(r) in ["INITIATED", "PICKUP_SCHEDULED"])
-    received = sum(1 for r in returns if get_status_str(r) == "RECEIVED")
-    processed = sum(1 for r in returns if get_status_str(r) in ["QC_PASSED", "QC_FAILED"])
+        by_type = {}
+        by_status = {}
+        by_reason = {}
+        rto_count = 0
 
-    by_type = {}
-    by_status = {}
-    by_reason = {}
-    rto_count = 0
+        for r in returns:
+            type_str = get_type_str(r)
+            status_str = get_status_str(r)
+            by_type[type_str] = by_type.get(type_str, 0) + 1
+            by_status[status_str] = by_status.get(status_str, 0) + 1
 
-    for r in returns:
-        type_str = get_type_str(r)
-        status_str = get_status_str(r)
-        by_type[type_str] = by_type.get(type_str, 0) + 1
-        by_status[status_str] = by_status.get(status_str, 0) + 1
+            # Track RTO reasons
+            if type_str == "RTO":
+                rto_count += 1
+                reason = r.reason or "Unknown"
+                by_reason[reason] = by_reason.get(reason, 0) + 1
 
-        # Track RTO reasons
-        if type_str == "RTO":
-            rto_count += 1
-            reason = r.reason or "Unknown"
-            by_reason[reason] = by_reason.get(reason, 0) + 1
+        # Calculate RTO rate as percentage of total returns
+        total_returns = len(returns)
+        rto_rate = rto_count / total_returns if total_returns > 0 else 0
 
-    # Calculate RTO rate (RTOs / total orders)
-    total_orders = session.exec(select(func.count(Order.id))).one() or 1
-    rto_rate = rto_count / total_orders if total_orders > 0 else 0
-
-    return {
-        "totalReturns": len(returns),
-        "pendingReturns": pending,
-        "receivedReturns": received,
-        "processedReturns": processed,
-        "byType": by_type,
-        "byStatus": by_status,
-        "byReason": by_reason,
-        "rtoRate": round(rto_rate, 4),
-        "rtoCount": rto_count
-    }
+        return {
+            "totalReturns": total_returns,
+            "pendingReturns": pending,
+            "receivedReturns": received,
+            "processedReturns": processed,
+            "byType": by_type,
+            "byStatus": by_status,
+            "byReason": by_reason,
+            "rtoRate": round(rto_rate, 4),
+            "rtoCount": rto_count
+        }
+    except Exception as e:
+        import traceback
+        raise HTTPException(status_code=500, detail=f"Summary error: {str(e)}\n{traceback.format_exc()}")
 
 
 @router.get("/{return_id}", response_model=ReturnResponse)

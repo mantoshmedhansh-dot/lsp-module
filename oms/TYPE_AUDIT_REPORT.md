@@ -149,29 +149,48 @@ Frontend Hook: useReturnList({ skip, limit, returnType })
 
 ---
 
-## 6. RECOMMENDED FIXES
+## 6. FIXES APPLIED
 
-### Priority 1: Database Migration (Critical)
+### ✅ FIXED: NDR Page (`control-tower/ndr/page.tsx`)
+- Status filter values updated to match backend NDRStatus enum
+- Reason filter keys updated to match backend NDRReason enum
+- Status display badges updated with correct enum values
+- Changed `_count` to `outreachCount` for proper serialization
+
+### ✅ FIXED: Returns Page (`returns/page.tsx`)
+- Replaced invalid RESTOCKED/DISPOSED/REFUNDED with valid ReturnStatus values
+- Replaced VENDOR_RETURN with EXCHANGE in ReturnType filter
+- Updated status filter dropdown to use valid enum values
+- Fixed stat card to use QC_PASSED instead of RESTOCKED
+
+### ✅ FIXED: RTO Page (`returns/rto/page.tsx`)
+- Updated statusColors to use valid ReturnStatus values
+- Fixed status filter dropdown options
+- Fixed stat card references
+
+### ✅ FIXED: Backend Schemas
+- Added `companyId` to `ReturnResponse` schema
+- Changed `_count` to `outreachCount` in `NDRListItem` schema
+
+### ⏳ PENDING: Database Migration
+Alembic migration created at `backend/alembic/versions/001_add_return_status_enum_values.py`
+
+To run the migration, execute in Supabase SQL editor:
 ```sql
--- Run on Supabase SQL editor
-ALTER TYPE "ReturnStatus" ADD VALUE 'PROCESSED';
-ALTER TYPE "ReturnStatus" ADD VALUE 'COMPLETED';
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'PROCESSED' AND enumtypid = (SELECT oid FROM pg_type WHERE typname = 'ReturnStatus')) THEN
+        ALTER TYPE "ReturnStatus" ADD VALUE 'PROCESSED';
+    END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'COMPLETED' AND enumtypid = (SELECT oid FROM pg_type WHERE typname = 'ReturnStatus')) THEN
+        ALTER TYPE "ReturnStatus" ADD VALUE 'COMPLETED';
+    END IF;
+END $$;
 ```
-
-### Priority 2: Fix NDR Page Hardcoded Values
-Update `control-tower/ndr/page.tsx`:
-
-1. Fix status filter values (lines 379-385)
-2. Fix reason filter keys (lines 321-327)
-3. Fix status display mappings (lines 487-496)
-
-### Priority 3: Add Missing Types
-1. Add `_count` to NDRListItem in backend schema
-2. Regenerate OpenAPI client
-
-### Priority 4: Add companyId to ReturnResponse
-1. Add `companyId` field to `ReturnResponse` and `ReturnBrief` schemas
-2. Regenerate OpenAPI client
 
 ---
 

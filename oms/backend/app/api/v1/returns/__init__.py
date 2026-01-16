@@ -89,7 +89,7 @@ def get_return_summary(
 
     pending = sum(1 for r in returns if r.status in [ReturnStatus.INITIATED, ReturnStatus.PICKUP_SCHEDULED])
     received = sum(1 for r in returns if r.status == ReturnStatus.RECEIVED)
-    processed = sum(1 for r in returns if r.status == ReturnStatus.PROCESSED)
+    processed = sum(1 for r in returns if r.status in [ReturnStatus.QC_PASSED, ReturnStatus.QC_FAILED])
 
     by_type = {}
     by_status = {}

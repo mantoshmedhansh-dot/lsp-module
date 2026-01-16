@@ -405,7 +405,7 @@ export const listLocationsApiV1LocationsGet = (data: ListLocationsApiV1Locations
  * Create a new location. Requires ADMIN or SUPER_ADMIN role.
  * @param data The data for the request.
  * @param data.requestBody
- * @returns app__models__company__LocationResponse Successful Response
+ * @returns LocationResponse Successful Response
  * @throws ApiError
  */
 export const createLocationApiV1LocationsPost = (data: CreateLocationApiV1LocationsPostData): CancelablePromise<CreateLocationApiV1LocationsPostResponse> => {
@@ -425,7 +425,7 @@ export const createLocationApiV1LocationsPost = (data: CreateLocationApiV1Locati
  * Get a specific location by ID.
  * @param data The data for the request.
  * @param data.locationId
- * @returns app__models__company__LocationResponse Successful Response
+ * @returns LocationResponse Successful Response
  * @throws ApiError
  */
 export const getLocationApiV1LocationsLocationIdGet = (data: GetLocationApiV1LocationsLocationIdGetData): CancelablePromise<GetLocationApiV1LocationsLocationIdGetResponse> => {
@@ -447,7 +447,7 @@ export const getLocationApiV1LocationsLocationIdGet = (data: GetLocationApiV1Loc
  * @param data The data for the request.
  * @param data.locationId
  * @param data.requestBody
- * @returns app__models__company__LocationResponse Successful Response
+ * @returns LocationResponse Successful Response
  * @throws ApiError
  */
 export const updateLocationApiV1LocationsLocationIdPatch = (data: UpdateLocationApiV1LocationsLocationIdPatchData): CancelablePromise<UpdateLocationApiV1LocationsLocationIdPatchResponse> => {
@@ -1083,7 +1083,7 @@ export const listOrdersApiV1OrdersGet = (data: ListOrdersApiV1OrdersGetData = {}
  * Create a new order. Requires MANAGER or higher role.
  * @param data The data for the request.
  * @param data.requestBody
- * @returns app__models__order__OrderResponse Successful Response
+ * @returns OrderResponse Successful Response
  * @throws ApiError
  */
 export const createOrderApiV1OrdersPost = (data: CreateOrderApiV1OrdersPostData): CancelablePromise<CreateOrderApiV1OrdersPostResponse> => {
@@ -1159,7 +1159,7 @@ export const getOrderStatsApiV1OrdersStatsGet = (data: GetOrderStatsApiV1OrdersS
  * Get a specific order by ID.
  * @param data The data for the request.
  * @param data.orderId
- * @returns app__models__order__OrderResponse Successful Response
+ * @returns OrderResponse Successful Response
  * @throws ApiError
  */
 export const getOrderApiV1OrdersOrderIdGet = (data: GetOrderApiV1OrdersOrderIdGetData): CancelablePromise<GetOrderApiV1OrdersOrderIdGetResponse> => {
@@ -1181,7 +1181,7 @@ export const getOrderApiV1OrdersOrderIdGet = (data: GetOrderApiV1OrdersOrderIdGe
  * @param data The data for the request.
  * @param data.orderId
  * @param data.requestBody
- * @returns app__models__order__OrderResponse Successful Response
+ * @returns OrderResponse Successful Response
  * @throws ApiError
  */
 export const updateOrderApiV1OrdersOrderIdPatch = (data: UpdateOrderApiV1OrdersOrderIdPatchData): CancelablePromise<UpdateOrderApiV1OrdersOrderIdPatchResponse> => {
@@ -1204,7 +1204,7 @@ export const updateOrderApiV1OrdersOrderIdPatch = (data: UpdateOrderApiV1OrdersO
  * Get an order by order number.
  * @param data The data for the request.
  * @param data.orderNo
- * @returns app__models__order__OrderResponse Successful Response
+ * @returns OrderResponse Successful Response
  * @throws ApiError
  */
 export const getOrderByNumberApiV1OrdersNumberOrderNoGet = (data: GetOrderByNumberApiV1OrdersNumberOrderNoGetData): CancelablePromise<GetOrderByNumberApiV1OrdersNumberOrderNoGetResponse> => {
@@ -1225,7 +1225,7 @@ export const getOrderByNumberApiV1OrdersNumberOrderNoGet = (data: GetOrderByNumb
  * Cancel an order. Requires MANAGER or higher role.
  * @param data The data for the request.
  * @param data.orderId
- * @returns app__models__order__OrderResponse Successful Response
+ * @returns OrderResponse Successful Response
  * @throws ApiError
  */
 export const cancelOrderApiV1OrdersOrderIdCancelPost = (data: CancelOrderApiV1OrdersOrderIdCancelPostData): CancelablePromise<CancelOrderApiV1OrdersOrderIdCancelPostResponse> => {
@@ -1746,18 +1746,20 @@ export const deleteCustomerGroupApiV1CustomersGroupsGroupIdDelete = (data: Delet
 
 /**
  * List Ndrs
- * List NDRs with pagination and filters.
+ * List NDRs with pagination, filters, and aggregated stats.
  * @param data The data for the request.
- * @param data.skip
+ * @param data.page
  * @param data.limit
+ * @param data.skip
  * @param data.status
  * @param data.priority
  * @param data.reason
+ * @param data.search
  * @param data.orderId
  * @param data.deliveryId
  * @param data.dateFrom
  * @param data.dateTo
- * @returns NDRBrief Successful Response
+ * @returns NDRListResponse Successful Response
  * @throws ApiError
  */
 export const listNdrsApiV1NdrGet = (data: ListNdrsApiV1NdrGetData = {}): CancelablePromise<ListNdrsApiV1NdrGetResponse> => {
@@ -1765,11 +1767,13 @@ export const listNdrsApiV1NdrGet = (data: ListNdrsApiV1NdrGetData = {}): Cancela
         method: 'GET',
         url: '/api/v1/ndr',
         query: {
-            skip: data.skip,
+            page: data.page,
             limit: data.limit,
+            skip: data.skip,
             status: data.status,
             priority: data.priority,
             reason: data.reason,
+            search: data.search,
             order_id: data.orderId,
             delivery_id: data.deliveryId,
             date_from: data.dateFrom,
@@ -3947,7 +3951,7 @@ export const loginApiAuthLoginPost = (data: LoginApiAuthLoginPostData): Cancelab
 
 /**
  * Get Current User Info
- * @returns UserResponse Successful Response
+ * @returns app__schemas__auth__UserResponse Successful Response
  * @throws ApiError
  */
 export const getCurrentUserInfoApiAuthMeGet = (): CancelablePromise<GetCurrentUserInfoApiAuthMeGetResponse> => {
@@ -3964,7 +3968,7 @@ export const getCurrentUserInfoApiAuthMeGet = (): CancelablePromise<GetCurrentUs
  * @param data.pageSize
  * @param data.search
  * @param data.role
- * @returns app__api__routes__users__UserResponse Successful Response
+ * @returns UserResponse Successful Response
  * @throws ApiError
  */
 export const listUsersApiUsersGet = (data: ListUsersApiUsersGetData = {}): CancelablePromise<ListUsersApiUsersGetResponse> => {
@@ -3987,7 +3991,7 @@ export const listUsersApiUsersGet = (data: ListUsersApiUsersGetData = {}): Cance
  * Create User
  * @param data The data for the request.
  * @param data.requestBody
- * @returns app__api__routes__users__UserResponse Successful Response
+ * @returns UserResponse Successful Response
  * @throws ApiError
  */
 export const createUserApiUsersPost = (data: CreateUserApiUsersPostData): CancelablePromise<CreateUserApiUsersPostResponse> => {
@@ -4006,7 +4010,7 @@ export const createUserApiUsersPost = (data: CreateUserApiUsersPostData): Cancel
  * Get User
  * @param data The data for the request.
  * @param data.userId
- * @returns app__api__routes__users__UserResponse Successful Response
+ * @returns UserResponse Successful Response
  * @throws ApiError
  */
 export const getUserApiUsersUserIdGet = (data: GetUserApiUsersUserIdGetData): CancelablePromise<GetUserApiUsersUserIdGetResponse> => {
@@ -4027,7 +4031,7 @@ export const getUserApiUsersUserIdGet = (data: GetUserApiUsersUserIdGetData): Ca
  * @param data The data for the request.
  * @param data.userId
  * @param data.requestBody
- * @returns app__api__routes__users__UserResponse Successful Response
+ * @returns UserResponse Successful Response
  * @throws ApiError
  */
 export const updateUserApiUsersUserIdPatch = (data: UpdateUserApiUsersUserIdPatchData): CancelablePromise<UpdateUserApiUsersUserIdPatchResponse> => {
@@ -4076,7 +4080,7 @@ export const deleteUserApiUsersUserIdDelete = (data: DeleteUserApiUsersUserIdDel
  * @param data.locationId
  * @param data.fromDate
  * @param data.toDate
- * @returns OrderResponse Successful Response
+ * @returns app__api__routes__orders__OrderResponse Successful Response
  * @throws ApiError
  */
 export const listOrdersApiOrdersGet = (data: ListOrdersApiOrdersGetData = {}): CancelablePromise<ListOrdersApiOrdersGetResponse> => {
@@ -4103,7 +4107,7 @@ export const listOrdersApiOrdersGet = (data: ListOrdersApiOrdersGetData = {}): C
  * Create Order
  * @param data The data for the request.
  * @param data.requestBody
- * @returns OrderResponse Successful Response
+ * @returns app__api__routes__orders__OrderResponse Successful Response
  * @throws ApiError
  */
 export const createOrderApiOrdersPost = (data: CreateOrderApiOrdersPostData): CancelablePromise<CreateOrderApiOrdersPostResponse> => {
@@ -4142,7 +4146,7 @@ export const getOrderCountsApiOrdersCountGet = (data: GetOrderCountsApiOrdersCou
  * Get Order
  * @param data The data for the request.
  * @param data.orderId
- * @returns OrderResponse Successful Response
+ * @returns app__api__routes__orders__OrderResponse Successful Response
  * @throws ApiError
  */
 export const getOrderApiOrdersOrderIdGet = (data: GetOrderApiOrdersOrderIdGetData): CancelablePromise<GetOrderApiOrdersOrderIdGetResponse> => {
@@ -4389,7 +4393,7 @@ export const moveInventoryApiInventoryMovePost = (data: MoveInventoryApiInventor
  * @param data.pageSize
  * @param data.type
  * @param data.isActive
- * @returns LocationResponse Successful Response
+ * @returns app__api__routes__locations__LocationResponse Successful Response
  * @throws ApiError
  */
 export const listLocationsApiLocationsGet = (data: ListLocationsApiLocationsGetData = {}): CancelablePromise<ListLocationsApiLocationsGetResponse> => {
@@ -4412,7 +4416,7 @@ export const listLocationsApiLocationsGet = (data: ListLocationsApiLocationsGetD
  * Create Location
  * @param data The data for the request.
  * @param data.requestBody
- * @returns LocationResponse Successful Response
+ * @returns app__api__routes__locations__LocationResponse Successful Response
  * @throws ApiError
  */
 export const createLocationApiLocationsPost = (data: CreateLocationApiLocationsPostData): CancelablePromise<CreateLocationApiLocationsPostResponse> => {
@@ -4431,7 +4435,7 @@ export const createLocationApiLocationsPost = (data: CreateLocationApiLocationsP
  * Get Location
  * @param data The data for the request.
  * @param data.locationId
- * @returns LocationResponse Successful Response
+ * @returns app__api__routes__locations__LocationResponse Successful Response
  * @throws ApiError
  */
 export const getLocationApiLocationsLocationIdGet = (data: GetLocationApiLocationsLocationIdGetData): CancelablePromise<GetLocationApiLocationsLocationIdGetResponse> => {
@@ -4452,7 +4456,7 @@ export const getLocationApiLocationsLocationIdGet = (data: GetLocationApiLocatio
  * @param data The data for the request.
  * @param data.locationId
  * @param data.requestBody
- * @returns LocationResponse Successful Response
+ * @returns app__api__routes__locations__LocationResponse Successful Response
  * @throws ApiError
  */
 export const updateLocationApiLocationsLocationIdPatch = (data: UpdateLocationApiLocationsLocationIdPatchData): CancelablePromise<UpdateLocationApiLocationsLocationIdPatchResponse> => {

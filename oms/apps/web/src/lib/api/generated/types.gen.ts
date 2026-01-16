@@ -81,9 +81,31 @@ export type AIActionLogUpdate = {
 export type AIActionStatus = 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED' | 'EXECUTED' | 'FAILED';
 
 /**
+ * AI action status
+ */
+export const AIActionStatus = {
+    PENDING_APPROVAL: 'PENDING_APPROVAL',
+    APPROVED: 'APPROVED',
+    REJECTED: 'REJECTED',
+    EXECUTED: 'EXECUTED',
+    FAILED: 'FAILED'
+} as const;
+
+/**
  * AI action types
  */
 export type AIActionType = 'NDR_CLASSIFICATION' | 'NDR_RESOLUTION' | 'FRAUD_DETECTION' | 'DEMAND_FORECAST' | 'CARRIER_SELECTION';
+
+/**
+ * AI action types
+ */
+export const AIActionType = {
+    NDR_CLASSIFICATION: 'NDR_CLASSIFICATION',
+    NDR_RESOLUTION: 'NDR_RESOLUTION',
+    FRAUD_DETECTION: 'FRAUD_DETECTION',
+    DEMAND_FORECAST: 'DEMAND_FORECAST',
+    CARRIER_SELECTION: 'CARRIER_SELECTION'
+} as const;
 
 export type BinCreate = {
     code: string;
@@ -157,6 +179,25 @@ export type BrandUpdate = {
  */
 export type Channel = 'AMAZON' | 'FLIPKART' | 'MYNTRA' | 'AJIO' | 'MEESHO' | 'NYKAA' | 'TATA_CLIQ' | 'JIOMART' | 'SHOPIFY' | 'WOOCOMMERCE' | 'WEBSITE' | 'MANUAL' | 'B2B';
 
+/**
+ * Sales channels
+ */
+export const Channel = {
+    AMAZON: 'AMAZON',
+    FLIPKART: 'FLIPKART',
+    MYNTRA: 'MYNTRA',
+    AJIO: 'AJIO',
+    MEESHO: 'MEESHO',
+    NYKAA: 'NYKAA',
+    TATA_CLIQ: 'TATA_CLIQ',
+    JIOMART: 'JIOMART',
+    SHOPIFY: 'SHOPIFY',
+    WOOCOMMERCE: 'WOOCOMMERCE',
+    WEBSITE: 'WEBSITE',
+    MANUAL: 'MANUAL',
+    B2B: 'B2B'
+} as const;
+
 export type CompanyBrief = {
     id: string;
     code: string;
@@ -227,6 +268,16 @@ export type CompanyUpdate = {
  * Credit status for B2B customers
  */
 export type CreditStatus = 'AVAILABLE' | 'EXHAUSTED' | 'ON_HOLD' | 'OVERDUE';
+
+/**
+ * Credit status for B2B customers
+ */
+export const CreditStatus = {
+    AVAILABLE: 'AVAILABLE',
+    EXHAUSTED: 'EXHAUSTED',
+    ON_HOLD: 'ON_HOLD',
+    OVERDUE: 'OVERDUE'
+} as const;
 
 /**
  * Brief customer info for lists
@@ -400,9 +451,29 @@ export type CustomerResponse = {
 export type CustomerStatus = 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | 'BLOCKED';
 
 /**
+ * Customer account status
+ */
+export const CustomerStatus = {
+    ACTIVE: 'ACTIVE',
+    INACTIVE: 'INACTIVE',
+    SUSPENDED: 'SUSPENDED',
+    BLOCKED: 'BLOCKED'
+} as const;
+
+/**
  * Customer types
  */
 export type CustomerType = 'RETAIL' | 'WHOLESALE' | 'DISTRIBUTOR' | 'FRANCHISE';
+
+/**
+ * Customer types
+ */
+export const CustomerType = {
+    RETAIL: 'RETAIL',
+    WHOLESALE: 'WHOLESALE',
+    DISTRIBUTOR: 'DISTRIBUTOR',
+    FRANCHISE: 'FRANCHISE'
+} as const;
 
 /**
  * Schema for updating customer
@@ -493,6 +564,25 @@ export type DeliveryResponse = {
  * Delivery/shipment status
  */
 export type DeliveryStatus = 'PENDING' | 'PACKED' | 'MANIFESTED' | 'SHIPPED' | 'IN_TRANSIT' | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'NDR' | 'RTO' | 'RTO_INITIATED' | 'RTO_IN_TRANSIT' | 'RTO_DELIVERED' | 'CANCELLED';
+
+/**
+ * Delivery/shipment status
+ */
+export const DeliveryStatus = {
+    PENDING: 'PENDING',
+    PACKED: 'PACKED',
+    MANIFESTED: 'MANIFESTED',
+    SHIPPED: 'SHIPPED',
+    IN_TRANSIT: 'IN_TRANSIT',
+    OUT_FOR_DELIVERY: 'OUT_FOR_DELIVERY',
+    DELIVERED: 'DELIVERED',
+    NDR: 'NDR',
+    RTO: 'RTO',
+    RTO_INITIATED: 'RTO_INITIATED',
+    RTO_IN_TRANSIT: 'RTO_IN_TRANSIT',
+    RTO_DELIVERED: 'RTO_DELIVERED',
+    CANCELLED: 'CANCELLED'
+} as const;
 
 /**
  * Schema for updating delivery
@@ -631,9 +721,29 @@ export type InboundResponse = {
 export type InboundStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
 
 /**
+ * Inbound receipt status
+ */
+export const InboundStatus = {
+    PENDING: 'PENDING',
+    IN_PROGRESS: 'IN_PROGRESS',
+    COMPLETED: 'COMPLETED',
+    CANCELLED: 'CANCELLED'
+} as const;
+
+/**
  * Inbound receipt types
  */
 export type InboundType = 'PURCHASE_ORDER' | 'RETURN' | 'TRANSFER' | 'ADJUSTMENT';
+
+/**
+ * Inbound receipt types
+ */
+export const InboundType = {
+    PURCHASE_ORDER: 'PURCHASE_ORDER',
+    RETURN: 'RETURN',
+    TRANSFER: 'TRANSFER',
+    ADJUSTMENT: 'ADJUSTMENT'
+} as const;
 
 /**
  * Schema for updating inbound
@@ -752,9 +862,33 @@ export type InventoryUpdate = {
 export type InventoryValuationMethod = 'FIFO' | 'LIFO' | 'FEFO' | 'WAC';
 
 /**
+ * Inventory valuation methods
+ */
+export const InventoryValuationMethod = {
+    FIFO: 'FIFO',
+    LIFO: 'LIFO',
+    FEFO: 'FEFO',
+    WAC: 'WAC'
+} as const;
+
+/**
  * Order item status
  */
 export type ItemStatus = 'PENDING' | 'ALLOCATED' | 'PICKED' | 'PACKED' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED' | 'RETURNED';
+
+/**
+ * Order item status
+ */
+export const ItemStatus = {
+    PENDING: 'PENDING',
+    ALLOCATED: 'ALLOCATED',
+    PICKED: 'PICKED',
+    PACKED: 'PACKED',
+    SHIPPED: 'SHIPPED',
+    DELIVERED: 'DELIVERED',
+    CANCELLED: 'CANCELLED',
+    RETURNED: 'RETURNED'
+} as const;
 
 export type LocationBrief = {
     id: string;
@@ -767,20 +901,6 @@ export type LocationCreate = {
     code: string;
     name: string;
     type: LocationType;
-    address: {
-        [key: string]: unknown;
-    };
-    contactPerson?: (string | null);
-    contactPhone?: (string | null);
-    contactEmail?: (string | null);
-    gst?: (string | null);
-};
-
-export type LocationResponse = {
-    id: string;
-    code: string;
-    name: string;
-    type: string;
     address?: ({
     [key: string]: unknown;
 } | null);
@@ -788,8 +908,31 @@ export type LocationResponse = {
     contactPhone?: (string | null);
     contactEmail?: (string | null);
     gst?: (string | null);
+    settings?: ({
+    [key: string]: unknown;
+} | null);
+    companyId: string;
+};
+
+export type LocationResponse = {
+    id: string;
+    code: string;
+    name: string;
+    type: LocationType;
+    address?: ({
+    [key: string]: unknown;
+} | null);
+    contactPerson?: (string | null);
+    contactPhone?: (string | null);
+    contactEmail?: (string | null);
+    gst?: (string | null);
+    settings?: ({
+    [key: string]: unknown;
+} | null);
     isActive: boolean;
     companyId: string;
+    createdAt: string;
+    updatedAt: string;
 };
 
 /**
@@ -797,14 +940,30 @@ export type LocationResponse = {
  */
 export type LocationType = 'WAREHOUSE' | 'STORE' | 'HUB' | 'VIRTUAL';
 
+/**
+ * Types of fulfillment locations
+ */
+export const LocationType = {
+    WAREHOUSE: 'WAREHOUSE',
+    STORE: 'STORE',
+    HUB: 'HUB',
+    VIRTUAL: 'VIRTUAL'
+} as const;
+
 export type LocationUpdate = {
+    code?: (string | null);
     name?: (string | null);
+    type?: (LocationType | null);
     address?: ({
     [key: string]: unknown;
 } | null);
     contactPerson?: (string | null);
     contactPhone?: (string | null);
     contactEmail?: (string | null);
+    gst?: (string | null);
+    settings?: ({
+    [key: string]: unknown;
+} | null);
     isActive?: (boolean | null);
 };
 
@@ -814,7 +973,7 @@ export type LoginRequest = {
 };
 
 export type LoginResponse = {
-    user: UserResponse;
+    user: app__schemas__auth__UserResponse;
     token: string;
 };
 
@@ -863,6 +1022,16 @@ export type ManifestResponse = {
 export type ManifestStatus = 'OPEN' | 'CLOSED' | 'HANDED_OVER' | 'CANCELLED';
 
 /**
+ * Manifest status
+ */
+export const ManifestStatus = {
+    OPEN: 'OPEN',
+    CLOSED: 'CLOSED',
+    HANDED_OVER: 'HANDED_OVER',
+    CANCELLED: 'CANCELLED'
+} as const;
+
+/**
  * Schema for updating manifest
  */
 export type ManifestUpdate = {
@@ -873,19 +1042,6 @@ export type ManifestUpdate = {
     handoverImage?: (string | null);
     confirmedAt?: (string | null);
     confirmedBy?: (string | null);
-};
-
-/**
- * Brief NDR info for lists
- */
-export type NDRBrief = {
-    id: string;
-    ndrCode: string;
-    reason: NDRReason;
-    status: NDRStatus;
-    priority: NDRPriority;
-    attemptNumber: number;
-    attemptDate: string;
 };
 
 /**
@@ -903,6 +1059,78 @@ export type NDRCreate = {
     attemptNumber?: number;
     status?: NDRStatus;
     priority?: NDRPriority;
+};
+
+/**
+ * Delivery info embedded in NDR list response
+ */
+export type NDRDeliveryInfo = {
+    id: string;
+    deliveryNo: string;
+    awbNo: string;
+    status: string;
+    transporter?: ({
+    [key: string]: unknown;
+} | null);
+};
+
+/**
+ * Single NDR item in list response
+ */
+export type NDRListItem = {
+    id: string;
+    ndrCode: string;
+    reason: string;
+    aiClassification?: (string | null);
+    confidence?: (number | null);
+    status: string;
+    priority: string;
+    riskScore?: (number | null);
+    attemptNumber: number;
+    attemptDate?: (string | null);
+    carrierRemark?: (string | null);
+    createdAt?: (string | null);
+    order?: (NDROrderInfo | null);
+    delivery?: (NDRDeliveryInfo | null);
+    outreachAttempts?: Array<{
+        [key: string]: unknown;
+    }>;
+};
+
+/**
+ * Response schema for NDR list endpoint.
+ * Includes paginated NDRs with aggregated statistics.
+ */
+export type NDRListResponse = {
+    ndrs: Array<NDRListItem>;
+    total: number;
+    statusCounts: {
+        [key: string]: unknown;
+    };
+    priorityCounts: {
+        [key: string]: unknown;
+    };
+    reasonCounts: {
+        [key: string]: unknown;
+    };
+    avgResolutionHours: number;
+    outreachSuccessRate: number;
+};
+
+/**
+ * Order info embedded in NDR list response
+ */
+export type NDROrderInfo = {
+    id: string;
+    orderNo: string;
+    customerName: string;
+    customerPhone: string;
+    customerEmail?: (string | null);
+    shippingAddress?: ({
+    [key: string]: unknown;
+} | null);
+    paymentMode: string;
+    totalAmount: number;
 };
 
 /**
@@ -970,9 +1198,36 @@ export type NDROutreachUpdate = {
 export type NDRPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
 /**
+ * NDR priority levels
+ */
+export const NDRPriority = {
+    LOW: 'LOW',
+    MEDIUM: 'MEDIUM',
+    HIGH: 'HIGH',
+    CRITICAL: 'CRITICAL'
+} as const;
+
+/**
  * NDR (Non-Delivery Report) reasons
  */
 export type NDRReason = 'CUSTOMER_UNAVAILABLE' | 'WRONG_ADDRESS' | 'INCOMPLETE_ADDRESS' | 'CUSTOMER_REFUSED' | 'COD_NOT_READY' | 'PHONE_UNREACHABLE' | 'DELIVERY_RESCHEDULED' | 'ADDRESS_NOT_FOUND' | 'AREA_NOT_SERVICEABLE' | 'NATURAL_DISASTER' | 'OTHER';
+
+/**
+ * NDR (Non-Delivery Report) reasons
+ */
+export const NDRReason = {
+    CUSTOMER_UNAVAILABLE: 'CUSTOMER_UNAVAILABLE',
+    WRONG_ADDRESS: 'WRONG_ADDRESS',
+    INCOMPLETE_ADDRESS: 'INCOMPLETE_ADDRESS',
+    CUSTOMER_REFUSED: 'CUSTOMER_REFUSED',
+    COD_NOT_READY: 'COD_NOT_READY',
+    PHONE_UNREACHABLE: 'PHONE_UNREACHABLE',
+    DELIVERY_RESCHEDULED: 'DELIVERY_RESCHEDULED',
+    ADDRESS_NOT_FOUND: 'ADDRESS_NOT_FOUND',
+    AREA_NOT_SERVICEABLE: 'AREA_NOT_SERVICEABLE',
+    NATURAL_DISASTER: 'NATURAL_DISASTER',
+    OTHER: 'OTHER'
+} as const;
 
 /**
  * Schema for NDR API responses
@@ -1015,6 +1270,18 @@ export type NDRResponse = {
 export type NDRStatus = 'OPEN' | 'ACTION_REQUESTED' | 'REATTEMPT_SCHEDULED' | 'RESOLVED' | 'RTO' | 'CLOSED';
 
 /**
+ * NDR resolution status
+ */
+export const NDRStatus = {
+    OPEN: 'OPEN',
+    ACTION_REQUESTED: 'ACTION_REQUESTED',
+    REATTEMPT_SCHEDULED: 'REATTEMPT_SCHEDULED',
+    RESOLVED: 'RESOLVED',
+    RTO: 'RTO',
+    CLOSED: 'CLOSED'
+} as const;
+
+/**
  * Schema for updating NDR
  */
 export type NDRUpdate = {
@@ -1051,12 +1318,7 @@ export type OrderBrief = {
     orderDate: string;
 };
 
-/**
- * Schema for creating an order
- */
 export type OrderCreate = {
-    orderNo: string;
-    externalOrderNo?: (string | null);
     channel: Channel;
     orderType?: OrderType;
     paymentMode: PaymentMode;
@@ -1069,23 +1331,10 @@ export type OrderCreate = {
     billingAddress?: ({
     [key: string]: unknown;
 } | null);
-    subtotal: (number | string);
-    taxAmount: (number | string);
-    shippingCharges?: (number | string);
-    discount?: (number | string);
-    codCharges?: (number | string);
-    totalAmount: (number | string);
-    orderDate: string;
-    shipByDate?: (string | null);
-    promisedDate?: (string | null);
-    priority?: number;
-    tags?: Array<(string)>;
-    remarks?: (string | null);
+    items: Array<OrderItemCreate>;
     locationId: string;
-    customerId?: (string | null);
-    paymentTermType?: (PaymentTermType | null);
-    paymentTermDays?: (number | null);
-    poNumber?: (string | null);
+    externalOrderNo?: (string | null);
+    remarks?: (string | null);
 };
 
 export type OrderItemCreate = {
@@ -1132,25 +1381,50 @@ export type OrderItemUpdate = {
     serialNumbers?: (Array<(string)> | null);
 };
 
+/**
+ * Schema for order API responses
+ */
 export type OrderResponse = {
     id: string;
     orderNo: string;
     externalOrderNo?: (string | null);
-    channel: string;
-    orderType: string;
-    paymentMode: string;
-    status: string;
+    channel: Channel;
+    orderType: OrderType;
+    paymentMode: PaymentMode;
+    status: OrderStatus;
     customerName: string;
     customerPhone: string;
     customerEmail?: (string | null);
-    subtotal: number;
-    taxAmount: number;
-    shippingCharges: number;
-    discount: number;
-    totalAmount: number;
+    shippingAddress: {
+        [key: string]: unknown;
+    };
+    billingAddress?: ({
+    [key: string]: unknown;
+} | null);
+    subtotal: string;
+    taxAmount: string;
+    shippingCharges: string;
+    discount: string;
+    codCharges: string;
+    totalAmount: string;
     orderDate: string;
+    shipByDate?: (string | null);
+    promisedDate?: (string | null);
+    priority: number;
+    tags?: Array<(string)>;
+    remarks?: (string | null);
     locationId: string;
+    customerId?: (string | null);
+    paymentTermType?: (PaymentTermType | null);
+    paymentTermDays?: (number | null);
+    creditDueDate?: (string | null);
+    poNumber?: (string | null);
+    gstInvoiceNo?: (string | null);
+    gstInvoiceDate?: (string | null);
+    eWayBillNo?: (string | null);
+    irnNo?: (string | null);
     createdAt: string;
+    updatedAt: string;
 };
 
 /**
@@ -1159,9 +1433,43 @@ export type OrderResponse = {
 export type OrderStatus = 'CREATED' | 'CONFIRMED' | 'PROCESSING' | 'ALLOCATED' | 'PARTIALLY_ALLOCATED' | 'PICKLIST_GENERATED' | 'PICKING' | 'PICKED' | 'PACKING' | 'PACKED' | 'MANIFESTED' | 'SHIPPED' | 'IN_TRANSIT' | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'RTO_INITIATED' | 'RTO_IN_TRANSIT' | 'RTO_DELIVERED' | 'CANCELLED' | 'ON_HOLD';
 
 /**
+ * Order lifecycle status
+ */
+export const OrderStatus = {
+    CREATED: 'CREATED',
+    CONFIRMED: 'CONFIRMED',
+    PROCESSING: 'PROCESSING',
+    ALLOCATED: 'ALLOCATED',
+    PARTIALLY_ALLOCATED: 'PARTIALLY_ALLOCATED',
+    PICKLIST_GENERATED: 'PICKLIST_GENERATED',
+    PICKING: 'PICKING',
+    PICKED: 'PICKED',
+    PACKING: 'PACKING',
+    PACKED: 'PACKED',
+    MANIFESTED: 'MANIFESTED',
+    SHIPPED: 'SHIPPED',
+    IN_TRANSIT: 'IN_TRANSIT',
+    OUT_FOR_DELIVERY: 'OUT_FOR_DELIVERY',
+    DELIVERED: 'DELIVERED',
+    RTO_INITIATED: 'RTO_INITIATED',
+    RTO_IN_TRANSIT: 'RTO_IN_TRANSIT',
+    RTO_DELIVERED: 'RTO_DELIVERED',
+    CANCELLED: 'CANCELLED',
+    ON_HOLD: 'ON_HOLD'
+} as const;
+
+/**
  * Order types
  */
 export type OrderType = 'B2C' | 'B2B';
+
+/**
+ * Order types
+ */
+export const OrderType = {
+    B2C: 'B2C',
+    B2B: 'B2B'
+} as const;
 
 /**
  * Schema for updating an order
@@ -1195,9 +1503,32 @@ export type OrderUpdate = {
 export type OutreachChannel = 'SMS' | 'EMAIL' | 'WHATSAPP' | 'VOICE' | 'IVR';
 
 /**
+ * Communication channels
+ */
+export const OutreachChannel = {
+    SMS: 'SMS',
+    EMAIL: 'EMAIL',
+    WHATSAPP: 'WHATSAPP',
+    VOICE: 'VOICE',
+    IVR: 'IVR'
+} as const;
+
+/**
  * Outreach attempt status
  */
 export type OutreachStatus = 'PENDING' | 'SENT' | 'DELIVERED' | 'READ' | 'RESPONDED' | 'FAILED';
+
+/**
+ * Outreach attempt status
+ */
+export const OutreachStatus = {
+    PENDING: 'PENDING',
+    SENT: 'SENT',
+    DELIVERED: 'DELIVERED',
+    READ: 'READ',
+    RESPONDED: 'RESPONDED',
+    FAILED: 'FAILED'
+} as const;
 
 /**
  * Payment modes
@@ -1205,9 +1536,31 @@ export type OutreachStatus = 'PENDING' | 'SENT' | 'DELIVERED' | 'READ' | 'RESPON
 export type PaymentMode = 'PREPAID' | 'COD' | 'CREDIT';
 
 /**
+ * Payment modes
+ */
+export const PaymentMode = {
+    PREPAID: 'PREPAID',
+    COD: 'COD',
+    CREDIT: 'CREDIT'
+} as const;
+
+/**
  * Payment term types
  */
 export type PaymentTermType = 'IMMEDIATE' | 'NET_7' | 'NET_15' | 'NET_30' | 'NET_45' | 'NET_60' | 'CUSTOM';
+
+/**
+ * Payment term types
+ */
+export const PaymentTermType = {
+    IMMEDIATE: 'IMMEDIATE',
+    NET_7: 'NET_7',
+    NET_15: 'NET_15',
+    NET_30: 'NET_30',
+    NET_45: 'NET_45',
+    NET_60: 'NET_60',
+    CUSTOM: 'CUSTOM'
+} as const;
 
 /**
  * Schema for creating picklist
@@ -1274,6 +1627,17 @@ export type PicklistResponse = {
  * Picklist status
  */
 export type PicklistStatus = 'PENDING' | 'ASSIGNED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+
+/**
+ * Picklist status
+ */
+export const PicklistStatus = {
+    PENDING: 'PENDING',
+    ASSIGNED: 'ASSIGNED',
+    IN_PROGRESS: 'IN_PROGRESS',
+    COMPLETED: 'COMPLETED',
+    CANCELLED: 'CANCELLED'
+} as const;
 
 /**
  * Schema for updating picklist
@@ -1444,6 +1808,18 @@ export type QCParameterResponse = {
 export type QCParameterType = 'VISUAL' | 'DIMENSIONAL' | 'WEIGHT' | 'BARCODE' | 'FUNCTIONAL' | 'DOCUMENTATION';
 
 /**
+ * QC parameter types
+ */
+export const QCParameterType = {
+    VISUAL: 'VISUAL',
+    DIMENSIONAL: 'DIMENSIONAL',
+    WEIGHT: 'WEIGHT',
+    BARCODE: 'BARCODE',
+    FUNCTIONAL: 'FUNCTIONAL',
+    DOCUMENTATION: 'DOCUMENTATION'
+} as const;
+
+/**
  * Schema for updating QC parameter
  */
 export type QCParameterUpdate = {
@@ -1506,6 +1882,18 @@ export type QCResultUpdate = {
 export type QCStatus = 'PENDING' | 'IN_PROGRESS' | 'PASSED' | 'FAILED' | 'PARTIAL' | 'CONDITIONAL';
 
 /**
+ * QC execution status
+ */
+export const QCStatus = {
+    PENDING: 'PENDING',
+    IN_PROGRESS: 'IN_PROGRESS',
+    PASSED: 'PASSED',
+    FAILED: 'FAILED',
+    PARTIAL: 'PARTIAL',
+    CONDITIONAL: 'CONDITIONAL'
+} as const;
+
+/**
  * Schema for creating QC template
  */
 export type QCTemplateCreate = {
@@ -1555,9 +1943,32 @@ export type QCTemplateUpdate = {
 export type QCType = 'INBOUND' | 'RETURN' | 'PRODUCTION' | 'CYCLE_COUNT' | 'RANDOM_AUDIT';
 
 /**
+ * QC template types
+ */
+export const QCType = {
+    INBOUND: 'INBOUND',
+    RETURN: 'RETURN',
+    PRODUCTION: 'PRODUCTION',
+    CYCLE_COUNT: 'CYCLE_COUNT',
+    RANDOM_AUDIT: 'RANDOM_AUDIT'
+} as const;
+
+/**
  * NDR resolution types
  */
 export type ResolutionType = 'REATTEMPT' | 'ADDRESS_UPDATED' | 'PHONE_UPDATED' | 'RESCHEDULE' | 'RTO' | 'CUSTOMER_PICKUP';
+
+/**
+ * NDR resolution types
+ */
+export const ResolutionType = {
+    REATTEMPT: 'REATTEMPT',
+    ADDRESS_UPDATED: 'ADDRESS_UPDATED',
+    PHONE_UPDATED: 'PHONE_UPDATED',
+    RESCHEDULE: 'RESCHEDULE',
+    RTO: 'RTO',
+    CUSTOMER_PICKUP: 'CUSTOMER_PICKUP'
+} as const;
 
 /**
  * Brief return info for lists
@@ -1654,9 +2065,36 @@ export type ReturnResponse = {
 export type ReturnStatus = 'INITIATED' | 'PICKUP_SCHEDULED' | 'PICKED_UP' | 'IN_TRANSIT' | 'RECEIVED' | 'QC_PENDING' | 'QC_PASSED' | 'QC_FAILED' | 'PROCESSED' | 'REFUND_INITIATED' | 'COMPLETED' | 'CANCELLED';
 
 /**
+ * Return processing status
+ */
+export const ReturnStatus = {
+    INITIATED: 'INITIATED',
+    PICKUP_SCHEDULED: 'PICKUP_SCHEDULED',
+    PICKED_UP: 'PICKED_UP',
+    IN_TRANSIT: 'IN_TRANSIT',
+    RECEIVED: 'RECEIVED',
+    QC_PENDING: 'QC_PENDING',
+    QC_PASSED: 'QC_PASSED',
+    QC_FAILED: 'QC_FAILED',
+    PROCESSED: 'PROCESSED',
+    REFUND_INITIATED: 'REFUND_INITIATED',
+    COMPLETED: 'COMPLETED',
+    CANCELLED: 'CANCELLED'
+} as const;
+
+/**
  * Return types
  */
 export type ReturnType = 'CUSTOMER_RETURN' | 'RTO' | 'EXCHANGE';
+
+/**
+ * Return types
+ */
+export const ReturnType = {
+    CUSTOMER_RETURN: 'CUSTOMER_RETURN',
+    RTO: 'RTO',
+    EXCHANGE: 'EXCHANGE'
+} as const;
 
 /**
  * Schema for updating return
@@ -1858,6 +2296,15 @@ export type TransporterResponse = {
 export type TransporterType = 'COURIER' | 'SELF' | 'AGGREGATOR';
 
 /**
+ * Transporter/carrier types
+ */
+export const TransporterType = {
+    COURIER: 'COURIER',
+    SELF: 'SELF',
+    AGGREGATOR: 'AGGREGATOR'
+} as const;
+
+/**
  * Schema for updating transporter
  */
 export type TransporterUpdate = {
@@ -1927,17 +2374,24 @@ export type UserResponse = {
 export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'MANAGER' | 'OPERATOR' | 'PICKER' | 'PACKER' | 'VIEWER' | 'CLIENT';
 
 /**
- * Schema for updating a user (all fields optional)
+ * User roles for access control
  */
+export const UserRole = {
+    SUPER_ADMIN: 'SUPER_ADMIN',
+    ADMIN: 'ADMIN',
+    MANAGER: 'MANAGER',
+    OPERATOR: 'OPERATOR',
+    PICKER: 'PICKER',
+    PACKER: 'PACKER',
+    VIEWER: 'VIEWER',
+    CLIENT: 'CLIENT'
+} as const;
+
 export type UserUpdate = {
-    email?: (string | null);
-    password?: (string | null);
     name?: (string | null);
     phone?: (string | null);
-    avatar?: (string | null);
     role?: (UserRole | null);
     isActive?: (boolean | null);
-    companyId?: (string | null);
     locationAccess?: (Array<(string)> | null);
 };
 
@@ -2094,9 +2548,31 @@ export type WaveResponse = {
 export type WaveStatus = 'DRAFT' | 'PLANNED' | 'RELEASED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
 
 /**
+ * Wave picking status
+ */
+export const WaveStatus = {
+    DRAFT: 'DRAFT',
+    PLANNED: 'PLANNED',
+    RELEASED: 'RELEASED',
+    IN_PROGRESS: 'IN_PROGRESS',
+    COMPLETED: 'COMPLETED',
+    CANCELLED: 'CANCELLED'
+} as const;
+
+/**
  * Wave picking types
  */
 export type WaveType = 'BATCH_PICK' | 'ZONE_PICK' | 'CLUSTER_PICK' | 'PRIORITY_PICK';
+
+/**
+ * Wave picking types
+ */
+export const WaveType = {
+    BATCH_PICK: 'BATCH_PICK',
+    ZONE_PICK: 'ZONE_PICK',
+    CLUSTER_PICK: 'CLUSTER_PICK',
+    PRIORITY_PICK: 'PRIORITY_PICK'
+} as const;
 
 /**
  * Schema for updating a wave
@@ -2148,6 +2624,17 @@ export type ZoneResponse = {
  */
 export type ZoneType = 'SALEABLE' | 'DAMAGED' | 'QC' | 'RETURNS' | 'DISPATCH';
 
+/**
+ * Types of warehouse zones
+ */
+export const ZoneType = {
+    SALEABLE: 'SALEABLE',
+    DAMAGED: 'DAMAGED',
+    QC: 'QC',
+    RETURNS: 'RETURNS',
+    DISPATCH: 'DISPATCH'
+} as const;
+
 export type ZoneUpdate = {
     code?: (string | null);
     name?: (string | null);
@@ -2169,23 +2656,65 @@ export type app__api__routes__inventory__InventoryResponse = {
     locationId: string;
 };
 
-export type app__api__routes__orders__OrderCreate = {
-    channel: Channel;
-    orderType?: OrderType;
-    paymentMode: PaymentMode;
+export type app__api__routes__locations__LocationCreate = {
+    code: string;
+    name: string;
+    type: LocationType;
+    address: {
+        [key: string]: unknown;
+    };
+    contactPerson?: (string | null);
+    contactPhone?: (string | null);
+    contactEmail?: (string | null);
+    gst?: (string | null);
+};
+
+export type app__api__routes__locations__LocationResponse = {
+    id: string;
+    code: string;
+    name: string;
+    type: string;
+    address?: ({
+    [key: string]: unknown;
+} | null);
+    contactPerson?: (string | null);
+    contactPhone?: (string | null);
+    contactEmail?: (string | null);
+    gst?: (string | null);
+    isActive: boolean;
+    companyId: string;
+};
+
+export type app__api__routes__locations__LocationUpdate = {
+    name?: (string | null);
+    address?: ({
+    [key: string]: unknown;
+} | null);
+    contactPerson?: (string | null);
+    contactPhone?: (string | null);
+    contactEmail?: (string | null);
+    isActive?: (boolean | null);
+};
+
+export type app__api__routes__orders__OrderResponse = {
+    id: string;
+    orderNo: string;
+    externalOrderNo?: (string | null);
+    channel: string;
+    orderType: string;
+    paymentMode: string;
+    status: string;
     customerName: string;
     customerPhone: string;
     customerEmail?: (string | null);
-    shippingAddress: {
-        [key: string]: unknown;
-    };
-    billingAddress?: ({
-    [key: string]: unknown;
-} | null);
-    items: Array<OrderItemCreate>;
+    subtotal: number;
+    taxAmount: number;
+    shippingCharges: number;
+    discount: number;
+    totalAmount: number;
+    orderDate: string;
     locationId: string;
-    externalOrderNo?: (string | null);
-    remarks?: (string | null);
+    createdAt: string;
 };
 
 export type app__api__routes__skus__SKUCreate = {
@@ -2224,80 +2753,6 @@ export type app__api__routes__skus__SKUResponse = {
     companyId?: (string | null);
 };
 
-export type app__api__routes__users__UserResponse = {
-    id: string;
-    email: string;
-    name: string;
-    phone?: (string | null);
-    avatar?: (string | null);
-    role: string;
-    isActive: boolean;
-    companyId?: (string | null);
-};
-
-export type app__api__routes__users__UserUpdate = {
-    name?: (string | null);
-    phone?: (string | null);
-    role?: (UserRole | null);
-    isActive?: (boolean | null);
-    locationAccess?: (Array<(string)> | null);
-};
-
-export type app__models__company__LocationCreate = {
-    code: string;
-    name: string;
-    type: LocationType;
-    address?: ({
-    [key: string]: unknown;
-} | null);
-    contactPerson?: (string | null);
-    contactPhone?: (string | null);
-    contactEmail?: (string | null);
-    gst?: (string | null);
-    settings?: ({
-    [key: string]: unknown;
-} | null);
-    companyId: string;
-};
-
-export type app__models__company__LocationResponse = {
-    id: string;
-    code: string;
-    name: string;
-    type: LocationType;
-    address?: ({
-    [key: string]: unknown;
-} | null);
-    contactPerson?: (string | null);
-    contactPhone?: (string | null);
-    contactEmail?: (string | null);
-    gst?: (string | null);
-    settings?: ({
-    [key: string]: unknown;
-} | null);
-    isActive: boolean;
-    companyId: string;
-    createdAt: string;
-    updatedAt: string;
-};
-
-export type app__models__company__LocationUpdate = {
-    code?: (string | null);
-    name?: (string | null);
-    type?: (LocationType | null);
-    address?: ({
-    [key: string]: unknown;
-} | null);
-    contactPerson?: (string | null);
-    contactPhone?: (string | null);
-    contactEmail?: (string | null);
-    gst?: (string | null);
-    settings?: ({
-    [key: string]: unknown;
-} | null);
-    isActive?: (boolean | null);
-};
-
 /**
  * Schema for inventory adjustment
  */
@@ -2310,6 +2765,43 @@ export type app__models__inventory__InventoryAdjustment = {
     batchNo?: (string | null);
     serialNumbers?: (Array<(string)> | null);
     remarks?: (string | null);
+};
+
+/**
+ * Schema for creating an order
+ */
+export type app__models__order__OrderCreate = {
+    orderNo: string;
+    externalOrderNo?: (string | null);
+    channel: Channel;
+    orderType?: OrderType;
+    paymentMode: PaymentMode;
+    customerName: string;
+    customerPhone: string;
+    customerEmail?: (string | null);
+    shippingAddress: {
+        [key: string]: unknown;
+    };
+    billingAddress?: ({
+    [key: string]: unknown;
+} | null);
+    subtotal: (number | string);
+    taxAmount: (number | string);
+    shippingCharges?: (number | string);
+    discount?: (number | string);
+    codCharges?: (number | string);
+    totalAmount: (number | string);
+    orderDate: string;
+    shipByDate?: (string | null);
+    promisedDate?: (string | null);
+    priority?: number;
+    tags?: Array<(string)>;
+    remarks?: (string | null);
+    locationId: string;
+    customerId?: (string | null);
+    paymentTermType?: (PaymentTermType | null);
+    paymentTermDays?: (number | null);
+    poNumber?: (string | null);
 };
 
 /**
@@ -2326,52 +2818,6 @@ export type app__models__order__OrderItemCreate = {
     totalPrice: (number | string);
     serialNumbers?: Array<(string)>;
     batchNo?: (string | null);
-};
-
-/**
- * Schema for order API responses
- */
-export type app__models__order__OrderResponse = {
-    id: string;
-    orderNo: string;
-    externalOrderNo?: (string | null);
-    channel: Channel;
-    orderType: OrderType;
-    paymentMode: PaymentMode;
-    status: OrderStatus;
-    customerName: string;
-    customerPhone: string;
-    customerEmail?: (string | null);
-    shippingAddress: {
-        [key: string]: unknown;
-    };
-    billingAddress?: ({
-    [key: string]: unknown;
-} | null);
-    subtotal: string;
-    taxAmount: string;
-    shippingCharges: string;
-    discount: string;
-    codCharges: string;
-    totalAmount: string;
-    orderDate: string;
-    shipByDate?: (string | null);
-    promisedDate?: (string | null);
-    priority: number;
-    tags?: Array<(string)>;
-    remarks?: (string | null);
-    locationId: string;
-    customerId?: (string | null);
-    paymentTermType?: (PaymentTermType | null);
-    paymentTermDays?: (number | null);
-    creditDueDate?: (string | null);
-    poNumber?: (string | null);
-    gstInvoiceNo?: (string | null);
-    gstInvoiceDate?: (string | null);
-    eWayBillNo?: (string | null);
-    irnNo?: (string | null);
-    createdAt: string;
-    updatedAt: string;
 };
 
 /**
@@ -2439,6 +2885,32 @@ export type app__models__user__UserResponse = {
     updatedAt: string;
 };
 
+/**
+ * Schema for updating a user (all fields optional)
+ */
+export type app__models__user__UserUpdate = {
+    email?: (string | null);
+    password?: (string | null);
+    name?: (string | null);
+    phone?: (string | null);
+    avatar?: (string | null);
+    role?: (UserRole | null);
+    isActive?: (boolean | null);
+    companyId?: (string | null);
+    locationAccess?: (Array<(string)> | null);
+};
+
+export type app__schemas__auth__UserResponse = {
+    id: string;
+    email: string;
+    name: string;
+    phone?: (string | null);
+    avatar?: (string | null);
+    role: string;
+    isActive: boolean;
+    companyId?: (string | null);
+};
+
 export type LoginApiV1AuthLoginPostData = {
     requestBody: UserLogin;
 };
@@ -2448,7 +2920,7 @@ export type LoginApiV1AuthLoginPostResponse = (UserLoginResponse);
 export type GetMeApiV1AuthMeGetResponse = (app__models__user__UserResponse);
 
 export type UpdateMeApiV1AuthMePatchData = {
-    requestBody: UserUpdate;
+    requestBody: app__models__user__UserUpdate;
 };
 
 export type UpdateMeApiV1AuthMePatchResponse = (app__models__user__UserResponse);
@@ -2487,7 +2959,7 @@ export type GetUserApiV1UsersUserIdGetData = {
 export type GetUserApiV1UsersUserIdGetResponse = (app__models__user__UserResponse);
 
 export type UpdateUserApiV1UsersUserIdPatchData = {
-    requestBody: UserUpdate;
+    requestBody: app__models__user__UserUpdate;
     userId: string;
 };
 
@@ -2550,23 +3022,23 @@ export type ListLocationsApiV1LocationsGetData = {
 export type ListLocationsApiV1LocationsGetResponse = (Array<LocationBrief>);
 
 export type CreateLocationApiV1LocationsPostData = {
-    requestBody: app__models__company__LocationCreate;
+    requestBody: LocationCreate;
 };
 
-export type CreateLocationApiV1LocationsPostResponse = (app__models__company__LocationResponse);
+export type CreateLocationApiV1LocationsPostResponse = (LocationResponse);
 
 export type GetLocationApiV1LocationsLocationIdGetData = {
     locationId: string;
 };
 
-export type GetLocationApiV1LocationsLocationIdGetResponse = (app__models__company__LocationResponse);
+export type GetLocationApiV1LocationsLocationIdGetResponse = (LocationResponse);
 
 export type UpdateLocationApiV1LocationsLocationIdPatchData = {
     locationId: string;
-    requestBody: app__models__company__LocationUpdate;
+    requestBody: LocationUpdate;
 };
 
-export type UpdateLocationApiV1LocationsLocationIdPatchResponse = (app__models__company__LocationResponse);
+export type UpdateLocationApiV1LocationsLocationIdPatchResponse = (LocationResponse);
 
 export type DeleteLocationApiV1LocationsLocationIdDeleteData = {
     locationId: string;
@@ -2755,10 +3227,10 @@ export type ListOrdersApiV1OrdersGetData = {
 export type ListOrdersApiV1OrdersGetResponse = (Array<OrderBrief>);
 
 export type CreateOrderApiV1OrdersPostData = {
-    requestBody: OrderCreate;
+    requestBody: app__models__order__OrderCreate;
 };
 
-export type CreateOrderApiV1OrdersPostResponse = (app__models__order__OrderResponse);
+export type CreateOrderApiV1OrdersPostResponse = (OrderResponse);
 
 export type CountOrdersApiV1OrdersCountGetData = {
     channel?: (Channel | null);
@@ -2783,26 +3255,26 @@ export type GetOrderApiV1OrdersOrderIdGetData = {
     orderId: string;
 };
 
-export type GetOrderApiV1OrdersOrderIdGetResponse = (app__models__order__OrderResponse);
+export type GetOrderApiV1OrdersOrderIdGetResponse = (OrderResponse);
 
 export type UpdateOrderApiV1OrdersOrderIdPatchData = {
     orderId: string;
     requestBody: OrderUpdate;
 };
 
-export type UpdateOrderApiV1OrdersOrderIdPatchResponse = (app__models__order__OrderResponse);
+export type UpdateOrderApiV1OrdersOrderIdPatchResponse = (OrderResponse);
 
 export type GetOrderByNumberApiV1OrdersNumberOrderNoGetData = {
     orderNo: string;
 };
 
-export type GetOrderByNumberApiV1OrdersNumberOrderNoGetResponse = (app__models__order__OrderResponse);
+export type GetOrderByNumberApiV1OrdersNumberOrderNoGetResponse = (OrderResponse);
 
 export type CancelOrderApiV1OrdersOrderIdCancelPostData = {
     orderId: string;
 };
 
-export type CancelOrderApiV1OrdersOrderIdCancelPostResponse = (app__models__order__OrderResponse);
+export type CancelOrderApiV1OrdersOrderIdCancelPostResponse = (OrderResponse);
 
 export type ListOrderItemsApiV1OrdersOrderIdItemsGetData = {
     orderId: string;
@@ -2959,13 +3431,15 @@ export type ListNdrsApiV1NdrGetData = {
     deliveryId?: (string | null);
     limit?: number;
     orderId?: (string | null);
+    page?: number;
     priority?: (NDRPriority | null);
     reason?: (NDRReason | null);
+    search?: (string | null);
     skip?: number;
     status?: (NDRStatus | null);
 };
 
-export type ListNdrsApiV1NdrGetResponse = (Array<NDRBrief>);
+export type ListNdrsApiV1NdrGetResponse = (NDRListResponse);
 
 export type CreateNdrApiV1NdrPostData = {
     requestBody: NDRCreate;
@@ -3610,7 +4084,7 @@ export type LoginApiAuthLoginPostData = {
 
 export type LoginApiAuthLoginPostResponse = (LoginResponse);
 
-export type GetCurrentUserInfoApiAuthMeGetResponse = (UserResponse);
+export type GetCurrentUserInfoApiAuthMeGetResponse = (app__schemas__auth__UserResponse);
 
 export type ListUsersApiUsersGetData = {
     page?: number;
@@ -3619,26 +4093,26 @@ export type ListUsersApiUsersGetData = {
     search?: (string | null);
 };
 
-export type ListUsersApiUsersGetResponse = (Array<app__api__routes__users__UserResponse>);
+export type ListUsersApiUsersGetResponse = (Array<UserResponse>);
 
 export type CreateUserApiUsersPostData = {
     requestBody: UserCreate;
 };
 
-export type CreateUserApiUsersPostResponse = (app__api__routes__users__UserResponse);
+export type CreateUserApiUsersPostResponse = (UserResponse);
 
 export type GetUserApiUsersUserIdGetData = {
     userId: string;
 };
 
-export type GetUserApiUsersUserIdGetResponse = (app__api__routes__users__UserResponse);
+export type GetUserApiUsersUserIdGetResponse = (UserResponse);
 
 export type UpdateUserApiUsersUserIdPatchData = {
-    requestBody: app__api__routes__users__UserUpdate;
+    requestBody: UserUpdate;
     userId: string;
 };
 
-export type UpdateUserApiUsersUserIdPatchResponse = (app__api__routes__users__UserResponse);
+export type UpdateUserApiUsersUserIdPatchResponse = (UserResponse);
 
 export type DeleteUserApiUsersUserIdDeleteData = {
     userId: string;
@@ -3657,13 +4131,13 @@ export type ListOrdersApiOrdersGetData = {
     toDate?: (string | null);
 };
 
-export type ListOrdersApiOrdersGetResponse = (Array<OrderResponse>);
+export type ListOrdersApiOrdersGetResponse = (Array<app__api__routes__orders__OrderResponse>);
 
 export type CreateOrderApiOrdersPostData = {
-    requestBody: app__api__routes__orders__OrderCreate;
+    requestBody: OrderCreate;
 };
 
-export type CreateOrderApiOrdersPostResponse = (OrderResponse);
+export type CreateOrderApiOrdersPostResponse = (app__api__routes__orders__OrderResponse);
 
 export type GetOrderCountsApiOrdersCountGetData = {
     locationId?: (string | null);
@@ -3675,7 +4149,7 @@ export type GetOrderApiOrdersOrderIdGetData = {
     orderId: string;
 };
 
-export type GetOrderApiOrdersOrderIdGetResponse = (OrderResponse);
+export type GetOrderApiOrdersOrderIdGetResponse = (app__api__routes__orders__OrderResponse);
 
 export type UpdateOrderStatusApiOrdersOrderIdStatusPatchData = {
     newStatus: OrderStatus;
@@ -3756,26 +4230,26 @@ export type ListLocationsApiLocationsGetData = {
     type?: (LocationType | null);
 };
 
-export type ListLocationsApiLocationsGetResponse = (Array<LocationResponse>);
+export type ListLocationsApiLocationsGetResponse = (Array<app__api__routes__locations__LocationResponse>);
 
 export type CreateLocationApiLocationsPostData = {
-    requestBody: LocationCreate;
+    requestBody: app__api__routes__locations__LocationCreate;
 };
 
-export type CreateLocationApiLocationsPostResponse = (LocationResponse);
+export type CreateLocationApiLocationsPostResponse = (app__api__routes__locations__LocationResponse);
 
 export type GetLocationApiLocationsLocationIdGetData = {
     locationId: string;
 };
 
-export type GetLocationApiLocationsLocationIdGetResponse = (LocationResponse);
+export type GetLocationApiLocationsLocationIdGetResponse = (app__api__routes__locations__LocationResponse);
 
 export type UpdateLocationApiLocationsLocationIdPatchData = {
     locationId: string;
-    requestBody: LocationUpdate;
+    requestBody: app__api__routes__locations__LocationUpdate;
 };
 
-export type UpdateLocationApiLocationsLocationIdPatchResponse = (LocationResponse);
+export type UpdateLocationApiLocationsLocationIdPatchResponse = (app__api__routes__locations__LocationResponse);
 
 export type ListBrandsApiBrandsGetData = {
     isActive?: (boolean | null);

@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
+import { useState } from "react";
 import {
   AlertTriangle,
   Bot,
@@ -49,165 +48,76 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
-
-interface NDR {
-  id: string;
-  ndrCode: string;
-  reason: string;
-  aiClassification: string | null;
-  confidence: number | null;
-  status: string;
-  priority: string;
-  riskScore: number | null;
-  attemptNumber: number;
-  attemptDate: string;
-  carrierRemark: string | null;
-  createdAt: string;
-  order: {
-    id: string;
-    orderNo: string;
-    customerName: string;
-    customerPhone: string;
-    customerEmail: string | null;
-    shippingAddress: unknown;
-    paymentMode: string;
-    totalAmount: number;
-  };
-  delivery: {
-    id: string;
-    deliveryNo: string;
-    awbNo: string;
-    status: string;
-    transporter: {
-      code: string;
-      name: string;
-    } | null;
-  } | null;
-  outreachAttempts: Array<{
-    id: string;
-    channel: string;
-    status: string;
-    sentAt: string | null;
-    response: string | null;
-  }>;
-  _count: {
-    outreachAttempts: number;
-    aiActions: number;
-  };
-}
-
-interface NDRStats {
-  statusCounts: Record<string, number>;
-  priorityCounts: Record<string, number>;
-  reasonCounts: Record<string, number>;
-  avgResolutionHours: number;
-  outreachSuccessRate: number;
-}
+import { useNdrList, useCreateOutreach } from "@/hooks/use-ndr";
+import type { NDRListItem, NDRStatus, NDRPriority, NDRReason } from "@/lib/api/client";
 
 export default function NDRCommandCenterPage() {
-  const { data: session } = useSession();
-  const [isLoading, setIsLoading] = useState(false);
-  const [lastRefresh, setLastRefresh] = useState(new Date());
-  const [ndrs, setNdrs] = useState<NDR[]>([]);
-  const [stats, setStats] = useState<NDRStats>({
-    statusCounts: {},
-    priorityCounts: {},
-    reasonCounts: {},
-    avgResolutionHours: 0,
-    outreachSuccessRate: 0,
-  });
-  const [total, setTotal] = useState(0);
+  // Filter state
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-  const [priorityFilter, setPriorityFilter] = useState("");
-  const [reasonFilter, setReasonFilter] = useState("");
-  const [selectedNDR, setSelectedNDR] = useState<NDR | null>(null);
+  const [statusFilter, setStatusFilter] = useState<NDRStatus | "">("");
+  const [priorityFilter, setPriorityFilter] = useState<NDRPriority | "">("");
+  const [reasonFilter, setReasonFilter] = useState<NDRReason | "">("");
+
+  // Outreach dialog state
+  const [selectedNDR, setSelectedNDR] = useState<NDRListItem | null>(null);
   const [outreachDialogOpen, setOutreachDialogOpen] = useState(false);
   const [outreachChannel, setOutreachChannel] = useState("WHATSAPP");
   const [customMessage, setCustomMessage] = useState("");
-  const [isSending, setIsSending] = useState(false);
 
-  const fetchNDRs = async () => {
-    setIsLoading(true);
-    try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: "25",
-        ...(search && { search }),
-        ...(statusFilter && { status: statusFilter }),
-        ...(priorityFilter && { priority: priorityFilter }),
-        ...(reasonFilter && { reason: reasonFilter }),
-      });
+  // Use React Query hooks for data fetching
+  const {
+    data: ndrData,
+    isLoading,
+    refetch,
+    dataUpdatedAt,
+  } = useNdrList({
+    page,
+    limit: 25,
+    ...(statusFilter && { status: statusFilter as NDRStatus }),
+    ...(priorityFilter && { priority: priorityFilter as NDRPriority }),
+    ...(reasonFilter && { reason: reasonFilter as NDRReason }),
+    ...(search && { search }),
+  });
 
-      const response = await fetch(`/api/v1/ndr?${params}`);
-      if (response.ok) {
-        const data = await response.json();
-        setNdrs(data.ndrs);
-        setTotal(data.total);
-        setStats({
-          statusCounts: data.statusCounts || {},
-          priorityCounts: data.priorityCounts || {},
-          reasonCounts: data.reasonCounts || {},
-          avgResolutionHours: data.avgResolutionHours || 0,
-          outreachSuccessRate: data.outreachSuccessRate || 0,
-        });
-      }
-      setLastRefresh(new Date());
-    } catch (error) {
-      console.error("Failed to fetch NDRs:", error);
-    } finally {
-      setIsLoading(false);
-    }
+  // Outreach mutation
+  const createOutreach = useCreateOutreach();
+
+  // Extract data from query result
+  const ndrs = ndrData?.ndrs || [];
+  const total = ndrData?.total || 0;
+  const stats = {
+    statusCounts: (ndrData?.statusCounts || {}) as Record<string, number>,
+    priorityCounts: (ndrData?.priorityCounts || {}) as Record<string, number>,
+    reasonCounts: (ndrData?.reasonCounts || {}) as Record<string, number>,
+    avgResolutionHours: ndrData?.avgResolutionHours || 0,
+    outreachSuccessRate: ndrData?.outreachSuccessRate || 0,
   };
-
-  useEffect(() => {
-    fetchNDRs();
-    // Refresh every 60 seconds
-    const interval = setInterval(fetchNDRs, 60000);
-    return () => clearInterval(interval);
-  }, [page, statusFilter, priorityFilter, reasonFilter]);
-
-  useEffect(() => {
-    const debounce = setTimeout(() => {
-      if (page === 1) {
-        fetchNDRs();
-      } else {
-        setPage(1);
-      }
-    }, 500);
-    return () => clearTimeout(debounce);
-  }, [search]);
 
   const handleOutreach = async () => {
     if (!selectedNDR) return;
-    setIsSending(true);
 
     try {
-      const response = await fetch(`/api/v1/ndr/${selectedNDR.id}/outreach`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          channel: outreachChannel,
-          customMessage: customMessage || undefined,
-        }),
+      await createOutreach.mutateAsync({
+        ndrId: selectedNDR.id,
+        requestBody: {
+          ndrId: selectedNDR.id,
+          channel: outreachChannel as "WHATSAPP" | "SMS" | "VOICE" | "EMAIL",
+          attemptNumber: 1,
+          messageContent: customMessage || undefined,
+        },
       });
-
-      if (response.ok) {
-        setOutreachDialogOpen(false);
-        setCustomMessage("");
-        fetchNDRs();
-      }
+      setOutreachDialogOpen(false);
+      setCustomMessage("");
     } catch (error) {
       console.error("Failed to send outreach:", error);
-    } finally {
-      setIsSending(false);
     }
   };
 
+  // Calculate stats
   const totalNDRs = Object.values(stats.statusCounts).reduce((a, b) => a + b, 0);
   const openNDRs = stats.statusCounts.OPEN || 0;
   const contactedNDRs = stats.statusCounts.CONTACTED || 0;
@@ -218,6 +128,8 @@ export default function NDRCommandCenterPage() {
 
   const resolutionRate = totalNDRs > 0 ? Math.round((resolvedNDRs / totalNDRs) * 100) : 0;
   const contactRate = totalNDRs > 0 ? Math.round(((contactedNDRs + resolvedNDRs) / totalNDRs) * 100) : 0;
+
+  const lastRefresh = new Date(dataUpdatedAt);
 
   return (
     <div className="space-y-6">
@@ -239,7 +151,7 @@ export default function NDRCommandCenterPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={fetchNDRs}
+            onClick={() => refetch()}
             disabled={isLoading}
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
@@ -724,8 +636,8 @@ export default function NDRCommandCenterPage() {
             <Button variant="outline" onClick={() => setOutreachDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleOutreach} disabled={isSending}>
-              {isSending ? (
+            <Button onClick={handleOutreach} disabled={createOutreach.isPending}>
+              {createOutreach.isPending ? (
                 <>
                   <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                   Sending...

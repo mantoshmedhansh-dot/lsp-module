@@ -643,3 +643,287 @@ def get_delivery_by_awb(
             )
 
     return DeliveryResponse.model_validate(delivery)
+
+
+# ============================================================================
+# Import Endpoints
+# ============================================================================
+
+from pydantic import BaseModel
+from typing import Dict, Any
+import uuid as uuid_lib
+
+class CSVRow(BaseModel):
+    order_no: str
+    order_date: Optional[str] = None
+    channel: Optional[str] = "MANUAL"
+    payment_mode: Optional[str] = "PREPAID"
+    customer_name: str
+    customer_phone: str
+    customer_email: Optional[str] = None
+    shipping_address_line1: str
+    shipping_address_line2: Optional[str] = None
+    shipping_city: str
+    shipping_state: str
+    shipping_pincode: str
+    sku_code: str
+    quantity: int = 1
+    unit_price: float = 0
+    tax_amount: Optional[float] = 0
+    discount: Optional[float] = 0
+    shipping_charges: Optional[float] = 0
+    cod_charges: Optional[float] = 0
+    external_order_no: Optional[str] = None
+    remarks: Optional[str] = None
+    priority: Optional[int] = 0
+
+
+class ImportRequest(BaseModel):
+    locationId: str
+    rows: List[CSVRow]
+    fileName: str
+
+
+class ImportError(BaseModel):
+    row: int
+    field: Optional[str] = None
+    message: str
+
+
+class ImportSummary(BaseModel):
+    totalOrders: int
+    createdOrders: int
+    failedOrders: int
+
+
+class ImportResponse(BaseModel):
+    id: str
+    importNo: str
+    fileName: str
+    status: str
+    totalRows: int
+    processedRows: int
+    successCount: int
+    errorCount: int
+    errors: List[ImportError]
+    summary: ImportSummary
+    createdAt: str
+
+
+@router.get("/import")
+def list_imports(
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100),
+    company_filter: CompanyFilter = Depends(),
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """List import history. Currently returns empty list as imports are processed immediately."""
+    # Note: In a production system, you would store import records in a database
+    # For now, imports are processed synchronously and not stored
+    return {
+        "data": [],
+        "page": page,
+        "limit": limit,
+        "total": 0,
+        "totalPages": 0
+    }
+
+
+@router.post("/import")
+def import_orders(
+    import_data: ImportRequest,
+    company_filter: CompanyFilter = Depends(),
+    session: Session = Depends(get_session),
+    _: None = Depends(require_manager())
+):
+    """
+    Import orders from CSV data.
+    Requires MANAGER or higher role.
+    """
+    location_id = UUID(import_data.locationId)
+
+    # Validate location
+    location = session.exec(
+        select(Location).where(Location.id == location_id)
+    ).first()
+
+    if not location:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Location not found"
+        )
+
+    if company_filter.company_id and location.companyId != company_filter.company_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Cannot import orders to other company's location"
+        )
+
+    errors: List[ImportError] = []
+    created_orders = 0
+    failed_orders = 0
+
+    # Group rows by order_no (one order can have multiple items)
+    orders_map: Dict[str, List[CSVRow]] = {}
+    for row in import_data.rows:
+        if row.order_no not in orders_map:
+            orders_map[row.order_no] = []
+        orders_map[row.order_no].append(row)
+
+    for order_no, rows in orders_map.items():
+        try:
+            # Check if order already exists
+            existing = session.exec(
+                select(Order).where(Order.orderNo == order_no)
+            ).first()
+
+            if existing:
+                errors.append(ImportError(
+                    row=import_data.rows.index(rows[0]) + 1,
+                    field="order_no",
+                    message=f"Order {order_no} already exists"
+                ))
+                failed_orders += 1
+                continue
+
+            # Get first row for order-level data
+            first_row = rows[0]
+
+            # Parse channel
+            channel_value = first_row.channel.upper() if first_row.channel else "MANUAL"
+            try:
+                channel = Channel(channel_value)
+            except ValueError:
+                channel = Channel.MANUAL
+
+            # Parse payment mode
+            payment_mode_value = first_row.payment_mode.upper() if first_row.payment_mode else "PREPAID"
+            try:
+                payment_mode = PaymentMode(payment_mode_value)
+            except ValueError:
+                payment_mode = PaymentMode.PREPAID
+
+            # Calculate totals from all items
+            subtotal = sum(r.unit_price * r.quantity for r in rows)
+            total_tax = sum(r.tax_amount or 0 for r in rows)
+            total_discount = sum(r.discount or 0 for r in rows)
+            shipping_charges = first_row.shipping_charges or 0
+            cod_charges = first_row.cod_charges or 0 if payment_mode == PaymentMode.COD else 0
+
+            total_amount = subtotal + total_tax + shipping_charges + cod_charges - total_discount
+
+            # Parse order date
+            order_date = datetime.now()
+            if first_row.order_date:
+                try:
+                    # Try multiple date formats
+                    for fmt in ["%Y-%m-%d", "%d-%m-%Y", "%d/%m/%Y", "%Y/%m/%d"]:
+                        try:
+                            order_date = datetime.strptime(first_row.order_date.split('T')[0], fmt)
+                            break
+                        except ValueError:
+                            continue
+                except Exception:
+                    pass
+
+            # Create order
+            order = Order(
+                orderNo=order_no,
+                locationId=location_id,
+                orderDate=order_date,
+                channel=channel,
+                orderType=OrderType.B2C,
+                paymentMode=payment_mode,
+                customerName=first_row.customer_name,
+                customerPhone=first_row.customer_phone,
+                customerEmail=first_row.customer_email,
+                shippingAddress={
+                    "name": first_row.customer_name,
+                    "addressLine1": first_row.shipping_address_line1,
+                    "addressLine2": first_row.shipping_address_line2 or "",
+                    "city": first_row.shipping_city,
+                    "state": first_row.shipping_state,
+                    "pincode": first_row.shipping_pincode,
+                },
+                subtotal=subtotal,
+                taxAmount=total_tax,
+                discountAmount=total_discount,
+                shippingAmount=shipping_charges,
+                codCharges=cod_charges,
+                totalAmount=total_amount,
+                status=OrderStatus.CREATED,
+                priority=first_row.priority or 0,
+                remarks=first_row.remarks,
+                externalOrderNo=first_row.external_order_no,
+            )
+
+            session.add(order)
+            session.flush()  # Get the order ID
+
+            # Create order items
+            for row in rows:
+                # Try to find SKU by code
+                from app.models import SKU
+                sku = session.exec(
+                    select(SKU).where(SKU.code == row.sku_code)
+                ).first()
+
+                item_total = row.unit_price * row.quantity
+
+                item = OrderItem(
+                    orderId=order.id,
+                    skuId=sku.id if sku else None,
+                    skuCode=row.sku_code,
+                    skuName=sku.name if sku else row.sku_code,
+                    quantity=row.quantity,
+                    unitPrice=row.unit_price,
+                    taxAmount=row.tax_amount or 0,
+                    discountAmount=row.discount or 0,
+                    totalPrice=item_total + (row.tax_amount or 0) - (row.discount or 0),
+                    status=ItemStatus.PENDING,
+                )
+                session.add(item)
+
+            created_orders += 1
+
+        except Exception as e:
+            errors.append(ImportError(
+                row=import_data.rows.index(rows[0]) + 1,
+                message=str(e)
+            ))
+            failed_orders += 1
+            session.rollback()
+
+    # Commit all changes
+    try:
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to save orders: {str(e)}"
+        )
+
+    import_id = str(uuid_lib.uuid4())
+    import_no = f"IMP-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+
+    status_value = "COMPLETED" if failed_orders == 0 else ("PARTIAL" if created_orders > 0 else "FAILED")
+
+    return ImportResponse(
+        id=import_id,
+        importNo=import_no,
+        fileName=import_data.fileName,
+        status=status_value,
+        totalRows=len(import_data.rows),
+        processedRows=len(orders_map),
+        successCount=created_orders,
+        errorCount=failed_orders,
+        errors=errors,
+        summary=ImportSummary(
+            totalOrders=len(orders_map),
+            createdOrders=created_orders,
+            failedOrders=failed_orders
+        ),
+        createdAt=datetime.now().isoformat()
+    )

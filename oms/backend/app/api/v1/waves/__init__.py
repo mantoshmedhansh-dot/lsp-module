@@ -108,8 +108,18 @@ def create_wave(
     current_user: User = Depends(require_manager)
 ):
     """Create new wave."""
+    # Get location to set companyId
+    location = session.get(Location, data.locationId)
+    if not location:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Location not found"
+        )
+
     try:
-        wave = Wave.model_validate(data)
+        wave_dict = data.model_dump()
+        wave_dict["companyId"] = location.companyId
+        wave = Wave(**wave_dict)
         session.add(wave)
         session.commit()
         session.refresh(wave)

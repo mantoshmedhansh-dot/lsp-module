@@ -66,6 +66,14 @@ class Wave(BaseModel, table=True):
     createdById: UUID = Field(
         sa_column=Column(PG_UUID(as_uuid=True), nullable=False)
     )
+    companyId: UUID = Field(
+        sa_column=Column(
+            PG_UUID(as_uuid=True),
+            ForeignKey("Company.id"),
+            nullable=False,
+            index=True
+        )
+    )
 
     # Limits & filters
     maxOrders: int = Field(default=50)
@@ -393,6 +401,7 @@ class WaveResponse(ResponseBase):
     locationId: UUID
     assignedToId: Optional[UUID] = None
     createdById: UUID
+    companyId: UUID
     maxOrders: int = 50
     maxItems: int = 500
     priorityFrom: Optional[int] = None

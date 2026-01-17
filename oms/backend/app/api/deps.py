@@ -23,7 +23,8 @@ async def get_current_user(
             detail="Invalid or expired token"
         )
 
-    user_id = payload.get("sub")
+    # Support both 'user_id' and 'sub' claims for compatibility
+    user_id = payload.get("user_id") or payload.get("sub")
     if user_id is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

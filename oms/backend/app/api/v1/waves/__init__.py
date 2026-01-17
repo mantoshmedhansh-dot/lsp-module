@@ -348,11 +348,18 @@ def create_picklist(
     current_user: User = Depends(get_current_user)
 ):
     """Create new picklist."""
-    picklist = Picklist.model_validate(data)
-    session.add(picklist)
-    session.commit()
-    session.refresh(picklist)
-    return PicklistResponse.model_validate(picklist)
+    try:
+        picklist = Picklist.model_validate(data)
+        session.add(picklist)
+        session.commit()
+        session.refresh(picklist)
+        return PicklistResponse.model_validate(picklist)
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create picklist: {str(e)}"
+        )
 
 
 @router.patch("/picklists/{picklist_id}", response_model=PicklistResponse)

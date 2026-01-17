@@ -50,3 +50,9 @@ __pycache__/
 
 # Error logs
 *.log
+
+# Temporary schema/migration files
+ENUM_FIX_SCRIPT.txt
+SCHEMA_AUDIT_REPORT.md
+SCHEMA_FIX_SCRIPT.sql
+SCHEMA_FIX_SCRIPT.txt

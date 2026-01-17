@@ -131,7 +131,8 @@ const statusConfig: Record<
   { label: string; variant: "default" | "secondary" | "destructive" | "outline"; icon: React.ElementType }
 > = {
   PENDING: { label: "Pending", variant: "outline", icon: Clock },
-  PROCESSING: { label: "Processing", variant: "secondary", icon: ScanLine },
+  ASSIGNED: { label: "Assigned", variant: "secondary", icon: User },
+  IN_PROGRESS: { label: "In Progress", variant: "secondary", icon: ScanLine },
   COMPLETED: { label: "Completed", variant: "default", icon: CheckCircle },
   CANCELLED: { label: "Cancelled", variant: "destructive", icon: XCircle },
 };
@@ -176,9 +177,9 @@ export default function PicklistDetailPage() {
     fetchPicklist();
   }, [fetchPicklist]);
 
-  // Focus on scan input when in PROCESSING status
+  // Focus on scan input when in IN_PROGRESS status
   useEffect(() => {
-    if (picklist?.status === "PROCESSING" && scanInputRef.current) {
+    if (picklist?.status === "IN_PROGRESS" && scanInputRef.current) {
       scanInputRef.current.focus();
     }
   }, [picklist?.status]);
@@ -409,7 +410,7 @@ export default function PicklistDetailPage() {
               Start Picking
             </Button>
           )}
-          {picklist.status === "PROCESSING" && isAllPicked() && (
+          {picklist.status === "IN_PROGRESS" && isAllPicked() && (
             <Button onClick={handleCompletePicking}>
               <CheckCircle className="mr-2 h-4 w-4" />
               Complete Picking
@@ -437,8 +438,8 @@ export default function PicklistDetailPage() {
         </CardContent>
       </Card>
 
-      {/* Scanning Interface - Only show when PROCESSING */}
-      {picklist.status === "PROCESSING" && (
+      {/* Scanning Interface - Only show when IN_PROGRESS */}
+      {picklist.status === "IN_PROGRESS" && (
         <Card className="border-primary">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -578,7 +579,7 @@ export default function PicklistDetailPage() {
                           )}
                         </TableCell>
                         <TableCell className="text-right">
-                          {picklist.status === "PROCESSING" && (
+                          {picklist.status === "IN_PROGRESS" && (
                             <div className="flex justify-end gap-2">
                               {!isPicked && (
                                 <Button

@@ -118,7 +118,8 @@ const statusConfig: Record<
   { label: string; variant: "default" | "secondary" | "destructive" | "outline"; icon: React.ElementType }
 > = {
   PENDING: { label: "Pending", variant: "outline", icon: Clock },
-  PROCESSING: { label: "Processing", variant: "secondary", icon: ScanLine },
+  ASSIGNED: { label: "Assigned", variant: "secondary", icon: UserPlus },
+  IN_PROGRESS: { label: "In Progress", variant: "secondary", icon: ScanLine },
   COMPLETED: { label: "Completed", variant: "default", icon: CheckCircle },
   CANCELLED: { label: "Cancelled", variant: "destructive", icon: XCircle },
 };
@@ -126,7 +127,8 @@ const statusConfig: Record<
 const statusTabs = [
   { value: "all", label: "All" },
   { value: "PENDING", label: "Pending" },
-  { value: "PROCESSING", label: "Processing" },
+  { value: "ASSIGNED", label: "Assigned" },
+  { value: "IN_PROGRESS", label: "In Progress" },
   { value: "COMPLETED", label: "Completed" },
   { value: "CANCELLED", label: "Cancelled" },
 ];
@@ -488,7 +490,7 @@ export default function PicklistPage() {
                                 </>
                               )}
 
-                              {picklist.status === "PROCESSING" && (
+                              {picklist.status === "IN_PROGRESS" && (
                                 <DropdownMenuItem
                                   onClick={() => router.push(`/wms/picklist/${picklist.id}`)}
                                 >
@@ -497,7 +499,7 @@ export default function PicklistPage() {
                                 </DropdownMenuItem>
                               )}
 
-                              {["PENDING", "PROCESSING"].includes(picklist.status) && (
+                              {["PENDING", "ASSIGNED", "IN_PROGRESS"].includes(picklist.status) && (
                                 <>
                                   <DropdownMenuSeparator />
                                   <DropdownMenuItem

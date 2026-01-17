@@ -21,13 +21,20 @@ import {
   ChevronDown,
   Layers,
   ClipboardCheck,
-  FileText,
   CreditCard,
-  Gauge,
-  Bot,
-  Bell,
-  MessageSquare,
   AlertTriangle,
+  PackageOpen,
+  ScanLine,
+  FileBox,
+  ClipboardList,
+  ArrowDownToLine,
+  ArrowUpFromLine,
+  Route,
+  BadgeCheck,
+  Tags,
+  Store,
+  Plug,
+  Shield,
 } from "lucide-react";
 import {
   Sidebar,
@@ -65,193 +72,238 @@ type NavItemWithSub = { title: string; icon: LucideIcon; items: NavSubItem[] };
 type NavItemWithHref = { title: string; icon: LucideIcon; href: string };
 type NavItem = NavItemWithSub | NavItemWithHref;
 
-// Analytics Section - Dashboard & Monitoring
-const analyticsNav: NavItem[] = [
-  {
-    title: "Dashboard",
-    icon: LayoutDashboard,
-    items: [
-      { title: "Overview", href: "/dashboard" },
-      { title: "Seller Panel", href: "/dashboard/seller-panel" },
-    ],
-  },
-  {
-    title: "Control Tower",
-    icon: Gauge,
-    items: [
-      { title: "Overview", href: "/control-tower" },
-      { title: "NDR Command Center", href: "/control-tower/ndr" },
-      { title: "Proactive Communication", href: "/control-tower/proactive" },
-      { title: "AI Actions", href: "/control-tower/ai-actions" },
-    ],
-  },
-];
+// ═══════════════════════════════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════════════════════════════
 
-// Channels Section - Marketplace Integrations
-const channelsNav: NavItem[] = [
-  {
-    title: "Channels",
-    icon: Layers,
-    items: [
-      { title: "Marketplace Integrations", href: "/channels" },
-      { title: "Order Sync", href: "/channels/sync" },
-    ],
-  },
-];
+const dashboardNav: NavItemWithHref = {
+  title: "Dashboard",
+  icon: LayoutDashboard,
+  href: "/dashboard",
+};
 
-// Order Management Section
-const ordersNav: NavItemWithHref[] = [
-  {
-    title: "Orders",
-    icon: ShoppingCart,
-    href: "/orders",
-  },
-];
+// ═══════════════════════════════════════════════════════════════════════════
+// OPERATIONS (Day-to-day activities)
+// ═══════════════════════════════════════════════════════════════════════════
 
-// Inventory Management Section
-const inventoryNav: NavItem[] = [
-  {
-    title: "Inventory",
-    icon: Boxes,
-    items: [
-      { title: "Inventory View", href: "/inventory" },
-      { title: "Stock Adjustment", href: "/inventory/adjustment" },
-      { title: "Cycle Count", href: "/inventory/cycle-count" },
-      { title: "Movement History", href: "/inventory/movements" },
-      { title: "Virtual Inventory", href: "/inventory/virtual" },
-    ],
-  },
-  {
-    title: "Inbound",
-    icon: PackageCheck,
-    items: [
-      { title: "Purchase Orders", href: "/inbound/purchase-orders" },
-      { title: "ASN/Receiving", href: "/inbound/receiving" },
-      { title: "Inbound QC", href: "/inbound/qc" },
-    ],
-  },
-];
+// Orders Section
+const ordersNav: NavItemWithSub = {
+  title: "Orders",
+  icon: ShoppingCart,
+  items: [
+    { title: "All Orders", href: "/orders" },
+    { title: "Order Import", href: "/orders/import" },
+    { title: "B2B Orders", href: "/b2b/quotations" },
+  ],
+};
 
-// WMS Section - Warehouse Operations (includes Locations, SKU Master, Bundles)
-const wmsNav: NavItem[] = [
-  {
-    title: "WMS",
-    icon: Warehouse,
-    items: [
-      { title: "Locations/Warehouses", href: "/settings/locations" },
-      { title: "SKU Master", href: "/settings/skus" },
-      { title: "SKU Bundles", href: "/settings/bundles" },
-      { title: "Wave Picking", href: "/wms/waves" },
-      { title: "Picklist", href: "/wms/picklist" },
-      { title: "Packing", href: "/wms/packing" },
-      { title: "QC Templates", href: "/wms/qc/templates" },
-      { title: "QC Queue", href: "/wms/qc/executions" },
-      { title: "Manifest", href: "/wms/manifest" },
-      { title: "Gate Pass", href: "/wms/gate-pass" },
-    ],
-  },
-];
+// Fulfillment Section (Outbound Operations)
+const fulfillmentNav: NavItemWithSub = {
+  title: "Fulfillment",
+  icon: PackageOpen,
+  items: [
+    { title: "Wave Planning", href: "/wms/waves" },
+    { title: "Pick Lists", href: "/wms/picklist" },
+    { title: "Packing Station", href: "/wms/packing" },
+    { title: "Manifest & Handover", href: "/wms/manifest" },
+    { title: "Gate Pass", href: "/wms/gate-pass" },
+  ],
+};
 
-// Logistics Section - Expanded (Industry Standard) - Includes Integrations
-const logisticsNav: NavItem[] = [
-  {
-    title: "Logistics",
-    icon: Truck,
-    items: [
-      { title: "Shipping Dashboard", href: "/logistics/dashboard" },
-      { title: "Courier Partners", href: "/logistics/transporters" },
-      { title: "AWB Management", href: "/logistics/awb" },
-      { title: "Rate Cards", href: "/logistics/rate-cards" },
-      { title: "Shipping Rules", href: "/logistics/shipping-rules" },
-      { title: "Allocation Rules", href: "/logistics/allocation-rules" },
-      { title: "Service Pincodes", href: "/logistics/pincodes" },
-      { title: "Tracking", href: "/logistics/tracking" },
-      { title: "Integrations", href: "/settings/integrations" },
-    ],
-  },
-];
+// Inbound Section (Receiving Operations)
+const inboundNav: NavItemWithSub = {
+  title: "Inbound",
+  icon: ArrowDownToLine,
+  items: [
+    { title: "Purchase Orders", href: "/inbound/purchase-orders" },
+    { title: "ASN / Receiving", href: "/inbound/receiving" },
+  ],
+};
 
-// Returns & RTO Section - Expanded
-const returnsNav: NavItem[] = [
-  {
-    title: "Returns & RTO",
-    icon: RotateCcw,
-    items: [
-      { title: "Return Requests", href: "/returns" },
-      { title: "RTO Management", href: "/returns/rto" },
-      { title: "Return QC", href: "/returns/qc" },
-      { title: "Refund Processing", href: "/returns/refunds" },
-    ],
-  },
-];
+// Inventory Section
+const inventoryNav: NavItemWithSub = {
+  title: "Inventory",
+  icon: Boxes,
+  items: [
+    { title: "Stock View", href: "/inventory" },
+    { title: "Stock Adjustments", href: "/inventory/adjustment" },
+    { title: "Cycle Count", href: "/inventory/cycle-count" },
+    { title: "Movement History", href: "/inventory/movements" },
+  ],
+};
 
-// Finance & Reconciliation Section - Expanded
-const financeNav: NavItem[] = [
-  {
-    title: "Finance",
-    icon: CreditCard,
-    items: [
-      { title: "Finance Dashboard", href: "/finance/dashboard" },
-      { title: "COD Reconciliation", href: "/finance/cod-reconciliation" },
-      { title: "Weight Discrepancy", href: "/finance/weight-discrepancy" },
-      { title: "Freight Billing", href: "/finance/freight-billing" },
-      { title: "Invoices", href: "/finance/invoices" },
-      { title: "Payment Ledger", href: "/finance/payment-ledger" },
-    ],
-  },
-];
+// Shipping & Logistics Section
+const shippingNav: NavItemWithSub = {
+  title: "Shipping & Logistics",
+  icon: Truck,
+  items: [
+    { title: "Shipment Tracking", href: "/logistics/tracking" },
+    { title: "AWB Management", href: "/logistics/awb" },
+    { title: "NDR Management", href: "/control-tower/ndr" },
+  ],
+};
 
-// B2B Section
-const b2bNav: NavItem[] = [
-  {
-    title: "B2B",
-    icon: Building2,
-    items: [
-      { title: "Customers", href: "/b2b/customers" },
-      { title: "Price Lists", href: "/b2b/price-lists" },
-      { title: "Quotations", href: "/b2b/quotations" },
-      { title: "Credit Management", href: "/b2b/credit" },
-    ],
-  },
-];
+// Returns Section
+const returnsNav: NavItemWithSub = {
+  title: "Returns",
+  icon: RotateCcw,
+  items: [
+    { title: "Customer Returns", href: "/returns" },
+    { title: "RTO Management", href: "/returns/rto" },
+    { title: "Return QC", href: "/returns/qc" },
+    { title: "Refund Processing", href: "/returns/refunds" },
+  ],
+};
+
+// Quality Control Section (Unified)
+const qcNav: NavItemWithSub = {
+  title: "Quality Control",
+  icon: BadgeCheck,
+  items: [
+    { title: "QC Queue", href: "/wms/qc/executions" },
+    { title: "Inbound QC", href: "/inbound/qc" },
+    { title: "QC Templates", href: "/wms/qc/templates" },
+  ],
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ANALYTICS & FINANCE
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Finance Section
+const financeNav: NavItemWithSub = {
+  title: "Finance",
+  icon: CreditCard,
+  items: [
+    { title: "COD Reconciliation", href: "/finance/cod-reconciliation" },
+    { title: "Freight Billing", href: "/finance/freight-billing" },
+    { title: "Weight Discrepancy", href: "/finance/weight-discrepancy" },
+    { title: "Payment Ledger", href: "/finance/payment-ledger" },
+  ],
+};
 
 // Reports Section
-const reportsNav: NavItem[] = [
-  {
-    title: "Reports",
-    icon: BarChart3,
-    items: [
-      { title: "Sales Reports", href: "/reports/sales" },
-      { title: "Inventory Reports", href: "/reports/inventory" },
-      { title: "Logistics Reports", href: "/reports/logistics" },
-      { title: "Finance Reports", href: "/reports/finance" },
-      { title: "Scheduled Reports", href: "/reports/scheduled" },
-    ],
-  },
-];
+const reportsNav: NavItemWithSub = {
+  title: "Reports",
+  icon: BarChart3,
+  items: [
+    { title: "Sales Reports", href: "/reports/sales" },
+    { title: "Inventory Reports", href: "/reports/inventory" },
+    { title: "Logistics Reports", href: "/reports/logistics" },
+    { title: "Finance Reports", href: "/reports/finance" },
+    { title: "Scheduled Reports", href: "/reports/scheduled" },
+  ],
+};
 
-// Master Panel - Only Clients/Brands (Companies rarely needed, accessible via direct URL)
-const masterPanelNav: NavItemWithHref[] = [
-  {
-    title: "Clients/Brands",
-    icon: Users,
-    href: "/master/brands",
-  },
-];
+// ═══════════════════════════════════════════════════════════════════════════
+// CONFIGURATION (Masters & Settings)
+// ═══════════════════════════════════════════════════════════════════════════
 
-// Configuration Section - Slimmed (only Company Profile and User Management)
-const settingsNav: NavItemWithHref[] = [
-  {
-    title: "Company Profile",
-    icon: Building2,
-    href: "/settings/company",
-  },
-  {
-    title: "User Management",
-    icon: Users,
-    href: "/settings/users",
-  },
-];
+// Catalog Section (Masters)
+const catalogNav: NavItemWithSub = {
+  title: "Catalog",
+  icon: Tags,
+  items: [
+    { title: "SKU Master", href: "/settings/skus" },
+    { title: "SKU Bundles / Kits", href: "/settings/bundles" },
+    { title: "B2B Customers", href: "/b2b/customers" },
+  ],
+};
+
+// Warehouse Setup Section
+const warehouseSetupNav: NavItemWithSub = {
+  title: "Warehouse Setup",
+  icon: Warehouse,
+  items: [
+    { title: "Locations / Warehouses", href: "/settings/locations" },
+  ],
+};
+
+// Logistics Setup Section
+const logisticsSetupNav: NavItemWithSub = {
+  title: "Logistics Setup",
+  icon: Route,
+  items: [
+    { title: "Courier Partners", href: "/logistics/transporters" },
+    { title: "Rate Cards", href: "/logistics/rate-cards" },
+    { title: "Shipping Rules", href: "/logistics/shipping-rules" },
+    { title: "Allocation Rules", href: "/logistics/allocation-rules" },
+    { title: "Serviceability", href: "/logistics/pincodes" },
+  ],
+};
+
+// Channels Section
+const channelsNav: NavItemWithSub = {
+  title: "Channels",
+  icon: Store,
+  items: [
+    { title: "Marketplace Integrations", href: "/channels" },
+    { title: "Sync Settings", href: "/channels/sync" },
+  ],
+};
+
+// Settings Section
+const settingsNav: NavItemWithSub = {
+  title: "Settings",
+  icon: Settings,
+  items: [
+    { title: "Company Profile", href: "/settings/company" },
+    { title: "Users & Roles", href: "/settings/users" },
+    { title: "API Integrations", href: "/settings/integrations" },
+  ],
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SUPER ADMIN ONLY
+// ═══════════════════════════════════════════════════════════════════════════
+
+const adminPanelNav: NavItemWithHref = {
+  title: "All Companies",
+  icon: Shield,
+  href: "/master/brands",
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// HELPER COMPONENT: Collapsible Menu Item
+// ═══════════════════════════════════════════════════════════════════════════
+
+function CollapsibleNavItem({ item, pathname }: { item: NavItemWithSub; pathname: string }) {
+  const isActive = item.items.some(
+    (subItem) => pathname === subItem.href || pathname.startsWith(subItem.href + "/")
+  );
+
+  return (
+    <Collapsible defaultOpen={isActive} className="group/collapsible">
+      <SidebarMenuItem>
+        <CollapsibleTrigger asChild>
+          <SidebarMenuButton className={isActive ? "bg-accent" : ""}>
+            <item.icon className="h-4 w-4" />
+            <span>{item.title}</span>
+            <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
+          </SidebarMenuButton>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <SidebarMenuSub>
+            {item.items.map((subItem) => (
+              <SidebarMenuSubItem key={subItem.href}>
+                <SidebarMenuSubButton
+                  asChild
+                  isActive={pathname === subItem.href || pathname.startsWith(subItem.href + "/")}
+                >
+                  <Link href={subItem.href}>{subItem.title}</Link>
+                </SidebarMenuSubButton>
+              </SidebarMenuSubItem>
+            ))}
+          </SidebarMenuSub>
+        </CollapsibleContent>
+      </SidebarMenuItem>
+    </Collapsible>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MAIN SIDEBAR COMPONENT
+// ═══════════════════════════════════════════════════════════════════════════
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -274,472 +326,101 @@ export function AppSidebar() {
             <Package className="h-5 w-5" />
           </div>
           <div className="flex flex-col">
-            <span className="font-bold text-base">OMS Master</span>
+            <span className="font-bold text-base">CJDQuick OMS</span>
             <span className="text-xs text-muted-foreground">
-              Multi-Tenant Control Panel
+              Order Management System
             </span>
           </div>
         </Link>
       </SidebarHeader>
 
       <SidebarContent>
-        {/* Master Panel Section - Only for Super Admin */}
+        {/* ═══ SUPER ADMIN SECTION ═══ */}
         {session?.user?.role === "SUPER_ADMIN" && (
           <SidebarGroup>
-            <SidebarGroupLabel>Master Panel</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-xs font-semibold text-orange-600">
+              Admin Panel
+            </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {masterPanelNav.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
-                    >
-                      <Link href={item.href}>
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname === adminPanelNav.href || pathname.startsWith(adminPanelNav.href + "/")}
+                  >
+                    <Link href={adminPanelNav.href}>
+                      <adminPanelNav.icon className="h-4 w-4" />
+                      <span>{adminPanelNav.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
         )}
 
-        {/* Analytics & Monitoring */}
+        {/* ═══ DASHBOARD ═══ */}
         <SidebarGroup>
-          <SidebarGroupLabel>Analytics</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {analyticsNav.map((item) =>
-                'items' in item ? (
-                  <Collapsible key={item.title} className="group/collapsible">
-                    <SidebarMenuItem>
-                      <CollapsibleTrigger asChild>
-                        <SidebarMenuButton>
-                          <item.icon className="h-4 w-4" />
-                          <span>{item.title}</span>
-                          <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
-                        </SidebarMenuButton>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <SidebarMenuSub>
-                          {item.items.map((subItem) => (
-                            <SidebarMenuSubItem key={subItem.href}>
-                              <SidebarMenuSubButton asChild isActive={pathname === subItem.href}>
-                                <Link href={subItem.href}>{subItem.title}</Link>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          ))}
-                        </SidebarMenuSub>
-                      </CollapsibleContent>
-                    </SidebarMenuItem>
-                  </Collapsible>
-                ) : (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={pathname === item.href}>
-                      <Link href={item.href}>
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )
-              )}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname === dashboardNav.href}
+                >
+                  <Link href={dashboardNav.href}>
+                    <dashboardNav.icon className="h-4 w-4" />
+                    <span>{dashboardNav.title}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Channels & Integrations */}
+        {/* ═══ OPERATIONS ═══ */}
         <SidebarGroup>
-          <SidebarGroupLabel>Channels</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground">
+            Operations
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {channelsNav.map((item) =>
-                'items' in item ? (
-                  <Collapsible key={item.title} className="group/collapsible">
-                    <SidebarMenuItem>
-                      <CollapsibleTrigger asChild>
-                        <SidebarMenuButton>
-                          <item.icon className="h-4 w-4" />
-                          <span>{item.title}</span>
-                          <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
-                        </SidebarMenuButton>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <SidebarMenuSub>
-                          {item.items.map((subItem) => (
-                            <SidebarMenuSubItem key={subItem.href}>
-                              <SidebarMenuSubButton asChild isActive={pathname === subItem.href}>
-                                <Link href={subItem.href}>{subItem.title}</Link>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          ))}
-                        </SidebarMenuSub>
-                      </CollapsibleContent>
-                    </SidebarMenuItem>
-                  </Collapsible>
-                ) : (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={pathname === item.href}>
-                      <Link href={item.href}>
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )
-              )}
+              <CollapsibleNavItem item={ordersNav} pathname={pathname} />
+              <CollapsibleNavItem item={fulfillmentNav} pathname={pathname} />
+              <CollapsibleNavItem item={inboundNav} pathname={pathname} />
+              <CollapsibleNavItem item={inventoryNav} pathname={pathname} />
+              <CollapsibleNavItem item={shippingNav} pathname={pathname} />
+              <CollapsibleNavItem item={returnsNav} pathname={pathname} />
+              <CollapsibleNavItem item={qcNav} pathname={pathname} />
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Order Management */}
+        {/* ═══ ANALYTICS & FINANCE ═══ */}
         <SidebarGroup>
-          <SidebarGroupLabel>Order Management</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground">
+            Analytics & Finance
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {ordersNav.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={pathname === item.href || pathname.startsWith(item.href + "/")}>
-                    <Link href={item.href}>
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              <CollapsibleNavItem item={financeNav} pathname={pathname} />
+              <CollapsibleNavItem item={reportsNav} pathname={pathname} />
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Inventory & Inbound */}
+        {/* ═══ CONFIGURATION ═══ */}
         <SidebarGroup>
-          <SidebarGroupLabel>Inventory</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground">
+            Configuration
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {inventoryNav.map((item) =>
-                'items' in item ? (
-                  <Collapsible key={item.title} className="group/collapsible">
-                    <SidebarMenuItem>
-                      <CollapsibleTrigger asChild>
-                        <SidebarMenuButton>
-                          <item.icon className="h-4 w-4" />
-                          <span>{item.title}</span>
-                          <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
-                        </SidebarMenuButton>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <SidebarMenuSub>
-                          {item.items.map((subItem) => (
-                            <SidebarMenuSubItem key={subItem.href}>
-                              <SidebarMenuSubButton asChild isActive={pathname === subItem.href}>
-                                <Link href={subItem.href}>{subItem.title}</Link>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          ))}
-                        </SidebarMenuSub>
-                      </CollapsibleContent>
-                    </SidebarMenuItem>
-                  </Collapsible>
-                ) : (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={pathname === item.href}>
-                      <Link href={item.href}>
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )
-              )}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Warehouse Operations */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Warehouse</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {wmsNav.map((item) =>
-                'items' in item ? (
-                  <Collapsible key={item.title} className="group/collapsible">
-                    <SidebarMenuItem>
-                      <CollapsibleTrigger asChild>
-                        <SidebarMenuButton>
-                          <item.icon className="h-4 w-4" />
-                          <span>{item.title}</span>
-                          <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
-                        </SidebarMenuButton>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <SidebarMenuSub>
-                          {item.items.map((subItem) => (
-                            <SidebarMenuSubItem key={subItem.href}>
-                              <SidebarMenuSubButton asChild isActive={pathname === subItem.href}>
-                                <Link href={subItem.href}>{subItem.title}</Link>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          ))}
-                        </SidebarMenuSub>
-                      </CollapsibleContent>
-                    </SidebarMenuItem>
-                  </Collapsible>
-                ) : (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={pathname === item.href}>
-                      <Link href={item.href}>
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )
-              )}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Logistics & Shipping */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Logistics</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {logisticsNav.map((item) =>
-                'items' in item ? (
-                  <Collapsible key={item.title} className="group/collapsible">
-                    <SidebarMenuItem>
-                      <CollapsibleTrigger asChild>
-                        <SidebarMenuButton>
-                          <item.icon className="h-4 w-4" />
-                          <span>{item.title}</span>
-                          <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
-                        </SidebarMenuButton>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <SidebarMenuSub>
-                          {item.items.map((subItem) => (
-                            <SidebarMenuSubItem key={subItem.href}>
-                              <SidebarMenuSubButton asChild isActive={pathname === subItem.href}>
-                                <Link href={subItem.href}>{subItem.title}</Link>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          ))}
-                        </SidebarMenuSub>
-                      </CollapsibleContent>
-                    </SidebarMenuItem>
-                  </Collapsible>
-                ) : (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={pathname === item.href}>
-                      <Link href={item.href}>
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )
-              )}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Returns & RTO */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Returns</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {returnsNav.map((item) =>
-                'items' in item ? (
-                  <Collapsible key={item.title} className="group/collapsible">
-                    <SidebarMenuItem>
-                      <CollapsibleTrigger asChild>
-                        <SidebarMenuButton>
-                          <item.icon className="h-4 w-4" />
-                          <span>{item.title}</span>
-                          <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
-                        </SidebarMenuButton>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <SidebarMenuSub>
-                          {item.items.map((subItem) => (
-                            <SidebarMenuSubItem key={subItem.href}>
-                              <SidebarMenuSubButton asChild isActive={pathname === subItem.href}>
-                                <Link href={subItem.href}>{subItem.title}</Link>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          ))}
-                        </SidebarMenuSub>
-                      </CollapsibleContent>
-                    </SidebarMenuItem>
-                  </Collapsible>
-                ) : (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={pathname === item.href}>
-                      <Link href={item.href}>
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )
-              )}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Finance & Reconciliation */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Finance</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {financeNav.map((item) =>
-                'items' in item ? (
-                  <Collapsible key={item.title} className="group/collapsible">
-                    <SidebarMenuItem>
-                      <CollapsibleTrigger asChild>
-                        <SidebarMenuButton>
-                          <item.icon className="h-4 w-4" />
-                          <span>{item.title}</span>
-                          <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
-                        </SidebarMenuButton>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <SidebarMenuSub>
-                          {item.items.map((subItem) => (
-                            <SidebarMenuSubItem key={subItem.href}>
-                              <SidebarMenuSubButton asChild isActive={pathname === subItem.href}>
-                                <Link href={subItem.href}>{subItem.title}</Link>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          ))}
-                        </SidebarMenuSub>
-                      </CollapsibleContent>
-                    </SidebarMenuItem>
-                  </Collapsible>
-                ) : (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={pathname === item.href}>
-                      <Link href={item.href}>
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )
-              )}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* B2B */}
-        <SidebarGroup>
-          <SidebarGroupLabel>B2B</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {b2bNav.map((item) =>
-                'items' in item ? (
-                  <Collapsible key={item.title} className="group/collapsible">
-                    <SidebarMenuItem>
-                      <CollapsibleTrigger asChild>
-                        <SidebarMenuButton>
-                          <item.icon className="h-4 w-4" />
-                          <span>{item.title}</span>
-                          <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
-                        </SidebarMenuButton>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <SidebarMenuSub>
-                          {item.items.map((subItem) => (
-                            <SidebarMenuSubItem key={subItem.href}>
-                              <SidebarMenuSubButton asChild isActive={pathname === subItem.href}>
-                                <Link href={subItem.href}>{subItem.title}</Link>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          ))}
-                        </SidebarMenuSub>
-                      </CollapsibleContent>
-                    </SidebarMenuItem>
-                  </Collapsible>
-                ) : (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={pathname === item.href}>
-                      <Link href={item.href}>
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )
-              )}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Reports */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Reports</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {reportsNav.map((item) =>
-                'items' in item ? (
-                  <Collapsible key={item.title} className="group/collapsible">
-                    <SidebarMenuItem>
-                      <CollapsibleTrigger asChild>
-                        <SidebarMenuButton>
-                          <item.icon className="h-4 w-4" />
-                          <span>{item.title}</span>
-                          <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
-                        </SidebarMenuButton>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <SidebarMenuSub>
-                          {item.items.map((subItem) => (
-                            <SidebarMenuSubItem key={subItem.href}>
-                              <SidebarMenuSubButton asChild isActive={pathname === subItem.href}>
-                                <Link href={subItem.href}>{subItem.title}</Link>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          ))}
-                        </SidebarMenuSub>
-                      </CollapsibleContent>
-                    </SidebarMenuItem>
-                  </Collapsible>
-                ) : (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={pathname === item.href}>
-                      <Link href={item.href}>
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )
-              )}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Configuration */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Configuration</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {settingsNav.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
-                  >
-                    <Link href={item.href}>
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              <CollapsibleNavItem item={catalogNav} pathname={pathname} />
+              <CollapsibleNavItem item={warehouseSetupNav} pathname={pathname} />
+              <CollapsibleNavItem item={logisticsSetupNav} pathname={pathname} />
+              <CollapsibleNavItem item={channelsNav} pathname={pathname} />
+              <CollapsibleNavItem item={settingsNav} pathname={pathname} />
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -753,15 +434,21 @@ export function AppSidebar() {
                 <SidebarMenuButton className="w-full">
                   <Avatar className="h-6 w-6">
                     <AvatarFallback className="text-xs bg-gradient-to-br from-blue-600 to-indigo-700 text-white">
-                      {session?.user?.role === "SUPER_ADMIN" ? "MA" : session?.user?.name ? getInitials(session.user.name) : "U"}
+                      {session?.user?.role === "SUPER_ADMIN"
+                        ? "SA"
+                        : session?.user?.name
+                        ? getInitials(session.user.name)
+                        : "U"}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col items-start text-sm">
                     <span className="font-medium">
-                      {session?.user?.role === "SUPER_ADMIN" ? "Master Panel Admin" : session?.user?.name}
+                      {session?.user?.role === "SUPER_ADMIN"
+                        ? "Super Admin"
+                        : session?.user?.name}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      {session?.user?.role === "SUPER_ADMIN" ? "OMS Super Admin" : session?.user?.role}
+                      {session?.user?.role?.replace(/_/g, " ")}
                     </span>
                   </div>
                   <ChevronDown className="ml-auto h-4 w-4" />

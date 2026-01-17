@@ -46,7 +46,7 @@ export default function ClientCODReconciliationPage() {
       deductions: 1780,
       netAmount: 87220,
       expectedDate: "2024-01-17",
-      status: "RECEIVED",
+      status: "RECONCILED",
     },
     {
       id: "REM-003",
@@ -56,15 +56,16 @@ export default function ClientCODReconciliationPage() {
       deductions: 1350,
       netAmount: 66150,
       expectedDate: "2024-01-19",
-      status: "PROCESSING",
+      status: "IN_PROGRESS",
     },
   ];
 
   const statusColors: Record<string, string> = {
-    PENDING: "bg-yellow-100 text-yellow-800",
-    PROCESSING: "bg-blue-100 text-blue-800",
-    RECEIVED: "bg-green-100 text-green-800",
+    PENDING: "bg-gray-100 text-gray-800",
+    IN_PROGRESS: "bg-yellow-100 text-yellow-800",
+    RECONCILED: "bg-blue-100 text-blue-800",
     DISPUTED: "bg-red-100 text-red-800",
+    CLOSED: "bg-purple-100 text-purple-800",
   };
 
   return (
@@ -148,9 +149,11 @@ export default function ClientCODReconciliationPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="processing">Processing</SelectItem>
-                <SelectItem value="received">Received</SelectItem>
+                <SelectItem value="PENDING">Pending</SelectItem>
+                <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+                <SelectItem value="RECONCILED">Reconciled</SelectItem>
+                <SelectItem value="DISPUTED">Disputed</SelectItem>
+                <SelectItem value="CLOSED">Closed</SelectItem>
               </SelectContent>
             </Select>
           </div>

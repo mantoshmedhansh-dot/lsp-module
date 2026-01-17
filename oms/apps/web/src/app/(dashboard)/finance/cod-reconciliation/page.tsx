@@ -52,9 +52,9 @@ import Link from "next/link";
 
 const statusColors: Record<string, string> = {
   PENDING: "bg-gray-100 text-gray-800",
-  PARTIAL: "bg-yellow-100 text-yellow-800",
+  IN_PROGRESS: "bg-yellow-100 text-yellow-800",
   RECONCILED: "bg-blue-100 text-blue-800",
-  VERIFIED: "bg-green-100 text-green-800",
+  DISPUTED: "bg-red-100 text-red-800",
   CLOSED: "bg-purple-100 text-purple-800",
 };
 
@@ -459,9 +459,9 @@ export default function CODReconciliationPage() {
               <SelectContent>
                 <SelectItem value="all">All statuses</SelectItem>
                 <SelectItem value="PENDING">Pending</SelectItem>
-                <SelectItem value="PARTIAL">Partial</SelectItem>
+                <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
                 <SelectItem value="RECONCILED">Reconciled</SelectItem>
-                <SelectItem value="VERIFIED">Verified</SelectItem>
+                <SelectItem value="DISPUTED">Disputed</SelectItem>
                 <SelectItem value="CLOSED">Closed</SelectItem>
               </SelectContent>
             </Select>

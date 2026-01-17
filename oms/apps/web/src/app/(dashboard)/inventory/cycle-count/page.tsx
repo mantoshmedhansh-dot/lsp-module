@@ -55,8 +55,6 @@ const statusColors: Record<string, string> = {
   PLANNED: "bg-blue-100 text-blue-800",
   IN_PROGRESS: "bg-yellow-100 text-yellow-800",
   COMPLETED: "bg-green-100 text-green-800",
-  VARIANCE_FOUND: "bg-orange-100 text-orange-800",
-  VERIFIED: "bg-purple-100 text-purple-800",
   CANCELLED: "bg-red-100 text-red-800",
 };
 
@@ -313,8 +311,6 @@ export default function CycleCountPage() {
                 <SelectItem value="PLANNED">Planned</SelectItem>
                 <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
                 <SelectItem value="COMPLETED">Completed</SelectItem>
-                <SelectItem value="VARIANCE_FOUND">Variance Found</SelectItem>
-                <SelectItem value="VERIFIED">Verified</SelectItem>
                 <SelectItem value="CANCELLED">Cancelled</SelectItem>
               </SelectContent>
             </Select>

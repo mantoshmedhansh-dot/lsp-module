@@ -172,25 +172,57 @@ Frontend Hook: useReturnList({ skip, limit, returnType })
 - Added `companyId` to `ReturnResponse` schema
 - Changed `_count` to `outreachCount` in `NDRListItem` schema
 
-### ⏳ PENDING: Database Migration
+### ✅ FIXED: Picklist Page (`wms/picklist/page.tsx`)
+- Changed PROCESSING → IN_PROGRESS to match PicklistStatus enum
+- Added missing ASSIGNED status
+- Updated statusTabs to include all valid statuses
+
+### ✅ FIXED: Picklist Detail Page (`wms/picklist/[id]/page.tsx`)
+- Changed all PROCESSING references to IN_PROGRESS
+- Added ASSIGNED status to statusConfig
+- Fixed status checks in action buttons
+
+### ✅ FIXED: COD Reconciliation Page (`finance/cod-reconciliation/page.tsx`)
+- Changed PARTIAL → IN_PROGRESS
+- Changed VERIFIED → DISPUTED
+- Updated status filter dropdown to match CODReconciliationStatus enum
+
+### ✅ FIXED: Client COD Reconciliation Page (`client/finance/cod-reconciliation/page.tsx`)
+- Fixed status colors to match backend enum
+- Fixed status filter dropdown values
+
+### ✅ FIXED: Cycle Count Page (`inventory/cycle-count/page.tsx`)
+- Removed invalid VARIANCE_FOUND and VERIFIED statuses
+- Updated to match CycleCountStatus enum (PLANNED, IN_PROGRESS, COMPLETED, CANCELLED)
+
+### ✅ FIXED: Cycle Count Detail Page (`inventory/cycle-count/[id]/page.tsx`)
+- Removed VARIANCE_FOUND and VERIFIED from status colors
+- Fixed action button status checks to use valid statuses
+
+### ✅ FIXED: Order Import Page (`orders/import/page.tsx`)
+- Changed PROCESSING → IN_PROGRESS to match ImportStatus enum
+
+### ✅ COMPLETED: Database Migration
 Alembic migration created at `backend/alembic/versions/001_add_return_status_enum_values.py`
 
-To run the migration, execute in Supabase SQL editor:
-```sql
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'PROCESSED' AND enumtypid = (SELECT oid FROM pg_type WHERE typname = 'ReturnStatus')) THEN
-        ALTER TYPE "ReturnStatus" ADD VALUE 'PROCESSED';
-    END IF;
-END $$;
+**Migration executed on 2026-01-17:**
 
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'COMPLETED' AND enumtypid = (SELECT oid FROM pg_type WHERE typname = 'ReturnStatus')) THEN
-        ALTER TYPE "ReturnStatus" ADD VALUE 'COMPLETED';
-    END IF;
-END $$;
+Added the following values to PostgreSQL `ReturnStatus` enum:
+- PROCESSED
+- COMPLETED
+- PICKUP_SCHEDULED
+- PICKED_UP
+- REFUND_INITIATED
+- CANCELLED
+
+**Final ReturnStatus enum values in database:**
 ```
+INITIATED, IN_TRANSIT, RECEIVED, QC_PENDING, QC_PASSED, QC_FAILED,
+RESTOCKED, DISPOSED, REFUNDED, PROCESSED, COMPLETED,
+PICKUP_SCHEDULED, PICKED_UP, REFUND_INITIATED, CANCELLED
+```
+
+Note: RESTOCKED, DISPOSED, REFUNDED are legacy values from an older schema version.
 
 ---
 
@@ -209,4 +241,18 @@ curl -s https://cjdquick-api-vr4w.onrender.com/api/v1/returns/summary
 
 ---
 
-Generated: 2026-01-16
+## 8. BUILD VERIFICATION
+
+```bash
+# Build completed successfully
+npm run vercel-build
+# ✓ Compiled successfully in 4.5s
+# ✓ Generating static pages (152/152)
+```
+
+All enum fixes have been verified through successful TypeScript compilation and Next.js build.
+
+---
+
+Generated: 2026-01-17
+Updated: 2026-01-17

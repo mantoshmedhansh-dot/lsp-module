@@ -47,8 +47,6 @@ const statusColors: Record<string, string> = {
   PLANNED: "bg-blue-100 text-blue-800",
   IN_PROGRESS: "bg-yellow-100 text-yellow-800",
   COMPLETED: "bg-green-100 text-green-800",
-  VARIANCE_FOUND: "bg-orange-100 text-orange-800",
-  VERIFIED: "bg-purple-100 text-purple-800",
   CANCELLED: "bg-red-100 text-red-800",
   PENDING: "bg-gray-100 text-gray-800",
   COUNTED: "bg-green-100 text-green-800",
@@ -272,19 +270,13 @@ export default function CycleCountDetailPage({
                 </Button>
               </>
             )}
-            {["COMPLETED", "VARIANCE_FOUND"].includes(cycleCount.status) && (
-              <Button onClick={() => setConfirmAction("verify")}>
-                <ShieldCheck className="h-4 w-4 mr-2" />
-                Verify
-              </Button>
-            )}
-            {cycleCount.status === "VERIFIED" && cycleCount.varianceFound && (
+            {cycleCount.status === "COMPLETED" && cycleCount.varianceFound && (
               <Button onClick={() => setConfirmAction("apply_adjustments")}>
                 <FileText className="h-4 w-4 mr-2" />
                 Apply Adjustments
               </Button>
             )}
-            {!["VERIFIED", "CANCELLED"].includes(cycleCount.status) && (
+            {!["COMPLETED", "CANCELLED"].includes(cycleCount.status) && (
               <Button
                 variant="destructive"
                 onClick={() => setConfirmAction("cancel")}

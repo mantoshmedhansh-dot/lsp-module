@@ -107,6 +107,124 @@ export const AIActionType = {
     CARRIER_SELECTION: 'CARRIER_SELECTION'
 } as const;
 
+/**
+ * AWB creation schema
+ */
+export type AWBCreate = {
+    awbNo: string;
+    transporterId: string;
+};
+
+/**
+ * AWB response schema
+ */
+export type AWBResponse = {
+    awbNo: string;
+    transporterId: string;
+    isUsed?: boolean;
+    usedAt?: (string | null);
+    usedFor?: (string | null);
+    id: string;
+    createdAt: string;
+};
+
+/**
+ * Analytics Snapshot response schema
+ */
+export type AnalyticsSnapshotResponse = {
+    snapshotDate: string;
+    snapshotType: string;
+    companyId: string;
+    locationId?: (string | null);
+    totalOrders?: number;
+    totalRevenue?: string;
+    avgOrderValue?: string;
+    totalUnits?: number;
+    ordersShipped?: number;
+    ordersDelivered?: number;
+    ordersCancelled?: number;
+    ordersRTO?: number;
+    avgFulfillmentTime?: (string | null);
+    fillRate?: (string | null);
+    slaBreachedOrders?: number;
+    onTimeDeliveryRate?: (string | null);
+    totalSKUs?: number;
+    totalQuantity?: number;
+    lowStockSKUs?: number;
+    outOfStockSKUs?: number;
+    inventoryValue?: string;
+    totalReturns?: number;
+    returnRate?: (string | null);
+    rtoRate?: (string | null);
+    b2bOrders?: number;
+    b2bRevenue?: string;
+    creditUtilization?: (string | null);
+    channelBreakdown?: ({
+    [key: string]: unknown;
+} | null);
+    categoryBreakdown?: ({
+    [key: string]: unknown;
+} | null);
+    transporterBreakdown?: ({
+    [key: string]: unknown;
+} | null);
+    id: string;
+    createdAt: string;
+};
+
+/**
+ * Audit Log response schema
+ */
+export type AuditLogResponse = {
+    entityType: string;
+    entityId: string;
+    action: string;
+    changes?: ({
+    [key: string]: unknown;
+} | null);
+    userId?: (string | null);
+    ipAddress?: (string | null);
+    userAgent?: (string | null);
+    id: string;
+    createdAt: string;
+};
+
+/**
+ * B2B Credit Transaction creation schema
+ */
+export type B2BCreditTransactionCreate = {
+    type: CreditTransactionType;
+    customerId: string;
+    amount: (number | string);
+    orderId?: (string | null);
+    quotationId?: (string | null);
+    paymentRef?: (string | null);
+    invoiceNo?: (string | null);
+    dueDate?: (string | null);
+    remarks?: (string | null);
+};
+
+/**
+ * B2B Credit Transaction response schema
+ */
+export type B2BCreditTransactionResponse = {
+    transactionNo: string;
+    type: CreditTransactionType;
+    customerId: string;
+    amount: string;
+    balanceBefore: string;
+    balanceAfter: string;
+    orderId?: (string | null);
+    quotationId?: (string | null);
+    paymentRef?: (string | null);
+    invoiceNo?: (string | null);
+    dueDate?: (string | null);
+    remarks?: (string | null);
+    createdById?: (string | null);
+    id: string;
+    createdAt: string;
+};
+
 export type BinCreate = {
     code: string;
     name?: (string | null);
@@ -175,6 +293,121 @@ export type BrandUpdate = {
 };
 
 /**
+ * COD Reconciliation creation schema
+ */
+export type CODReconciliationCreate = {
+    locationId: string;
+    transporterId: string;
+    periodFrom: string;
+    periodTo: string;
+    remarks?: (string | null);
+};
+
+/**
+ * COD Reconciliation response schema
+ */
+export type CODReconciliationResponse = {
+    reconciliationNo: string;
+    status?: CODReconciliationStatus;
+    locationId: string;
+    transporterId: string;
+    companyId: string;
+    reconciliationDate: string;
+    periodFrom: string;
+    periodTo: string;
+    expectedAmount?: string;
+    collectedAmount?: string;
+    remittedAmount?: string;
+    variance?: string;
+    totalOrders?: number;
+    deliveredOrders?: number;
+    pendingOrders?: number;
+    remarks?: (string | null);
+    approvedAt?: (string | null);
+    approvedBy?: (string | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * COD reconciliation status
+ */
+export type CODReconciliationStatus = 'PENDING' | 'IN_PROGRESS' | 'RECONCILED' | 'DISPUTED' | 'CLOSED';
+
+/**
+ * COD reconciliation status
+ */
+export const CODReconciliationStatus = {
+    PENDING: 'PENDING',
+    IN_PROGRESS: 'IN_PROGRESS',
+    RECONCILED: 'RECONCILED',
+    DISPUTED: 'DISPUTED',
+    CLOSED: 'CLOSED'
+} as const;
+
+/**
+ * COD Reconciliation update schema
+ */
+export type CODReconciliationUpdate = {
+    status?: (CODReconciliationStatus | null);
+    collectedAmount?: (number | string | null);
+    remittedAmount?: (number | string | null);
+    remarks?: (string | null);
+};
+
+/**
+ * COD Transaction creation schema
+ */
+export type CODTransactionCreate = {
+    type: CODTransactionType;
+    reconciliationId?: (string | null);
+    orderId?: (string | null);
+    deliveryId?: (string | null);
+    awbNo?: (string | null);
+    amount: (number | string);
+    paymentMode?: (string | null);
+    paymentRef?: (string | null);
+    paymentDate?: (string | null);
+    remarks?: (string | null);
+};
+
+/**
+ * COD Transaction response schema
+ */
+export type CODTransactionResponse = {
+    transactionNo: string;
+    type: CODTransactionType;
+    reconciliationId?: (string | null);
+    orderId?: (string | null);
+    deliveryId?: (string | null);
+    awbNo?: (string | null);
+    amount: string;
+    paymentMode?: (string | null);
+    paymentRef?: (string | null);
+    paymentDate?: (string | null);
+    remarks?: (string | null);
+    transactionDate: string;
+    id: string;
+    createdAt: string;
+};
+
+/**
+ * COD transaction types
+ */
+export type CODTransactionType = 'COLLECTION' | 'REMITTANCE' | 'ADJUSTMENT' | 'REFUND';
+
+/**
+ * COD transaction types
+ */
+export const CODTransactionType = {
+    COLLECTION: 'COLLECTION',
+    REMITTANCE: 'REMITTANCE',
+    ADJUSTMENT: 'ADJUSTMENT',
+    REFUND: 'REFUND'
+} as const;
+
+/**
  * Sales channels
  */
 export type Channel = 'AMAZON' | 'FLIPKART' | 'MYNTRA' | 'AJIO' | 'MEESHO' | 'NYKAA' | 'TATA_CLIQ' | 'JIOMART' | 'SHOPIFY' | 'WOOCOMMERCE' | 'WEBSITE' | 'MANUAL' | 'B2B';
@@ -196,6 +429,151 @@ export const Channel = {
     WEBSITE: 'WEBSITE',
     MANUAL: 'MANUAL',
     B2B: 'B2B'
+} as const;
+
+/**
+ * Channel Config creation schema
+ */
+export type ChannelConfigCreate = {
+    channel: Channel;
+    displayName?: (string | null);
+    credentials?: ({
+    [key: string]: unknown;
+} | null);
+    settings?: ({
+    [key: string]: unknown;
+} | null);
+    syncFrequency?: SyncFrequency;
+    webhookUrl?: (string | null);
+    mappingConfig?: ({
+    [key: string]: unknown;
+} | null);
+};
+
+/**
+ * Channel Config response schema
+ */
+export type ChannelConfigResponse = {
+    companyId: string;
+    channel: Channel;
+    displayName?: (string | null);
+    isActive?: boolean;
+    credentials?: ({
+    [key: string]: unknown;
+} | null);
+    settings?: ({
+    [key: string]: unknown;
+} | null);
+    lastSyncAt?: (string | null);
+    syncFrequency?: SyncFrequency;
+    nextSyncAt?: (string | null);
+    syncStatus?: (ImportStatus | null);
+    webhookUrl?: (string | null);
+    webhookSecret?: (string | null);
+    mappingConfig?: ({
+    [key: string]: unknown;
+} | null);
+    retryCount?: number;
+    lastErrorMessage?: (string | null);
+    lastErrorAt?: (string | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Channel Config update schema
+ */
+export type ChannelConfigUpdate = {
+    displayName?: (string | null);
+    isActive?: (boolean | null);
+    credentials?: ({
+    [key: string]: unknown;
+} | null);
+    settings?: ({
+    [key: string]: unknown;
+} | null);
+    syncFrequency?: (SyncFrequency | null);
+    webhookUrl?: (string | null);
+    webhookSecret?: (string | null);
+    mappingConfig?: ({
+    [key: string]: unknown;
+} | null);
+};
+
+/**
+ * Communication Template creation schema
+ */
+export type CommunicationTemplateCreate = {
+    name: string;
+    description?: (string | null);
+    trigger: CommunicationTrigger;
+    channel: OutreachChannel;
+    language?: string;
+    subject?: (string | null);
+    template: string;
+    variables?: (Array<(string)> | null);
+    whatsappTemplateId?: (string | null);
+    whatsappTemplateName?: (string | null);
+    sentiment?: (string | null);
+    isDefault?: boolean;
+};
+
+/**
+ * Communication Template response schema
+ */
+export type CommunicationTemplateResponse = {
+    name: string;
+    description?: (string | null);
+    trigger: CommunicationTrigger;
+    channel: OutreachChannel;
+    language?: string;
+    subject?: (string | null);
+    template: string;
+    variables?: (Array<(string)> | null);
+    whatsappTemplateId?: (string | null);
+    whatsappTemplateName?: (string | null);
+    sentiment?: (string | null);
+    isActive?: boolean;
+    isDefault?: boolean;
+    companyId: string;
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Communication Template update schema
+ */
+export type CommunicationTemplateUpdate = {
+    name?: (string | null);
+    description?: (string | null);
+    subject?: (string | null);
+    template?: (string | null);
+    variables?: (Array<(string)> | null);
+    whatsappTemplateId?: (string | null);
+    whatsappTemplateName?: (string | null);
+    sentiment?: (string | null);
+    isActive?: (boolean | null);
+    isDefault?: (boolean | null);
+};
+
+/**
+ * Communication trigger events
+ */
+export type CommunicationTrigger = 'ORDER_CONFIRMED' | 'ORDER_SHIPPED' | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'NDR_FIRST_ATTEMPT' | 'NDR_FOLLOWUP' | 'RTO_INITIATED';
+
+/**
+ * Communication trigger events
+ */
+export const CommunicationTrigger = {
+    ORDER_CONFIRMED: 'ORDER_CONFIRMED',
+    ORDER_SHIPPED: 'ORDER_SHIPPED',
+    OUT_FOR_DELIVERY: 'OUT_FOR_DELIVERY',
+    DELIVERED: 'DELIVERED',
+    NDR_FIRST_ATTEMPT: 'NDR_FIRST_ATTEMPT',
+    NDR_FOLLOWUP: 'NDR_FOLLOWUP',
+    RTO_INITIATED: 'RTO_INITIATED'
 } as const;
 
 export type CompanyBrief = {
@@ -277,6 +655,24 @@ export const CreditStatus = {
     EXHAUSTED: 'EXHAUSTED',
     ON_HOLD: 'ON_HOLD',
     OVERDUE: 'OVERDUE'
+} as const;
+
+/**
+ * Credit transaction types
+ */
+export type CreditTransactionType = 'CREDIT_LIMIT_SET' | 'CREDIT_LIMIT_INCREASE' | 'CREDIT_LIMIT_DECREASE' | 'ORDER_PLACED' | 'ORDER_CANCELLED' | 'PAYMENT_RECEIVED' | 'REFUND';
+
+/**
+ * Credit transaction types
+ */
+export const CreditTransactionType = {
+    CREDIT_LIMIT_SET: 'CREDIT_LIMIT_SET',
+    CREDIT_LIMIT_INCREASE: 'CREDIT_LIMIT_INCREASE',
+    CREDIT_LIMIT_DECREASE: 'CREDIT_LIMIT_DECREASE',
+    ORDER_PLACED: 'ORDER_PLACED',
+    ORDER_CANCELLED: 'ORDER_CANCELLED',
+    PAYMENT_RECEIVED: 'PAYMENT_RECEIVED',
+    REFUND: 'REFUND'
 } as const;
 
 /**
@@ -511,6 +907,80 @@ export type CustomerUpdate = {
 };
 
 /**
+ * Cycle Count creation schema
+ */
+export type CycleCountCreate = {
+    locationId: string;
+    zoneId?: (string | null);
+    scheduledDate: string;
+    remarks?: (string | null);
+};
+
+/**
+ * Cycle Count Item response schema
+ */
+export type CycleCountItemResponse = {
+    cycleCountId: string;
+    skuId: string;
+    binId: string;
+    batchNo?: (string | null);
+    expectedQty?: number;
+    countedQty?: number;
+    varianceQty?: number;
+    status?: string;
+    countedAt?: (string | null);
+    countedById?: (string | null);
+    remarks?: (string | null);
+    id: string;
+};
+
+/**
+ * Cycle Count response schema
+ */
+export type CycleCountResponse = {
+    cycleCountNo: string;
+    status?: CycleCountStatus;
+    locationId: string;
+    zoneId?: (string | null);
+    initiatedById: string;
+    verifiedById?: (string | null);
+    scheduledDate: string;
+    startedAt?: (string | null);
+    completedAt?: (string | null);
+    varianceFound?: boolean;
+    varianceValue?: (string | null);
+    remarks?: (string | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+    items?: (Array<CycleCountItemResponse> | null);
+};
+
+/**
+ * Cycle count status
+ */
+export type CycleCountStatus = 'PLANNED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+
+/**
+ * Cycle count status
+ */
+export const CycleCountStatus = {
+    PLANNED: 'PLANNED',
+    IN_PROGRESS: 'IN_PROGRESS',
+    COMPLETED: 'COMPLETED',
+    CANCELLED: 'CANCELLED'
+} as const;
+
+/**
+ * Cycle Count update schema
+ */
+export type CycleCountUpdate = {
+    status?: (CycleCountStatus | null);
+    scheduledDate?: (string | null);
+    remarks?: (string | null);
+};
+
+/**
  * Schema for creating delivery
  */
 export type DeliveryCreate = {
@@ -613,9 +1083,217 @@ export type DeliveryUpdate = {
     remarks?: (string | null);
 };
 
+/**
+ * Demand Forecast response schema
+ */
+export type DemandForecastResponse = {
+    forecastDate: string;
+    forecastFor: string;
+    companyId: string;
+    locationId?: (string | null);
+    skuId: string;
+    predictedDemand?: number;
+    lowerBound?: number;
+    upperBound?: number;
+    confidenceScore?: string;
+    suggestedReorder?: number;
+    reorderPoint?: number;
+    safetyStock?: number;
+    modelVersion?: (string | null);
+    features?: ({
+    [key: string]: unknown;
+} | null);
+    id: string;
+    createdAt: string;
+};
+
+/**
+ * Exception creation schema
+ */
+export type ExceptionCreate = {
+    type: string;
+    source: string;
+    severity: string;
+    entityType?: (string | null);
+    entityId?: (string | null);
+    orderId?: (string | null);
+    title: string;
+    description?: (string | null);
+    originalValue?: (string | null);
+    expectedValue?: (string | null);
+    autoResolvable?: boolean;
+    priority?: number;
+};
+
+/**
+ * Exception response schema
+ */
+export type ExceptionResponse = {
+    exceptionCode: string;
+    type: string;
+    source: string;
+    severity: string;
+    entityType?: (string | null);
+    entityId?: (string | null);
+    orderId?: (string | null);
+    title: string;
+    description?: (string | null);
+    originalValue?: (string | null);
+    expectedValue?: (string | null);
+    aiSuggestion?: (string | null);
+    aiConfidence?: (number | null);
+    autoResolvable?: boolean;
+    status?: string;
+    priority?: number;
+    resolution?: (string | null);
+    resolvedBy?: (string | null);
+    resolvedAt?: (string | null);
+    assignedTo?: (string | null);
+    escalatedTo?: (string | null);
+    escalatedAt?: (string | null);
+    companyId: string;
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Exception update schema
+ */
+export type ExceptionUpdate = {
+    status?: (string | null);
+    priority?: (number | null);
+    resolution?: (string | null);
+    assignedTo?: (string | null);
+};
+
+/**
+ * Gate Pass creation schema
+ */
+export type GatePassCreate = {
+    type: GatePassType;
+    locationId: string;
+    visitorName?: (string | null);
+    visitorPhone?: (string | null);
+    visitorIdType?: (string | null);
+    visitorIdNo?: (string | null);
+    companyName?: (string | null);
+    purpose?: (string | null);
+    transporterId?: (string | null);
+    vehicleNumber?: (string | null);
+    vehicleType?: (string | null);
+    driverName?: (string | null);
+    driverPhone?: (string | null);
+};
+
+/**
+ * Gate Pass Item response schema
+ */
+export type GatePassItemResponse = {
+    gatePassId: string;
+    skuId?: (string | null);
+    description?: (string | null);
+    quantity?: number;
+    remarks?: (string | null);
+    id: string;
+};
+
+/**
+ * Gate Pass response schema
+ */
+export type GatePassResponse = {
+    gatePassNo: string;
+    type: GatePassType;
+    status?: GatePassStatus;
+    locationId: string;
+    visitorName?: (string | null);
+    visitorPhone?: (string | null);
+    visitorIdType?: (string | null);
+    visitorIdNo?: (string | null);
+    companyName?: (string | null);
+    purpose?: (string | null);
+    transporterId?: (string | null);
+    awbNo?: (string | null);
+    poNo?: (string | null);
+    invoiceNo?: (string | null);
+    entryTime?: (string | null);
+    exitTime?: (string | null);
+    expectedDuration?: (number | null);
+    vehicleNumber?: (string | null);
+    vehicleType?: (string | null);
+    driverName?: (string | null);
+    driverPhone?: (string | null);
+    sealNumber?: (string | null);
+    verifiedById?: (string | null);
+    verifiedAt?: (string | null);
+    securityRemarks?: (string | null);
+    photoUrl?: (string | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+    items?: (Array<GatePassItemResponse> | null);
+};
+
+/**
+ * Gate pass status
+ */
+export type GatePassStatus = 'OPEN' | 'VERIFIED' | 'CLOSED' | 'CANCELLED';
+
+/**
+ * Gate pass status
+ */
+export const GatePassStatus = {
+    OPEN: 'OPEN',
+    VERIFIED: 'VERIFIED',
+    CLOSED: 'CLOSED',
+    CANCELLED: 'CANCELLED'
+} as const;
+
+/**
+ * Gate pass types
+ */
+export type GatePassType = 'INBOUND' | 'OUTBOUND' | 'VISITOR' | 'VEHICLE';
+
+/**
+ * Gate pass types
+ */
+export const GatePassType = {
+    INBOUND: 'INBOUND',
+    OUTBOUND: 'OUTBOUND',
+    VISITOR: 'VISITOR',
+    VEHICLE: 'VEHICLE'
+} as const;
+
+/**
+ * Gate Pass update schema
+ */
+export type GatePassUpdate = {
+    status?: (GatePassStatus | null);
+    exitTime?: (string | null);
+    sealNumber?: (string | null);
+    securityRemarks?: (string | null);
+    photoUrl?: (string | null);
+};
+
 export type HTTPValidationError = {
     detail?: Array<ValidationError>;
 };
+
+/**
+ * Import job status
+ */
+export type ImportStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'FAILED' | 'PARTIAL';
+
+/**
+ * Import job status
+ */
+export const ImportStatus = {
+    PENDING: 'PENDING',
+    IN_PROGRESS: 'IN_PROGRESS',
+    COMPLETED: 'COMPLETED',
+    FAILED: 'FAILED',
+    PARTIAL: 'PARTIAL'
+} as const;
 
 /**
  * Brief inbound info for lists
@@ -755,18 +1433,12 @@ export type InboundUpdate = {
     completedAt?: (string | null);
 };
 
-/**
- * Schema for inventory adjustment
- */
 export type InventoryAdjustment = {
     skuId: string;
     binId: string;
-    locationId: string;
-    adjustmentQty: number;
+    quantity: number;
     reason: string;
     batchNo?: (string | null);
-    serialNumbers?: (Array<(string)> | null);
-    remarks?: (string | null);
 };
 
 /**
@@ -796,17 +1468,50 @@ export type InventoryMove = {
     batchNo?: (string | null);
 };
 
+/**
+ * Inventory Movement response schema
+ */
+export type InventoryMovementResponse = {
+    movementNo: string;
+    skuId: string;
+    locationId: string;
+    fromBinId?: (string | null);
+    toBinId?: (string | null);
+    movementType: string;
+    referenceType?: (string | null);
+    referenceId?: (string | null);
+    quantity: number;
+    batchNo?: (string | null);
+    serialNumbers?: (Array<(string)> | null);
+    performedById: string;
+    performedAt: string;
+    remarks?: (string | null);
+    id: string;
+    createdAt: string;
+};
+
+/**
+ * Schema for inventory API responses
+ */
 export type InventoryResponse = {
     id: string;
     quantity: number;
     reservedQty: number;
-    availableQty: number;
     batchNo?: (string | null);
+    lotNo?: (string | null);
+    expiryDate?: (string | null);
+    mfgDate?: (string | null);
+    mrp?: (string | null);
+    costPrice?: (string | null);
+    serialNumbers?: (Array<(string)> | null);
+    valuationMethod?: (InventoryValuationMethod | null);
+    fifoSequence?: (number | null);
     skuId: string;
-    skuCode?: (string | null);
-    skuName?: (string | null);
     binId: string;
     locationId: string;
+    createdAt: string;
+    updatedAt: string;
+    availableQty?: number;
 };
 
 /**
@@ -896,20 +1601,6 @@ export type LocationCreate = {
     code: string;
     name: string;
     type: LocationType;
-    address: {
-        [key: string]: unknown;
-    };
-    contactPerson?: (string | null);
-    contactPhone?: (string | null);
-    contactEmail?: (string | null);
-    gst?: (string | null);
-};
-
-export type LocationResponse = {
-    id: string;
-    code: string;
-    name: string;
-    type: LocationType;
     address?: ({
     [key: string]: unknown;
 } | null);
@@ -920,10 +1611,23 @@ export type LocationResponse = {
     settings?: ({
     [key: string]: unknown;
 } | null);
+    companyId: string;
+};
+
+export type LocationResponse = {
+    id: string;
+    code: string;
+    name: string;
+    type: string;
+    address?: ({
+    [key: string]: unknown;
+} | null);
+    contactPerson?: (string | null);
+    contactPhone?: (string | null);
+    contactEmail?: (string | null);
+    gst?: (string | null);
     isActive: boolean;
     companyId: string;
-    createdAt: string;
-    updatedAt: string;
 };
 
 /**
@@ -942,13 +1646,19 @@ export const LocationType = {
 } as const;
 
 export type LocationUpdate = {
+    code?: (string | null);
     name?: (string | null);
+    type?: (LocationType | null);
     address?: ({
     [key: string]: unknown;
 } | null);
     contactPerson?: (string | null);
     contactPhone?: (string | null);
     contactEmail?: (string | null);
+    gst?: (string | null);
+    settings?: ({
+    [key: string]: unknown;
+} | null);
     isActive?: (boolean | null);
 };
 
@@ -958,7 +1668,7 @@ export type LoginRequest = {
 };
 
 export type LoginResponse = {
-    user: app__schemas__auth__UserResponse;
+    user: UserResponse;
     token: string;
 };
 
@@ -1317,18 +2027,87 @@ export type OrderCreate = {
     billingAddress?: ({
     [key: string]: unknown;
 } | null);
-    items: Array<OrderItemCreate>;
+    items: Array<app__api__routes__orders__OrderItemCreate>;
     locationId: string;
     externalOrderNo?: (string | null);
     remarks?: (string | null);
 };
 
+/**
+ * Order Import creation schema
+ */
+export type OrderImportCreate = {
+    locationId?: (string | null);
+    channel?: (Channel | null);
+    fileName?: (string | null);
+    fileUrl?: (string | null);
+};
+
+/**
+ * Order Import response schema
+ */
+export type OrderImportResponse = {
+    importNo: string;
+    companyId: string;
+    locationId?: (string | null);
+    channel?: (Channel | null);
+    status?: ImportStatus;
+    fileName?: (string | null);
+    fileUrl?: (string | null);
+    totalRows?: number;
+    processedRows?: number;
+    successRows?: number;
+    errorRows?: number;
+    errors?: ({
+    [key: string]: unknown;
+} | null);
+    startedAt?: (string | null);
+    completedAt?: (string | null);
+    createdById: string;
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Order Import summary
+ */
+export type OrderImportSummary = {
+    pending?: number;
+    inProgress?: number;
+    completed?: number;
+    failed?: number;
+    totalOrders?: number;
+};
+
+/**
+ * Order Import update schema
+ */
+export type OrderImportUpdate = {
+    status?: (ImportStatus | null);
+    totalRows?: (number | null);
+    processedRows?: (number | null);
+    successRows?: (number | null);
+    errorRows?: (number | null);
+    errors?: ({
+    [key: string]: unknown;
+} | null);
+};
+
+/**
+ * Schema for creating order item
+ */
 export type OrderItemCreate = {
+    orderId: string;
     skuId: string;
+    externalItemId?: (string | null);
     quantity: number;
-    unitPrice: number;
-    taxAmount?: number;
-    discount?: number;
+    unitPrice: (number | string);
+    taxAmount: (number | string);
+    discount?: (number | string);
+    totalPrice: (number | string);
+    serialNumbers?: Array<(string)>;
+    batchNo?: (string | null);
 };
 
 /**
@@ -1517,6 +2296,59 @@ export const OutreachStatus = {
 } as const;
 
 /**
+ * PO Item creation schema
+ */
+export type POItemCreate = {
+    skuId: string;
+    quantity: number;
+    unitPrice: (number | string);
+    taxRate?: (number | string | null);
+};
+
+/**
+ * PO Item response schema
+ */
+export type POItemResponse = {
+    purchaseOrderId: string;
+    skuId: string;
+    quantity?: number;
+    unitPrice?: string;
+    taxRate?: (string | null);
+    receivedQty?: number;
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * PO Item update schema
+ */
+export type POItemUpdate = {
+    quantity?: (number | null);
+    unitPrice?: (number | string | null);
+    taxRate?: (number | string | null);
+    receivedQty?: (number | null);
+};
+
+/**
+ * Purchase order status
+ */
+export type POStatus = 'DRAFT' | 'PENDING' | 'APPROVED' | 'SENT' | 'PARTIALLY_RECEIVED' | 'RECEIVED' | 'CANCELLED';
+
+/**
+ * Purchase order status
+ */
+export const POStatus = {
+    DRAFT: 'DRAFT',
+    PENDING: 'PENDING',
+    APPROVED: 'APPROVED',
+    SENT: 'SENT',
+    PARTIALLY_RECEIVED: 'PARTIALLY_RECEIVED',
+    RECEIVED: 'RECEIVED',
+    CANCELLED: 'CANCELLED'
+} as const;
+
+/**
  * Payment modes
  */
 export type PaymentMode = 'PREPAID' | 'COD' | 'CREDIT';
@@ -1633,6 +2465,199 @@ export type PicklistUpdate = {
     assignedToId?: (string | null);
     startedAt?: (string | null);
     completedAt?: (string | null);
+};
+
+/**
+ * Price List creation schema
+ */
+export type PriceListCreate = {
+    code: string;
+    name: string;
+    description?: (string | null);
+    currency?: string;
+    validFrom?: (string | null);
+    validTo?: (string | null);
+    isDefault?: boolean;
+    isActive?: boolean;
+    companyId: string;
+};
+
+/**
+ * Price List Item creation schema
+ */
+export type PriceListItemCreate = {
+    skuId: string;
+    unitPrice: (number | string);
+    minQty?: (number | null);
+    maxQty?: (number | null);
+    discountPercent?: (number | string | null);
+};
+
+/**
+ * Price List Item response schema
+ */
+export type PriceListItemResponse = {
+    priceListId: string;
+    skuId: string;
+    unitPrice: string;
+    minQty?: number;
+    maxQty?: (number | null);
+    discountPercent?: (string | null);
+    validFrom?: (string | null);
+    validTo?: (string | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Price List Item update schema
+ */
+export type PriceListItemUpdate = {
+    unitPrice?: (number | string | null);
+    minQty?: (number | null);
+    maxQty?: (number | null);
+    discountPercent?: (number | string | null);
+};
+
+/**
+ * Price List response schema
+ */
+export type PriceListResponse = {
+    code: string;
+    name: string;
+    description?: (string | null);
+    currency?: string;
+    validFrom?: (string | null);
+    validTo?: (string | null);
+    isDefault?: boolean;
+    isActive?: boolean;
+    companyId: string;
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Price List update schema
+ */
+export type PriceListUpdate = {
+    code?: (string | null);
+    name?: (string | null);
+    description?: (string | null);
+    currency?: (string | null);
+    validFrom?: (string | null);
+    validTo?: (string | null);
+    isDefault?: (boolean | null);
+    isActive?: (boolean | null);
+};
+
+/**
+ * Proactive Communication creation schema
+ */
+export type ProactiveCommunicationCreate = {
+    orderId?: (string | null);
+    deliveryId?: (string | null);
+    customerId?: (string | null);
+    trigger: CommunicationTrigger;
+    channel: OutreachChannel;
+    templateId?: (string | null);
+    recipient: string;
+    subject?: (string | null);
+    content: string;
+    scheduledAt?: (string | null);
+};
+
+/**
+ * Proactive Communication response schema
+ */
+export type ProactiveCommunicationResponse = {
+    communicationNo: string;
+    companyId: string;
+    orderId?: (string | null);
+    deliveryId?: (string | null);
+    customerId?: (string | null);
+    trigger: CommunicationTrigger;
+    channel: OutreachChannel;
+    templateId?: (string | null);
+    status?: OutreachStatus;
+    recipient: string;
+    subject?: (string | null);
+    content: string;
+    scheduledAt?: (string | null);
+    sentAt?: (string | null);
+    deliveredAt?: (string | null);
+    readAt?: (string | null);
+    respondedAt?: (string | null);
+    response?: (string | null);
+    sentiment?: (string | null);
+    sentimentScore?: (number | null);
+    providerMessageId?: (string | null);
+    providerStatus?: (string | null);
+    errorCode?: (string | null);
+    errorMessage?: (string | null);
+    retryCount?: number;
+    extraData?: ({
+    [key: string]: unknown;
+} | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Proactive Communication update schema
+ */
+export type ProactiveCommunicationUpdate = {
+    status?: (OutreachStatus | null);
+    response?: (string | null);
+    sentiment?: (string | null);
+    sentimentScore?: (number | null);
+};
+
+/**
+ * Purchase Order creation schema
+ */
+export type PurchaseOrderCreate = {
+    poNumber?: (string | null);
+    vendorId: string;
+    locationId: string;
+    orderDate?: (string | null);
+    expectedDate?: (string | null);
+    remarks?: (string | null);
+    items?: (Array<POItemCreate> | null);
+};
+
+/**
+ * Purchase Order response schema
+ */
+export type PurchaseOrderResponse = {
+    poNumber: string;
+    vendorId: string;
+    locationId: string;
+    companyId: string;
+    status?: POStatus;
+    orderDate: string;
+    expectedDate?: (string | null);
+    totalAmount?: string;
+    taxAmount?: string;
+    remarks?: (string | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+    vendor?: (VendorBrief | null);
+    items?: (Array<POItemResponse> | null);
+};
+
+/**
+ * Purchase Order update schema
+ */
+export type PurchaseOrderUpdate = {
+    vendorId?: (string | null);
+    locationId?: (string | null);
+    status?: (POStatus | null);
+    expectedDate?: (string | null);
+    remarks?: (string | null);
 };
 
 /**
@@ -1940,6 +2965,216 @@ export const QCType = {
 } as const;
 
 /**
+ * Quotation creation schema
+ */
+export type QuotationCreate = {
+    customerId: string;
+    validUntil?: (string | null);
+    paymentTermType?: (string | null);
+    paymentTermDays?: (number | null);
+    shippingAddress?: ({
+    [key: string]: unknown;
+} | null);
+    billingAddress?: ({
+    [key: string]: unknown;
+} | null);
+    remarks?: (string | null);
+    items?: (Array<QuotationItemCreate> | null);
+};
+
+/**
+ * Quotation Item creation schema
+ */
+export type QuotationItemCreate = {
+    skuId: string;
+    quantity: number;
+    unitPrice: (number | string);
+    taxRate?: (number | string | null);
+    discount?: (number | string | null);
+    discountPercent?: (number | string | null);
+    remarks?: (string | null);
+};
+
+/**
+ * Quotation Item response schema
+ */
+export type QuotationItemResponse = {
+    quotationId: string;
+    skuId: string;
+    quantity?: number;
+    unitPrice: string;
+    taxRate?: (string | null);
+    taxAmount?: string;
+    discount?: string;
+    discountPercent?: (string | null);
+    totalPrice?: string;
+    remarks?: (string | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Quotation response schema
+ */
+export type QuotationResponse = {
+    quotationNo: string;
+    customerId: string;
+    companyId: string;
+    status?: string;
+    validUntil?: (string | null);
+    subtotal?: string;
+    taxAmount?: string;
+    discount?: string;
+    totalAmount?: string;
+    paymentTermType?: (string | null);
+    paymentTermDays?: (number | null);
+    shippingAddress?: ({
+    [key: string]: unknown;
+} | null);
+    billingAddress?: ({
+    [key: string]: unknown;
+} | null);
+    remarks?: (string | null);
+    internalNotes?: (string | null);
+    approvedById?: (string | null);
+    approvedAt?: (string | null);
+    rejectionReason?: (string | null);
+    convertedToOrderId?: (string | null);
+    convertedAt?: (string | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+    items?: (Array<QuotationItemResponse> | null);
+};
+
+/**
+ * Quotation update schema
+ */
+export type QuotationUpdate = {
+    status?: (string | null);
+    validUntil?: (string | null);
+    paymentTermType?: (string | null);
+    paymentTermDays?: (number | null);
+    shippingAddress?: ({
+    [key: string]: unknown;
+} | null);
+    billingAddress?: ({
+    [key: string]: unknown;
+} | null);
+    remarks?: (string | null);
+    internalNotes?: (string | null);
+};
+
+/**
+ * Rate Card creation schema
+ */
+export type RateCardCreate = {
+    code: string;
+    name: string;
+    description?: (string | null);
+    transporterId: string;
+    type?: string;
+    validFrom: string;
+    validTo?: (string | null);
+    baseWeight?: (number | string);
+    baseRate: (number | string);
+    additionalWeightRate: (number | string);
+    codPercent?: (number | string | null);
+    codMinCharge?: (number | string | null);
+    fuelSurchargePercent?: (number | string | null);
+    slabs?: (Array<RateCardSlabCreate> | null);
+};
+
+/**
+ * Rate Card response schema
+ */
+export type RateCardResponse = {
+    code: string;
+    name: string;
+    description?: (string | null);
+    transporterId: string;
+    companyId: string;
+    type?: string;
+    status?: string;
+    validFrom: string;
+    validTo?: (string | null);
+    baseWeight?: string;
+    baseRate?: string;
+    additionalWeightRate?: string;
+    codPercent?: (string | null);
+    codMinCharge?: (string | null);
+    fuelSurchargePercent?: (string | null);
+    minCharge?: (string | null);
+    maxWeight?: (string | null);
+    volumetricFactor?: number;
+    isDefault?: boolean;
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+    slabs?: (Array<RateCardSlabResponse> | null);
+};
+
+/**
+ * Rate Card Slab creation schema
+ */
+export type RateCardSlabCreate = {
+    fromWeight: (number | string);
+    toWeight: (number | string);
+    zoneCode?: (string | null);
+    rate: (number | string);
+    additionalRate?: (number | string | null);
+};
+
+/**
+ * Rate Card Slab response schema
+ */
+export type RateCardSlabResponse = {
+    rateCardId: string;
+    fromWeight: string;
+    toWeight: string;
+    zoneCode?: (string | null);
+    rate: string;
+    additionalRate?: (string | null);
+    minCharge?: (string | null);
+    maxCharge?: (string | null);
+    id: string;
+};
+
+/**
+ * Rate Card update schema
+ */
+export type RateCardUpdate = {
+    name?: (string | null);
+    description?: (string | null);
+    status?: (string | null);
+    validTo?: (string | null);
+    baseWeight?: (number | string | null);
+    baseRate?: (number | string | null);
+    additionalWeightRate?: (number | string | null);
+    codPercent?: (number | string | null);
+    codMinCharge?: (number | string | null);
+    fuelSurchargePercent?: (number | string | null);
+    isDefault?: (boolean | null);
+};
+
+/**
+ * Report Execution response schema
+ */
+export type ReportExecutionResponse = {
+    scheduledReportId: string;
+    status?: string;
+    startedAt?: (string | null);
+    completedAt?: (string | null);
+    fileUrl?: (string | null);
+    fileSize?: (number | null);
+    rowCount?: (number | null);
+    error?: (string | null);
+    id: string;
+    createdAt: string;
+};
+
+/**
  * NDR resolution types
  */
 export type ResolutionType = 'REATTEMPT' | 'ADDRESS_UPDATED' | 'PHONE_UPDATED' | 'RESCHEDULE' | 'RTO' | 'CUSTOMER_PICKUP';
@@ -2194,6 +3429,259 @@ export type SKUUpdate = {
 };
 
 /**
+ * Scheduled Report creation schema
+ */
+export type ScheduledReportCreate = {
+    name: string;
+    description?: (string | null);
+    reportType: string;
+    frequency: string;
+    format?: string;
+    recipients?: (Array<(string)> | null);
+    filters?: ({
+    [key: string]: unknown;
+} | null);
+    columns?: (Array<(string)> | null);
+    sortBy?: (string | null);
+    sortOrder?: (string | null);
+};
+
+/**
+ * Scheduled Report response schema
+ */
+export type ScheduledReportResponse = {
+    name: string;
+    description?: (string | null);
+    reportType: string;
+    companyId: string;
+    frequency: string;
+    format?: string;
+    recipients?: (Array<(string)> | null);
+    filters?: ({
+    [key: string]: unknown;
+} | null);
+    columns?: (Array<(string)> | null);
+    sortBy?: (string | null);
+    sortOrder?: (string | null);
+    isActive?: boolean;
+    nextRunAt?: (string | null);
+    lastRunAt?: (string | null);
+    lastRunStatus?: (string | null);
+    lastRunError?: (string | null);
+    createdById: string;
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Scheduled Report update schema
+ */
+export type ScheduledReportUpdate = {
+    name?: (string | null);
+    description?: (string | null);
+    frequency?: (string | null);
+    format?: (string | null);
+    recipients?: (Array<(string)> | null);
+    filters?: ({
+    [key: string]: unknown;
+} | null);
+    columns?: (Array<(string)> | null);
+    sortBy?: (string | null);
+    sortOrder?: (string | null);
+    isActive?: (boolean | null);
+};
+
+/**
+ * Sequence creation schema
+ */
+export type SequenceCreate = {
+    name: string;
+    prefix?: (string | null);
+    suffix?: (string | null);
+    currentValue?: number;
+    increment?: number;
+};
+
+/**
+ * Sequence response schema
+ */
+export type SequenceResponse = {
+    name: string;
+    prefix?: (string | null);
+    suffix?: (string | null);
+    currentValue?: number;
+    increment?: number;
+    id: string;
+};
+
+/**
+ * Service Pincode creation schema
+ */
+export type ServicePincodeCreate = {
+    pincode: string;
+    transporterId: string;
+    zoneCode?: (string | null);
+    isServiceable?: boolean;
+    codAvailable?: boolean;
+    prepaidAvailable?: boolean;
+};
+
+/**
+ * Service Pincode response schema
+ */
+export type ServicePincodeResponse = {
+    pincode: string;
+    transporterId: string;
+    zoneCode?: (string | null);
+    isServiceable?: boolean;
+    codAvailable?: boolean;
+    prepaidAvailable?: boolean;
+    id: string;
+    createdAt: string;
+};
+
+/**
+ * Service Pincode update schema
+ */
+export type ServicePincodeUpdate = {
+    zoneCode?: (string | null);
+    isServiceable?: (boolean | null);
+    codAvailable?: (boolean | null);
+    prepaidAvailable?: (boolean | null);
+};
+
+/**
+ * Shipping Rule creation schema
+ */
+export type ShippingRuleCreate = {
+    code: string;
+    name: string;
+    description?: (string | null);
+    type: string;
+    locationId?: (string | null);
+    priority?: number;
+    transporterId?: (string | null);
+    rateCardId?: (string | null);
+    channel?: (string | null);
+    paymentMode?: (string | null);
+    minWeight?: (number | string | null);
+    maxWeight?: (number | string | null);
+    minValue?: (number | string | null);
+    maxValue?: (number | string | null);
+};
+
+/**
+ * Shipping Rule response schema
+ */
+export type ShippingRuleResponse = {
+    code: string;
+    name: string;
+    description?: (string | null);
+    type: string;
+    companyId: string;
+    locationId?: (string | null);
+    priority?: number;
+    isActive?: boolean;
+    transporterId?: (string | null);
+    rateCardId?: (string | null);
+    channel?: (string | null);
+    paymentMode?: (string | null);
+    minWeight?: (string | null);
+    maxWeight?: (string | null);
+    minValue?: (string | null);
+    maxValue?: (string | null);
+    deliveryType?: (string | null);
+    validFrom?: (string | null);
+    validTo?: (string | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Shipping Rule update schema
+ */
+export type ShippingRuleUpdate = {
+    name?: (string | null);
+    description?: (string | null);
+    priority?: (number | null);
+    isActive?: (boolean | null);
+    transporterId?: (string | null);
+    rateCardId?: (string | null);
+};
+
+/**
+ * Stock Adjustment creation schema
+ */
+export type StockAdjustmentCreate = {
+    locationId: string;
+    reason: string;
+    remarks?: (string | null);
+    items?: (Array<StockAdjustmentItemCreate> | null);
+};
+
+/**
+ * Stock Adjustment Item creation schema
+ */
+export type StockAdjustmentItemCreate = {
+    skuId: string;
+    binId: string;
+    batchNo?: (string | null);
+    quantityChange: number;
+};
+
+/**
+ * Stock Adjustment Item response schema
+ */
+export type StockAdjustmentItemResponse = {
+    adjustmentId: string;
+    skuId: string;
+    binId: string;
+    batchNo?: (string | null);
+    quantityBefore?: number;
+    quantityChange?: number;
+    quantityAfter?: number;
+    id: string;
+};
+
+/**
+ * Stock Adjustment response schema
+ */
+export type StockAdjustmentResponse = {
+    adjustmentNo: string;
+    locationId: string;
+    reason: string;
+    status?: string;
+    remarks?: (string | null);
+    approvedById?: (string | null);
+    approvedAt?: (string | null);
+    createdById: string;
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+    items?: (Array<StockAdjustmentItemResponse> | null);
+};
+
+/**
+ * Channel sync frequency
+ */
+export type SyncFrequency = 'REALTIME' | 'EVERY_5_MINS' | 'EVERY_15_MINS' | 'EVERY_30_MINS' | 'HOURLY' | 'DAILY' | 'MANUAL';
+
+/**
+ * Channel sync frequency
+ */
+export const SyncFrequency = {
+    REALTIME: 'REALTIME',
+    EVERY_5_MINS: 'EVERY_5_MINS',
+    EVERY_15_MINS: 'EVERY_15_MINS',
+    EVERY_30_MINS: 'EVERY_30_MINS',
+    HOURLY: 'HOURLY',
+    DAILY: 'DAILY',
+    MANUAL: 'MANUAL'
+} as const;
+
+/**
  * Brief transporter info for lists
  */
 export type TransporterBrief = {
@@ -2343,27 +3831,20 @@ export type UserLogin = {
  * Schema for login response
  */
 export type UserLoginResponse = {
-    user: UserResponse;
+    user: app__models__user__UserResponse;
     token: string;
     expiresIn: number;
 };
 
-/**
- * Schema for user API responses
- */
 export type UserResponse = {
     id: string;
     email: string;
     name: string;
     phone?: (string | null);
     avatar?: (string | null);
-    role: UserRole;
+    role: string;
     isActive: boolean;
     companyId?: (string | null);
-    locationAccess?: Array<(string)>;
-    lastLoginAt?: (string | null);
-    createdAt: string;
-    updatedAt: string;
 };
 
 /**
@@ -2397,6 +3878,137 @@ export type ValidationError = {
     loc: Array<(string | number)>;
     msg: string;
     type: string;
+};
+
+/**
+ * Vendor brief schema
+ */
+export type VendorBrief = {
+    id: string;
+    code: string;
+    name: string;
+};
+
+/**
+ * Vendor creation schema
+ */
+export type VendorCreate = {
+    code: string;
+    name: string;
+    contactPerson?: (string | null);
+    email?: (string | null);
+    phone?: (string | null);
+    gst?: (string | null);
+    pan?: (string | null);
+    address?: ({
+    [key: string]: unknown;
+} | null);
+    bankDetails?: ({
+    [key: string]: unknown;
+} | null);
+    paymentTerms?: (string | null);
+    leadTimeDays?: (number | null);
+    isActive?: boolean;
+    companyId: string;
+};
+
+/**
+ * Vendor response schema
+ */
+export type VendorResponse = {
+    code: string;
+    name: string;
+    contactPerson?: (string | null);
+    email?: (string | null);
+    phone?: (string | null);
+    gst?: (string | null);
+    pan?: (string | null);
+    address?: ({
+    [key: string]: unknown;
+} | null);
+    bankDetails?: ({
+    [key: string]: unknown;
+} | null);
+    paymentTerms?: (string | null);
+    leadTimeDays?: (number | null);
+    isActive?: boolean;
+    companyId: string;
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Vendor update schema
+ */
+export type VendorUpdate = {
+    code?: (string | null);
+    name?: (string | null);
+    contactPerson?: (string | null);
+    email?: (string | null);
+    phone?: (string | null);
+    gst?: (string | null);
+    pan?: (string | null);
+    address?: ({
+    [key: string]: unknown;
+} | null);
+    bankDetails?: ({
+    [key: string]: unknown;
+} | null);
+    paymentTerms?: (string | null);
+    leadTimeDays?: (number | null);
+    isActive?: (boolean | null);
+};
+
+/**
+ * Virtual Inventory creation schema
+ */
+export type VirtualInventoryCreate = {
+    skuId: string;
+    locationId: string;
+    channel?: (string | null);
+    type: string;
+    quantity: number;
+    validFrom?: (string | null);
+    validTo?: (string | null);
+    referenceType?: (string | null);
+    referenceId?: (string | null);
+    remarks?: (string | null);
+};
+
+/**
+ * Virtual Inventory response schema
+ */
+export type VirtualInventoryResponse = {
+    skuId: string;
+    locationId: string;
+    channel?: (string | null);
+    type: string;
+    quantity?: number;
+    reservedQty?: number;
+    allocatedQty?: number;
+    validFrom?: (string | null);
+    validTo?: (string | null);
+    referenceType?: (string | null);
+    referenceId?: (string | null);
+    isActive?: boolean;
+    remarks?: (string | null);
+    companyId: string;
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Virtual Inventory update schema
+ */
+export type VirtualInventoryUpdate = {
+    quantity?: (number | null);
+    reservedQty?: (number | null);
+    allocatedQty?: (number | null);
+    validTo?: (string | null);
+    isActive?: (boolean | null);
+    remarks?: (string | null);
 };
 
 /**
@@ -2641,28 +4253,49 @@ export type ZoneUpdate = {
     isActive?: (boolean | null);
 };
 
-export type app__api__routes__inventory__InventoryAdjustment = {
-    skuId: string;
-    binId: string;
+export type app__api__routes__inventory__InventoryResponse = {
+    id: string;
     quantity: number;
-    reason: string;
+    reservedQty: number;
+    availableQty: number;
     batchNo?: (string | null);
+    skuId: string;
+    skuCode?: (string | null);
+    skuName?: (string | null);
+    binId: string;
+    locationId: string;
 };
 
-export type app__api__routes__locations__LocationResponse = {
-    id: string;
+export type app__api__routes__locations__LocationCreate = {
     code: string;
     name: string;
-    type: string;
+    type: LocationType;
+    address: {
+        [key: string]: unknown;
+    };
+    contactPerson?: (string | null);
+    contactPhone?: (string | null);
+    contactEmail?: (string | null);
+    gst?: (string | null);
+};
+
+export type app__api__routes__locations__LocationUpdate = {
+    name?: (string | null);
     address?: ({
     [key: string]: unknown;
 } | null);
     contactPerson?: (string | null);
     contactPhone?: (string | null);
     contactEmail?: (string | null);
-    gst?: (string | null);
-    isActive: boolean;
-    companyId: string;
+    isActive?: (boolean | null);
+};
+
+export type app__api__routes__orders__OrderItemCreate = {
+    skuId: string;
+    quantity: number;
+    unitPrice: number;
+    taxAmount?: number;
+    discount?: number;
 };
 
 export type app__api__routes__orders__OrderResponse = {
@@ -2743,7 +4376,8 @@ export type app__api__routes__users__UserResponse = {
     companyId?: (string | null);
 };
 
-export type app__models__company__LocationCreate = {
+export type app__models__company__LocationResponse = {
+    id: string;
     code: string;
     name: string;
     type: LocationType;
@@ -2757,48 +4391,24 @@ export type app__models__company__LocationCreate = {
     settings?: ({
     [key: string]: unknown;
 } | null);
+    isActive: boolean;
     companyId: string;
-};
-
-export type app__models__company__LocationUpdate = {
-    code?: (string | null);
-    name?: (string | null);
-    type?: (LocationType | null);
-    address?: ({
-    [key: string]: unknown;
-} | null);
-    contactPerson?: (string | null);
-    contactPhone?: (string | null);
-    contactEmail?: (string | null);
-    gst?: (string | null);
-    settings?: ({
-    [key: string]: unknown;
-} | null);
-    isActive?: (boolean | null);
+    createdAt: string;
+    updatedAt: string;
 };
 
 /**
- * Schema for inventory API responses
+ * Schema for inventory adjustment
  */
-export type app__models__inventory__InventoryResponse = {
-    id: string;
-    quantity: number;
-    reservedQty: number;
-    batchNo?: (string | null);
-    lotNo?: (string | null);
-    expiryDate?: (string | null);
-    mfgDate?: (string | null);
-    mrp?: (string | null);
-    costPrice?: (string | null);
-    serialNumbers?: (Array<(string)> | null);
-    valuationMethod?: (InventoryValuationMethod | null);
-    fifoSequence?: (number | null);
+export type app__models__inventory__InventoryAdjustment = {
     skuId: string;
     binId: string;
     locationId: string;
-    createdAt: string;
-    updatedAt: string;
-    availableQty?: number;
+    adjustmentQty: number;
+    reason: string;
+    batchNo?: (string | null);
+    serialNumbers?: (Array<(string)> | null);
+    remarks?: (string | null);
 };
 
 /**
@@ -2839,22 +4449,6 @@ export type app__models__order__OrderCreate = {
 };
 
 /**
- * Schema for creating order item
- */
-export type app__models__order__OrderItemCreate = {
-    orderId: string;
-    skuId: string;
-    externalItemId?: (string | null);
-    quantity: number;
-    unitPrice: (number | string);
-    taxAmount: (number | string);
-    discount?: (number | string);
-    totalPrice: (number | string);
-    serialNumbers?: Array<(string)>;
-    batchNo?: (string | null);
-};
-
-/**
  * Schema for updating a SKU
  */
 export type app__models__sku__SKUUpdate = {
@@ -2888,6 +4482,24 @@ export type app__models__sku__SKUUpdate = {
 };
 
 /**
+ * Schema for user API responses
+ */
+export type app__models__user__UserResponse = {
+    id: string;
+    email: string;
+    name: string;
+    phone?: (string | null);
+    avatar?: (string | null);
+    role: UserRole;
+    isActive: boolean;
+    companyId?: (string | null);
+    locationAccess?: Array<(string)>;
+    lastLoginAt?: (string | null);
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
  * Schema for updating a user (all fields optional)
  */
 export type app__models__user__UserUpdate = {
@@ -2902,30 +4514,19 @@ export type app__models__user__UserUpdate = {
     locationAccess?: (Array<(string)> | null);
 };
 
-export type app__schemas__auth__UserResponse = {
-    id: string;
-    email: string;
-    name: string;
-    phone?: (string | null);
-    avatar?: (string | null);
-    role: string;
-    isActive: boolean;
-    companyId?: (string | null);
-};
-
 export type LoginApiV1AuthLoginPostData = {
     requestBody: UserLogin;
 };
 
 export type LoginApiV1AuthLoginPostResponse = (UserLoginResponse);
 
-export type GetMeApiV1AuthMeGetResponse = (UserResponse);
+export type GetMeApiV1AuthMeGetResponse = (app__models__user__UserResponse);
 
 export type UpdateMeApiV1AuthMePatchData = {
     requestBody: app__models__user__UserUpdate;
 };
 
-export type UpdateMeApiV1AuthMePatchResponse = (UserResponse);
+export type UpdateMeApiV1AuthMePatchResponse = (app__models__user__UserResponse);
 
 export type RefreshTokenApiV1AuthRefreshPostResponse = (UserLoginResponse);
 
@@ -2945,7 +4546,7 @@ export type CreateUserApiV1UsersPostData = {
     requestBody: UserCreate;
 };
 
-export type CreateUserApiV1UsersPostResponse = (UserResponse);
+export type CreateUserApiV1UsersPostResponse = (app__models__user__UserResponse);
 
 export type CountUsersApiV1UsersCountGetData = {
     isActive?: (boolean | null);
@@ -2958,14 +4559,14 @@ export type GetUserApiV1UsersUserIdGetData = {
     userId: string;
 };
 
-export type GetUserApiV1UsersUserIdGetResponse = (UserResponse);
+export type GetUserApiV1UsersUserIdGetResponse = (app__models__user__UserResponse);
 
 export type UpdateUserApiV1UsersUserIdPatchData = {
     requestBody: app__models__user__UserUpdate;
     userId: string;
 };
 
-export type UpdateUserApiV1UsersUserIdPatchResponse = (UserResponse);
+export type UpdateUserApiV1UsersUserIdPatchResponse = (app__models__user__UserResponse);
 
 export type DeleteUserApiV1UsersUserIdDeleteData = {
     userId: string;
@@ -3024,23 +4625,23 @@ export type ListLocationsApiV1LocationsGetData = {
 export type ListLocationsApiV1LocationsGetResponse = (Array<LocationBrief>);
 
 export type CreateLocationApiV1LocationsPostData = {
-    requestBody: app__models__company__LocationCreate;
+    requestBody: LocationCreate;
 };
 
-export type CreateLocationApiV1LocationsPostResponse = (LocationResponse);
+export type CreateLocationApiV1LocationsPostResponse = (app__models__company__LocationResponse);
 
 export type GetLocationApiV1LocationsLocationIdGetData = {
     locationId: string;
 };
 
-export type GetLocationApiV1LocationsLocationIdGetResponse = (LocationResponse);
+export type GetLocationApiV1LocationsLocationIdGetResponse = (app__models__company__LocationResponse);
 
 export type UpdateLocationApiV1LocationsLocationIdPatchData = {
     locationId: string;
-    requestBody: app__models__company__LocationUpdate;
+    requestBody: LocationUpdate;
 };
 
-export type UpdateLocationApiV1LocationsLocationIdPatchResponse = (LocationResponse);
+export type UpdateLocationApiV1LocationsLocationIdPatchResponse = (app__models__company__LocationResponse);
 
 export type DeleteLocationApiV1LocationsLocationIdDeleteData = {
     locationId: string;
@@ -3159,13 +4760,13 @@ export type ListInventoryApiV1InventoryGetData = {
     skuId?: (string | null);
 };
 
-export type ListInventoryApiV1InventoryGetResponse = (Array<app__models__inventory__InventoryResponse>);
+export type ListInventoryApiV1InventoryGetResponse = (Array<InventoryResponse>);
 
 export type CreateInventoryApiV1InventoryPostData = {
     requestBody: InventoryCreate;
 };
 
-export type CreateInventoryApiV1InventoryPostResponse = (app__models__inventory__InventoryResponse);
+export type CreateInventoryApiV1InventoryPostResponse = (InventoryResponse);
 
 export type CountInventoryApiV1InventoryCountGetData = {
     locationId?: (string | null);
@@ -3184,14 +4785,14 @@ export type GetInventoryApiV1InventoryInventoryIdGetData = {
     inventoryId: string;
 };
 
-export type GetInventoryApiV1InventoryInventoryIdGetResponse = (app__models__inventory__InventoryResponse);
+export type GetInventoryApiV1InventoryInventoryIdGetResponse = (InventoryResponse);
 
 export type UpdateInventoryApiV1InventoryInventoryIdPatchData = {
     inventoryId: string;
     requestBody: InventoryUpdate;
 };
 
-export type UpdateInventoryApiV1InventoryInventoryIdPatchResponse = (app__models__inventory__InventoryResponse);
+export type UpdateInventoryApiV1InventoryInventoryIdPatchResponse = (InventoryResponse);
 
 export type DeleteInventoryApiV1InventoryInventoryIdDeleteData = {
     inventoryId: string;
@@ -3200,10 +4801,10 @@ export type DeleteInventoryApiV1InventoryInventoryIdDeleteData = {
 export type DeleteInventoryApiV1InventoryInventoryIdDeleteResponse = (void);
 
 export type AdjustInventoryApiV1InventoryAdjustPostData = {
-    requestBody: InventoryAdjustment;
+    requestBody: app__models__inventory__InventoryAdjustment;
 };
 
-export type AdjustInventoryApiV1InventoryAdjustPostResponse = (app__models__inventory__InventoryResponse);
+export type AdjustInventoryApiV1InventoryAdjustPostResponse = (InventoryResponse);
 
 export type TransferInventoryApiV1InventoryTransferPostData = {
     requestBody: InventoryTransfer;
@@ -3286,7 +4887,7 @@ export type ListOrderItemsApiV1OrdersOrderIdItemsGetResponse = (Array<OrderItemR
 
 export type CreateOrderItemApiV1OrdersOrderIdItemsPostData = {
     orderId: string;
-    requestBody: app__models__order__OrderItemCreate;
+    requestBody: OrderItemCreate;
 };
 
 export type CreateOrderItemApiV1OrdersOrderIdItemsPostResponse = (OrderItemResponse);
@@ -4080,13 +5681,933 @@ export type HandoverManifestApiV1TransportersManifestsManifestIdHandoverPostData
 
 export type HandoverManifestApiV1TransportersManifestsManifestIdHandoverPostResponse = (ManifestResponse);
 
+export type ListVendorsApiV1ProcurementVendorsGetData = {
+    isActive?: (boolean | null);
+    limit?: number;
+    search?: (string | null);
+    skip?: number;
+};
+
+export type ListVendorsApiV1ProcurementVendorsGetResponse = (Array<VendorBrief>);
+
+export type CreateVendorApiV1ProcurementVendorsPostData = {
+    requestBody: VendorCreate;
+};
+
+export type CreateVendorApiV1ProcurementVendorsPostResponse = (VendorResponse);
+
+export type CountVendorsApiV1ProcurementVendorsCountGetData = {
+    isActive?: (boolean | null);
+};
+
+export type CountVendorsApiV1ProcurementVendorsCountGetResponse = (unknown);
+
+export type GetVendorApiV1ProcurementVendorsVendorIdGetData = {
+    vendorId: string;
+};
+
+export type GetVendorApiV1ProcurementVendorsVendorIdGetResponse = (VendorResponse);
+
+export type UpdateVendorApiV1ProcurementVendorsVendorIdPatchData = {
+    requestBody: VendorUpdate;
+    vendorId: string;
+};
+
+export type UpdateVendorApiV1ProcurementVendorsVendorIdPatchResponse = (VendorResponse);
+
+export type DeleteVendorApiV1ProcurementVendorsVendorIdDeleteData = {
+    vendorId: string;
+};
+
+export type DeleteVendorApiV1ProcurementVendorsVendorIdDeleteResponse = (void);
+
+export type ListPurchaseOrdersApiV1ProcurementPurchaseOrdersGetData = {
+    limit?: number;
+    locationId?: (string | null);
+    skip?: number;
+    status?: (POStatus | null);
+    vendorId?: (string | null);
+};
+
+export type ListPurchaseOrdersApiV1ProcurementPurchaseOrdersGetResponse = (Array<PurchaseOrderResponse>);
+
+export type CreatePurchaseOrderApiV1ProcurementPurchaseOrdersPostData = {
+    requestBody: PurchaseOrderCreate;
+};
+
+export type CreatePurchaseOrderApiV1ProcurementPurchaseOrdersPostResponse = (PurchaseOrderResponse);
+
+export type CountPurchaseOrdersApiV1ProcurementPurchaseOrdersCountGetData = {
+    status?: (POStatus | null);
+};
+
+export type CountPurchaseOrdersApiV1ProcurementPurchaseOrdersCountGetResponse = (unknown);
+
+export type GetPurchaseOrderApiV1ProcurementPurchaseOrdersPoIdGetData = {
+    poId: string;
+};
+
+export type GetPurchaseOrderApiV1ProcurementPurchaseOrdersPoIdGetResponse = (PurchaseOrderResponse);
+
+export type UpdatePurchaseOrderApiV1ProcurementPurchaseOrdersPoIdPatchData = {
+    poId: string;
+    requestBody: PurchaseOrderUpdate;
+};
+
+export type UpdatePurchaseOrderApiV1ProcurementPurchaseOrdersPoIdPatchResponse = (PurchaseOrderResponse);
+
+export type SubmitPurchaseOrderApiV1ProcurementPurchaseOrdersPoIdSubmitPostData = {
+    poId: string;
+};
+
+export type SubmitPurchaseOrderApiV1ProcurementPurchaseOrdersPoIdSubmitPostResponse = (PurchaseOrderResponse);
+
+export type ApprovePurchaseOrderApiV1ProcurementPurchaseOrdersPoIdApprovePostData = {
+    poId: string;
+};
+
+export type ApprovePurchaseOrderApiV1ProcurementPurchaseOrdersPoIdApprovePostResponse = (PurchaseOrderResponse);
+
+export type AddPoItemApiV1ProcurementPurchaseOrdersPoIdItemsPostData = {
+    poId: string;
+    requestBody: POItemCreate;
+};
+
+export type AddPoItemApiV1ProcurementPurchaseOrdersPoIdItemsPostResponse = (POItemResponse);
+
+export type UpdatePoItemApiV1ProcurementPurchaseOrdersPoIdItemsItemIdPatchData = {
+    itemId: string;
+    poId: string;
+    requestBody: POItemUpdate;
+};
+
+export type UpdatePoItemApiV1ProcurementPurchaseOrdersPoIdItemsItemIdPatchResponse = (POItemResponse);
+
+export type DeletePoItemApiV1ProcurementPurchaseOrdersPoIdItemsItemIdDeleteData = {
+    itemId: string;
+    poId: string;
+};
+
+export type DeletePoItemApiV1ProcurementPurchaseOrdersPoIdItemsItemIdDeleteResponse = (void);
+
+export type ListPriceListsApiV1B2bPriceListsGetData = {
+    isActive?: (boolean | null);
+    limit?: number;
+    skip?: number;
+};
+
+export type ListPriceListsApiV1B2bPriceListsGetResponse = (Array<PriceListResponse>);
+
+export type CreatePriceListApiV1B2bPriceListsPostData = {
+    requestBody: PriceListCreate;
+};
+
+export type CreatePriceListApiV1B2bPriceListsPostResponse = (PriceListResponse);
+
+export type GetPriceListApiV1B2bPriceListsPriceListIdGetData = {
+    priceListId: string;
+};
+
+export type GetPriceListApiV1B2bPriceListsPriceListIdGetResponse = (PriceListResponse);
+
+export type UpdatePriceListApiV1B2bPriceListsPriceListIdPatchData = {
+    priceListId: string;
+    requestBody: PriceListUpdate;
+};
+
+export type UpdatePriceListApiV1B2bPriceListsPriceListIdPatchResponse = (PriceListResponse);
+
+export type DeletePriceListApiV1B2bPriceListsPriceListIdDeleteData = {
+    priceListId: string;
+};
+
+export type DeletePriceListApiV1B2bPriceListsPriceListIdDeleteResponse = (void);
+
+export type AddPriceListItemApiV1B2bPriceListsPriceListIdItemsPostData = {
+    priceListId: string;
+    requestBody: PriceListItemCreate;
+};
+
+export type AddPriceListItemApiV1B2bPriceListsPriceListIdItemsPostResponse = (PriceListItemResponse);
+
+export type UpdatePriceListItemApiV1B2bPriceListsPriceListIdItemsItemIdPatchData = {
+    itemId: string;
+    priceListId: string;
+    requestBody: PriceListItemUpdate;
+};
+
+export type UpdatePriceListItemApiV1B2bPriceListsPriceListIdItemsItemIdPatchResponse = (PriceListItemResponse);
+
+export type DeletePriceListItemApiV1B2bPriceListsPriceListIdItemsItemIdDeleteData = {
+    itemId: string;
+    priceListId: string;
+};
+
+export type DeletePriceListItemApiV1B2bPriceListsPriceListIdItemsItemIdDeleteResponse = (void);
+
+export type ListQuotationsApiV1B2bQuotationsGetData = {
+    customerId?: (string | null);
+    limit?: number;
+    skip?: number;
+    status?: (string | null);
+};
+
+export type ListQuotationsApiV1B2bQuotationsGetResponse = (Array<QuotationResponse>);
+
+export type CreateQuotationApiV1B2bQuotationsPostData = {
+    requestBody: QuotationCreate;
+};
+
+export type CreateQuotationApiV1B2bQuotationsPostResponse = (QuotationResponse);
+
+export type GetQuotationApiV1B2bQuotationsQuotationIdGetData = {
+    quotationId: string;
+};
+
+export type GetQuotationApiV1B2bQuotationsQuotationIdGetResponse = (QuotationResponse);
+
+export type UpdateQuotationApiV1B2bQuotationsQuotationIdPatchData = {
+    quotationId: string;
+    requestBody: QuotationUpdate;
+};
+
+export type UpdateQuotationApiV1B2bQuotationsQuotationIdPatchResponse = (QuotationResponse);
+
+export type ApproveQuotationApiV1B2bQuotationsQuotationIdApprovePostData = {
+    quotationId: string;
+};
+
+export type ApproveQuotationApiV1B2bQuotationsQuotationIdApprovePostResponse = (QuotationResponse);
+
+export type ListCreditTransactionsApiV1B2bCreditTransactionsGetData = {
+    customerId?: (string | null);
+    limit?: number;
+    skip?: number;
+};
+
+export type ListCreditTransactionsApiV1B2bCreditTransactionsGetResponse = (Array<B2BCreditTransactionResponse>);
+
+export type CreateCreditTransactionApiV1B2bCreditTransactionsPostData = {
+    requestBody: B2BCreditTransactionCreate;
+};
+
+export type CreateCreditTransactionApiV1B2bCreditTransactionsPostResponse = (B2BCreditTransactionResponse);
+
+export type GetCreditTransactionApiV1B2bCreditTransactionsTransactionIdGetData = {
+    transactionId: string;
+};
+
+export type GetCreditTransactionApiV1B2bCreditTransactionsTransactionIdGetResponse = (B2BCreditTransactionResponse);
+
+export type ListCycleCountsApiV1WmsCycleCountsGetData = {
+    limit?: number;
+    locationId?: (string | null);
+    skip?: number;
+    status?: (CycleCountStatus | null);
+};
+
+export type ListCycleCountsApiV1WmsCycleCountsGetResponse = (Array<CycleCountResponse>);
+
+export type CreateCycleCountApiV1WmsCycleCountsPostData = {
+    requestBody: CycleCountCreate;
+};
+
+export type CreateCycleCountApiV1WmsCycleCountsPostResponse = (CycleCountResponse);
+
+export type GetCycleCountApiV1WmsCycleCountsCountIdGetData = {
+    countId: string;
+};
+
+export type GetCycleCountApiV1WmsCycleCountsCountIdGetResponse = (CycleCountResponse);
+
+export type UpdateCycleCountApiV1WmsCycleCountsCountIdPatchData = {
+    countId: string;
+    requestBody: CycleCountUpdate;
+};
+
+export type UpdateCycleCountApiV1WmsCycleCountsCountIdPatchResponse = (CycleCountResponse);
+
+export type StartCycleCountApiV1WmsCycleCountsCountIdStartPostData = {
+    countId: string;
+};
+
+export type StartCycleCountApiV1WmsCycleCountsCountIdStartPostResponse = (CycleCountResponse);
+
+export type CompleteCycleCountApiV1WmsCycleCountsCountIdCompletePostData = {
+    countId: string;
+};
+
+export type CompleteCycleCountApiV1WmsCycleCountsCountIdCompletePostResponse = (CycleCountResponse);
+
+export type ListGatePassesApiV1WmsGatePassesGetData = {
+    limit?: number;
+    locationId?: (string | null);
+    skip?: number;
+    status?: (GatePassStatus | null);
+    type?: (GatePassType | null);
+};
+
+export type ListGatePassesApiV1WmsGatePassesGetResponse = (Array<GatePassResponse>);
+
+export type CreateGatePassApiV1WmsGatePassesPostData = {
+    requestBody: GatePassCreate;
+};
+
+export type CreateGatePassApiV1WmsGatePassesPostResponse = (GatePassResponse);
+
+export type GetGatePassApiV1WmsGatePassesPassIdGetData = {
+    passId: string;
+};
+
+export type GetGatePassApiV1WmsGatePassesPassIdGetResponse = (GatePassResponse);
+
+export type UpdateGatePassApiV1WmsGatePassesPassIdPatchData = {
+    passId: string;
+    requestBody: GatePassUpdate;
+};
+
+export type UpdateGatePassApiV1WmsGatePassesPassIdPatchResponse = (GatePassResponse);
+
+export type CloseGatePassApiV1WmsGatePassesPassIdClosePostData = {
+    passId: string;
+};
+
+export type CloseGatePassApiV1WmsGatePassesPassIdClosePostResponse = (GatePassResponse);
+
+export type ListStockAdjustmentsApiV1WmsStockAdjustmentsGetData = {
+    limit?: number;
+    locationId?: (string | null);
+    skip?: number;
+    status?: (string | null);
+};
+
+export type ListStockAdjustmentsApiV1WmsStockAdjustmentsGetResponse = (Array<StockAdjustmentResponse>);
+
+export type CreateStockAdjustmentApiV1WmsStockAdjustmentsPostData = {
+    requestBody: StockAdjustmentCreate;
+};
+
+export type CreateStockAdjustmentApiV1WmsStockAdjustmentsPostResponse = (StockAdjustmentResponse);
+
+export type GetStockAdjustmentApiV1WmsStockAdjustmentsAdjustmentIdGetData = {
+    adjustmentId: string;
+};
+
+export type GetStockAdjustmentApiV1WmsStockAdjustmentsAdjustmentIdGetResponse = (StockAdjustmentResponse);
+
+export type ApproveStockAdjustmentApiV1WmsStockAdjustmentsAdjustmentIdApprovePostData = {
+    adjustmentId: string;
+};
+
+export type ApproveStockAdjustmentApiV1WmsStockAdjustmentsAdjustmentIdApprovePostResponse = (StockAdjustmentResponse);
+
+export type ListInventoryMovementsApiV1WmsInventoryMovementsGetData = {
+    limit?: number;
+    locationId?: (string | null);
+    movementType?: (string | null);
+    skip?: number;
+    skuId?: (string | null);
+};
+
+export type ListInventoryMovementsApiV1WmsInventoryMovementsGetResponse = (Array<InventoryMovementResponse>);
+
+export type GetInventoryMovementApiV1WmsInventoryMovementsMovementIdGetData = {
+    movementId: string;
+};
+
+export type GetInventoryMovementApiV1WmsInventoryMovementsMovementIdGetResponse = (InventoryMovementResponse);
+
+export type ListVirtualInventoryApiV1WmsVirtualInventoryGetData = {
+    channel?: (string | null);
+    isActive?: (boolean | null);
+    limit?: number;
+    locationId?: (string | null);
+    skip?: number;
+    skuId?: (string | null);
+};
+
+export type ListVirtualInventoryApiV1WmsVirtualInventoryGetResponse = (Array<VirtualInventoryResponse>);
+
+export type CreateVirtualInventoryApiV1WmsVirtualInventoryPostData = {
+    requestBody: VirtualInventoryCreate;
+};
+
+export type CreateVirtualInventoryApiV1WmsVirtualInventoryPostResponse = (VirtualInventoryResponse);
+
+export type UpdateVirtualInventoryApiV1WmsVirtualInventoryInventoryIdPatchData = {
+    inventoryId: string;
+    requestBody: VirtualInventoryUpdate;
+};
+
+export type UpdateVirtualInventoryApiV1WmsVirtualInventoryInventoryIdPatchResponse = (VirtualInventoryResponse);
+
+export type DeleteVirtualInventoryApiV1WmsVirtualInventoryInventoryIdDeleteData = {
+    inventoryId: string;
+};
+
+export type DeleteVirtualInventoryApiV1WmsVirtualInventoryInventoryIdDeleteResponse = (void);
+
+export type ListCodReconciliationsApiV1FinanceCodReconciliationsGetData = {
+    limit?: number;
+    skip?: number;
+    status?: (CODReconciliationStatus | null);
+    transporterId?: (string | null);
+};
+
+export type ListCodReconciliationsApiV1FinanceCodReconciliationsGetResponse = (Array<CODReconciliationResponse>);
+
+export type CreateCodReconciliationApiV1FinanceCodReconciliationsPostData = {
+    requestBody: CODReconciliationCreate;
+};
+
+export type CreateCodReconciliationApiV1FinanceCodReconciliationsPostResponse = (CODReconciliationResponse);
+
+export type CountCodReconciliationsApiV1FinanceCodReconciliationsCountGetData = {
+    status?: (CODReconciliationStatus | null);
+};
+
+export type CountCodReconciliationsApiV1FinanceCodReconciliationsCountGetResponse = (unknown);
+
+export type GetCodReconciliationApiV1FinanceCodReconciliationsReconciliationIdGetData = {
+    reconciliationId: string;
+};
+
+export type GetCodReconciliationApiV1FinanceCodReconciliationsReconciliationIdGetResponse = (CODReconciliationResponse);
+
+export type UpdateCodReconciliationApiV1FinanceCodReconciliationsReconciliationIdPatchData = {
+    reconciliationId: string;
+    requestBody: CODReconciliationUpdate;
+};
+
+export type UpdateCodReconciliationApiV1FinanceCodReconciliationsReconciliationIdPatchResponse = (CODReconciliationResponse);
+
+export type VerifyCodReconciliationApiV1FinanceCodReconciliationsReconciliationIdVerifyPostData = {
+    reconciliationId: string;
+};
+
+export type VerifyCodReconciliationApiV1FinanceCodReconciliationsReconciliationIdVerifyPostResponse = (CODReconciliationResponse);
+
+export type CompleteCodReconciliationApiV1FinanceCodReconciliationsReconciliationIdCompletePostData = {
+    reconciliationId: string;
+};
+
+export type CompleteCodReconciliationApiV1FinanceCodReconciliationsReconciliationIdCompletePostResponse = (CODReconciliationResponse);
+
+export type ListCodTransactionsApiV1FinanceCodTransactionsGetData = {
+    limit?: number;
+    orderId?: (string | null);
+    reconciliationId?: (string | null);
+    skip?: number;
+};
+
+export type ListCodTransactionsApiV1FinanceCodTransactionsGetResponse = (Array<CODTransactionResponse>);
+
+export type CreateCodTransactionApiV1FinanceCodTransactionsPostData = {
+    requestBody: CODTransactionCreate;
+};
+
+export type CreateCodTransactionApiV1FinanceCodTransactionsPostResponse = (CODTransactionResponse);
+
+export type GetCodTransactionApiV1FinanceCodTransactionsTransactionIdGetData = {
+    transactionId: string;
+};
+
+export type GetCodTransactionApiV1FinanceCodTransactionsTransactionIdGetResponse = (CODTransactionResponse);
+
+export type ListRateCardsApiV1LogisticsRateCardsGetData = {
+    limit?: number;
+    skip?: number;
+    status?: (string | null);
+    transporterId?: (string | null);
+};
+
+export type ListRateCardsApiV1LogisticsRateCardsGetResponse = (Array<RateCardResponse>);
+
+export type CreateRateCardApiV1LogisticsRateCardsPostData = {
+    requestBody: RateCardCreate;
+};
+
+export type CreateRateCardApiV1LogisticsRateCardsPostResponse = (RateCardResponse);
+
+export type GetRateCardApiV1LogisticsRateCardsRateCardIdGetData = {
+    rateCardId: string;
+};
+
+export type GetRateCardApiV1LogisticsRateCardsRateCardIdGetResponse = (RateCardResponse);
+
+export type UpdateRateCardApiV1LogisticsRateCardsRateCardIdPatchData = {
+    rateCardId: string;
+    requestBody: RateCardUpdate;
+};
+
+export type UpdateRateCardApiV1LogisticsRateCardsRateCardIdPatchResponse = (RateCardResponse);
+
+export type ActivateRateCardApiV1LogisticsRateCardsRateCardIdActivatePostData = {
+    rateCardId: string;
+};
+
+export type ActivateRateCardApiV1LogisticsRateCardsRateCardIdActivatePostResponse = (RateCardResponse);
+
+export type ListShippingRulesApiV1LogisticsShippingRulesGetData = {
+    isActive?: (boolean | null);
+    limit?: number;
+    skip?: number;
+};
+
+export type ListShippingRulesApiV1LogisticsShippingRulesGetResponse = (Array<ShippingRuleResponse>);
+
+export type CreateShippingRuleApiV1LogisticsShippingRulesPostData = {
+    requestBody: ShippingRuleCreate;
+};
+
+export type CreateShippingRuleApiV1LogisticsShippingRulesPostResponse = (ShippingRuleResponse);
+
+export type GetShippingRuleApiV1LogisticsShippingRulesRuleIdGetData = {
+    ruleId: string;
+};
+
+export type GetShippingRuleApiV1LogisticsShippingRulesRuleIdGetResponse = (ShippingRuleResponse);
+
+export type UpdateShippingRuleApiV1LogisticsShippingRulesRuleIdPatchData = {
+    requestBody: ShippingRuleUpdate;
+    ruleId: string;
+};
+
+export type UpdateShippingRuleApiV1LogisticsShippingRulesRuleIdPatchResponse = (ShippingRuleResponse);
+
+export type DeleteShippingRuleApiV1LogisticsShippingRulesRuleIdDeleteData = {
+    ruleId: string;
+};
+
+export type DeleteShippingRuleApiV1LogisticsShippingRulesRuleIdDeleteResponse = (void);
+
+export type ListServicePincodesApiV1LogisticsServicePincodesGetData = {
+    isServiceable?: (boolean | null);
+    limit?: number;
+    pincode?: (string | null);
+    skip?: number;
+    transporterId?: (string | null);
+};
+
+export type ListServicePincodesApiV1LogisticsServicePincodesGetResponse = (Array<ServicePincodeResponse>);
+
+export type CreateServicePincodeApiV1LogisticsServicePincodesPostData = {
+    requestBody: ServicePincodeCreate;
+};
+
+export type CreateServicePincodeApiV1LogisticsServicePincodesPostResponse = (ServicePincodeResponse);
+
+export type CheckPincodeServiceabilityApiV1LogisticsServicePincodesCheckPincodeGetData = {
+    pincode: string;
+    transporterId?: (string | null);
+};
+
+export type CheckPincodeServiceabilityApiV1LogisticsServicePincodesCheckPincodeGetResponse = (unknown);
+
+export type BulkCreateServicePincodesApiV1LogisticsServicePincodesBulkPostData = {
+    requestBody: Array<ServicePincodeCreate>;
+};
+
+export type BulkCreateServicePincodesApiV1LogisticsServicePincodesBulkPostResponse = ({
+    [key: string]: unknown;
+});
+
+export type UpdateServicePincodeApiV1LogisticsServicePincodesPincodeIdPatchData = {
+    pincodeId: string;
+    requestBody: ServicePincodeUpdate;
+};
+
+export type UpdateServicePincodeApiV1LogisticsServicePincodesPincodeIdPatchResponse = (ServicePincodeResponse);
+
+export type ListAwbsApiV1LogisticsAwbGetData = {
+    isUsed?: (boolean | null);
+    limit?: number;
+    skip?: number;
+    transporterId?: (string | null);
+};
+
+export type ListAwbsApiV1LogisticsAwbGetResponse = (Array<AWBResponse>);
+
+export type CreateAwbApiV1LogisticsAwbPostData = {
+    requestBody: AWBCreate;
+};
+
+export type CreateAwbApiV1LogisticsAwbPostResponse = (AWBResponse);
+
+export type GetAvailableAwbApiV1LogisticsAwbAvailableGetData = {
+    transporterId: string;
+};
+
+export type GetAvailableAwbApiV1LogisticsAwbAvailableGetResponse = (unknown);
+
+export type BulkCreateAwbsApiV1LogisticsAwbBulkPostData = {
+    requestBody: Array<(string)>;
+    transporterId: string;
+};
+
+export type BulkCreateAwbsApiV1LogisticsAwbBulkPostResponse = ({
+    [key: string]: unknown;
+});
+
+export type UseAwbApiV1LogisticsAwbAwbIdUsePostData = {
+    awbId: string;
+    usedFor: string;
+};
+
+export type UseAwbApiV1LogisticsAwbAwbIdUsePostResponse = (AWBResponse);
+
+export type ListChannelConfigsApiV1ChannelsConfigsGetData = {
+    channel?: (Channel | null);
+    isActive?: (boolean | null);
+    limit?: number;
+    skip?: number;
+};
+
+export type ListChannelConfigsApiV1ChannelsConfigsGetResponse = (Array<ChannelConfigResponse>);
+
+export type CreateChannelConfigApiV1ChannelsConfigsPostData = {
+    requestBody: ChannelConfigCreate;
+};
+
+export type CreateChannelConfigApiV1ChannelsConfigsPostResponse = (ChannelConfigResponse);
+
+export type GetChannelConfigApiV1ChannelsConfigsConfigIdGetData = {
+    configId: string;
+};
+
+export type GetChannelConfigApiV1ChannelsConfigsConfigIdGetResponse = (ChannelConfigResponse);
+
+export type UpdateChannelConfigApiV1ChannelsConfigsConfigIdPatchData = {
+    configId: string;
+    requestBody: ChannelConfigUpdate;
+};
+
+export type UpdateChannelConfigApiV1ChannelsConfigsConfigIdPatchResponse = (ChannelConfigResponse);
+
+export type DeleteChannelConfigApiV1ChannelsConfigsConfigIdDeleteData = {
+    configId: string;
+};
+
+export type DeleteChannelConfigApiV1ChannelsConfigsConfigIdDeleteResponse = (void);
+
+export type TriggerChannelSyncApiV1ChannelsConfigsConfigIdSyncPostData = {
+    configId: string;
+};
+
+export type TriggerChannelSyncApiV1ChannelsConfigsConfigIdSyncPostResponse = ({
+    [key: string]: unknown;
+});
+
+export type ListOrderImportsApiV1ChannelsImportsGetData = {
+    channel?: (Channel | null);
+    limit?: number;
+    skip?: number;
+    status?: (ImportStatus | null);
+};
+
+export type ListOrderImportsApiV1ChannelsImportsGetResponse = (Array<OrderImportResponse>);
+
+export type CreateOrderImportApiV1ChannelsImportsPostData = {
+    requestBody: OrderImportCreate;
+};
+
+export type CreateOrderImportApiV1ChannelsImportsPostResponse = (OrderImportResponse);
+
+export type GetImportSummaryApiV1ChannelsImportsSummaryGetResponse = (OrderImportSummary);
+
+export type GetOrderImportApiV1ChannelsImportsImportIdGetData = {
+    importId: string;
+};
+
+export type GetOrderImportApiV1ChannelsImportsImportIdGetResponse = (OrderImportResponse);
+
+export type UpdateOrderImportApiV1ChannelsImportsImportIdPatchData = {
+    importId: string;
+    requestBody: OrderImportUpdate;
+};
+
+export type UpdateOrderImportApiV1ChannelsImportsImportIdPatchResponse = (OrderImportResponse);
+
+export type StartOrderImportApiV1ChannelsImportsImportIdStartPostData = {
+    importId: string;
+};
+
+export type StartOrderImportApiV1ChannelsImportsImportIdStartPostResponse = (OrderImportResponse);
+
+export type ListTemplatesApiV1CommunicationsTemplatesGetData = {
+    channel?: (OutreachChannel | null);
+    isActive?: (boolean | null);
+    limit?: number;
+    skip?: number;
+    trigger?: (CommunicationTrigger | null);
+};
+
+export type ListTemplatesApiV1CommunicationsTemplatesGetResponse = (Array<CommunicationTemplateResponse>);
+
+export type CreateTemplateApiV1CommunicationsTemplatesPostData = {
+    requestBody: CommunicationTemplateCreate;
+};
+
+export type CreateTemplateApiV1CommunicationsTemplatesPostResponse = (CommunicationTemplateResponse);
+
+export type GetTemplateApiV1CommunicationsTemplatesTemplateIdGetData = {
+    templateId: string;
+};
+
+export type GetTemplateApiV1CommunicationsTemplatesTemplateIdGetResponse = (CommunicationTemplateResponse);
+
+export type UpdateTemplateApiV1CommunicationsTemplatesTemplateIdPatchData = {
+    requestBody: CommunicationTemplateUpdate;
+    templateId: string;
+};
+
+export type UpdateTemplateApiV1CommunicationsTemplatesTemplateIdPatchResponse = (CommunicationTemplateResponse);
+
+export type DeleteTemplateApiV1CommunicationsTemplatesTemplateIdDeleteData = {
+    templateId: string;
+};
+
+export type DeleteTemplateApiV1CommunicationsTemplatesTemplateIdDeleteResponse = (void);
+
+export type ListProactiveCommunicationsApiV1CommunicationsOutreachGetData = {
+    channel?: (OutreachChannel | null);
+    customerId?: (string | null);
+    limit?: number;
+    orderId?: (string | null);
+    skip?: number;
+    status?: (OutreachStatus | null);
+    trigger?: (CommunicationTrigger | null);
+};
+
+export type ListProactiveCommunicationsApiV1CommunicationsOutreachGetResponse = (Array<ProactiveCommunicationResponse>);
+
+export type CreateProactiveCommunicationApiV1CommunicationsOutreachPostData = {
+    requestBody: ProactiveCommunicationCreate;
+};
+
+export type CreateProactiveCommunicationApiV1CommunicationsOutreachPostResponse = (ProactiveCommunicationResponse);
+
+export type CountProactiveCommunicationsApiV1CommunicationsOutreachCountGetData = {
+    status?: (OutreachStatus | null);
+};
+
+export type CountProactiveCommunicationsApiV1CommunicationsOutreachCountGetResponse = (unknown);
+
+export type GetProactiveCommunicationApiV1CommunicationsOutreachCommunicationIdGetData = {
+    communicationId: string;
+};
+
+export type GetProactiveCommunicationApiV1CommunicationsOutreachCommunicationIdGetResponse = (ProactiveCommunicationResponse);
+
+export type UpdateProactiveCommunicationApiV1CommunicationsOutreachCommunicationIdPatchData = {
+    communicationId: string;
+    requestBody: ProactiveCommunicationUpdate;
+};
+
+export type UpdateProactiveCommunicationApiV1CommunicationsOutreachCommunicationIdPatchResponse = (ProactiveCommunicationResponse);
+
+export type SendProactiveCommunicationApiV1CommunicationsOutreachCommunicationIdSendPostData = {
+    communicationId: string;
+};
+
+export type SendProactiveCommunicationApiV1CommunicationsOutreachCommunicationIdSendPostResponse = (ProactiveCommunicationResponse);
+
+export type ListSnapshotsApiV1AnalyticsSnapshotsGetData = {
+    dateFrom?: (string | null);
+    dateTo?: (string | null);
+    limit?: number;
+    locationId?: (string | null);
+    skip?: number;
+    snapshotType?: (string | null);
+};
+
+export type ListSnapshotsApiV1AnalyticsSnapshotsGetResponse = (Array<AnalyticsSnapshotResponse>);
+
+export type GetLatestSnapshotApiV1AnalyticsSnapshotsLatestGetData = {
+    locationId?: (string | null);
+    snapshotType?: string;
+};
+
+export type GetLatestSnapshotApiV1AnalyticsSnapshotsLatestGetResponse = (AnalyticsSnapshotResponse);
+
+export type GetSnapshotApiV1AnalyticsSnapshotsSnapshotIdGetData = {
+    snapshotId: string;
+};
+
+export type GetSnapshotApiV1AnalyticsSnapshotsSnapshotIdGetResponse = (AnalyticsSnapshotResponse);
+
+export type ListForecastsApiV1AnalyticsForecastsGetData = {
+    forecastFrom?: (string | null);
+    forecastTo?: (string | null);
+    limit?: number;
+    locationId?: (string | null);
+    skip?: number;
+    skuId?: (string | null);
+};
+
+export type ListForecastsApiV1AnalyticsForecastsGetResponse = (Array<DemandForecastResponse>);
+
+export type GetSkuForecastsApiV1AnalyticsForecastsSkuSkuIdGetData = {
+    daysAhead?: number;
+    locationId?: (string | null);
+    skuId: string;
+};
+
+export type GetSkuForecastsApiV1AnalyticsForecastsSkuSkuIdGetResponse = (Array<DemandForecastResponse>);
+
+export type ListScheduledReportsApiV1AnalyticsReportsGetData = {
+    isActive?: (boolean | null);
+    limit?: number;
+    reportType?: (string | null);
+    skip?: number;
+};
+
+export type ListScheduledReportsApiV1AnalyticsReportsGetResponse = (Array<ScheduledReportResponse>);
+
+export type CreateScheduledReportApiV1AnalyticsReportsPostData = {
+    requestBody: ScheduledReportCreate;
+};
+
+export type CreateScheduledReportApiV1AnalyticsReportsPostResponse = (ScheduledReportResponse);
+
+export type GetScheduledReportApiV1AnalyticsReportsReportIdGetData = {
+    reportId: string;
+};
+
+export type GetScheduledReportApiV1AnalyticsReportsReportIdGetResponse = (ScheduledReportResponse);
+
+export type UpdateScheduledReportApiV1AnalyticsReportsReportIdPatchData = {
+    reportId: string;
+    requestBody: ScheduledReportUpdate;
+};
+
+export type UpdateScheduledReportApiV1AnalyticsReportsReportIdPatchResponse = (ScheduledReportResponse);
+
+export type DeleteScheduledReportApiV1AnalyticsReportsReportIdDeleteData = {
+    reportId: string;
+};
+
+export type DeleteScheduledReportApiV1AnalyticsReportsReportIdDeleteResponse = (void);
+
+export type RunScheduledReportApiV1AnalyticsReportsReportIdRunPostData = {
+    reportId: string;
+};
+
+export type RunScheduledReportApiV1AnalyticsReportsReportIdRunPostResponse = (ReportExecutionResponse);
+
+export type ListReportExecutionsApiV1AnalyticsReportsReportIdExecutionsGetData = {
+    limit?: number;
+    reportId: string;
+    skip?: number;
+};
+
+export type ListReportExecutionsApiV1AnalyticsReportsReportIdExecutionsGetResponse = (Array<ReportExecutionResponse>);
+
+export type GetReportExecutionApiV1AnalyticsExecutionsExecutionIdGetData = {
+    executionId: string;
+};
+
+export type GetReportExecutionApiV1AnalyticsExecutionsExecutionIdGetResponse = (ReportExecutionResponse);
+
+export type ListAuditLogsApiV1SystemAuditLogsGetData = {
+    action?: (string | null);
+    dateFrom?: (string | null);
+    dateTo?: (string | null);
+    entityId?: (string | null);
+    entityType?: (string | null);
+    limit?: number;
+    skip?: number;
+    userId?: (string | null);
+};
+
+export type ListAuditLogsApiV1SystemAuditLogsGetResponse = (Array<AuditLogResponse>);
+
+export type GetAuditLogApiV1SystemAuditLogsLogIdGetData = {
+    logId: string;
+};
+
+export type GetAuditLogApiV1SystemAuditLogsLogIdGetResponse = (AuditLogResponse);
+
+export type GetEntityAuditHistoryApiV1SystemAuditLogsEntityEntityTypeEntityIdGetData = {
+    entityId: string;
+    entityType: string;
+    limit?: number;
+    skip?: number;
+};
+
+export type GetEntityAuditHistoryApiV1SystemAuditLogsEntityEntityTypeEntityIdGetResponse = (Array<AuditLogResponse>);
+
+export type ListExceptionsApiV1SystemExceptionsGetData = {
+    limit?: number;
+    orderId?: (string | null);
+    severity?: (string | null);
+    skip?: number;
+    status?: (string | null);
+    type?: (string | null);
+};
+
+export type ListExceptionsApiV1SystemExceptionsGetResponse = (Array<ExceptionResponse>);
+
+export type CreateExceptionApiV1SystemExceptionsPostData = {
+    requestBody: ExceptionCreate;
+};
+
+export type CreateExceptionApiV1SystemExceptionsPostResponse = (ExceptionResponse);
+
+export type CountExceptionsApiV1SystemExceptionsCountGetData = {
+    severity?: (string | null);
+    status?: (string | null);
+};
+
+export type CountExceptionsApiV1SystemExceptionsCountGetResponse = (unknown);
+
+export type GetExceptionApiV1SystemExceptionsExceptionIdGetData = {
+    exceptionId: string;
+};
+
+export type GetExceptionApiV1SystemExceptionsExceptionIdGetResponse = (ExceptionResponse);
+
+export type UpdateExceptionApiV1SystemExceptionsExceptionIdPatchData = {
+    exceptionId: string;
+    requestBody: ExceptionUpdate;
+};
+
+export type UpdateExceptionApiV1SystemExceptionsExceptionIdPatchResponse = (ExceptionResponse);
+
+export type ResolveExceptionApiV1SystemExceptionsExceptionIdResolvePostData = {
+    exceptionId: string;
+    resolution: string;
+};
+
+export type ResolveExceptionApiV1SystemExceptionsExceptionIdResolvePostResponse = (ExceptionResponse);
+
+export type ListSequencesApiV1SystemSequencesGetResponse = (Array<SequenceResponse>);
+
+export type CreateSequenceApiV1SystemSequencesPostData = {
+    requestBody: SequenceCreate;
+};
+
+export type CreateSequenceApiV1SystemSequencesPostResponse = (SequenceResponse);
+
+export type GetSequenceApiV1SystemSequencesSequenceNameGetData = {
+    sequenceName: string;
+};
+
+export type GetSequenceApiV1SystemSequencesSequenceNameGetResponse = (SequenceResponse);
+
+export type GetNextSequenceValueApiV1SystemSequencesSequenceNameNextPostData = {
+    sequenceName: string;
+};
+
+export type GetNextSequenceValueApiV1SystemSequencesSequenceNameNextPostResponse = (unknown);
+
 export type LoginApiAuthLoginPostData = {
     requestBody: LoginRequest;
 };
 
 export type LoginApiAuthLoginPostResponse = (LoginResponse);
 
-export type GetCurrentUserInfoApiAuthMeGetResponse = (app__schemas__auth__UserResponse);
+export type GetCurrentUserInfoApiAuthMeGetResponse = (UserResponse);
 
 export type ListUsersApiUsersGetData = {
     page?: number;
@@ -4205,7 +6726,7 @@ export type ListInventoryApiInventoryGetData = {
     skuId?: (string | null);
 };
 
-export type ListInventoryApiInventoryGetResponse = (Array<InventoryResponse>);
+export type ListInventoryApiInventoryGetResponse = (Array<app__api__routes__inventory__InventoryResponse>);
 
 export type GetInventorySummaryApiInventorySummaryGetData = {
     locationId?: (string | null);
@@ -4214,7 +6735,7 @@ export type GetInventorySummaryApiInventorySummaryGetData = {
 export type GetInventorySummaryApiInventorySummaryGetResponse = (unknown);
 
 export type CreateAdjustmentApiInventoryAdjustmentsPostData = {
-    requestBody: app__api__routes__inventory__InventoryAdjustment;
+    requestBody: InventoryAdjustment;
 };
 
 export type CreateAdjustmentApiInventoryAdjustmentsPostResponse = (unknown);
@@ -4232,26 +6753,26 @@ export type ListLocationsApiLocationsGetData = {
     type?: (LocationType | null);
 };
 
-export type ListLocationsApiLocationsGetResponse = (Array<app__api__routes__locations__LocationResponse>);
+export type ListLocationsApiLocationsGetResponse = (Array<LocationResponse>);
 
 export type CreateLocationApiLocationsPostData = {
-    requestBody: LocationCreate;
+    requestBody: app__api__routes__locations__LocationCreate;
 };
 
-export type CreateLocationApiLocationsPostResponse = (app__api__routes__locations__LocationResponse);
+export type CreateLocationApiLocationsPostResponse = (LocationResponse);
 
 export type GetLocationApiLocationsLocationIdGetData = {
     locationId: string;
 };
 
-export type GetLocationApiLocationsLocationIdGetResponse = (app__api__routes__locations__LocationResponse);
+export type GetLocationApiLocationsLocationIdGetResponse = (LocationResponse);
 
 export type UpdateLocationApiLocationsLocationIdPatchData = {
     locationId: string;
-    requestBody: LocationUpdate;
+    requestBody: app__api__routes__locations__LocationUpdate;
 };
 
-export type UpdateLocationApiLocationsLocationIdPatchResponse = (app__api__routes__locations__LocationResponse);
+export type UpdateLocationApiLocationsLocationIdPatchResponse = (LocationResponse);
 
 export type ListBrandsApiBrandsGetData = {
     isActive?: (boolean | null);

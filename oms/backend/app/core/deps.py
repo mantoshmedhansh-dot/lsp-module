@@ -5,7 +5,7 @@ Centralized authentication, authorization, and database session management
 from typing import Generator, Callable, Any, Optional, List
 from uuid import UUID
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlmodel import Session, select
 
@@ -32,24 +32,28 @@ def get_db() -> Generator[Session, None, None]:
 
 
 async def get_current_user_optional(
+    request: Request,
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
     db: Session = Depends(get_db)
 ) -> Optional[Any]:
     """
     Get current user if authenticated, None otherwise.
     Use this for endpoints that work with or without authentication.
+    Supports both Bearer token and X-User-Id header (for frontend proxy).
     """
-    if not credentials:
-        return None
-
-    token = credentials.credentials
-    payload = verify_token(token)
-
-    if not payload:
-        return None
-
     User = _get_user_model()
-    user_id = payload.get("user_id")
+    user_id = None
+
+    # First try Bearer token
+    if credentials:
+        token = credentials.credentials
+        payload = verify_token(token)
+        if payload:
+            user_id = payload.get("user_id")
+
+    # Then try X-User-Id header (frontend proxy auth)
+    if not user_id:
+        user_id = request.headers.get("X-User-Id")
 
     if not user_id:
         return None
@@ -63,39 +67,35 @@ async def get_current_user_optional(
 
 
 async def get_current_user(
+    request: Request,
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
     db: Session = Depends(get_db)
 ) -> Any:
     """
     Get current authenticated user.
     Raises 401 if not authenticated.
+    Supports both Bearer token and X-User-Id header (for frontend proxy).
 
     Usage: current_user: User = Depends(get_current_user)
     """
-    if not credentials:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-    token = credentials.credentials
-    payload = verify_token(token)
-
-    if not payload:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired token",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
     User = _get_user_model()
-    user_id = payload.get("user_id")
+    user_id = None
+
+    # First try Bearer token
+    if credentials:
+        token = credentials.credentials
+        payload = verify_token(token)
+        if payload:
+            user_id = payload.get("user_id")
+
+    # Then try X-User-Id header (frontend proxy auth)
+    if not user_id:
+        user_id = request.headers.get("X-User-Id")
 
     if not user_id:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token payload",
+            detail="Not authenticated",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -104,7 +104,7 @@ async def get_current_user(
     except (ValueError, TypeError):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid user ID in token",
+            detail="Invalid user ID",
             headers={"WWW-Authenticate": "Bearer"},
         )
 

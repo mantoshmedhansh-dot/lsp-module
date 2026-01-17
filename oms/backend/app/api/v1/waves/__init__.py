@@ -108,11 +108,18 @@ def create_wave(
     current_user: User = Depends(require_manager)
 ):
     """Create new wave."""
-    wave = Wave.model_validate(data)
-    session.add(wave)
-    session.commit()
-    session.refresh(wave)
-    return WaveResponse.model_validate(wave)
+    try:
+        wave = Wave.model_validate(data)
+        session.add(wave)
+        session.commit()
+        session.refresh(wave)
+        return WaveResponse.model_validate(wave)
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create wave: {str(e)}"
+        )
 
 
 @router.patch("/{wave_id}", response_model=WaveResponse)

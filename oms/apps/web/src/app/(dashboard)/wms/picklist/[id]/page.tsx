@@ -161,7 +161,7 @@ export default function PicklistDetailPage() {
   const fetchPicklist = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/v1/v1/picklists/${picklistId}`);
+      const response = await fetch(`/api/v1/picklists/${picklistId}`);
       if (!response.ok) throw new Error("Failed to fetch picklist");
       const result = await response.json();
       setPicklist(result);
@@ -186,7 +186,7 @@ export default function PicklistDetailPage() {
 
   async function handleStartPicking() {
     try {
-      const response = await fetch(`/api/v1/v1/picklists/${picklistId}`, {
+      const response = await fetch(`/api/v1/picklists/${picklistId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "start" }),
@@ -207,7 +207,7 @@ export default function PicklistDetailPage() {
 
   async function handleCompletePicking() {
     try {
-      const response = await fetch(`/api/v1/v1/picklists/${picklistId}`, {
+      const response = await fetch(`/api/v1/picklists/${picklistId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "complete" }),
@@ -231,7 +231,7 @@ export default function PicklistDetailPage() {
 
     setIsScanning(true);
     try {
-      const response = await fetch(`/api/v1/v1/picklists/${picklistId}/pick`, {
+      const response = await fetch(`/api/v1/picklists/${picklistId}/pick`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -274,7 +274,7 @@ export default function PicklistDetailPage() {
     if (!selectedItem) return;
 
     try {
-      const response = await fetch(`/api/v1/v1/picklists/${picklistId}/pick`, {
+      const response = await fetch(`/api/v1/picklists/${picklistId}/pick`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

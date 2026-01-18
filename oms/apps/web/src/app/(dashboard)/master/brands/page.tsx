@@ -119,7 +119,7 @@ export default function BrandsPage() {
       if (selectedCompany && selectedCompany !== "all") {
         params.append("companyId", selectedCompany);
       }
-      const response = await fetch(`/api/v1/v1/brands?${params.toString()}`);
+      const response = await fetch(`/api/v1/brands?${params.toString()}`);
       if (!response.ok) throw new Error("Failed to fetch brands");
       const data = await response.json();
       setBrands(data.data || []);
@@ -222,7 +222,7 @@ export default function BrandsPage() {
 
   async function handleToggleActive(brand: Brand) {
     try {
-      const response = await fetch(`/api/v1/v1/brands/${brand.id}`, {
+      const response = await fetch(`/api/v1/brands/${brand.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isActive: !brand.isActive }),
@@ -242,7 +242,7 @@ export default function BrandsPage() {
     if (!confirm(`Are you sure you want to delete ${brand.name}?`)) return;
 
     try {
-      const response = await fetch(`/api/v1/v1/brands/${brand.id}`, {
+      const response = await fetch(`/api/v1/brands/${brand.id}`, {
         method: "DELETE",
       });
 

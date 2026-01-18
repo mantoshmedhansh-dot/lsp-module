@@ -115,7 +115,7 @@ export default function ShippingRulesPage() {
         page: page.toString(),
         limit: "20",
       });
-      const res = await fetch(`/api/v1/v1/shipping-rules?${params}`);
+      const res = await fetch(`/api/v1/shipping-rules?${params}`);
       if (!res.ok) throw new Error("Failed to fetch shipping rules");
       return res.json();
     },
@@ -179,7 +179,7 @@ export default function ShippingRulesPage() {
   // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetch(`/api/v1/v1/shipping-rules/${id}`, {
+      const res = await fetch(`/api/v1/shipping-rules/${id}`, {
         method: "DELETE",
       });
       if (!res.ok) {

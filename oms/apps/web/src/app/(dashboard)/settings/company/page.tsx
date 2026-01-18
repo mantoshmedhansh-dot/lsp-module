@@ -145,7 +145,7 @@ export default function CompanyPage() {
       return;
 
     try {
-      const response = await fetch(`/api/v1/v1/companies/${company.id}`, {
+      const response = await fetch(`/api/v1/companies/${company.id}`, {
         method: "DELETE",
       });
 

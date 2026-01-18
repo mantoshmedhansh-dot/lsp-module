@@ -83,7 +83,7 @@ export default function ReportsPage() {
       if (channel) params.append("channel", channel);
       if (locationId) params.append("locationId", locationId);
 
-      const res = await fetch(`/api/v1/v1/reports?${params}`);
+      const res = await fetch(`/api/v1/reports?${params}`);
       if (!res.ok) throw new Error("Failed to fetch reports");
       return res.json();
     },

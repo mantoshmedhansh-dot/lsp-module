@@ -124,7 +124,7 @@ export default function RateCardsPage() {
         page: page.toString(),
         limit: "20",
       });
-      const res = await fetch(`/api/v1/v1/rate-cards?${params}`);
+      const res = await fetch(`/api/v1/rate-cards?${params}`);
       if (!res.ok) throw new Error("Failed to fetch rate cards");
       return res.json();
     },
@@ -178,7 +178,7 @@ export default function RateCardsPage() {
   // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetch(`/api/v1/v1/rate-cards/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/v1/rate-cards/${id}`, { method: "DELETE" });
       if (!res.ok) {
         const error = await res.json();
         throw new Error(error.error || "Failed to delete");

@@ -155,7 +155,7 @@ export default function UsersPage() {
 
   async function handleToggleActive(user: User) {
     try {
-      const response = await fetch(`/api/v1/v1/users/${user.id}`, {
+      const response = await fetch(`/api/v1/users/${user.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isActive: !user.isActive }),
@@ -175,7 +175,7 @@ export default function UsersPage() {
     if (!confirm(`Are you sure you want to delete ${user.name}?`)) return;
 
     try {
-      const response = await fetch(`/api/v1/v1/users/${user.id}`, {
+      const response = await fetch(`/api/v1/users/${user.id}`, {
         method: "DELETE",
       });
 

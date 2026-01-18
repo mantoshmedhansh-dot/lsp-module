@@ -177,7 +177,7 @@ export default function CompaniesPage() {
 
   async function handleToggleActive(company: Company) {
     try {
-      const response = await fetch(`/api/v1/v1/companies/${company.id}`, {
+      const response = await fetch(`/api/v1/companies/${company.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isActive: company.isActive === false }),
@@ -197,7 +197,7 @@ export default function CompaniesPage() {
     if (!confirm(`Are you sure you want to delete ${company.name}?`)) return;
 
     try {
-      const response = await fetch(`/api/v1/v1/companies/${company.id}`, {
+      const response = await fetch(`/api/v1/companies/${company.id}`, {
         method: "DELETE",
       });
 

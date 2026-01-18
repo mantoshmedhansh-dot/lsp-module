@@ -154,7 +154,7 @@ function NewQuotationPageContent() {
 
   const fetchCustomerById = useCallback(async (customerId: string) => {
     try {
-      const response = await fetch(`/api/v1/v1/customers/${customerId}`);
+      const response = await fetch(`/api/v1/customers/${customerId}`);
       if (response.ok) {
         const customer = await response.json();
         setFormData((prev) => ({

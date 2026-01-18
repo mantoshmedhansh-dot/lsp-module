@@ -269,7 +269,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     // Build label data
     const labelData: ShippingLabelData = {
       awbNo: order.awbNo || order.trackingNumber || `AWB-${orderId.substring(0, 8)}`,
-      orderNo: order.orderNumber || orderId,
+      orderNo: order.orderNo || order.orderNumber || orderId,
       orderDate: new Date(order.orderDate || order.createdAt),
       courierName: order.transporterName || order.transporter?.name || "COURIER",
       serviceType: order.serviceType || "Standard",
@@ -284,8 +284,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       },
       receiver: {
         name: order.shippingAddress?.name || order.customerName || "Customer",
-        addressLine1: order.shippingAddress?.addressLine1 || order.shippingAddress?.address || "Address",
-        addressLine2: order.shippingAddress?.addressLine2,
+        addressLine1: order.shippingAddress?.line1 || order.shippingAddress?.addressLine1 || order.shippingAddress?.address || "Address",
+        addressLine2: order.shippingAddress?.line2 || order.shippingAddress?.addressLine2,
         city: order.shippingAddress?.city || "City",
         state: order.shippingAddress?.state || "State",
         pincode: order.shippingAddress?.pincode || "000000",
@@ -299,7 +299,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       invoiceValue: order.totalAmount,
       productDescription: order.productDescription ||
         (order.items?.map((i: { name?: string }) => i.name).join(", ").substring(0, 50)),
-      invoiceNo: `INV-${order.orderNumber || orderId}`,
+      invoiceNo: `INV-${order.orderNo || order.orderNumber || orderId}`,
       routeCode: order.routeCode,
       sortCode: order.sortCode,
     };

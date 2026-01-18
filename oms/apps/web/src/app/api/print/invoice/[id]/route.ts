@@ -359,9 +359,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         email: company?.email,
         gst: company?.gst,
       },
-      invoiceNo: `INV-${order.orderNumber || orderId}`,
+      invoiceNo: `INV-${order.orderNo || order.orderNumber || orderId}`,
       invoiceDate: new Date(),
-      orderNo: order.orderNumber || orderId,
+      orderNo: order.orderNo || order.orderNumber || orderId,
       orderDate: new Date(order.orderDate || order.createdAt),
       customer: {
         name: order.customerName || order.customer?.name || "Customer",
@@ -370,8 +370,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       },
       shippingAddress: {
         name: order.shippingAddress?.name || order.customerName || "Customer",
-        addressLine1: order.shippingAddress?.addressLine1 || order.shippingAddress?.address || "Address",
-        addressLine2: order.shippingAddress?.addressLine2,
+        addressLine1: order.shippingAddress?.line1 || order.shippingAddress?.addressLine1 || order.shippingAddress?.address || "Address",
+        addressLine2: order.shippingAddress?.line2 || order.shippingAddress?.addressLine2,
         city: order.shippingAddress?.city || "City",
         state: order.shippingAddress?.state || "State",
         pincode: order.shippingAddress?.pincode || "000000",
@@ -379,8 +379,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       billingAddress: order.billingAddress
         ? {
             name: order.billingAddress.name || order.customerName || "Customer",
-            addressLine1: order.billingAddress.addressLine1 || order.billingAddress.address || "Address",
-            addressLine2: order.billingAddress.addressLine2,
+            addressLine1: order.billingAddress.line1 || order.billingAddress.addressLine1 || order.billingAddress.address || "Address",
+            addressLine2: order.billingAddress.line2 || order.billingAddress.addressLine2,
             city: order.billingAddress.city || "City",
             state: order.billingAddress.state || "State",
             pincode: order.billingAddress.pincode || "000000",

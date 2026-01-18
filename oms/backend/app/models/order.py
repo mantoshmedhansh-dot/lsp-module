@@ -228,6 +228,14 @@ class Delivery(BaseModel, table=True):
             index=True
         )
     )
+    companyId: UUID = Field(
+        sa_column=Column(
+            PG_UUID(as_uuid=True),
+            ForeignKey("Company.id"),
+            nullable=False,
+            index=True
+        )
+    )
     transporterId: Optional[UUID] = Field(
         default=None,
         sa_column=Column(PG_UUID(as_uuid=True), ForeignKey("Transporter.id"))

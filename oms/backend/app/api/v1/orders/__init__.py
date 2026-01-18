@@ -577,9 +577,10 @@ def create_delivery(
         )
 
     try:
-        # Override orderId from URL
+        # Override orderId from URL and set companyId from order
         delivery_dict = delivery_data.model_dump()
         delivery_dict["orderId"] = order_id
+        delivery_dict["companyId"] = order.companyId
 
         delivery = Delivery(**delivery_dict)
         session.add(delivery)

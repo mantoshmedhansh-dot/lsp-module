@@ -19,6 +19,7 @@ from app.models.inventory import Inventory
 from app.models.sku import SKU
 from app.models.system import Exception as ExceptionModel
 from app.models.user import User
+from app.services.scheduler import get_last_scan_result
 
 router = APIRouter(prefix="/control-tower", tags=["Control Tower"])
 
@@ -483,6 +484,9 @@ def get_control_tower_dashboard(
         ndr_query = ndr_query.where(NDR.companyId == company_id)
     open_ndrs = session.exec(ndr_query).one()
 
+    # Get last scan result from scheduler
+    last_scan = get_last_scan_result()
+
     return {
         "exceptions": {
             "critical": critical_count,
@@ -498,7 +502,17 @@ def get_control_tower_dashboard(
             "ordersToday": orders_today,
             "openNDRs": open_ndrs,
         },
-        "lastScan": now.isoformat(),
+        "scheduler": {
+            "lastScan": last_scan.get("timestamp"),
+            "status": last_scan.get("status"),
+            "lastResult": {
+                "rulesExecuted": last_scan.get("rules_executed", 0),
+                "exceptionsCreated": last_scan.get("exceptions_created", 0),
+                "exceptionsUpdated": last_scan.get("exceptions_updated", 0),
+                "autoResolved": last_scan.get("auto_resolved", 0),
+            }
+        },
+        "timestamp": now.isoformat(),
     }
 
 

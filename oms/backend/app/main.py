@@ -1,14 +1,42 @@
+import logging
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 from .core.config import settings
 from .api.routes import api_router
+from .services.scheduler import start_scheduler, shutdown_scheduler, get_last_scan_result
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Startup and shutdown events for the FastAPI app."""
+    # Startup
+    logger.info("Starting CJDQuick OMS API...")
+    start_scheduler()
+    logger.info("Scheduler started - Detection Engine will run every 15 minutes")
+    yield
+    # Shutdown
+    logger.info("Shutting down CJDQuick OMS API...")
+    shutdown_scheduler()
+    logger.info("Scheduler stopped")
+
 
 app = FastAPI(
     title=settings.APP_NAME,
     description="CJDQuick Order Management System API",
-    version="1.1.0",
+    version="1.2.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    lifespan=lifespan
 )
 
 # CORS configuration
@@ -42,7 +70,19 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "deploy": "auto"}
+    return {"status": "healthy", "deploy": "auto", "version": "1.2.0"}
+
+
+@app.get("/scheduler/status")
+async def scheduler_status():
+    """Get scheduler status and last scan result."""
+    return {
+        "scheduler": "running",
+        "detection_engine": {
+            "interval": "15 minutes",
+            "last_scan": get_last_scan_result()
+        }
+    }
 
 
 @app.get("/debug/db")

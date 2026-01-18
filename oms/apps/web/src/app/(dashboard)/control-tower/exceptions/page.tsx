@@ -58,6 +58,17 @@ interface Exception {
   createdAt: string;
 }
 
+interface SchedulerInfo {
+  lastScan: string | null;
+  status: string;
+  lastResult: {
+    rulesExecuted: number;
+    exceptionsCreated: number;
+    exceptionsUpdated: number;
+    autoResolved: number;
+  };
+}
+
 interface DashboardStats {
   exceptions: {
     critical: number;
@@ -70,7 +81,8 @@ interface DashboardStats {
     ordersToday: number;
     openNDRs: number;
   };
-  lastScan: string;
+  scheduler: SchedulerInfo;
+  timestamp: string;
 }
 
 const severityConfig: Record<string, { label: string; color: string; icon: React.ElementType }> = {
@@ -181,9 +193,20 @@ export default function ExceptionManagementPage() {
     }
   };
 
+  // Initial fetch
   useEffect(() => {
     fetchStats();
     fetchExceptions();
+  }, [fetchStats, fetchExceptions]);
+
+  // Auto-refresh every 60 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchStats();
+      fetchExceptions();
+    }, 60000); // 60 seconds
+
+    return () => clearInterval(interval);
   }, [fetchStats, fetchExceptions]);
 
   function clearFilters() {
@@ -234,27 +257,55 @@ export default function ExceptionManagementPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button
-            variant="default"
+            variant="outline"
             onClick={runDetectionEngine}
             disabled={isScanning}
           >
             <Zap className={`mr-2 h-4 w-4 ${isScanning ? "animate-pulse" : ""}`} />
-            {isScanning ? "Scanning..." : "Run Detection"}
+            {isScanning ? "Scanning..." : "Run Now"}
           </Button>
-          <Button variant="outline" onClick={fetchExceptions} disabled={isLoading}>
-            <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
-            Refresh
+          <Button variant="ghost" size="icon" onClick={fetchExceptions} disabled={isLoading}>
+            <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
           </Button>
         </div>
       </div>
 
-      {/* Last Scan Result */}
+      {/* Scheduler Status Banner */}
+      <Card className="bg-gradient-to-r from-indigo-50 to-blue-50 border-indigo-200">
+        <CardContent className="py-3">
+          <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                <span className="font-medium text-indigo-700">Auto-Detection Active</span>
+              </div>
+              <span className="text-indigo-600">
+                Scans every 15 minutes
+              </span>
+            </div>
+            {stats?.scheduler?.lastScan && (
+              <div className="flex items-center gap-4 text-xs">
+                <span className="text-indigo-500">
+                  Last scan: {new Date(stats.scheduler.lastScan).toLocaleTimeString()}
+                </span>
+                {stats.scheduler.lastResult && (
+                  <span className="text-indigo-400">
+                    ({stats.scheduler.lastResult.rulesExecuted} rules, {stats.scheduler.lastResult.exceptionsCreated} created)
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Manual Scan Result */}
       {lastScanResult && (
         <Card className="bg-blue-50 border-blue-200">
           <CardContent className="py-3">
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-4">
-                <span className="font-medium text-blue-700">Last Scan Result:</span>
+                <span className="font-medium text-blue-700">Manual Scan Result:</span>
                 <span className="text-blue-600">
                   {lastScanResult.summary.exceptions_created} created,{" "}
                   {lastScanResult.summary.exceptions_updated} updated,{" "}
@@ -381,10 +432,9 @@ export default function ExceptionManagementPage() {
                   ? "No exceptions match your filters"
                   : "No exceptions detected. Operations running smoothly."}
               </p>
-              <Button className="mt-4" onClick={runDetectionEngine} disabled={isScanning}>
-                <Zap className="mr-2 h-4 w-4" />
-                Run Detection Engine
-              </Button>
+              <p className="text-xs text-muted-foreground mt-1">
+                Auto-detection runs every 15 minutes
+              </p>
             </div>
           ) : (
             <Table>

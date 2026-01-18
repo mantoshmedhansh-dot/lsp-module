@@ -49,8 +49,15 @@ def list_ndrs(
     if priority:
         base_query = base_query.where(NDR.priority == priority)
 
-    # Get total count
-    count = session.exec(select(func.count(NDR.id)).select_from(base_query.subquery())).one()
+    # Get total count - build separate count query with same conditions
+    count_query = select(func.count(NDR.id))
+    if company_filter.company_id:
+        count_query = count_query.where(NDR.companyId == company_filter.company_id)
+    if ndr_status:
+        count_query = count_query.where(NDR.status == ndr_status)
+    if priority:
+        count_query = count_query.where(NDR.priority == priority)
+    count = session.exec(count_query).one()
 
     # Get paginated results
     ndrs = session.exec(
@@ -125,15 +132,17 @@ def get_ndr_summary(
 
     ndrs = session.exec(base_query).all()
 
-    open_count = sum(1 for n in ndrs if n.status == NDRStatus.OPEN)
-    resolved_count = sum(1 for n in ndrs if n.status == NDRStatus.RESOLVED)
-    rto_count = sum(1 for n in ndrs if n.status == NDRStatus.RTO)
+    open_count = sum(1 for n in ndrs if n.status and n.status == NDRStatus.OPEN)
+    resolved_count = sum(1 for n in ndrs if n.status and n.status == NDRStatus.RESOLVED)
+    rto_count = sum(1 for n in ndrs if n.status and n.status == NDRStatus.RTO)
 
     by_reason = {}
     by_priority = {}
     for n in ndrs:
-        by_reason[n.reason.value] = by_reason.get(n.reason.value, 0) + 1
-        by_priority[n.priority.value] = by_priority.get(n.priority.value, 0) + 1
+        reason_key = n.reason.value if n.reason else "OTHER"
+        priority_key = n.priority.value if n.priority else "MEDIUM"
+        by_reason[reason_key] = by_reason.get(reason_key, 0) + 1
+        by_priority[priority_key] = by_priority.get(priority_key, 0) + 1
 
     return {
         "totalNDRs": len(ndrs),

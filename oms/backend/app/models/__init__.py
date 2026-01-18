@@ -483,6 +483,19 @@ from .system import (
     BrandUserResponse,
 )
 
+# Detection Rule models and schemas
+from .detection_rule import (
+    DetectionRule,
+    DetectionRuleCreate,
+    DetectionRuleUpdate,
+    DetectionRuleResponse,
+    DetectionRuleBrief,
+    RuleType,
+    EntityType,
+    Operator,
+    AIActionType as RuleAIActionType,
+)
+
 __all__ = [
     # Base
     "BaseModel",

@@ -67,7 +67,7 @@ interface QuotationItem {
 
 interface Quotation {
   id: string;
-  quotationNumber: string;
+  quotationNo: string;
   customer: {
     id: string;
     code: string;
@@ -339,7 +339,7 @@ export default function QuotationDetailPage() {
           <div>
             <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
               <FileText className="h-6 w-6" />
-              {quotation.quotationNumber}
+              {quotation.quotationNo}
             </h1>
             <p className="text-muted-foreground">
               Created {new Date(quotation.createdAt).toLocaleDateString()}

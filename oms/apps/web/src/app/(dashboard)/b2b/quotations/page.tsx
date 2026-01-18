@@ -71,7 +71,7 @@ interface Quotation {
   customer: {
     id: string;
     name: string;
-    customerNo: string;
+    code: string;
     email: string | null;
   };
   createdBy: {
@@ -403,7 +403,7 @@ export default function QuotationsPage() {
                               {quotation.customer.name}
                             </button>
                             <p className="text-xs text-muted-foreground">
-                              {quotation.customer.customerNo}
+                              {quotation.customer.code}
                             </p>
                           </div>
                         </TableCell>

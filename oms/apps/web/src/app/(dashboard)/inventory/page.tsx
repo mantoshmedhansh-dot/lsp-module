@@ -84,10 +84,12 @@ interface Inventory {
   id: string;
   quantity: number;
   reservedQty: number;
+  availableQty?: number;
   batchNo: string | null;
   lotNo: string | null;
   expiryDate: string | null;
-  sku: {
+  // Nested objects (full format)
+  sku?: {
     id: string;
     code: string;
     name: string;
@@ -96,18 +98,22 @@ interface Inventory {
     reorderLevel: number | null;
     images: string[];
   };
-  bin: {
+  bin?: {
     id: string;
     code: string;
     name: string | null;
-    zone: {
+    zone?: {
       id: string;
       code: string;
       name: string;
       type: string;
     };
   };
-  location: Location;
+  location?: Location;
+  // Flat IDs (brief format from backend)
+  skuId?: string;
+  binId?: string;
+  locationId?: string;
 }
 
 interface InventoryResponse {
@@ -170,7 +176,32 @@ export default function InventoryPage() {
       const response = await fetch(`/api/v1/inventory?${params}`);
       if (!response.ok) throw new Error("Failed to fetch inventory");
       const result = await response.json();
-      setData(result);
+
+      // Handle both array format (backend) and wrapped format
+      if (Array.isArray(result)) {
+        // Calculate stats from array
+        const totalQuantity = result.reduce((sum: number, inv: { quantity?: number }) => sum + (inv.quantity || 0), 0);
+        const totalReserved = result.reduce((sum: number, inv: { reservedQty?: number }) => sum + (inv.reservedQty || 0), 0);
+        const uniqueSkus = new Set(result.map((inv: { skuId?: string }) => inv.skuId)).size;
+
+        setData({
+          inventory: result,
+          total: result.length,
+          page: page,
+          limit: 50,
+          totalPages: 1,
+          stats: {
+            totalQuantity,
+            totalReserved,
+            availableQuantity: totalQuantity - totalReserved,
+            uniqueSkus,
+            lowStockCount: 0,
+            outOfStockCount: result.filter((inv: { quantity?: number }) => (inv.quantity || 0) === 0).length,
+          },
+        });
+      } else {
+        setData(result);
+      }
     } catch (error) {
       console.error("Error fetching inventory:", error);
       toast.error("Failed to load inventory");
@@ -261,8 +292,8 @@ export default function InventoryPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          skuId: selectedInventory.sku.id,
-          fromBinId: selectedInventory.bin.id,
+          skuId: selectedInventory.sku?.id || selectedInventory.skuId,
+          fromBinId: selectedInventory.bin?.id || selectedInventory.binId,
           toBinId: moveData.toBinId,
           quantity: moveData.quantity,
           batchNo: selectedInventory.batchNo,
@@ -495,22 +526,30 @@ export default function InventoryPage() {
                 </TableHeader>
                 <TableBody>
                   {data.inventory.map((inv) => {
-                    const available = inv.quantity - inv.reservedQty;
+                    const available = inv.availableQty ?? (inv.quantity - inv.reservedQty);
                     const isLowStock =
-                      inv.sku.reorderLevel && inv.quantity <= inv.sku.reorderLevel;
+                      inv.sku?.reorderLevel && inv.quantity <= inv.sku.reorderLevel;
                     const isOutOfStock = inv.quantity === 0;
+
+                    // Handle both nested objects and flat IDs
+                    const skuCode = inv.sku?.code || inv.skuId?.slice(0, 8) || "-";
+                    const skuName = inv.sku?.name || "SKU Details";
+                    const skuCategory = inv.sku?.category;
+                    const binCode = inv.bin?.code || inv.binId?.slice(0, 8) || "-";
+                    const zoneCode = inv.bin?.zone?.code || "";
+                    const locationCode = inv.location?.code || inv.locationId?.slice(0, 8) || "";
 
                     return (
                       <TableRow key={inv.id}>
                         <TableCell>
                           <div>
-                            <p className="font-medium">{inv.sku.code}</p>
+                            <p className="font-medium">{skuCode}</p>
                             <p className="text-sm text-muted-foreground line-clamp-1">
-                              {inv.sku.name}
+                              {skuName}
                             </p>
-                            {inv.sku.category && (
+                            {skuCategory && (
                               <p className="text-xs text-muted-foreground">
-                                {inv.sku.category}
+                                {skuCategory}
                               </p>
                             )}
                           </div>
@@ -519,9 +558,9 @@ export default function InventoryPage() {
                           <div className="flex items-center gap-2">
                             <MapPin className="h-4 w-4 text-muted-foreground" />
                             <div>
-                              <p className="font-medium">{inv.bin.code}</p>
+                              <p className="font-medium">{binCode}</p>
                               <p className="text-xs text-muted-foreground">
-                                {inv.bin.zone.code} • {inv.location.code}
+                                {zoneCode}{zoneCode && locationCode ? " • " : ""}{locationCode}
                               </p>
                             </div>
                           </div>
@@ -637,11 +676,11 @@ export default function InventoryPage() {
               <div className="bg-muted p-3 rounded-lg">
                 <div className="flex justify-between text-sm">
                   <span>SKU</span>
-                  <span className="font-medium">{selectedInventory.sku.code}</span>
+                  <span className="font-medium">{selectedInventory.sku?.code || selectedInventory.skuId?.slice(0, 8) || "-"}</span>
                 </div>
                 <div className="flex justify-between text-sm mt-1">
                   <span>From Bin</span>
-                  <span className="font-medium">{selectedInventory.bin.code}</span>
+                  <span className="font-medium">{selectedInventory.bin?.code || selectedInventory.binId?.slice(0, 8) || "-"}</span>
                 </div>
                 <div className="flex justify-between text-sm mt-1">
                   <span>Available</span>
@@ -664,7 +703,7 @@ export default function InventoryPage() {
                   </SelectTrigger>
                   <SelectContent>
                     {bins
-                      .filter((b) => b.id !== selectedInventory.bin.id)
+                      .filter((b) => b.id !== (selectedInventory.bin?.id || selectedInventory.binId))
                       .map((bin) => (
                         <SelectItem key={bin.id} value={bin.id}>
                           {bin.code} ({bin.zone?.code})

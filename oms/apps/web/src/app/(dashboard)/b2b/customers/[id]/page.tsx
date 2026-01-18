@@ -55,7 +55,7 @@ interface Customer {
   status: "ACTIVE" | "INACTIVE" | "SUSPENDED" | "BLOCKED";
   email?: string;
   phone?: string;
-  gstin?: string;
+  gst?: string;
   pan?: string;
   billingAddress?: {
     line1: string;
@@ -77,7 +77,7 @@ interface Customer {
   creditUsed: number;
   creditAvailable: number;
   creditStatus: "AVAILABLE" | "EXCEEDED" | "BLOCKED" | "ON_HOLD";
-  paymentTerms: string;
+  paymentTermType: string;
   priceListId?: string;
   priceList?: {
     id: string;
@@ -159,10 +159,10 @@ export default function CustomerDetailPage() {
     status: "ACTIVE" as Customer["status"],
     email: "",
     phone: "",
-    gstin: "",
+    gst: "",
     pan: "",
     creditLimit: 0,
-    paymentTerms: "IMMEDIATE",
+    paymentTermType: "IMMEDIATE",
     notes: "",
   });
 
@@ -183,7 +183,7 @@ export default function CustomerDetailPage() {
   const fetchCustomer = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/v1/v1/customers/${customerId}`);
+      const response = await fetch(`/api/v1/customers/${customerId}`);
       if (!response.ok) {
         if (response.status === 404) {
           toast.error("Customer not found");
@@ -200,10 +200,10 @@ export default function CustomerDetailPage() {
         status: data.status,
         email: data.email || "",
         phone: data.phone || "",
-        gstin: data.gstin || "",
+        gst: data.gst || "",
         pan: data.pan || "",
         creditLimit: data.creditLimit,
-        paymentTerms: data.paymentTerms,
+        paymentTermType: data.paymentTermType,
         notes: data.notes || "",
       });
       if (data.billingAddress) {
@@ -236,7 +236,7 @@ export default function CustomerDetailPage() {
 
   const fetchOrders = useCallback(async () => {
     try {
-      const response = await fetch(`/api/v1/v1/customers/${customerId}/orders?limit=10`);
+      const response = await fetch(`/api/v1/customers/${customerId}/orders?limit=10`);
       if (response.ok) {
         const data = await response.json();
         setOrders(data.data || []);
@@ -280,7 +280,7 @@ export default function CustomerDetailPage() {
 
     try {
       setSaving(true);
-      const response = await fetch(`/api/v1/v1/customers/${customerId}`, {
+      const response = await fetch(`/api/v1/customers/${customerId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -616,9 +616,9 @@ export default function CustomerDetailPage() {
                     <div className="space-y-2">
                       <Label>GSTIN</Label>
                       <Input
-                        value={formData.gstin}
+                        value={formData.gst}
                         onChange={(e) =>
-                          setFormData({ ...formData, gstin: e.target.value })
+                          setFormData({ ...formData, gst: e.target.value })
                         }
                         placeholder="22AAAAA0000A1Z5"
                       />
@@ -638,7 +638,7 @@ export default function CustomerDetailPage() {
                   <div className="grid gap-4">
                     <div>
                       <Label className="text-muted-foreground">GSTIN</Label>
-                      <p className="font-mono">{customer.gstin || "-"}</p>
+                      <p className="font-mono">{customer.gst || "-"}</p>
                     </div>
                     <div>
                       <Label className="text-muted-foreground">PAN</Label>
@@ -927,9 +927,9 @@ export default function CustomerDetailPage() {
                     <div className="space-y-2">
                       <Label>Payment Terms</Label>
                       <Select
-                        value={formData.paymentTerms}
+                        value={formData.paymentTermType}
                         onValueChange={(value) =>
-                          setFormData({ ...formData, paymentTerms: value })
+                          setFormData({ ...formData, paymentTermType: value })
                         }
                       >
                         <SelectTrigger>
@@ -950,8 +950,8 @@ export default function CustomerDetailPage() {
                     <div>
                       <Label className="text-muted-foreground">Payment Terms</Label>
                       <p className="font-medium">
-                        {PAYMENT_TERMS.find((t) => t.value === customer.paymentTerms)
-                          ?.label || customer.paymentTerms}
+                        {PAYMENT_TERMS.find((t) => t.value === customer.paymentTermType)
+                          ?.label || customer.paymentTermType}
                       </p>
                     </div>
                   </div>

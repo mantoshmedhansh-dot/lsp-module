@@ -31,76 +31,17 @@ def list_ndrs(
     page: int = Query(1, ge=1),
     limit: int = Query(50, ge=1, le=100),
     skip: int = Query(0, ge=0),
-    ndr_status: Optional[NDRStatus] = Query(None, alias="status"),
-    priority: Optional[NDRPriority] = None,
-    reason: Optional[NDRReason] = None,
-    search: Optional[str] = None,
-    order_id: Optional[UUID] = None,
-    delivery_id: Optional[UUID] = None,
-    date_from: Optional[datetime] = None,
-    date_to: Optional[datetime] = None,
     company_filter: CompanyFilter = Depends(),
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
-    """List NDRs with pagination, filters, and aggregated stats."""
-    # Calculate skip from page if not provided
-    actual_skip = skip if skip > 0 else (page - 1) * limit
-
-    # Base query for filtering
-    base_query = select(NDR)
-
-    if company_filter.company_id:
-        base_query = base_query.where(NDR.companyId == company_filter.company_id)
-
-    if ndr_status:
-        base_query = base_query.where(NDR.status == ndr_status)
-    if priority:
-        base_query = base_query.where(NDR.priority == priority)
-    if reason:
-        base_query = base_query.where(NDR.reason == reason)
-    if order_id:
-        base_query = base_query.where(NDR.orderId == order_id)
-    if delivery_id:
-        base_query = base_query.where(NDR.deliveryId == delivery_id)
-    if date_from:
-        base_query = base_query.where(NDR.attemptDate >= date_from)
-    if date_to:
-        base_query = base_query.where(NDR.attemptDate <= date_to)
-
-    # Get total count
-    count_query = select(func.count()).select_from(base_query.subquery())
-    total = session.exec(count_query).one()
-
-    # Get paginated NDRs
-    paginated_query = base_query.offset(actual_skip).limit(limit).order_by(NDR.createdAt.desc())
-    ndrs = session.exec(paginated_query).all()
-
-    # Format NDRs for response (simplified - no related data)
-    formatted_ndrs = []
-    for n in ndrs:
-        formatted_ndrs.append({
-            "id": str(n.id),
-            "ndrCode": n.ndrCode,
-            "reason": n.reason.value if n.reason else "OTHER",
-            "aiClassification": n.aiClassification,
-            "confidence": n.confidence,
-            "status": n.status.value if n.status else "OPEN",
-            "priority": n.priority.value if n.priority else "MEDIUM",
-            "riskScore": n.riskScore,
-            "attemptNumber": n.attemptNumber,
-            "attemptDate": n.attemptDate.isoformat() if n.attemptDate else None,
-            "carrierRemark": n.carrierRemark,
-            "createdAt": n.createdAt.isoformat() if n.createdAt else None,
-            "order": None,
-            "delivery": None,
-            "outreachAttempts": [],
-            "outreachCount": 0,
-        })
+    """List NDRs with pagination (minimal version for debugging)."""
+    # Very simple implementation - just return count to verify endpoint works
+    count = session.exec(select(func.count(NDR.id))).one()
 
     return {
-        "ndrs": formatted_ndrs,
-        "total": total,
+        "ndrs": [],
+        "total": count,
         "statusCounts": {},
         "priorityCounts": {},
         "reasonCounts": {},

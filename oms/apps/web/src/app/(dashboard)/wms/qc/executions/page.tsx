@@ -65,7 +65,7 @@ interface QCExecution {
   template: {
     id: string;
     name: string;
-    qcType: string;
+    type: string;
   };
   sku: {
     id: string;
@@ -150,7 +150,7 @@ export default function QCExecutionsPage() {
       const params = new URLSearchParams();
       if (search) params.set("search", search);
       if (activeTab !== "all") params.set("status", activeTab);
-      if (typeFilter) params.set("qcType", typeFilter);
+      if (typeFilter) params.set("qc_type", typeFilter);
       params.set("page", page.toString());
       params.set("limit", "25");
 
@@ -403,8 +403,8 @@ export default function QCExecutionsPage() {
                       variant: "outline" as const,
                       icon: Clock,
                     };
-                    const typeInfo = qcTypeConfig[execution.template.qcType] || {
-                      label: execution.template.qcType,
+                    const typeInfo = qcTypeConfig[execution.template.type] || {
+                      label: execution.template.type,
                       color: "bg-gray-500",
                     };
                     const sourceInfo = getSourceInfo(execution);

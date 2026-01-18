@@ -65,8 +65,7 @@ interface QCParameter {
 interface QCTemplate {
   id: string;
   name: string;
-  type?: "INBOUND" | "RETURN" | "PRODUCTION" | "CYCLE_COUNT" | "RANDOM_AUDIT";
-  qcType: "INBOUND" | "RETURN" | "PRODUCTION" | "CYCLE_COUNT" | "RANDOM_AUDIT";
+  type: "INBOUND" | "RETURN" | "PRODUCTION" | "CYCLE_COUNT" | "RANDOM_AUDIT";
   description?: string;
   isActive: boolean;
   parameters: QCParameter[];
@@ -107,7 +106,7 @@ export default function QCTemplateDetailPage() {
 
   const [formData, setFormData] = useState({
     name: "",
-    qcType: "INBOUND" as QCTemplate["qcType"],
+    type: "INBOUND" as QCTemplate["type"],
     description: "",
     isActive: true,
   });
@@ -124,7 +123,7 @@ export default function QCTemplateDetailPage() {
   const fetchTemplate = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/v1/v1/qc/templates/${templateId}`);
+      const response = await fetch(`/api/v1/qc/templates/${templateId}`);
       if (!response.ok) {
         if (response.status === 404) {
           toast.error("Template not found");
@@ -137,7 +136,7 @@ export default function QCTemplateDetailPage() {
       setTemplate(data);
       setFormData({
         name: data.name,
-        qcType: data.qcType || data.type,
+        type: data.type,
         description: data.description || "",
         isActive: data.isActive,
       });
@@ -161,14 +160,13 @@ export default function QCTemplateDetailPage() {
 
     try {
       setSaving(true);
-      // Transform qcType back to type for the API
       const apiData = {
         name: formData.name,
-        type: formData.qcType,
+        type: formData.type,
         description: formData.description,
         isActive: formData.isActive,
       };
-      const response = await fetch(`/api/v1/v1/qc/templates/${templateId}`, {
+      const response = await fetch(`/api/v1/qc/templates/${templateId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(apiData),
@@ -195,7 +193,7 @@ export default function QCTemplateDetailPage() {
     }
 
     try {
-      const response = await fetch(`/api/v1/v1/qc/templates/${templateId}/parameters`, {
+      const response = await fetch(`/api/v1/qc/templates/${templateId}/parameters`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -265,7 +263,7 @@ export default function QCTemplateDetailPage() {
 
   const handleDuplicateTemplate = async () => {
     try {
-      const response = await fetch(`/api/v1/v1/qc/templates/${templateId}/duplicate`, {
+      const response = await fetch(`/api/v1/qc/templates/${templateId}/duplicate`, {
         method: "POST",
       });
 
@@ -303,8 +301,8 @@ export default function QCTemplateDetailPage() {
     });
   };
 
-  const getTypeBadgeColor = (type: QCTemplate["qcType"]) => {
-    const colors: Record<QCTemplate["qcType"], string> = {
+  const getTypeBadgeColor = (type: QCTemplate["type"]) => {
+    const colors: Record<QCTemplate["type"], string> = {
       INBOUND: "bg-blue-100 text-blue-800",
       RETURN: "bg-orange-100 text-orange-800",
       PRODUCTION: "bg-purple-100 text-purple-800",
@@ -411,11 +409,11 @@ export default function QCTemplateDetailPage() {
                   <div className="space-y-2">
                     <Label>QC Type</Label>
                     <Select
-                      value={formData.qcType}
+                      value={formData.type}
                       onValueChange={(value) =>
                         setFormData({
                           ...formData,
-                          qcType: value as QCTemplate["qcType"],
+                          type: value as QCTemplate["type"],
                         })
                       }
                     >
@@ -462,8 +460,8 @@ export default function QCTemplateDetailPage() {
                 <div>
                   <Label className="text-muted-foreground">QC Type</Label>
                   <div className="mt-1">
-                    <Badge className={getTypeBadgeColor(template.qcType)}>
-                      {template.qcType.replace("_", " ")}
+                    <Badge className={getTypeBadgeColor(template.type)}>
+                      {template.type.replace("_", " ")}
                     </Badge>
                   </div>
                 </div>

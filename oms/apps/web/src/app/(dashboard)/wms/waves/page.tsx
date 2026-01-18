@@ -72,29 +72,26 @@ interface Wave {
   waveNo: string;
   name: string;
   status: string;
-  waveType: string;
+  type: string;
   priority: number;
   createdAt: string;
   releasedAt: string | null;
   completedAt: string | null;
-  location: {
+  totalOrders: number;
+  totalItems: number;
+  pickedOrders: number;
+  location?: {
     id: string;
     code: string;
     name: string;
   };
-  createdBy: {
+  createdByUser?: {
     id: string;
     name: string;
   };
-  _count: {
+  _count?: {
     orders: number;
     items: number;
-  };
-  stats?: {
-    totalOrders: number;
-    totalItems: number;
-    pickedItems: number;
-    completionPercentage: number;
   };
 }
 
@@ -151,7 +148,7 @@ export default function WavesPage() {
   // Create wave form
   const [newWave, setNewWave] = useState({
     name: "",
-    waveType: "BATCH_PICK",
+    type: "BATCH_PICK",
     priority: 1,
   });
 
@@ -196,7 +193,7 @@ export default function WavesPage() {
       if (response.ok) {
         toast.success("Wave created successfully");
         setIsCreateDialogOpen(false);
-        setNewWave({ name: "", waveType: "BATCH_PICK", priority: 1 });
+        setNewWave({ name: "", type: "BATCH_PICK", priority: 1 });
         fetchWaves();
       } else {
         toast.error(result.error || "Failed to create wave");
@@ -304,9 +301,9 @@ export default function WavesPage() {
                 <div className="grid gap-2">
                   <Label htmlFor="waveType">Wave Type</Label>
                   <Select
-                    value={newWave.waveType}
+                    value={newWave.type}
                     onValueChange={(value) =>
-                      setNewWave((prev) => ({ ...prev, waveType: value }))
+                      setNewWave((prev) => ({ ...prev, type: value }))
                     }
                   >
                     <SelectTrigger>
@@ -449,8 +446,8 @@ export default function WavesPage() {
                       variant: "outline" as const,
                       icon: Clock,
                     };
-                    const waveType = waveTypeConfig[wave.waveType] || {
-                      label: wave.waveType,
+                    const waveType = waveTypeConfig[wave.type] || {
+                      label: wave.type,
                       description: "",
                     };
                     const progress = wave.stats?.completionPercentage || 0;

@@ -75,7 +75,7 @@ interface QCTemplate {
   id: string;
   name: string;
   description: string | null;
-  qcType: string;
+  type: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -125,7 +125,7 @@ export default function QCTemplatesPage() {
   const [newTemplate, setNewTemplate] = useState({
     name: "",
     description: "",
-    qcType: "INBOUND",
+    type: "INBOUND",
     parameters: [{ name: "", type: "VISUAL", isMandatory: true }],
   });
 
@@ -134,7 +134,7 @@ export default function QCTemplatesPage() {
       setIsLoading(true);
       const params = new URLSearchParams();
       if (search) params.set("search", search);
-      if (typeFilter) params.set("qcType", typeFilter);
+      if (typeFilter) params.set("qc_type", typeFilter);
       params.set("page", page.toString());
       params.set("limit", "25");
 
@@ -178,7 +178,7 @@ export default function QCTemplatesPage() {
         setNewTemplate({
           name: "",
           description: "",
-          qcType: "INBOUND",
+          type: "INBOUND",
           parameters: [{ name: "", type: "VISUAL", isMandatory: true }],
         });
         fetchTemplates();
@@ -323,9 +323,9 @@ export default function QCTemplatesPage() {
                 <div className="grid gap-2">
                   <Label htmlFor="qcType">QC Type</Label>
                   <Select
-                    value={newTemplate.qcType}
+                    value={newTemplate.type}
                     onValueChange={(value) =>
-                      setNewTemplate((prev) => ({ ...prev, qcType: value }))
+                      setNewTemplate((prev) => ({ ...prev, type: value }))
                     }
                   >
                     <SelectTrigger>
@@ -517,8 +517,8 @@ export default function QCTemplatesPage() {
                 </TableHeader>
                 <TableBody>
                   {data.templates.map((template) => {
-                    const typeInfo = qcTypeConfig[template.qcType] || {
-                      label: template.qcType,
+                    const typeInfo = qcTypeConfig[template.type] || {
+                      label: template.type,
                       color: "bg-gray-500",
                     };
 

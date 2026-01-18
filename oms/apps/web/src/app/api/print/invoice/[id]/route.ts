@@ -425,8 +425,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     });
   } catch (error) {
     console.error("Invoice generation error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorStack = error instanceof Error ? error.stack : undefined;
     return NextResponse.json(
-      { error: "Failed to generate invoice" },
+      { error: "Failed to generate invoice", details: errorMessage, stack: errorStack },
       { status: 500 }
     );
   }

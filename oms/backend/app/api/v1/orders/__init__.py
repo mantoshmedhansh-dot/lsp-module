@@ -576,16 +576,23 @@ def create_delivery(
             detail="Delivery number already exists"
         )
 
-    # Override orderId from URL
-    delivery_dict = delivery_data.model_dump()
-    delivery_dict["orderId"] = order_id
+    try:
+        # Override orderId from URL
+        delivery_dict = delivery_data.model_dump()
+        delivery_dict["orderId"] = order_id
 
-    delivery = Delivery(**delivery_dict)
-    session.add(delivery)
-    session.commit()
-    session.refresh(delivery)
+        delivery = Delivery(**delivery_dict)
+        session.add(delivery)
+        session.commit()
+        session.refresh(delivery)
 
-    return DeliveryResponse.model_validate(delivery)
+        return DeliveryResponse.model_validate(delivery)
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create delivery: {str(e)}"
+        )
 
 
 @router.patch("/{order_id}/deliveries/{delivery_id}", response_model=DeliveryResponse)

@@ -12,6 +12,8 @@ import {
   CheckCircle,
   XCircle,
   ArrowRight,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -58,20 +60,29 @@ export default function B2BQuotationsPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const pageSize = 10;
 
   useEffect(() => {
     fetchQuotations();
-  }, [statusFilter]);
+  }, [statusFilter, page]);
 
   const fetchQuotations = async () => {
     try {
+      setLoading(true);
       const params = new URLSearchParams();
+      params.set("page", page.toString());
+      params.set("pageSize", pageSize.toString());
       if (statusFilter !== "all") params.set("status", statusFilter);
 
       const response = await fetch(`/api/v1/b2b/quotations?${params.toString()}`);
       if (response.ok) {
         const result = await response.json();
         setQuotations(result.quotations || []);
+        setTotalPages(result.totalPages || 1);
+        setTotalCount(result.totalCount || 0);
       }
     } catch (error) {
       console.error("Failed to fetch quotations:", error);
@@ -324,6 +335,35 @@ export default function B2BQuotationsPage() {
             </div>
           )}
         </CardContent>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-4 py-3 border-t">
+            <div className="text-sm text-gray-600">
+              Page {page} of {totalPages} ({totalCount} total)
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+              >
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
       </Card>
     </div>
   );

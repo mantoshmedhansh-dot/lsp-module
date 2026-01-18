@@ -10,6 +10,8 @@ import {
   Package,
   Grid,
   List,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -59,20 +61,29 @@ export default function B2BCatalogPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const pageSize = 12;
 
   useEffect(() => {
     fetchProducts();
-  }, [categoryFilter]);
+  }, [categoryFilter, page]);
 
   const fetchProducts = async () => {
     try {
+      setLoading(true);
       const params = new URLSearchParams();
+      params.set("page", page.toString());
+      params.set("pageSize", pageSize.toString());
       if (categoryFilter !== "all") params.set("category", categoryFilter);
 
       const response = await fetch(`/api/v1/b2b/catalog?${params.toString()}`);
       if (response.ok) {
         const result = await response.json();
         setProducts(result.products || []);
+        setTotalPages(result.totalPages || 1);
+        setTotalCount(result.totalCount || 0);
       }
     } catch (error) {
       console.error("Failed to fetch products:", error);
@@ -403,6 +414,37 @@ export default function B2BCatalogPage() {
             <Package className="h-12 w-12 mx-auto text-gray-300 mb-4" />
             <h3 className="text-lg font-medium text-gray-900">No products found</h3>
             <p className="text-gray-500 mt-1">Try adjusting your search criteria</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <Card>
+          <CardContent className="flex items-center justify-between py-3">
+            <div className="text-sm text-gray-600">
+              Page {page} of {totalPages} ({totalCount} products)
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+              >
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}

@@ -332,6 +332,10 @@ class User(SQLModel, table=True):
 - [x] **PDF Generation Working** (2026-01-18)
   - Invoice, Shipping Label, Picklist PDFs all functional
   - Fixed field mapping and numeric parsing issues
+- [x] **CSV Import Working** (2026-01-18)
+  - Order bulk import from CSV files
+  - Multiple items per order supported
+  - Fixed field mappings and companyId
 
 ### Priority 1: End-to-End Order Flow Test
 **Status: COMPLETED ✅**
@@ -359,11 +363,17 @@ Fixed: Field mapping issues (orderNo vs orderNumber, line1 vs addressLine1)
 Fixed: Numeric value parsing (API returns strings, PDF expects numbers)
 
 ### Priority 3: Enable CSV Import
-**Status: PENDING**
+**Status: COMPLETED ✅**
 
-Files to wire:
-- `apps/web/src/app/(dashboard)/orders/import/page.tsx`
-- Connect to `packages/integrations/src/importers/` (CSV, Order, SKU importers)
+CSV Import tested and working (2026-01-18):
+- ✓ Frontend import page fully functional at `/orders/import`
+- ✓ Backend POST `/api/v1/orders/import` working
+- ✓ Multiple items per order supported (grouped by order_no)
+- ✓ Test import: IMP-TEST-001 created with 2 SKUs
+
+Fixed: Field names (discount, shippingCharges, line1/line2)
+Fixed: Added companyId to imported orders
+Note: SKU must exist before import (fails with clear error if not found)
 
 ### Priority 4: Wire Integration Settings UI
 **Status: PENDING**

@@ -71,23 +71,23 @@ interface OrderItem {
 interface Order {
   id: string;
   orderNo: string;
-  externalOrderNo: string | null;
+  externalOrderNo?: string | null;
   channel: string;
   orderType: string;
-  paymentMode: string;
+  paymentMode?: string;
   status: string;
   customerName: string;
-  customerPhone: string;
-  totalAmount: number;
+  customerPhone?: string;
+  totalAmount: number | string;
   orderDate: string;
-  shipByDate: string | null;
-  location: {
+  shipByDate?: string | null;
+  location?: {
     id: string;
     code: string;
     name: string;
   };
-  items: OrderItem[];
-  deliveries: Array<{
+  items?: OrderItem[];
+  deliveries?: Array<{
     id: string;
     deliveryNo: string;
     status: string;
@@ -97,7 +97,7 @@ interface Order {
       name: string;
     } | null;
   }>;
-  _count: {
+  _count?: {
     items: number;
     picklists: number;
   };
@@ -194,7 +194,20 @@ export default function OrdersPage() {
       const response = await fetch(`/api/v1/orders?${params}`);
       if (!response.ok) throw new Error("Failed to fetch orders");
       const result = await response.json();
-      setData(result);
+
+      // Handle both array format (backend) and wrapped format
+      if (Array.isArray(result)) {
+        setData({
+          orders: result,
+          total: result.length,
+          page: page,
+          limit: 25,
+          totalPages: 1,
+          statusCounts: {},
+        });
+      } else {
+        setData(result);
+      }
     } catch (error) {
       console.error("Error fetching orders:", error);
       toast.error("Failed to load orders");
@@ -554,9 +567,11 @@ export default function OrdersPage() {
                         <TableCell>
                           <div>
                             <p className="font-medium">{order.customerName}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {order.customerPhone}
-                            </p>
+                            {order.customerPhone && (
+                              <p className="text-xs text-muted-foreground">
+                                {order.customerPhone}
+                              </p>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell>
@@ -566,18 +581,20 @@ export default function OrdersPage() {
                             />
                             <span className="text-sm">{channelInfo.label}</span>
                           </div>
-                          <Badge
-                            variant="outline"
-                            className="mt-1 text-xs"
-                          >
-                            {order.paymentMode}
-                          </Badge>
+                          {order.paymentMode && (
+                            <Badge
+                              variant="outline"
+                              className="mt-1 text-xs"
+                            >
+                              {order.paymentMode}
+                            </Badge>
+                          )}
                         </TableCell>
                         <TableCell>
                           <div className="text-sm">
-                            {order._count.items} items
+                            {order._count?.items ?? "-"} items
                           </div>
-                          {order.items.some((i) => i.allocatedQty < i.quantity) && (
+                          {order.items?.some((i) => i.allocatedQty < i.quantity) && (
                             <span className="text-xs text-yellow-600">
                               Partial allocation
                             </span>

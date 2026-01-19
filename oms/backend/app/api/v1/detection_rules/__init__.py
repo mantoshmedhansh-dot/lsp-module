@@ -183,6 +183,194 @@ def toggle_detection_rule(
     return DetectionRuleResponse.model_validate(rule)
 
 
+@router.post("/seed-ndr-rules")
+def seed_ndr_detection_rules(
+    session: Session = Depends(get_session),
+    _: None = Depends(require_admin()),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Create pre-configured NDR detection rules for Control Tower integration.
+    Admin only. Skips rules that already exist (by ruleCode).
+    """
+    now = datetime.utcnow()
+    created = []
+    skipped = []
+
+    # Pre-configured NDR rules
+    ndr_rules = [
+        {
+            "name": "NDR Aging Alert",
+            "ruleCode": "RULE-NDR-AGING-001",
+            "description": "NDR open without action for 4+ hours",
+            "ruleType": "NDR_AGING",
+            "entityType": "NDR",
+            "conditions": [
+                {"field": "status", "operator": "=", "value": "OPEN"},
+                {"field": "createdAt", "operator": "AGE_HOURS", "value": 4}
+            ],
+            "severityRules": {"CRITICAL": 24, "HIGH": 12, "MEDIUM": 4, "LOW": 0},
+            "severityField": "createdAt",
+            "severityUnit": "hours",
+            "defaultSeverity": "MEDIUM",
+            "aiActionEnabled": True,
+            "aiActionType": "AUTO_OUTREACH",
+            "autoResolveEnabled": True,
+        },
+        {
+            "name": "Multi-Attempt NDR",
+            "ruleCode": "RULE-NDR-MULTI-001",
+            "description": "NDR with 2+ failed delivery attempts",
+            "ruleType": "NDR_MULTI_ATTEMPT",
+            "entityType": "NDR",
+            "conditions": [
+                {"field": "attemptNumber", "operator": ">=", "value": 2},
+                {"field": "status", "operator": "IN", "value": ["OPEN", "ACTION_REQUESTED"]}
+            ],
+            "severityRules": {"CRITICAL": 4, "HIGH": 3, "MEDIUM": 2, "LOW": 0},
+            "severityField": "attemptNumber",
+            "severityUnit": "count",
+            "defaultSeverity": "HIGH",
+            "aiActionEnabled": True,
+            "aiActionType": "AUTO_ESCALATE",
+            "autoResolveEnabled": True,
+        },
+        {
+            "name": "No Customer Response",
+            "ruleCode": "RULE-NDR-NORESP-001",
+            "description": "Outreach sent but no response for 12+ hours",
+            "ruleType": "NDR_NO_RESPONSE",
+            "entityType": "NDR",
+            "conditions": [
+                {"field": "status", "operator": "=", "value": "ACTION_REQUESTED"},
+                {"field": "updatedAt", "operator": "AGE_HOURS", "value": 12}
+            ],
+            "severityRules": {"CRITICAL": 48, "HIGH": 24, "MEDIUM": 12, "LOW": 0},
+            "severityField": "updatedAt",
+            "severityUnit": "hours",
+            "defaultSeverity": "MEDIUM",
+            "aiActionEnabled": True,
+            "aiActionType": "AUTO_OUTREACH",
+            "aiActionConfig": {"channel": "SMS", "retry": True},
+            "autoResolveEnabled": True,
+        },
+        {
+            "name": "Address Issue NDR",
+            "ruleCode": "RULE-NDR-ADDR-001",
+            "description": "NDR with address-related failure reason",
+            "ruleType": "NDR_ADDRESS_ISSUE",
+            "entityType": "NDR",
+            "conditions": [
+                {"field": "reason", "operator": "IN", "value": ["WRONG_ADDRESS", "INCOMPLETE_ADDRESS", "ADDRESS_NOT_FOUND"]},
+                {"field": "status", "operator": "=", "value": "OPEN"}
+            ],
+            "severityRules": {},
+            "defaultSeverity": "MEDIUM",
+            "aiActionEnabled": True,
+            "aiActionType": "AUTO_OUTREACH",
+            "aiActionConfig": {"channel": "WHATSAPP", "template": "address_update"},
+            "autoResolveEnabled": True,
+        },
+        {
+            "name": "COD Risk NDR",
+            "ruleCode": "RULE-NDR-COD-001",
+            "description": "COD not ready with 2+ attempts",
+            "ruleType": "NDR_COD_RISK",
+            "entityType": "NDR",
+            "conditions": [
+                {"field": "reason", "operator": "=", "value": "COD_NOT_READY"},
+                {"field": "attemptNumber", "operator": ">=", "value": 2}
+            ],
+            "severityRules": {},
+            "defaultSeverity": "HIGH",
+            "aiActionEnabled": True,
+            "aiActionType": "RECOMMEND",
+            "aiActionConfig": {"recommendation": "Consider converting to prepaid or RTO"},
+            "autoResolveEnabled": True,
+        },
+        {
+            "name": "RTO Candidate",
+            "ruleCode": "RULE-NDR-RTO-001",
+            "description": "NDR with 3+ attempts and 72+ hours old",
+            "ruleType": "NDR_RTO_CANDIDATE",
+            "entityType": "NDR",
+            "conditions": [
+                {"field": "attemptNumber", "operator": ">=", "value": 3},
+                {"field": "createdAt", "operator": "AGE_HOURS", "value": 72},
+                {"field": "status", "operator": "IN", "value": ["OPEN", "ACTION_REQUESTED"]}
+            ],
+            "severityRules": {},
+            "defaultSeverity": "CRITICAL",
+            "aiActionEnabled": True,
+            "aiActionType": "RECOMMEND",
+            "aiActionConfig": {"recommendation": "Initiate RTO"},
+            "autoResolveEnabled": True,
+        },
+        {
+            "name": "Critical NDR Escalation",
+            "ruleCode": "RULE-NDR-ESC-001",
+            "description": "High priority NDR requiring immediate attention",
+            "ruleType": "NDR_ESCALATION",
+            "entityType": "NDR",
+            "conditions": [
+                {"field": "priority", "operator": "=", "value": "CRITICAL"},
+                {"field": "status", "operator": "=", "value": "OPEN"}
+            ],
+            "severityRules": {},
+            "defaultSeverity": "CRITICAL",
+            "aiActionEnabled": True,
+            "aiActionType": "AUTO_ESCALATE",
+            "autoResolveEnabled": True,
+        },
+    ]
+
+    for rule_data in ndr_rules:
+        # Check if rule already exists
+        existing = session.exec(
+            select(DetectionRule).where(DetectionRule.ruleCode == rule_data["ruleCode"])
+        ).first()
+
+        if existing:
+            skipped.append(rule_data["ruleCode"])
+            continue
+
+        rule = DetectionRule(
+            id=uuid4(),
+            name=rule_data["name"],
+            ruleCode=rule_data["ruleCode"],
+            description=rule_data.get("description"),
+            ruleType=rule_data["ruleType"],
+            entityType=rule_data["entityType"],
+            conditions=rule_data.get("conditions", []),
+            severityRules=rule_data.get("severityRules", {}),
+            severityField=rule_data.get("severityField", "createdAt"),
+            severityUnit=rule_data.get("severityUnit", "hours"),
+            defaultSeverity=rule_data.get("defaultSeverity", "MEDIUM"),
+            defaultPriority=3,
+            aiActionEnabled=rule_data.get("aiActionEnabled", False),
+            aiActionType=rule_data.get("aiActionType"),
+            aiActionConfig=rule_data.get("aiActionConfig"),
+            autoResolveEnabled=rule_data.get("autoResolveEnabled", False),
+            isActive=True,
+            isGlobal=True,
+            companyId=None,
+            createdBy=current_user.id,
+            createdAt=now,
+            updatedAt=now,
+        )
+        session.add(rule)
+        created.append(rule_data["ruleCode"])
+
+    session.commit()
+
+    return {
+        "success": True,
+        "message": f"Created {len(created)} NDR detection rules, skipped {len(skipped)} existing",
+        "created": created,
+        "skipped": skipped
+    }
+
+
 @router.get("/types/list")
 def list_rule_types(
     current_user: User = Depends(get_current_user)
@@ -190,20 +378,38 @@ def list_rule_types(
     """Get list of available rule types and entity types."""
     return {
         "ruleTypes": [
-            {"value": "STUCK_ORDER", "label": "Stuck Order", "description": "Detects orders stuck in a status"},
-            {"value": "SLA_BREACH", "label": "SLA Breach", "description": "Detects deliveries past expected date"},
-            {"value": "NDR_ESCALATION", "label": "NDR Escalation", "description": "Detects unresolved NDRs"},
-            {"value": "CARRIER_DELAY", "label": "Carrier Delay", "description": "Detects shipments delayed in transit"},
-            {"value": "INVENTORY_ISSUE", "label": "Inventory Issue", "description": "Detects stock anomalies"},
-            {"value": "PAYMENT_ISSUE", "label": "Payment Issue", "description": "Detects payment/COD issues"},
-            {"value": "CUSTOM", "label": "Custom", "description": "Custom rule type"},
+            # Order & Delivery Rules
+            {"value": "STUCK_ORDER", "label": "Stuck Order", "description": "Detects orders stuck in a status", "entityTypes": ["Order"]},
+            {"value": "SLA_BREACH", "label": "SLA Breach", "description": "Detects deliveries past expected date", "entityTypes": ["Order", "Delivery"]},
+            {"value": "CARRIER_DELAY", "label": "Carrier Delay", "description": "Detects shipments delayed in transit", "entityTypes": ["Delivery"]},
+            {"value": "PAYMENT_ISSUE", "label": "Payment Issue", "description": "Detects payment/COD issues", "entityTypes": ["Order"]},
+            # NDR-Specific Rules (Control Tower Integration)
+            {"value": "NDR_AGING", "label": "NDR Aging Alert", "description": "NDR open without action for too long", "entityTypes": ["NDR"]},
+            {"value": "NDR_MULTI_ATTEMPT", "label": "Multi-Attempt NDR", "description": "NDR with multiple failed delivery attempts", "entityTypes": ["NDR"]},
+            {"value": "NDR_NO_RESPONSE", "label": "No Customer Response", "description": "Outreach sent but no customer response", "entityTypes": ["NDR"]},
+            {"value": "NDR_HIGH_VALUE", "label": "High-Value NDR", "description": "NDR for high-value order requiring attention", "entityTypes": ["NDR"]},
+            {"value": "NDR_COD_RISK", "label": "COD Risk NDR", "description": "COD order with multiple NDR failures", "entityTypes": ["NDR"]},
+            {"value": "NDR_ADDRESS_ISSUE", "label": "Address Issue NDR", "description": "NDR with address-related failure reason", "entityTypes": ["NDR"]},
+            {"value": "NDR_RTO_CANDIDATE", "label": "RTO Candidate", "description": "NDR likely to become RTO", "entityTypes": ["NDR"]},
+            {"value": "NDR_ESCALATION", "label": "NDR Escalation", "description": "NDR requiring management attention", "entityTypes": ["NDR"]},
+            # Other Rules
+            {"value": "INVENTORY_ISSUE", "label": "Inventory Issue", "description": "Detects stock anomalies", "entityTypes": ["Inventory"]},
+            {"value": "RETURN_AGING", "label": "Return Aging", "description": "Return pending processing for too long", "entityTypes": ["Return"]},
+            {"value": "CUSTOM", "label": "Custom", "description": "Custom rule type", "entityTypes": ["Order", "Delivery", "NDR", "Return", "Inventory"]},
         ],
         "entityTypes": [
-            {"value": "Order", "label": "Order", "fields": ["status", "createdAt", "totalAmount", "paymentMode"]},
-            {"value": "Delivery", "label": "Delivery", "fields": ["status", "createdAt", "expectedDeliveryDate", "dispatchedAt"]},
-            {"value": "NDR", "label": "NDR", "fields": ["status", "reason", "attemptNumber", "createdAt"]},
-            {"value": "Return", "label": "Return", "fields": ["status", "reason", "createdAt"]},
-            {"value": "Inventory", "label": "Inventory", "fields": ["quantity", "reservedQty", "reorderLevel"]},
+            {"value": "Order", "label": "Order", "fields": ["status", "createdAt", "totalAmount", "paymentMode", "channel"]},
+            {"value": "Delivery", "label": "Delivery", "fields": ["status", "createdAt", "expectedDeliveryDate", "dispatchedAt", "deliveredAt"]},
+            {
+                "value": "NDR",
+                "label": "NDR",
+                "fields": [
+                    "status", "reason", "attemptNumber", "createdAt", "updatedAt",
+                    "priority", "riskScore", "reattemptDate", "customerResponse"
+                ]
+            },
+            {"value": "Return", "label": "Return", "fields": ["status", "reason", "createdAt", "returnType"]},
+            {"value": "Inventory", "label": "Inventory", "fields": ["quantity", "reservedQty", "reorderLevel", "availableQty"]},
         ],
         "operators": [
             {"value": "=", "label": "Equals"},
@@ -221,11 +427,44 @@ def list_rule_types(
         ],
         "severities": ["CRITICAL", "HIGH", "MEDIUM", "LOW"],
         "aiActionTypes": [
-            {"value": "AUTO_CLASSIFY", "label": "Auto Classify"},
-            {"value": "AUTO_OUTREACH", "label": "Auto Outreach"},
-            {"value": "AUTO_ESCALATE", "label": "Auto Escalate"},
-            {"value": "AUTO_RESOLVE", "label": "Auto Resolve"},
-            {"value": "RECOMMEND", "label": "Recommend Action"},
-            {"value": "PREDICT", "label": "Predict Outcome"},
+            # General Actions
+            {"value": "AUTO_CLASSIFY", "label": "Auto Classify", "description": "Automatically classify the issue"},
+            {"value": "RECOMMEND", "label": "Recommend Action", "description": "AI recommends action for approval"},
+            {"value": "PREDICT", "label": "Predict Outcome", "description": "Predict likely outcome"},
+            # NDR-Specific Actions
+            {"value": "AUTO_OUTREACH", "label": "Auto Outreach", "description": "Automatically send customer outreach (WhatsApp/SMS/Email)"},
+            {"value": "AUTO_ESCALATE", "label": "Auto Escalate", "description": "Automatically escalate to manager"},
+            {"value": "AUTO_REATTEMPT", "label": "Auto Schedule Reattempt", "description": "Automatically schedule delivery reattempt"},
+            {"value": "AUTO_RTO", "label": "Auto Initiate RTO", "description": "Automatically initiate return-to-origin"},
+            {"value": "AUTO_RESOLVE", "label": "Auto Resolve", "description": "Automatically resolve when conditions met"},
+        ],
+        # NDR-specific configuration options
+        "ndrReasons": [
+            {"value": "CUSTOMER_UNAVAILABLE", "label": "Customer Unavailable"},
+            {"value": "WRONG_ADDRESS", "label": "Wrong Address"},
+            {"value": "INCOMPLETE_ADDRESS", "label": "Incomplete Address"},
+            {"value": "CUSTOMER_REFUSED", "label": "Customer Refused"},
+            {"value": "COD_NOT_READY", "label": "COD Not Ready"},
+            {"value": "PHONE_UNREACHABLE", "label": "Phone Unreachable"},
+            {"value": "DELIVERY_RESCHEDULED", "label": "Delivery Rescheduled"},
+            {"value": "ADDRESS_NOT_FOUND", "label": "Address Not Found"},
+            {"value": "AREA_NOT_SERVICEABLE", "label": "Area Not Serviceable"},
+            {"value": "NATURAL_DISASTER", "label": "Natural Disaster"},
+            {"value": "OTHER", "label": "Other"},
+        ],
+        "ndrStatuses": [
+            {"value": "OPEN", "label": "Open"},
+            {"value": "ACTION_REQUESTED", "label": "Action Requested"},
+            {"value": "REATTEMPT_SCHEDULED", "label": "Reattempt Scheduled"},
+            {"value": "RESOLVED", "label": "Resolved"},
+            {"value": "RTO", "label": "RTO"},
+            {"value": "CLOSED", "label": "Closed"},
+        ],
+        "outreachChannels": [
+            {"value": "WHATSAPP", "label": "WhatsApp"},
+            {"value": "SMS", "label": "SMS"},
+            {"value": "EMAIL", "label": "Email"},
+            {"value": "AI_VOICE", "label": "AI Voice Call"},
+            {"value": "IVR", "label": "IVR"},
         ]
     }

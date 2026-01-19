@@ -411,13 +411,20 @@ async def detect_exceptions(
                     status = status.value
 
                 should_resolve = False
+                # Order/Delivery rules
                 if exc.type == "STUCK_ORDER" and status != "CREATED":
                     should_resolve = True
                 elif exc.type == "SLA_BREACH" and status == "DELIVERED":
                     should_resolve = True
-                elif exc.type == "NDR_ESCALATION" and status in ["RESOLVED", "RTO"]:
-                    should_resolve = True
                 elif exc.type == "CARRIER_DELAY" and status in ["DELIVERED", "OUT_FOR_DELIVERY"]:
+                    should_resolve = True
+                # NDR-specific rules - resolve when NDR is resolved/closed/RTO
+                elif exc.type in ["NDR_AGING", "NDR_MULTI_ATTEMPT", "NDR_NO_RESPONSE",
+                                  "NDR_HIGH_VALUE", "NDR_COD_RISK", "NDR_ADDRESS_ISSUE",
+                                  "NDR_RTO_CANDIDATE", "NDR_ESCALATION"] and status in ["RESOLVED", "RTO", "CLOSED"]:
+                    should_resolve = True
+                # Return rules
+                elif exc.type == "RETURN_AGING" and status in ["COMPLETED", "REFUNDED", "REJECTED"]:
                     should_resolve = True
 
                 if should_resolve:
@@ -525,6 +532,260 @@ def get_control_tower_dashboard(
         },
         "timestamp": now.isoformat(),
     }
+
+
+@router.get("/ndr-summary")
+def get_ndr_command_center_summary(
+    company_filter: CompanyFilter = Depends(),
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Get NDR Command Center summary - integrated NDR metrics for Control Tower.
+    Shows NDR exceptions detected by rules and overall NDR health.
+    """
+    company_id = company_filter.company_id
+    now = datetime.utcnow()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    # Get NDR exceptions (rule-detected)
+    ndr_exc_query = select(ExceptionModel).where(
+        ExceptionModel.entityType == "NDR",
+        ExceptionModel.status.in_(["OPEN", "IN_PROGRESS"])
+    )
+    if company_id:
+        ndr_exc_query = ndr_exc_query.where(ExceptionModel.companyId == company_id)
+    ndr_exceptions = session.exec(ndr_exc_query).all()
+
+    # Get all NDRs stats
+    ndr_query = select(NDR)
+    if company_id:
+        ndr_query = ndr_query.where(NDR.companyId == company_id)
+    all_ndrs = session.exec(ndr_query).all()
+
+    # NDR status breakdown
+    status_breakdown = {}
+    reason_breakdown = {}
+    priority_breakdown = {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0}
+    total_risk_score = 0
+    risk_count = 0
+
+    for ndr in all_ndrs:
+        status = ndr.status.value if hasattr(ndr.status, 'value') else str(ndr.status)
+        status_breakdown[status] = status_breakdown.get(status, 0) + 1
+
+        if status == "OPEN":
+            reason = ndr.reason.value if hasattr(ndr.reason, 'value') else str(ndr.reason) if ndr.reason else "UNKNOWN"
+            reason_breakdown[reason] = reason_breakdown.get(reason, 0) + 1
+
+            priority = ndr.priority.value if hasattr(ndr.priority, 'value') else str(ndr.priority) if ndr.priority else "MEDIUM"
+            if priority in priority_breakdown:
+                priority_breakdown[priority] += 1
+
+            if ndr.riskScore:
+                total_risk_score += ndr.riskScore
+                risk_count += 1
+
+    # Exception breakdown by NDR rule type
+    exception_by_rule = {}
+    for exc in ndr_exceptions:
+        exception_by_rule[exc.type] = exception_by_rule.get(exc.type, 0) + 1
+
+    # AI Actions for NDR (pending approval)
+    ai_query = select(func.count(AIActionLog.id)).where(
+        AIActionLog.entityType == "NDR",
+        AIActionLog.status == "PENDING_APPROVAL"
+    )
+    if company_id:
+        ai_query = ai_query.where(AIActionLog.companyId == company_id)
+    pending_ai_actions = session.exec(ai_query).one()
+
+    # NDRs created today
+    ndrs_today = sum(1 for n in all_ndrs if n.createdAt and n.createdAt >= today_start)
+
+    # NDRs resolved today
+    resolved_today = sum(1 for n in all_ndrs if n.resolvedAt and n.resolvedAt >= today_start)
+
+    return {
+        "summary": {
+            "totalNDRs": len(all_ndrs),
+            "openNDRs": status_breakdown.get("OPEN", 0),
+            "inProgressNDRs": status_breakdown.get("ACTION_REQUESTED", 0) + status_breakdown.get("REATTEMPT_SCHEDULED", 0),
+            "resolvedNDRs": status_breakdown.get("RESOLVED", 0),
+            "rtoNDRs": status_breakdown.get("RTO", 0),
+            "ndrsToday": ndrs_today,
+            "resolvedToday": resolved_today,
+        },
+        "exceptions": {
+            "total": len(ndr_exceptions),
+            "critical": sum(1 for e in ndr_exceptions if e.severity == "CRITICAL"),
+            "high": sum(1 for e in ndr_exceptions if e.severity == "HIGH"),
+            "byRuleType": exception_by_rule,
+        },
+        "breakdown": {
+            "byStatus": status_breakdown,
+            "byReason": reason_breakdown,
+            "byPriority": priority_breakdown,
+        },
+        "riskMetrics": {
+            "avgRiskScore": round(total_risk_score / risk_count, 1) if risk_count > 0 else 0,
+            "highRiskCount": sum(1 for n in all_ndrs if n.riskScore and n.riskScore >= 70 and n.status.value == "OPEN" if hasattr(n.status, 'value') else n.status == "OPEN"),
+        },
+        "aiActions": {
+            "pendingApproval": pending_ai_actions,
+        },
+        "timestamp": now.isoformat(),
+    }
+
+
+@router.post("/ndr-action/execute")
+async def execute_ndr_action(
+    action_type: str,
+    ndr_id: UUID,
+    config: Optional[Dict[str, Any]] = None,
+    company_filter: CompanyFilter = Depends(),
+    session: Session = Depends(get_session),
+    current_user: User = Depends(require_manager)
+):
+    """
+    Execute an NDR action manually or from AI recommendation.
+    Supports: AUTO_OUTREACH, AUTO_ESCALATE, AUTO_REATTEMPT, AUTO_RTO
+    """
+    from app.models.ndr import NDROutreach
+
+    company_id = company_filter.company_id
+    now = datetime.utcnow()
+
+    # Get the NDR
+    ndr = session.get(NDR, ndr_id)
+    if not ndr:
+        raise HTTPException(status_code=404, detail="NDR not found")
+
+    if company_id and ndr.companyId != company_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    result = {
+        "success": False,
+        "actionType": action_type,
+        "ndrId": str(ndr_id),
+        "message": "",
+        "details": {}
+    }
+
+    try:
+        if action_type == "AUTO_OUTREACH":
+            # Create outreach record
+            channel = config.get("channel", "WHATSAPP") if config else "WHATSAPP"
+            template_id = config.get("templateId", "ndr_default") if config else "ndr_default"
+
+            # Generate message based on NDR reason
+            reason = ndr.reason.value if hasattr(ndr.reason, 'value') else str(ndr.reason)
+            messages = {
+                "CUSTOMER_UNAVAILABLE": "Hi, we tried to deliver your order but you were unavailable. Please confirm your availability.",
+                "WRONG_ADDRESS": "Hi, we couldn't find your address. Please share the correct address for delivery.",
+                "COD_NOT_READY": "Hi, we tried to deliver your COD order. Please keep the exact amount ready for the next attempt.",
+                "PHONE_UNREACHABLE": "Hi, we couldn't reach you. Please confirm your phone number for delivery coordination.",
+            }
+            message = messages.get(reason, "Hi, we need your help to complete your delivery. Please respond with your preferred time slot.")
+
+            outreach = NDROutreach(
+                id=uuid4(),
+                ndrId=ndr_id,
+                channel=channel,
+                attemptNumber=1,  # Will be calculated properly
+                templateId=template_id,
+                messageContent=message,
+                status="PENDING",
+                companyId=ndr.companyId,
+                createdAt=now,
+                updatedAt=now
+            )
+            session.add(outreach)
+
+            # Update NDR status
+            ndr.status = "ACTION_REQUESTED"
+            ndr.updatedAt = now
+            session.add(ndr)
+
+            result["success"] = True
+            result["message"] = f"Outreach initiated via {channel}"
+            result["details"] = {"channel": channel, "message": message[:100] + "..."}
+
+        elif action_type == "AUTO_ESCALATE":
+            # Update NDR priority and add escalation
+            ndr.priority = "CRITICAL"
+            ndr.updatedAt = now
+            session.add(ndr)
+
+            # Create escalation AI action log
+            ai_action = AIActionLog(
+                id=uuid4(),
+                actionType="NDR_RESOLUTION",
+                entityType="NDR",
+                entityId=ndr.ndrCode,
+                ndrId=ndr_id,
+                companyId=ndr.companyId,
+                decision="Escalated to management due to repeated failures",
+                reasoning=f"NDR {ndr.ndrCode} escalated: {config.get('reason', 'Manual escalation')}",
+                confidence=1.0,
+                riskLevel="CRITICAL",
+                status="EXECUTED",
+                approvalRequired=False,
+                executedAt=now,
+                executionResult="Escalated successfully",
+                createdAt=now,
+                updatedAt=now
+            )
+            session.add(ai_action)
+
+            result["success"] = True
+            result["message"] = "NDR escalated to management"
+            result["details"] = {"newPriority": "CRITICAL"}
+
+        elif action_type == "AUTO_REATTEMPT":
+            # Schedule reattempt
+            reattempt_date = config.get("reattemptDate") if config else None
+            reattempt_slot = config.get("reattemptSlot", "9AM-12PM") if config else "9AM-12PM"
+
+            if not reattempt_date:
+                # Default to next day
+                reattempt_date = (now + timedelta(days=1)).date()
+
+            ndr.reattemptDate = reattempt_date if isinstance(reattempt_date, datetime) else datetime.fromisoformat(str(reattempt_date))
+            ndr.reattemptSlot = reattempt_slot
+            ndr.status = "REATTEMPT_SCHEDULED"
+            ndr.updatedAt = now
+            session.add(ndr)
+
+            result["success"] = True
+            result["message"] = f"Reattempt scheduled for {reattempt_date}"
+            result["details"] = {"reattemptDate": str(reattempt_date), "slot": reattempt_slot}
+
+        elif action_type == "AUTO_RTO":
+            # Initiate RTO
+            ndr.status = "RTO"
+            ndr.resolutionType = "RTO"
+            ndr.resolvedAt = now
+            ndr.resolvedBy = str(current_user.id)
+            ndr.resolutionNotes = config.get("notes", "Auto-initiated RTO after multiple failed attempts") if config else "Auto-initiated RTO"
+            ndr.updatedAt = now
+            session.add(ndr)
+
+            result["success"] = True
+            result["message"] = "RTO initiated"
+            result["details"] = {"status": "RTO", "notes": ndr.resolutionNotes}
+
+        else:
+            result["message"] = f"Unknown action type: {action_type}"
+            return result
+
+        session.commit()
+
+    except Exception as e:
+        result["message"] = f"Action failed: {str(e)}"
+        return result
+
+    return result
 
 
 @router.get("/health")

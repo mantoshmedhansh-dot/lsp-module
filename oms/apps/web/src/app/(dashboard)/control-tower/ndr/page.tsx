@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import {
   AlertTriangle,
   Bot,
@@ -20,6 +21,11 @@ import {
   TrendingDown,
   TrendingUp,
   XCircle,
+  Zap,
+  Settings,
+  ArrowUpRight,
+  Calendar,
+  RotateCcw,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -53,6 +59,48 @@ import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { useNdrList, useCreateOutreach } from "@/hooks/use-ndr";
 import type { NDRListItem, NDRStatus, NDRPriority, NDRReason } from "@/lib/api/client";
+import { toast } from "sonner";
+
+interface NDRSummary {
+  summary: {
+    totalNDRs: number;
+    openNDRs: number;
+    inProgressNDRs: number;
+    resolvedNDRs: number;
+    rtoNDRs: number;
+    ndrsToday: number;
+    resolvedToday: number;
+  };
+  exceptions: {
+    total: number;
+    critical: number;
+    high: number;
+    byRuleType: Record<string, number>;
+  };
+  breakdown: {
+    byStatus: Record<string, number>;
+    byReason: Record<string, number>;
+    byPriority: Record<string, number>;
+  };
+  riskMetrics: {
+    avgRiskScore: number;
+    highRiskCount: number;
+  };
+  aiActions: {
+    pendingApproval: number;
+  };
+}
+
+interface SchedulerInfo {
+  lastScan: string | null;
+  status: string;
+  lastResult: {
+    rulesExecuted: number;
+    exceptionsCreated: number;
+    exceptionsUpdated: number;
+    autoResolved: number;
+  };
+}
 
 export default function NDRCommandCenterPage() {
   // Filter state
@@ -67,6 +115,80 @@ export default function NDRCommandCenterPage() {
   const [outreachDialogOpen, setOutreachDialogOpen] = useState(false);
   const [outreachChannel, setOutreachChannel] = useState("WHATSAPP");
   const [customMessage, setCustomMessage] = useState("");
+
+  // Control Tower integration state
+  const [ndrSummary, setNdrSummary] = useState<NDRSummary | null>(null);
+  const [schedulerInfo, setSchedulerInfo] = useState<SchedulerInfo | null>(null);
+  const [isExecutingAction, setIsExecutingAction] = useState(false);
+
+  // Fetch NDR summary from Control Tower
+  const fetchNdrSummary = useCallback(async () => {
+    try {
+      const response = await fetch("/api/v1/control-tower/ndr-summary");
+      if (response.ok) {
+        const data = await response.json();
+        setNdrSummary(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch NDR summary:", error);
+    }
+  }, []);
+
+  // Fetch scheduler status
+  const fetchSchedulerStatus = useCallback(async () => {
+    try {
+      const response = await fetch("/api/v1/control-tower/dashboard");
+      if (response.ok) {
+        const data = await response.json();
+        setSchedulerInfo(data.scheduler);
+      }
+    } catch (error) {
+      console.error("Failed to fetch scheduler status:", error);
+    }
+  }, []);
+
+  // Execute NDR action via Control Tower
+  const executeNdrAction = async (actionType: string, ndrId: string, config?: Record<string, any>) => {
+    try {
+      setIsExecutingAction(true);
+      const response = await fetch("/api/v1/control-tower/ndr-action/execute", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action_type: actionType, ndr_id: ndrId, config }),
+      });
+
+      if (!response.ok) throw new Error("Action failed");
+
+      const result = await response.json();
+      if (result.success) {
+        toast.success(result.message);
+        refetch();
+        fetchNdrSummary();
+      } else {
+        toast.error(result.message || "Action failed");
+      }
+    } catch (error) {
+      toast.error("Failed to execute action");
+      console.error(error);
+    } finally {
+      setIsExecutingAction(false);
+    }
+  };
+
+  // Initial fetch for Control Tower data
+  useEffect(() => {
+    fetchNdrSummary();
+    fetchSchedulerStatus();
+  }, [fetchNdrSummary, fetchSchedulerStatus]);
+
+  // Auto-refresh Control Tower data every 60 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchNdrSummary();
+      fetchSchedulerStatus();
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [fetchNdrSummary, fetchSchedulerStatus]);
 
   // Use React Query hooks for data fetching
   const {
@@ -142,17 +264,23 @@ export default function NDRCommandCenterPage() {
             NDR Command Center
           </h1>
           <p className="text-muted-foreground">
-            AI-powered NDR resolution with automated customer outreach
+            AI-powered NDR resolution with rule-based detection and automated outreach
           </p>
         </div>
         <div className="flex items-center gap-4">
-          <div className="text-sm text-muted-foreground">
-            Last updated: {lastRefresh.toLocaleTimeString()}
-          </div>
+          <Link href="/control-tower/rules">
+            <Button variant="outline" size="sm">
+              <Settings className="h-4 w-4 mr-2" />
+              NDR Rules
+            </Button>
+          </Link>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => refetch()}
+            onClick={() => {
+              refetch();
+              fetchNdrSummary();
+            }}
             disabled={isLoading}
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
@@ -160,6 +288,87 @@ export default function NDRCommandCenterPage() {
           </Button>
         </div>
       </div>
+
+      {/* Auto-Detection Status Banner */}
+      <Card className="bg-gradient-to-r from-indigo-50 to-blue-50 border-indigo-200">
+        <CardContent className="py-3">
+          <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                <span className="font-medium text-indigo-700">Auto-Detection Active</span>
+              </div>
+              <span className="text-indigo-600">
+                NDR rules scan every 15 minutes
+              </span>
+            </div>
+            <div className="flex items-center gap-4 text-xs">
+              {schedulerInfo?.lastScan && (
+                <span className="text-indigo-500">
+                  Last scan: {new Date(schedulerInfo.lastScan).toLocaleTimeString()}
+                </span>
+              )}
+              {ndrSummary?.exceptions && (
+                <div className="flex items-center gap-2">
+                  {ndrSummary.exceptions.critical > 0 && (
+                    <Badge className="bg-red-100 text-red-700">
+                      {ndrSummary.exceptions.critical} Critical
+                    </Badge>
+                  )}
+                  {ndrSummary.exceptions.high > 0 && (
+                    <Badge className="bg-orange-100 text-orange-700">
+                      {ndrSummary.exceptions.high} High
+                    </Badge>
+                  )}
+                  {ndrSummary.aiActions.pendingApproval > 0 && (
+                    <Badge className="bg-blue-100 text-blue-700">
+                      {ndrSummary.aiActions.pendingApproval} AI Actions Pending
+                    </Badge>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Rule-Detected Exceptions Summary */}
+      {ndrSummary?.exceptions && ndrSummary.exceptions.total > 0 && (
+        <Card className="border-amber-200 bg-amber-50/50">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Zap className="h-4 w-4 text-amber-600" />
+              Rule-Detected NDR Exceptions
+            </CardTitle>
+            <CardDescription>
+              {ndrSummary.exceptions.total} NDRs flagged by detection rules requiring attention
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {Object.entries(ndrSummary.exceptions.byRuleType).map(([ruleType, count]) => (
+                <Badge key={ruleType} variant="outline" className="text-xs">
+                  {ruleType.replace(/_/g, " ")}: {count}
+                </Badge>
+              ))}
+            </div>
+            <div className="mt-3 flex gap-2">
+              <Link href="/control-tower/exceptions?entityType=NDR">
+                <Button variant="outline" size="sm">
+                  View All NDR Exceptions
+                  <ArrowUpRight className="h-3 w-3 ml-1" />
+                </Button>
+              </Link>
+              <Link href="/control-tower/ai-actions?entityType=NDR">
+                <Button variant="outline" size="sm">
+                  NDR AI Actions
+                  <ArrowUpRight className="h-3 w-3 ml-1" />
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Stats Overview */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
@@ -509,10 +718,11 @@ export default function NDRCommandCenterPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
                           <Button
                             variant="outline"
                             size="sm"
+                            title="Send Outreach"
                             onClick={() => {
                               setSelectedNDR(ndr);
                               setOutreachDialogOpen(true);
@@ -520,9 +730,44 @@ export default function NDRCommandCenterPage() {
                           >
                             <Send className="h-4 w-4" />
                           </Button>
+                          {ndr.status === "OPEN" && (
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                title="Schedule Reattempt"
+                                disabled={isExecutingAction}
+                                onClick={() => executeNdrAction("AUTO_REATTEMPT", ndr.id)}
+                              >
+                                <Calendar className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                title="Escalate"
+                                disabled={isExecutingAction}
+                                onClick={() => executeNdrAction("AUTO_ESCALATE", ndr.id, { reason: "Manual escalation from NDR Command Center" })}
+                              >
+                                <AlertTriangle className="h-4 w-4" />
+                              </Button>
+                              {ndr.attemptNumber && ndr.attemptNumber >= 3 && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  title="Initiate RTO"
+                                  className="text-red-600 hover:text-red-700"
+                                  disabled={isExecutingAction}
+                                  onClick={() => executeNdrAction("AUTO_RTO", ndr.id, { notes: "Initiated after 3+ failed attempts" })}
+                                >
+                                  <RotateCcw className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </>
+                          )}
                           <Button
                             variant="ghost"
                             size="sm"
+                            title="View Order"
                             onClick={() => ndr.order?.id && window.open(`/orders/${ndr.order.id}`, "_blank")}
                           >
                             <ExternalLink className="h-4 w-4" />

@@ -123,6 +123,7 @@ const controlTowerNav: NavItemWithSub = {
   items: [
     { title: "Real-time Overview", href: "/control-tower" },
     { title: "Exception Management", href: "/control-tower/exceptions" },
+    { title: "NDR Command Center", href: "/control-tower/ndr" },
     { title: "Detection Rules", href: "/control-tower/rules" },
     { title: "SLA Monitor", href: "/control-tower/sla" },
     { title: "AI Insights", href: "/control-tower/ai-actions" },

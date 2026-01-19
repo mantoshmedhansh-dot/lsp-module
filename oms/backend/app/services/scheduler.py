@@ -368,13 +368,20 @@ def run_detection_engine():
                         status = status.value
 
                     should_resolve = False
+                    # Order/Delivery rules
                     if exc.type == "STUCK_ORDER" and status != "CREATED":
                         should_resolve = True
                     elif exc.type == "SLA_BREACH" and status == "DELIVERED":
                         should_resolve = True
-                    elif exc.type == "NDR_ESCALATION" and status in ["RESOLVED", "RTO"]:
-                        should_resolve = True
                     elif exc.type == "CARRIER_DELAY" and status in ["DELIVERED", "OUT_FOR_DELIVERY"]:
+                        should_resolve = True
+                    # NDR-specific rules - resolve when NDR is resolved/closed/RTO
+                    elif exc.type in ["NDR_AGING", "NDR_MULTI_ATTEMPT", "NDR_NO_RESPONSE",
+                                      "NDR_HIGH_VALUE", "NDR_COD_RISK", "NDR_ADDRESS_ISSUE",
+                                      "NDR_RTO_CANDIDATE", "NDR_ESCALATION"] and status in ["RESOLVED", "RTO", "CLOSED"]:
+                        should_resolve = True
+                    # Return rules
+                    elif exc.type == "RETURN_AGING" and status in ["COMPLETED", "REFUNDED", "REJECTED"]:
                         should_resolve = True
 
                     if should_resolve:

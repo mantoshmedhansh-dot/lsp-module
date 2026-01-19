@@ -29,6 +29,14 @@ import {
   Store,
   Settings,
   Gauge,
+  Building2,
+  Send,
+  MapPin,
+  FileBox,
+  ClipboardCheck,
+  Container,
+  TruckIcon,
+  Users,
 } from "lucide-react";
 
 interface NavItem {
@@ -37,6 +45,11 @@ interface NavItem {
   icon: React.ElementType;
   children?: { name: string; href: string }[];
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SERVICE TYPES
+// ═══════════════════════════════════════════════════════════════════════════
+type ServiceType = "OMS_WMS" | "B2C_COURIER" | "B2B_LOGISTICS";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // NAVIGATION SECTIONS (Industry Standard WMS/OMS Structure)
@@ -48,6 +61,186 @@ const dashboardNav: NavItem = {
   href: "/client",
   icon: LayoutDashboard,
 };
+
+// ═══════════════════════════════════════════════════════════════════════════
+// B2C COURIER SERVICE NAVIGATION
+// ═══════════════════════════════════════════════════════════════════════════
+
+const b2cDashboardNav: NavItem = {
+  name: "Dashboard",
+  href: "/client/b2c",
+  icon: LayoutDashboard,
+};
+
+const b2cShipmentsNav: NavItem = {
+  name: "Shipments",
+  href: "/client/b2c/shipments",
+  icon: Send,
+  children: [
+    { name: "All Shipments", href: "/client/b2c/shipments" },
+    { name: "Create Shipment", href: "/client/b2c/shipments/new" },
+    { name: "Bulk Upload", href: "/client/b2c/shipments/bulk" },
+  ],
+};
+
+const b2cTrackingNav: NavItem = {
+  name: "Tracking",
+  href: "/client/logistics/tracking",
+  icon: Truck,
+};
+
+const b2cNdrNav: NavItem = {
+  name: "NDR Management",
+  href: "/client/control-tower/ndr",
+  icon: Gauge,
+};
+
+const b2cPickupNav: NavItem = {
+  name: "Pickup Addresses",
+  href: "/client/b2c/pickup-addresses",
+  icon: MapPin,
+};
+
+const b2cFinanceNav: NavItem = {
+  name: "Finance",
+  href: "/client/finance/cod-reconciliation",
+  icon: CreditCard,
+  children: [
+    { name: "COD Remittance", href: "/client/finance/cod-reconciliation" },
+    { name: "Freight Charges", href: "/client/finance/freight-billing" },
+    { name: "Weight Disputes", href: "/client/finance/weight-discrepancy" },
+    { name: "Invoices", href: "/client/finance/invoices" },
+  ],
+};
+
+const b2cReportsNav: NavItem = {
+  name: "Reports",
+  href: "/client/reports/logistics",
+  icon: BarChart3,
+  children: [
+    { name: "Delivery Reports", href: "/client/reports/logistics" },
+    { name: "COD Reports", href: "/client/reports/finance" },
+  ],
+};
+
+const b2cSettingsNav: NavItem = {
+  name: "Settings",
+  href: "/client/logistics/rate-cards",
+  icon: Settings,
+  children: [
+    { name: "Rate Card", href: "/client/logistics/rate-cards" },
+    { name: "Company Profile", href: "/client/settings" },
+  ],
+};
+
+// B2C Navigation Groups
+const b2cNavItems: NavItem[] = [
+  b2cDashboardNav,
+  b2cShipmentsNav,
+  b2cTrackingNav,
+  b2cNdrNav,
+  b2cPickupNav,
+  b2cFinanceNav,
+  b2cReportsNav,
+  b2cSettingsNav,
+];
+
+// ═══════════════════════════════════════════════════════════════════════════
+// B2B LOGISTICS SERVICE NAVIGATION
+// ═══════════════════════════════════════════════════════════════════════════
+
+const b2bDashboardNav: NavItem = {
+  name: "Dashboard",
+  href: "/client/b2b-logistics",
+  icon: LayoutDashboard,
+};
+
+const b2bBookingsNav: NavItem = {
+  name: "Bookings",
+  href: "/client/b2b-logistics/bookings",
+  icon: FileBox,
+  children: [
+    { name: "All Bookings", href: "/client/b2b-logistics/bookings" },
+    { name: "Book LTL", href: "/client/b2b-logistics/bookings/ltl" },
+    { name: "Book FTL", href: "/client/b2b-logistics/bookings/ftl" },
+  ],
+};
+
+const b2bLrNav: NavItem = {
+  name: "LR Management",
+  href: "/client/b2b-logistics/lr",
+  icon: FileText,
+  children: [
+    { name: "All LRs", href: "/client/b2b-logistics/lr" },
+    { name: "Create LR", href: "/client/b2b-logistics/lr/new" },
+  ],
+};
+
+const b2bTrackingNav: NavItem = {
+  name: "Tracking",
+  href: "/client/b2b-logistics/tracking",
+  icon: TruckIcon,
+  children: [
+    { name: "Vehicle Tracking", href: "/client/b2b-logistics/tracking" },
+    { name: "Shipment Status", href: "/client/b2b-logistics/tracking/shipments" },
+  ],
+};
+
+const b2bPodNav: NavItem = {
+  name: "POD Management",
+  href: "/client/b2b-logistics/pod",
+  icon: ClipboardCheck,
+};
+
+const b2bConsigneeNav: NavItem = {
+  name: "Consignees",
+  href: "/client/b2b-logistics/consignees",
+  icon: Users,
+};
+
+const b2bFreightFinanceNav: NavItem = {
+  name: "Finance",
+  href: "/client/b2b-logistics/finance",
+  icon: CreditCard,
+  children: [
+    { name: "Freight Invoices", href: "/client/b2b-logistics/finance/invoices" },
+    { name: "Credit Limits", href: "/client/b2b-logistics/finance/credit" },
+    { name: "Payment History", href: "/client/b2b-logistics/finance/payments" },
+  ],
+};
+
+const b2bFreightReportsNav: NavItem = {
+  name: "Reports",
+  href: "/client/b2b-logistics/reports",
+  icon: BarChart3,
+  children: [
+    { name: "Delivery Reports", href: "/client/b2b-logistics/reports/delivery" },
+    { name: "Cost Analysis", href: "/client/b2b-logistics/reports/cost" },
+  ],
+};
+
+const b2bFreightSettingsNav: NavItem = {
+  name: "Settings",
+  href: "/client/b2b-logistics/settings",
+  icon: Settings,
+  children: [
+    { name: "Rate Agreement", href: "/client/b2b-logistics/settings/rates" },
+    { name: "Company Profile", href: "/client/settings" },
+  ],
+};
+
+// B2B Navigation Groups
+const b2bNavItems: NavItem[] = [
+  b2bDashboardNav,
+  b2bBookingsNav,
+  b2bLrNav,
+  b2bTrackingNav,
+  b2bPodNav,
+  b2bConsigneeNav,
+  b2bFreightFinanceNav,
+  b2bFreightReportsNav,
+  b2bFreightSettingsNav,
+];
 
 // Control Tower
 const controlTowerNav: NavItem = {
@@ -252,9 +445,33 @@ export default function ClientPortalLayout({
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const [activeService, setActiveService] = useState<ServiceType>("OMS_WMS");
+
+  // Detect active service from URL
+  useEffect(() => {
+    if (pathname.startsWith("/client/b2c")) {
+      setActiveService("B2C_COURIER");
+    } else if (pathname.startsWith("/client/b2b-logistics")) {
+      setActiveService("B2B_LOGISTICS");
+    } else {
+      setActiveService("OMS_WMS");
+    }
+  }, [pathname]);
+
+  // Get navigation items based on active service
+  const getNavItems = () => {
+    switch (activeService) {
+      case "B2C_COURIER":
+        return b2cNavItems;
+      case "B2B_LOGISTICS":
+        return b2bNavItems;
+      default:
+        return [dashboardNav, controlTowerNav, ...operationsNav, ...analyticsNav, ...configNav];
+    }
+  };
 
   // All navigation items combined for active detection
-  const allNavItems = [dashboardNav, controlTowerNav, ...operationsNav, ...analyticsNav, ...configNav];
+  const allNavItems = getNavItems();
 
   // Auto-expand the active section based on current path
   useEffect(() => {
@@ -407,24 +624,38 @@ export default function ClientPortalLayout({
 
         {/* Navigation */}
         <nav className="flex-1 py-2 overflow-y-auto">
-          {/* Dashboard */}
-          {renderNavItem(dashboardNav)}
+          {activeService === "OMS_WMS" ? (
+            <>
+              {/* Dashboard */}
+              {renderNavItem(dashboardNav)}
 
-          {/* Control Tower Section */}
-          {renderSectionLabel("Control Tower")}
-          {renderNavItem(controlTowerNav)}
+              {/* Control Tower Section */}
+              {renderSectionLabel("Control Tower")}
+              {renderNavItem(controlTowerNav)}
 
-          {/* Operations Section */}
-          {renderSectionLabel("Operations")}
-          {operationsNav.map(item => renderNavItem(item))}
+              {/* Operations Section */}
+              {renderSectionLabel("Operations")}
+              {operationsNav.map(item => renderNavItem(item))}
 
-          {/* Analytics & Finance Section */}
-          {renderSectionLabel("Analytics & Finance")}
-          {analyticsNav.map(item => renderNavItem(item))}
+              {/* Analytics & Finance Section */}
+              {renderSectionLabel("Analytics & Finance")}
+              {analyticsNav.map(item => renderNavItem(item))}
 
-          {/* Configuration Section */}
-          {renderSectionLabel("Configuration")}
-          {configNav.map(item => renderNavItem(item))}
+              {/* Configuration Section */}
+              {renderSectionLabel("Configuration")}
+              {configNav.map(item => renderNavItem(item))}
+            </>
+          ) : activeService === "B2C_COURIER" ? (
+            <>
+              {/* B2C Courier Navigation */}
+              {b2cNavItems.map(item => renderNavItem(item))}
+            </>
+          ) : (
+            <>
+              {/* B2B Logistics Navigation */}
+              {b2bNavItems.map(item => renderNavItem(item))}
+            </>
+          )}
         </nav>
 
         {/* User section */}
@@ -482,40 +713,54 @@ export default function ClientPortalLayout({
               </button>
             </div>
             <nav className="py-2">
-              {/* Dashboard */}
-              {renderNavItem(dashboardNav, true)}
+              {activeService === "OMS_WMS" ? (
+                <>
+                  {/* Dashboard */}
+                  {renderNavItem(dashboardNav, true)}
 
-              {/* Control Tower Section */}
-              <div className="px-4 py-2 mt-4">
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Control Tower
-                </span>
-              </div>
-              {renderNavItem(controlTowerNav, true)}
+                  {/* Control Tower Section */}
+                  <div className="px-4 py-2 mt-4">
+                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                      Control Tower
+                    </span>
+                  </div>
+                  {renderNavItem(controlTowerNav, true)}
 
-              {/* Operations Section */}
-              <div className="px-4 py-2 mt-4">
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Operations
-                </span>
-              </div>
-              {operationsNav.map(item => renderNavItem(item, true))}
+                  {/* Operations Section */}
+                  <div className="px-4 py-2 mt-4">
+                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                      Operations
+                    </span>
+                  </div>
+                  {operationsNav.map(item => renderNavItem(item, true))}
 
-              {/* Analytics & Finance Section */}
-              <div className="px-4 py-2 mt-4">
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Analytics & Finance
-                </span>
-              </div>
-              {analyticsNav.map(item => renderNavItem(item, true))}
+                  {/* Analytics & Finance Section */}
+                  <div className="px-4 py-2 mt-4">
+                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                      Analytics & Finance
+                    </span>
+                  </div>
+                  {analyticsNav.map(item => renderNavItem(item, true))}
 
-              {/* Configuration Section */}
-              <div className="px-4 py-2 mt-4">
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Configuration
-                </span>
-              </div>
-              {configNav.map(item => renderNavItem(item, true))}
+                  {/* Configuration Section */}
+                  <div className="px-4 py-2 mt-4">
+                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                      Configuration
+                    </span>
+                  </div>
+                  {configNav.map(item => renderNavItem(item, true))}
+                </>
+              ) : activeService === "B2C_COURIER" ? (
+                <>
+                  {/* B2C Courier Navigation */}
+                  {b2cNavItems.map(item => renderNavItem(item, true))}
+                </>
+              ) : (
+                <>
+                  {/* B2B Logistics Navigation */}
+                  {b2bNavItems.map(item => renderNavItem(item, true))}
+                </>
+              )}
             </nav>
           </aside>
         </div>
@@ -532,18 +777,65 @@ export default function ClientPortalLayout({
             >
               <Menu className="w-6 h-6" />
             </button>
-            <div className="relative hidden md:block">
+
+            {/* Service Selector */}
+            <div className="flex items-center bg-gray-100 rounded-lg p-1">
+              <button
+                onClick={() => {
+                  setActiveService("OMS_WMS");
+                  router.push("/client");
+                }}
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                  activeService === "OMS_WMS"
+                    ? "bg-white text-blue-600 shadow-sm"
+                    : "text-gray-600 hover:text-gray-800"
+                }`}
+              >
+                <span className="hidden sm:inline">OMS + WMS</span>
+                <span className="sm:hidden">OMS</span>
+              </button>
+              <button
+                onClick={() => {
+                  setActiveService("B2C_COURIER");
+                  router.push("/client/b2c");
+                }}
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                  activeService === "B2C_COURIER"
+                    ? "bg-white text-blue-600 shadow-sm"
+                    : "text-gray-600 hover:text-gray-800"
+                }`}
+              >
+                <span className="hidden sm:inline">B2C Courier</span>
+                <span className="sm:hidden">B2C</span>
+              </button>
+              <button
+                onClick={() => {
+                  setActiveService("B2B_LOGISTICS");
+                  router.push("/client/b2b-logistics");
+                }}
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                  activeService === "B2B_LOGISTICS"
+                    ? "bg-white text-blue-600 shadow-sm"
+                    : "text-gray-600 hover:text-gray-800"
+                }`}
+              >
+                <span className="hidden sm:inline">B2B Logistics</span>
+                <span className="sm:hidden">B2B</span>
+              </button>
+            </div>
+
+            <div className="relative hidden lg:block">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search orders, SKUs..."
-                className="pl-10 pr-4 py-2 w-64 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder={activeService === "B2C_COURIER" ? "Search AWB..." : activeService === "B2B_LOGISTICS" ? "Search LR..." : "Search orders, SKUs..."}
+                className="pl-10 pr-4 py-2 w-48 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
           <div className="flex items-center space-x-4">
             {/* Date range selector */}
-            <select className="text-sm border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <select className="hidden md:block text-sm border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
               <option>Last 7 days</option>
               <option>Last 30 days</option>
               <option>Last 90 days</option>

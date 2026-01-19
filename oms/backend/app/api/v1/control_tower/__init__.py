@@ -629,7 +629,7 @@ def get_ndr_command_center_summary(
         },
         "riskMetrics": {
             "avgRiskScore": round(total_risk_score / risk_count, 1) if risk_count > 0 else 0,
-            "highRiskCount": sum(1 for n in all_ndrs if n.riskScore and n.riskScore >= 70 and n.status.value == "OPEN" if hasattr(n.status, 'value') else n.status == "OPEN"),
+            "highRiskCount": sum(1 for n in all_ndrs if n.riskScore and n.riskScore >= 70 and (n.status.value if hasattr(n.status, 'value') else n.status) == "OPEN"),
         },
         "aiActions": {
             "pendingApproval": pending_ai_actions,

@@ -54,21 +54,21 @@ export default function B2CCourierDashboard() {
     try {
       setIsLoading(true);
 
-      // Fetch shipment stats - uses orders/stats as deliveries are part of orders
+      // Fetch shipment stats from B2C Courier shipments API
       const [statsRes, shipmentsRes] = await Promise.all([
-        fetch("/api/v1/orders/stats"),
-        fetch("/api/v1/orders?limit=5&status=SHIPPED"),
+        fetch("/api/v1/shipments/stats"),
+        fetch("/api/v1/shipments?limit=5"),
       ]);
 
       if (statsRes.ok) {
         const statsData = await statsRes.json();
         setStats({
-          shipmentsToday: statsData.shipmentsToday || 0,
+          shipmentsToday: statsData.total || 0,
           inTransit: statsData.inTransit || 0,
           delivered: statsData.delivered || 0,
-          ndrPending: statsData.ndrPending || 0,
-          codPending: statsData.codPending || 0,
-          rtoInitiated: statsData.rtoInitiated || 0,
+          ndrPending: statsData.ndr || 0,
+          codPending: Number(statsData.codPending) || 0,
+          rtoInitiated: statsData.rto || 0,
         });
       }
 
@@ -77,9 +77,9 @@ export default function B2CCourierDashboard() {
         const shipments = Array.isArray(shipmentsData) ? shipmentsData : shipmentsData.items || [];
         setRecentShipments(shipments.slice(0, 5).map((s: any) => ({
           id: s.id,
-          awb: s.awbNumber || s.trackingNumber || "Pending",
-          consignee: s.consigneeName || s.customerName || "N/A",
-          destination: s.destination || s.city || "N/A",
+          awb: s.awbNo || s.shipmentNo || "Pending",
+          consignee: s.consigneeName || "N/A",
+          destination: s.deliveryAddress?.city || "N/A",
           status: s.status || "PENDING",
           createdAt: s.createdAt,
         })));

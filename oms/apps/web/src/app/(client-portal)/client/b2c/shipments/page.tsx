@@ -63,26 +63,26 @@ export default function B2CShipmentsPage() {
       if (statusFilter !== "all") params.set("status", statusFilter);
       if (paymentFilter !== "all") params.set("paymentMode", paymentFilter);
 
-      // Use orders API - shipped orders represent shipments in B2C context
-      const response = await fetch(`/api/v1/orders?${params}&status=SHIPPED`);
+      // Use B2C Courier shipments API
+      const response = await fetch(`/api/v1/shipments?${params}`);
       if (response.ok) {
         const data = await response.json();
         const items = Array.isArray(data) ? data : data.items || [];
         setShipments(items.map((d: any) => ({
           id: d.id,
-          awbNumber: d.awbNumber || d.trackingNumber || "Pending",
-          orderNumber: d.orderNumber || d.order?.orderNumber || "-",
-          consigneeName: d.consigneeName || d.customerName || "N/A",
-          consigneePhone: d.consigneePhone || d.phone || "-",
-          destination: d.destination || d.city || "N/A",
-          pincode: d.pincode || d.postalCode || "-",
+          awbNumber: d.awbNo || d.shipmentNo || "Pending",
+          orderNumber: d.orderReference || d.shipmentNo || "-",
+          consigneeName: d.consigneeName || "N/A",
+          consigneePhone: d.consigneePhone || "-",
+          destination: d.deliveryAddress?.city || "N/A",
+          pincode: d.deliveryAddress?.pincode || "-",
           status: d.status || "PENDING",
           paymentMode: d.paymentMode || "PREPAID",
-          amount: d.amount || d.orderValue || 0,
-          weight: d.weight || d.actualWeight || 0,
-          courier: d.courierName || d.transporter?.name || "Not Assigned",
+          amount: d.codAmount || 0,
+          weight: d.weight || 0,
+          courier: d.courierName || "Not Assigned",
           createdAt: d.createdAt,
-          deliveredAt: d.deliveredAt,
+          deliveredAt: d.deliveredDate,
         })));
         setTotalPages(data.totalPages || Math.ceil((data.total || items.length) / 20));
       }

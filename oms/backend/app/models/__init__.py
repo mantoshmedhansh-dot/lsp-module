@@ -496,6 +496,16 @@ from .detection_rule import (
     AIActionType as RuleAIActionType,
 )
 
+# Shipment models and schemas (B2C Courier)
+from .shipment import (
+    Shipment,
+    ShipmentCreate,
+    ShipmentUpdate,
+    ShipmentResponse,
+    ShipmentBrief,
+    ShipmentStats,
+)
+
 __all__ = [
     # Base
     "BaseModel",
@@ -953,4 +963,11 @@ __all__ = [
     "BrandUserCreate",
     "BrandUserUpdate",
     "BrandUserResponse",
+    # Shipment (B2C Courier)
+    "Shipment",
+    "ShipmentCreate",
+    "ShipmentUpdate",
+    "ShipmentResponse",
+    "ShipmentBrief",
+    "ShipmentStats",
 ]

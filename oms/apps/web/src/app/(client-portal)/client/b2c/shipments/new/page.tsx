@@ -114,21 +114,26 @@ export default function CreateShipmentPage() {
     try {
       setIsCheckingRates(true);
       setError("");
-      const response = await fetch("/api/v1/logistics/rate-check", {
+      // Use shipments rate-check API
+      const originPincode = pickupAddresses.find(a => a.id === formData.pickupAddressId)?.pincode || "";
+      const response = await fetch(`/api/v1/shipments/rate-check?origin_pincode=${originPincode}&destination_pincode=${formData.pincode}&weight=${parseFloat(formData.weight)}&payment_mode=${formData.paymentMode}&cod_amount=${formData.paymentMode === "COD" ? parseFloat(formData.codAmount) : 0}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          originPincode: pickupAddresses.find(a => a.id === formData.pickupAddressId)?.pincode || "",
-          destinationPincode: formData.pincode,
-          weight: parseFloat(formData.weight),
-          paymentMode: formData.paymentMode,
-          codAmount: formData.paymentMode === "COD" ? parseFloat(formData.codAmount) : 0,
-        }),
       });
 
       if (response.ok) {
         const data = await response.json();
-        setRateQuotes(Array.isArray(data) ? data : data.quotes || []);
+        const quotes = data.quotes || [];
+        setRateQuotes(quotes.map((q: any) => ({
+          courierId: q.transporterId,
+          courierName: q.courierName,
+          serviceType: q.serviceType,
+          estimatedDays: q.estimatedDays,
+          baseRate: q.baseRate,
+          fuelSurcharge: q.fuelSurcharge,
+          codCharge: q.codCharge,
+          totalRate: q.totalRate,
+        })));
       } else {
         // Fallback with sample rates if API not available
         setRateQuotes([
@@ -189,21 +194,40 @@ export default function CreateShipmentPage() {
         orderNumber: formData.orderNumber || `SHP-${Date.now()}`,
       };
 
-      // Create order first, then delivery will be associated
-      const response = await fetch("/api/v1/orders", {
+      // Create B2C Courier shipment
+      const shipmentPayload = {
+        orderReference: payload.orderNumber,
+        paymentMode: payload.paymentMode,
+        codAmount: payload.paymentMode === "COD" ? payload.codAmount : 0,
+        declaredValue: payload.declaredValue,
+        consigneeName: payload.consigneeName,
+        consigneePhone: payload.consigneePhone,
+        consigneeEmail: payload.consigneeEmail,
+        deliveryAddress: {
+          addressLine1: payload.addressLine1,
+          addressLine2: payload.addressLine2,
+          city: payload.city,
+          state: payload.state,
+          pincode: payload.pincode,
+          country: "India",
+        },
+        pickupAddressId: payload.pickupAddressId,
+        weight: payload.weight,
+        length: payload.length,
+        width: payload.width,
+        height: payload.height,
+        productDescription: payload.productDescription,
+        transporterId: payload.courierId,
+      };
+      const response = await fetch("/api/v1/shipments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...payload,
-          channel: "DIRECT",
-          orderType: "B2C",
-          status: "CONFIRMED",
-        }),
+        body: JSON.stringify(shipmentPayload),
       });
 
       if (response.ok) {
         const data = await response.json();
-        setCreatedAwb(data.awbNumber || data.trackingNumber || "Generated");
+        setCreatedAwb(data.shipmentNo || data.awbNo || "Generated");
         setSuccess(true);
       } else {
         const errorData = await response.json();

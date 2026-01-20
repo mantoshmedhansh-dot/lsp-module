@@ -545,13 +545,12 @@ def generate_picklists_with_allocation(
             continue
 
         # Create a picklist for this order
+        # Note: Picklist model doesn't have waveId/locationId - those are tracked via order
         picklist = Picklist(
             picklistNo=generate_picklist_number(session),
-            waveId=wave_id,
             orderId=order.id,
             status=PicklistStatus.PENDING,
             companyId=company_id,
-            locationId=wave.locationId,
         )
         session.add(picklist)
         session.flush()  # Get picklist ID
@@ -593,7 +592,7 @@ def generate_picklists_with_allocation(
                         picklistId=picklist.id,
                         skuId=alloc.skuId,
                         binId=alloc.binId,
-                        quantity=alloc.allocatedQty,
+                        requiredQty=alloc.allocatedQty,
                         pickedQty=0,
                         batchNo=None,  # Can be enhanced to pull from allocation
                     )

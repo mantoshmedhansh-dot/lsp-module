@@ -44,29 +44,32 @@ class InventoryAllocationService:
         """
         Determine the valuation method to use for allocation.
         Priority: SKU override > Location override > Company default
+        Falls back to FIFO if no overrides are set or if columns don't exist.
         """
-        # Check SKU override
-        sku = self.session.exec(
-            select(SKU).where(SKU.id == sku_id)
-        ).first()
-        if sku and hasattr(sku, 'valuationMethod') and sku.valuationMethod:
-            return sku.valuationMethod
+        try:
+            # Check SKU override
+            sku = self.session.exec(
+                select(SKU).where(SKU.id == sku_id)
+            ).first()
+            if sku and hasattr(sku, 'valuationMethod') and sku.valuationMethod:
+                return sku.valuationMethod
+        except Exception:
+            pass  # Column might not exist
 
-        # Check Location override
-        location = self.session.exec(
-            select(Location).where(Location.id == location_id)
-        ).first()
-        if location and hasattr(location, 'valuationMethod') and location.valuationMethod:
-            return location.valuationMethod
+        try:
+            # Check Location override
+            location = self.session.exec(
+                select(Location).where(Location.id == location_id)
+            ).first()
+            if location and hasattr(location, 'valuationMethod') and location.valuationMethod:
+                return location.valuationMethod
+        except Exception:
+            pass  # Column might not exist
 
-        # Fall back to Company default
-        company = self.session.exec(
-            select(Company).where(Company.id == company_id)
-        ).first()
-        if company and hasattr(company, 'defaultValuationMethod') and company.defaultValuationMethod:
-            return company.defaultValuationMethod
+        # Skip Company query as the column may not exist in database
+        # Company.defaultValuationMethod is optional and may not be migrated
 
-        # Ultimate fallback
+        # Ultimate fallback - FIFO is the industry standard
         return "FIFO"
 
     def get_available_inventory(

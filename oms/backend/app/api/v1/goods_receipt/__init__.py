@@ -460,22 +460,29 @@ def post_goods_receipt(
         fifo_seq = fifo_service.get_next_sequence(item.skuId, gr.locationId)
 
         # Create main inventory record (unified warehouse inventory)
-        inventory = Inventory(
-            skuId=item.skuId,
-            binId=target_bin_id,
-            locationId=gr.locationId,
-            quantity=item.acceptedQty,
-            reservedQty=0,
-            batchNo=item.batchNo,
-            lotNo=item.lotNo,
-            expiryDate=item.expiryDate,
-            mfgDate=item.mfgDate,
-            mrp=item.mrp or Decimal("0"),
-            costPrice=item.costPrice or Decimal("0"),
-            serialNumbers=item.serialNumbers,
-            fifoSequence=fifo_seq
-        )
-        session.add(inventory)
+        try:
+            inventory = Inventory(
+                skuId=item.skuId,
+                binId=target_bin_id,
+                locationId=gr.locationId,
+                quantity=item.acceptedQty,
+                reservedQty=0,
+                batchNo=item.batchNo,
+                lotNo=item.lotNo,
+                expiryDate=item.expiryDate,
+                mfgDate=item.mfgDate,
+                mrp=item.mrp or Decimal("0"),
+                costPrice=item.costPrice or Decimal("0"),
+                serialNumbers=item.serialNumbers,
+                fifoSequence=fifo_seq
+            )
+            session.add(inventory)
+            session.flush()  # Force immediate insert to catch errors early
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to create inventory for SKU {item.skuId}: {type(e).__name__}: {str(e)}"
+            )
 
         # Update item with assigned FIFO sequence
         item.fifoSequence = fifo_seq
@@ -510,47 +517,51 @@ def post_goods_receipt(
                     channel_fifo_seq = fifo_seq + channel_fifo_offset
                     channel_fifo_offset += 1
 
-                    channel_inv = ChannelInventory(
-                        skuId=item.skuId,
-                        locationId=gr.locationId,
-                        binId=target_bin_id,
-                        channel=rule.channel,
-                        quantity=qty_for_channel,
-                        reservedQty=0,
-                        batchNo=item.batchNo,
-                        lotNo=item.lotNo,
-                        expiryDate=item.expiryDate,
-                        mfgDate=item.mfgDate,
-                        costPrice=item.costPrice or Decimal("0"),
-                        fifoSequence=channel_fifo_seq,
-                        grNo=gr.grNo,
-                        goodsReceiptId=gr.id,
-                        companyId=gr.companyId,
-                    )
-                    session.add(channel_inv)
+                    try:
+                        channel_inv = ChannelInventory(
+                            skuId=item.skuId,
+                            locationId=gr.locationId,
+                            binId=target_bin_id,
+                            channel=rule.channel,
+                            quantity=qty_for_channel,
+                            reservedQty=0,
+                            fifoSequence=channel_fifo_seq,
+                            grNo=gr.grNo,
+                            goodsReceiptId=gr.id,
+                            companyId=gr.companyId,
+                        )
+                        session.add(channel_inv)
+                        session.flush()  # Force immediate insert
+                    except Exception as e:
+                        raise HTTPException(
+                            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail=f"Failed to create channel inventory for {rule.channel}: {type(e).__name__}: {str(e)}"
+                        )
                     remaining_qty -= qty_for_channel
 
         # Any remaining quantity goes to UNALLOCATED channel pool
         if remaining_qty > 0:
             channel_fifo_seq = fifo_seq + channel_fifo_offset
-            unallocated_inv = ChannelInventory(
-                skuId=item.skuId,
-                locationId=gr.locationId,
-                binId=target_bin_id,
-                channel="UNALLOCATED",
-                quantity=remaining_qty,
-                reservedQty=0,
-                batchNo=item.batchNo,
-                lotNo=item.lotNo,
-                expiryDate=item.expiryDate,
-                mfgDate=item.mfgDate,
-                costPrice=item.costPrice or Decimal("0"),
-                fifoSequence=channel_fifo_seq,
-                grNo=gr.grNo,
-                goodsReceiptId=gr.id,
-                companyId=gr.companyId,
-            )
-            session.add(unallocated_inv)
+            try:
+                unallocated_inv = ChannelInventory(
+                    skuId=item.skuId,
+                    locationId=gr.locationId,
+                    binId=target_bin_id,
+                    channel="UNALLOCATED",
+                    quantity=remaining_qty,
+                    reservedQty=0,
+                    fifoSequence=channel_fifo_seq,
+                    grNo=gr.grNo,
+                    goodsReceiptId=gr.id,
+                    companyId=gr.companyId,
+                )
+                session.add(unallocated_inv)
+                session.flush()  # Force immediate insert
+            except Exception as e:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Failed to create UNALLOCATED channel inventory: {type(e).__name__}: {str(e)}"
+                )
 
     # Update GR status
     gr.status = GoodsReceiptStatus.POSTED.value

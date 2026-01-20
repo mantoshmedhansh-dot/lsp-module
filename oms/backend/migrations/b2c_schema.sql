@@ -574,29 +574,72 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
--- Apply triggers to all tables
-DO $$
-DECLARE
-    tbl TEXT;
-BEGIN
-    FOR tbl IN
-        SELECT unnest(ARRAY[
-            'Company', 'User', 'Location', 'Zone', 'Bin', 'SKU', 'Inventory',
-            'CustomerGroup', 'Customer', 'Order', 'OrderItem', 'Transporter',
-            'TransporterConfig', 'Manifest', 'Delivery', 'Wave', 'WaveItem',
-            'WaveOrder', 'Picklist', 'PicklistItem', 'InventoryAllocation', 'Brand'
-        ])
-    LOOP
-        EXECUTE format('
-            DROP TRIGGER IF EXISTS update_%I_updated_at ON %I;
-            CREATE TRIGGER update_%I_updated_at
-                BEFORE UPDATE ON %I
-                FOR EACH ROW
-                EXECUTE FUNCTION update_updated_at_column();
-        ', tbl, tbl, tbl, tbl);
-    END LOOP;
-END;
-$$;
+-- Apply triggers to all tables (individual statements to avoid quoting issues)
+DROP TRIGGER IF EXISTS update_company_updated_at ON "Company";
+CREATE TRIGGER update_company_updated_at BEFORE UPDATE ON "Company" FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_user_updated_at ON "User";
+CREATE TRIGGER update_user_updated_at BEFORE UPDATE ON "User" FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_location_updated_at ON "Location";
+CREATE TRIGGER update_location_updated_at BEFORE UPDATE ON "Location" FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_zone_updated_at ON "Zone";
+CREATE TRIGGER update_zone_updated_at BEFORE UPDATE ON "Zone" FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_bin_updated_at ON "Bin";
+CREATE TRIGGER update_bin_updated_at BEFORE UPDATE ON "Bin" FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_sku_updated_at ON "SKU";
+CREATE TRIGGER update_sku_updated_at BEFORE UPDATE ON "SKU" FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_inventory_updated_at ON "Inventory";
+CREATE TRIGGER update_inventory_updated_at BEFORE UPDATE ON "Inventory" FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_customergroup_updated_at ON "CustomerGroup";
+CREATE TRIGGER update_customergroup_updated_at BEFORE UPDATE ON "CustomerGroup" FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_customer_updated_at ON "Customer";
+CREATE TRIGGER update_customer_updated_at BEFORE UPDATE ON "Customer" FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_order_updated_at ON "Order";
+CREATE TRIGGER update_order_updated_at BEFORE UPDATE ON "Order" FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_orderitem_updated_at ON "OrderItem";
+CREATE TRIGGER update_orderitem_updated_at BEFORE UPDATE ON "OrderItem" FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_transporter_updated_at ON "Transporter";
+CREATE TRIGGER update_transporter_updated_at BEFORE UPDATE ON "Transporter" FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_transporterconfig_updated_at ON "TransporterConfig";
+CREATE TRIGGER update_transporterconfig_updated_at BEFORE UPDATE ON "TransporterConfig" FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_manifest_updated_at ON "Manifest";
+CREATE TRIGGER update_manifest_updated_at BEFORE UPDATE ON "Manifest" FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_delivery_updated_at ON "Delivery";
+CREATE TRIGGER update_delivery_updated_at BEFORE UPDATE ON "Delivery" FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_wave_updated_at ON "Wave";
+CREATE TRIGGER update_wave_updated_at BEFORE UPDATE ON "Wave" FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_waveitem_updated_at ON "WaveItem";
+CREATE TRIGGER update_waveitem_updated_at BEFORE UPDATE ON "WaveItem" FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_waveorder_updated_at ON "WaveOrder";
+CREATE TRIGGER update_waveorder_updated_at BEFORE UPDATE ON "WaveOrder" FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_picklist_updated_at ON "Picklist";
+CREATE TRIGGER update_picklist_updated_at BEFORE UPDATE ON "Picklist" FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_picklistitem_updated_at ON "PicklistItem";
+CREATE TRIGGER update_picklistitem_updated_at BEFORE UPDATE ON "PicklistItem" FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_inventoryallocation_updated_at ON "InventoryAllocation";
+CREATE TRIGGER update_inventoryallocation_updated_at BEFORE UPDATE ON "InventoryAllocation" FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_brand_updated_at ON "Brand";
+CREATE TRIGGER update_brand_updated_at BEFORE UPDATE ON "Brand" FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- =============================================================================
 -- SEED DATA: Default Company and Admin User

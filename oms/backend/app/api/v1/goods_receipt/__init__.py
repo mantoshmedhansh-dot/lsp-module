@@ -461,6 +461,9 @@ def post_goods_receipt(
 
         # Create main inventory record (unified warehouse inventory)
         try:
+            # Handle serialNumbers - use None if empty to match existing data pattern
+            serial_nums = item.serialNumbers if item.serialNumbers else None
+
             inventory = Inventory(
                 skuId=item.skuId,
                 binId=target_bin_id,
@@ -473,15 +476,20 @@ def post_goods_receipt(
                 mfgDate=item.mfgDate,
                 mrp=item.mrp or Decimal("0"),
                 costPrice=item.costPrice or Decimal("0"),
-                serialNumbers=item.serialNumbers,
                 fifoSequence=fifo_seq
             )
+            # Only set serialNumbers if it's not empty
+            if serial_nums:
+                inventory.serialNumbers = serial_nums
+
             session.add(inventory)
             session.flush()  # Force immediate insert to catch errors early
         except Exception as e:
+            import traceback
+            tb_str = traceback.format_exc()
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Failed to create inventory for SKU {item.skuId}: {type(e).__name__}: {str(e)}"
+                detail=f"Failed to create inventory for SKU {item.skuId}: {type(e).__name__}: {str(e)}. TB: {tb_str[:300]}"
             )
 
         # Update item with assigned FIFO sequence

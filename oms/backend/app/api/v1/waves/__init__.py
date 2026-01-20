@@ -95,7 +95,8 @@ def count_waves(
 def create_wave(
     data: WaveCreate,
     session: Session = Depends(get_session),
-    current_user: User = Depends(require_manager)
+    _: None = Depends(require_manager()),
+    current_user: User = Depends(get_current_user)
 ):
     """Create new wave."""
     # Get location to set companyId
@@ -334,7 +335,8 @@ def update_wave(
 def release_wave(
     wave_id: UUID,
     session: Session = Depends(get_session),
-    current_user: User = Depends(require_manager)
+    _: None = Depends(require_manager()),
+    current_user: User = Depends(get_current_user)
 ):
     """Release wave for picking."""
     wave = session.get(Wave, wave_id)
@@ -470,7 +472,8 @@ def generate_picklist_number(session: Session) -> str:
 def generate_picklists_with_allocation(
     wave_id: UUID,
     session: Session = Depends(get_session),
-    current_user: User = Depends(require_manager)
+    _: None = Depends(require_manager()),
+    current_user: User = Depends(get_current_user)
 ):
     """
     Generate picklists for a wave with automatic FIFO/LIFO/FEFO allocation.
@@ -650,7 +653,8 @@ def generate_picklists_with_allocation(
 def deallocate_wave_inventory(
     wave_id: UUID,
     session: Session = Depends(get_session),
-    current_user: User = Depends(require_manager)
+    _: None = Depends(require_manager()),
+    current_user: User = Depends(get_current_user)
 ):
     """
     Deallocate all inventory allocations for a wave.

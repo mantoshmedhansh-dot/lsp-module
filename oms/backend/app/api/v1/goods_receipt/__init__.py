@@ -26,6 +26,35 @@ router = APIRouter(prefix="/goods-receipts", tags=["Goods Receipts"])
 
 
 # ============================================================================
+# DEBUG: Test endpoint - MUST be defined first to avoid route conflicts
+# ============================================================================
+@router.post("/test-inv")
+def test_inventory_creation_debug(
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    """Simple test endpoint to verify inventory creation works."""
+    from uuid import UUID as PyUUID
+    try:
+        # Try to create a simple inventory record
+        test_inv = Inventory(
+            skuId=PyUUID("8e3f1bfb-8b52-410d-956c-0bf5f66b5148"),  # SKU-001
+            binId=PyUUID("de6d1773-3105-485f-9f42-ade3f360fef0"),  # A-01-01
+            locationId=PyUUID("49363e31-c1c5-4cd4-a312-a7177c0bf07c"),  # Mumbai
+            quantity=1,
+            reservedQty=0,
+            fifoSequence=9999  # Test sequence
+        )
+        session.add(test_inv)
+        session.flush()
+        session.rollback()  # Don't actually save
+        return {"status": "ok", "message": "Inventory creation test passed"}
+    except Exception as e:
+        import traceback
+        return {"status": "error", "error": str(e), "traceback": traceback.format_exc()[:500]}
+
+
+# ============================================================================
 # Helper Functions
 # ============================================================================
 
@@ -383,32 +412,6 @@ def start_receiving(
     session.refresh(gr)
 
     return build_gr_response(gr, session)
-
-
-@router.post("/test-inventory-creation")
-def test_inventory_creation(
-    session: Session = Depends(get_session),
-    current_user: User = Depends(get_current_user),
-):
-    """Simple test endpoint to verify inventory creation works."""
-    from uuid import UUID as PyUUID
-    try:
-        # Try to create a simple inventory record
-        test_inv = Inventory(
-            skuId=PyUUID("8e3f1bfb-8b52-410d-956c-0bf5f66b5148"),  # SKU-001
-            binId=PyUUID("de6d1773-3105-485f-9f42-ade3f360fef0"),  # A-01-01
-            locationId=PyUUID("49363e31-c1c5-4cd4-a312-a7177c0bf07c"),  # Mumbai
-            quantity=1,
-            reservedQty=0,
-            fifoSequence=9999  # Test sequence
-        )
-        session.add(test_inv)
-        session.flush()
-        session.rollback()  # Don't actually save
-        return {"status": "ok", "message": "Inventory creation test passed"}
-    except Exception as e:
-        import traceback
-        return {"status": "error", "error": str(e), "traceback": traceback.format_exc()[:500]}
 
 
 @router.post("/{gr_id}/post")  # Temporarily removed response_model for debugging

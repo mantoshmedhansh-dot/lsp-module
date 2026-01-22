@@ -639,6 +639,47 @@ Sidebar Navigation:
 
 ---
 
+## OMS vs B2C DEPLOYMENT GUIDE (Updated: 2026-01-22)
+
+### Quick Reference Card
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         OMS DEPLOYMENT                                   │
+├─────────────────────────────────────────────────────────────────────────┤
+│  Frontend:  https://oms-sable.vercel.app (Vercel - PRIMARY)             │
+│  Backend:   https://cjdquick-api-vr4w.onrender.com (Render - Virginia)  │
+│  Database:  Supabase Tokyo (rilakxywitslblkgikzf)                       │
+│  Region:    ap-northeast-1 (Tokyo)                                      │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         B2C DEPLOYMENT                                   │
+├─────────────────────────────────────────────────────────────────────────┤
+│  Frontend:  https://b2c-frontend-gamma.vercel.app (Vercel)              │
+│  Backend:   https://cjdquick-b2c-api.onrender.com (Render - Singapore)  │
+│  Database:  Supabase Singapore (qfqztrmnvbdmejyclvvc)                   │
+│  Region:    ap-southeast-1 (Singapore)                                  │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### How to Identify Services on Render
+
+| Service Name | Region | Database | Purpose |
+|--------------|--------|----------|---------|
+| `cjdquick-api` / `cjdquick-api-vr4w` | **Virginia** | Tokyo Supabase | **OMS Backend** |
+| `cjdquick-b2c-api` | **Singapore** | Singapore Supabase | **B2C Backend** |
+| `cjdquick-oms` | Virginia | - | OMS Frontend (Node - backup) |
+
+### How to Identify Projects on Vercel
+
+| Project Name | URL | Backend API | Purpose |
+|--------------|-----|-------------|---------|
+| `oms-sable` | oms-sable.vercel.app | cjdquick-api-vr4w.onrender.com | **OMS Frontend** |
+| `b2c-frontend` | b2c-frontend-gamma.vercel.app | cjdquick-b2c-api.onrender.com | **B2C Frontend** |
+
+---
+
 ## B2C CLIENT DEPLOYMENT (Multi-Tenant)
 
 ### B2C Architecture
@@ -647,6 +688,15 @@ Each B2C client gets their own isolated deployment:
 - **Separate Supabase project** (isolated database)
 - **Separate Render backend** (same codebase)
 - **Separate Vercel frontend** (same codebase)
+
+### B2C Live URLs
+
+| Service | URL | Platform |
+|---------|-----|----------|
+| Frontend | https://b2c-frontend-gamma.vercel.app | Vercel |
+| Backend API | https://cjdquick-b2c-api.onrender.com | Render |
+| API Docs | https://cjdquick-b2c-api.onrender.com/docs | Render |
+| Database Dashboard | https://supabase.com/dashboard/project/qfqztrmnvbdmejyclvvc | Supabase |
 
 ### B2C Supabase Project
 
@@ -662,10 +712,39 @@ Each B2C client gets their own isolated deployment:
 postgresql://postgres:Aquapurite2026@db.qfqztrmnvbdmejyclvvc.supabase.co:5432/postgres
 ```
 
-**Pooler Connection (for production):**
+**Pooler Connection (for production - MUST use pgbouncer=true):**
 ```
-postgresql://postgres.qfqztrmnvbdmejyclvvc:Aquapurite2026@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres
+postgresql://postgres.qfqztrmnvbdmejyclvvc:Aquapurite2026@aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
 ```
+
+### B2C Login Credentials
+
+| Panel | Email | Password |
+|-------|-------|----------|
+| B2C Admin | admin@b2c-client.com | admin123 |
+
+### B2C Vercel Environment Variables
+
+```bash
+# Required for B2C Vercel deployment
+AUTH_SECRET=<generate-new-secret>
+NEXTAUTH_SECRET=<same-as-AUTH_SECRET>
+NEXTAUTH_URL=https://b2c-frontend-gamma.vercel.app
+NEXT_PUBLIC_API_URL=https://cjdquick-b2c-api.onrender.com
+AUTH_TRUST_HOST=true
+```
+
+### B2C Render Environment Variables
+
+```bash
+# Required for cjdquick-b2c-api on Render (MUST include ?pgbouncer=true)
+DATABASE_URL=postgresql://postgres.qfqztrmnvbdmejyclvvc:Aquapurite2026@aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+SECRET_KEY=8db7afe5735a174049765cf845075ff3321577b916712017af72fc97bb579995
+PYTHON_VERSION=3.11.0
+FRONTEND_URL=https://b2c-frontend-gamma.vercel.app
+```
+
+**CRITICAL:** The `?pgbouncer=true` parameter is REQUIRED for Supabase pooler connections to work with SQLAlchemy.
 
 ### B2C Deployment Files
 

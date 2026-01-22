@@ -1,0 +1,22 @@
+{
+  "name": "cjdquick-b2b",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CJDQuick B2B Logistics - FTL/PTL Transport Services",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "dev:web": "cd apps/web && npm run dev",
+    "build:web": "cd apps/web && npm run build",
+    "start": "cd apps/web && npm start"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

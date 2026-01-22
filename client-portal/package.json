@@ -1,0 +1,20 @@
+{
+  "name": "cjdquick-client-portal",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CJDQuick Client Portal - Unified Entry Point",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "cd apps/web && npm run dev",
+    "build": "cd apps/web && npm run build",
+    "start": "cd apps/web && npm start"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

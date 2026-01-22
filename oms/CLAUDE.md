@@ -1,26 +1,782 @@
-# CJDQuick OMS - Project Context
+# CJDQuick - Project Context
 
-## CRITICAL: Deployment Architecture
+---
+
+# ⚠️ SOURCE OF TRUTH - 4 MODULE ARCHITECTURE (Updated: 2026-01-22)
+
+## CJDQuick Business Model
+
+CJDQuick offers **3 distinct services** to clients. These are **completely independent modules** with NO interlinking:
+
+| Service | What Client Gets | What CJDQuick Provides |
+|---------|------------------|------------------------|
+| **B2B Logistics** | Client hands over inventory for B2B distribution | PTL/FTL transport, LR, Consignees, POD |
+| **B2C Courier** | Client uses for direct-to-consumer delivery | Parcel shipments, NDR, COD, Pickup |
+| **OMS + WMS** | Client uses tech stack to run their warehouses | Order management, WMS, Inventory, Fulfillment |
+
+**IMPORTANT**: OMS has a "Logistics & Delivery" section that **uses** transport services (FTL/PTL/B2C) for shipping orders - this is **integration/consumption** only, NOT shared code.
+
+---
+
+## CONFIRMED 4-MODULE ARCHITECTURE
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                        DEPLOYMENT ARCHITECTURE                          │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                         │
-│   ┌─────────────┐      ┌─────────────┐      ┌─────────────┐            │
-│   │  FRONTEND   │      │  BACKEND    │      │  DATABASE   │            │
-│   │  Next.js 16 │ ───▶ │  FastAPI    │ ───▶ │ PostgreSQL  │            │
-│   │  VERCEL     │      │  RENDER     │      │  SUPABASE   │            │
-│   └─────────────┘      └─────────────┘      └─────────────┘            │
-│                                                                         │
-│   Remote: origin        Remote: singh        Supabase Cloud            │
-│   Branch: master        Branch: main                                    │
-│                                                                         │
-│   Thin proxy layer      All business logic   SQLModel ORM              │
-│   (catch-all route)     SQLAlchemy/SQLModel  Native PostgreSQL         │
-│                                                                         │
-└─────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                     CJDQuick App - 4 MODULE ARCHITECTURE                        │
+│                         (SOURCE OF TRUTH - DO NOT MODIFY)                       │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│  /Users/mantosh/CJDQuickApp/                                                    │
+│  │                                                                              │
+│  ├── oms/                    ← MODULE 1: OMS + WMS                              │
+│  │   ├── apps/web/           ← OMS Frontend (Vercel)                            │
+│  │   ├── backend/            ← OMS Backend (Render)                             │
+│  │   └── Database: Supabase Tokyo (rilakxywitslblkgikzf)                        │
+│  │                                                                              │
+│  ├── b2b/                    ← MODULE 2: B2B LOGISTICS (FTL/PTL)                │
+│  │   ├── apps/web/           ← B2B Frontend (Vercel)                            │
+│  │   ├── backend/            ← B2B Backend (Render)                             │
+│  │   └── Database: Supabase B2B (NEW - to be created)                           │
+│  │                                                                              │
+│  ├── b2c/                    ← MODULE 3: B2C COURIER                            │
+│  │   ├── apps/web/           ← B2C Frontend (Vercel)                            │
+│  │   ├── backend/            ← B2C Backend (Render)                             │
+│  │   └── Database: Supabase Singapore (qfqztrmnvbdmejyclvvc)                    │
+│  │                                                                              │
+│  └── client-portal/          ← MODULE 4: UNIFIED ENTRY POINT                    │
+│      └── apps/web/           ← Simple landing page with 3 buttons               │
+│          └── Buttons: [OMS + WMS] [B2C Courier] [B2B Logistics]                 │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## MODULE DETAILS
+
+### MODULE 1: OMS + WMS
+**Purpose:** Order Management System + Warehouse Management System
+**Users:** Clients who want to run warehouses on CJDQuick tech stack
+**Location:** `/CJDQuickApp/oms/`
+**Database:** Supabase Tokyo (`rilakxywitslblkgikzf`)
+**Features:**
+- Super Admin Panel (Master Control Panel)
+- Orders, Waves, Picklists, Packing, Manifest
+- Inventory, Inbound, Returns, QC
+- Control Tower, NDR (for OMS orders)
+- Logistics & Delivery (USES transport - FTL/PTL/B2C via API integration)
+- Finance, Reports, Analytics
+
+### MODULE 2: B2B LOGISTICS
+**Purpose:** B2B Freight Transport Services (PTL/FTL)
+**Users:** Clients who hand over inventory for B2B distribution
+**Location:** `/CJDQuickApp/b2b/`
+**Database:** NEW Supabase B2B (to be created)
+**Features:**
+- FTL Bookings (Full Truck Load)
+- LTL/PTL Bookings (Part Truck Load)
+- LR Management (Lorry Receipts)
+- Consignee Management
+- POD Management (Proof of Delivery)
+- Vehicle Tracking
+- Freight Finance
+
+### MODULE 3: B2C COURIER
+**Purpose:** Direct-to-Consumer Parcel Delivery Services
+**Users:** Clients who need last-mile delivery for e-commerce
+**Location:** `/CJDQuickApp/b2c/`
+**Database:** Supabase Singapore (`qfqztrmnvbdmejyclvvc`)
+**Features:**
+- Shipment Creation (single/bulk)
+- NDR Management
+- COD Reconciliation
+- Pickup Address Management
+- Tracking
+- Courier Finance
+
+### MODULE 4: CLIENT PORTAL
+**Purpose:** Unified login and service selection
+**Users:** All clients - they choose which service to access
+**Location:** `/CJDQuickApp/client-portal/`
+**Database:** None (static site - just redirects)
+**Features:**
+- Login page
+- Service selection buttons
+- Redirects to appropriate module
+
+---
+
+# ⚠️ COMPLETE DEPLOYMENT ARCHITECTURE (Updated: 2026-01-22)
+
+## DEPLOYMENT OVERVIEW
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                           CJDQuick - COMPLETE DEPLOYMENT ARCHITECTURE                                │
+├─────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                                     │
+│  ┌─────────────────────────────────────────────────────────────────────────────────────────────┐   │
+│  │                              MODULE 1: OMS + WMS (LIVE)                                      │   │
+│  ├─────────────────────────────────────────────────────────────────────────────────────────────┤   │
+│  │   VERCEL                         RENDER                         SUPABASE                   │   │
+│  │   oms-sable.vercel.app   ───▶    cjdquick-api-vr4w.onrender.com ───▶  Tokyo (rilakxy...)   │   │
+│  │   Next.js 16 | Port 3000         FastAPI | Port 8000                  ✅ LIVE              │   │
+│  └─────────────────────────────────────────────────────────────────────────────────────────────┘   │
+│                                                                                                     │
+│  ┌─────────────────────────────────────────────────────────────────────────────────────────────┐   │
+│  │                              MODULE 2: B2B LOGISTICS (NEW)                                   │   │
+│  ├─────────────────────────────────────────────────────────────────────────────────────────────┤   │
+│  │   VERCEL                         RENDER                         SUPABASE                   │   │
+│  │   cjdquick-b2b.vercel.app ───▶   cjdquick-b2b-api.onrender.com ───▶  Mumbai (NEW)          │   │
+│  │   Next.js 16 | Port 3001         FastAPI | Port 8001                  ⏳ TO CREATE         │   │
+│  └─────────────────────────────────────────────────────────────────────────────────────────────┘   │
+│                                                                                                     │
+│  ┌─────────────────────────────────────────────────────────────────────────────────────────────┐   │
+│  │                              MODULE 3: B2C COURIER (LIVE)                                    │   │
+│  ├─────────────────────────────────────────────────────────────────────────────────────────────┤   │
+│  │   VERCEL                         RENDER                         SUPABASE                   │   │
+│  │   b2c-frontend-gamma.vercel.app  cjdquick-b2c-api.onrender.com ───▶  Singapore (qfqztr...) │   │
+│  │   Next.js 16 | Port 3002         FastAPI | Port 8002                  ✅ LIVE              │   │
+│  └─────────────────────────────────────────────────────────────────────────────────────────────┘   │
+│                                                                                                     │
+│  ┌─────────────────────────────────────────────────────────────────────────────────────────────┐   │
+│  │                              MODULE 4: CLIENT PORTAL (NEW)                                   │   │
+│  ├─────────────────────────────────────────────────────────────────────────────────────────────┤   │
+│  │   VERCEL                         NO BACKEND                     NO DATABASE                │   │
+│  │   cjdquick-portal.vercel.app     (Static site)                  (Just redirects)           │   │
+│  │   Next.js 16 | Port 3003                                              ⏳ TO CREATE         │   │
+│  └─────────────────────────────────────────────────────────────────────────────────────────────┘   │
+│                                                                                                     │
+└─────────────────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+## DEPLOYMENT SUMMARY TABLE
+
+| Module | Vercel (Frontend) | Render (Backend) | Supabase (Database) | Status |
+|--------|-------------------|------------------|---------------------|--------|
+| **OMS + WMS** | oms-sable.vercel.app | cjdquick-api-vr4w.onrender.com | Tokyo (rilakxy...) | ✅ Live |
+| **B2B Logistics** | cjdquick-b2b.vercel.app | cjdquick-b2b-api.onrender.com | Mumbai (NEW) | ⏳ To Create |
+| **B2C Courier** | b2c-frontend-gamma.vercel.app | cjdquick-b2c-api.onrender.com | Singapore (qfqztr...) | ✅ Live |
+| **Client Portal** | cjdquick-portal.vercel.app | None (static) | None | ⏳ To Create |
+
+## SUPABASE DATABASES
+
+| Module | Project Name | Region | Project Ref | Status |
+|--------|--------------|--------|-------------|--------|
+| OMS + WMS | CJDQuick OMS | Tokyo (ap-northeast-1) | rilakxywitslblkgikzf | ✅ Live |
+| B2B Logistics | CJDQuick B2B | Mumbai (ap-south-1) | (to be created) | ⏳ Pending |
+| B2C Courier | CJD QUICK B2C | Singapore (ap-southeast-1) | qfqztrmnvbdmejyclvvc | ✅ Live |
+
+---
+
+## STEP-BY-STEP DEPLOYMENT GUIDE
+
+### STEP 1: Create B2B Supabase Database
+
+```
+1. Go to https://supabase.com/dashboard
+2. Click "New Project"
+3. Configure:
+   - Organization: Your organization
+   - Name: CJDQuick B2B Logistics
+   - Database Password: Aquapurite2026 (or generate new)
+   - Region: South Asia (Mumbai) - ap-south-1
+4. Click "Create new project"
+5. Wait for project to be ready (~2 minutes)
+6. Go to Settings → Database → Connection string
+7. Copy the "URI" connection string (Session Mode / Port 6543)
+8. Add ?pgbouncer=true to the end
+```
+
+**Connection String Format:**
+```
+postgresql://postgres.<project-ref>:Aquapurite2026@aws-1-ap-south-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+```
+
+### STEP 2: Deploy B2B Backend to Render
+
+```
+1. Go to https://dashboard.render.com
+2. Click "New" → "Web Service"
+3. Connect GitHub repository: singhmantoshkumar22/cjdquick-app
+4. Configure:
+   - Name: cjdquick-b2b-api
+   - Region: Singapore
+   - Branch: main
+   - Root Directory: b2b/backend
+   - Runtime: Python 3
+   - Build Command: pip install -r requirements.txt
+   - Start Command: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+5. Add Environment Variables:
+   - DATABASE_URL: (from Step 1)
+   - SECRET_KEY: (generate with: openssl rand -hex 32)
+   - FRONTEND_URL: https://cjdquick-b2b.vercel.app
+   - PYTHON_VERSION: 3.11.0
+6. Click "Create Web Service"
+```
+
+### STEP 3: Deploy B2B Frontend to Vercel
+
+```
+1. Go to https://vercel.com/dashboard
+2. Click "Add New" → "Project"
+3. Import from GitHub: singhmantoshkumar22/cjdquick-app
+4. Configure:
+   - Framework Preset: Next.js
+   - Root Directory: b2b
+   - Build Command: cd apps/web && npm run build
+   - Output Directory: apps/web/.next
+5. Add Environment Variables:
+   - NEXT_PUBLIC_API_URL: https://cjdquick-b2b-api.onrender.com
+   - AUTH_SECRET: (generate with: openssl rand -hex 32)
+   - NEXTAUTH_SECRET: (same as AUTH_SECRET)
+   - NEXTAUTH_URL: https://cjdquick-b2b.vercel.app
+   - AUTH_TRUST_HOST: true
+6. Click "Deploy"
+```
+
+### STEP 4: Deploy Client Portal to Vercel
+
+```
+1. Go to https://vercel.com/dashboard
+2. Click "Add New" → "Project"
+3. Import from GitHub: singhmantoshkumar22/cjdquick-app
+4. Configure:
+   - Framework Preset: Next.js
+   - Root Directory: client-portal
+   - Build Command: cd apps/web && npm run build
+   - Output Directory: apps/web/.next
+5. Add Environment Variables:
+   - NEXT_PUBLIC_OMS_URL: https://oms-sable.vercel.app
+   - NEXT_PUBLIC_B2B_URL: https://cjdquick-b2b.vercel.app
+   - NEXT_PUBLIC_B2C_URL: https://b2c-frontend-gamma.vercel.app
+6. Click "Deploy"
+```
+
+---
+
+## ENVIRONMENT VARIABLES REFERENCE
+
+### OMS + WMS
+
+**Vercel (oms-sable):**
+```bash
+NEXT_PUBLIC_API_URL=https://cjdquick-api-vr4w.onrender.com
+AUTH_SECRET=<secret>
+NEXTAUTH_SECRET=<secret>
+NEXTAUTH_URL=https://oms-sable.vercel.app
+AUTH_TRUST_HOST=true
+```
+
+**Render (cjdquick-api):**
+```bash
+DATABASE_URL=postgresql://postgres.rilakxywitslblkgikzf:Aquapurite2026@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+SECRET_KEY=<secret>
+FRONTEND_URL=https://oms-sable.vercel.app
+```
+
+### B2B Logistics
+
+**Vercel (cjdquick-b2b):**
+```bash
+NEXT_PUBLIC_API_URL=https://cjdquick-b2b-api.onrender.com
+AUTH_SECRET=<generate-new>
+NEXTAUTH_SECRET=<same-as-AUTH_SECRET>
+NEXTAUTH_URL=https://cjdquick-b2b.vercel.app
+AUTH_TRUST_HOST=true
+```
+
+**Render (cjdquick-b2b-api):**
+```bash
+DATABASE_URL=postgresql://postgres.<b2b-project-ref>:Aquapurite2026@aws-1-ap-south-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+SECRET_KEY=<generate-new>
+FRONTEND_URL=https://cjdquick-b2b.vercel.app
+PYTHON_VERSION=3.11.0
+```
+
+### B2C Courier
+
+**Vercel (b2c-frontend):**
+```bash
+NEXT_PUBLIC_API_URL=https://cjdquick-b2c-api.onrender.com
+AUTH_SECRET=<secret>
+NEXTAUTH_SECRET=<secret>
+NEXTAUTH_URL=https://b2c-frontend-gamma.vercel.app
+AUTH_TRUST_HOST=true
+```
+
+**Render (cjdquick-b2c-api):**
+```bash
+DATABASE_URL=postgresql://postgres.qfqztrmnvbdmejyclvvc:Aquapurite2026@aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+SECRET_KEY=<secret>
+FRONTEND_URL=https://b2c-frontend-gamma.vercel.app
+PYTHON_VERSION=3.11.0
+```
+
+### Client Portal
+
+**Vercel (cjdquick-portal):**
+```bash
+NEXT_PUBLIC_OMS_URL=https://oms-sable.vercel.app
+NEXT_PUBLIC_B2B_URL=https://cjdquick-b2b.vercel.app
+NEXT_PUBLIC_B2C_URL=https://b2c-frontend-gamma.vercel.app
+```
+
+---
+
+## LOCAL DEVELOPMENT PORTS
+
+| Module | Frontend Port | Backend Port | URL |
+|--------|---------------|--------------|-----|
+| OMS + WMS | 3000 | 8000 | http://localhost:3000 |
+| B2B Logistics | 3001 | 8001 | http://localhost:3001 |
+| B2C Courier | 3002 | 8002 | http://localhost:3002 |
+| Client Portal | 3003 | - | http://localhost:3003 |
+
+---
+
+## DEPLOYMENT FILES REFERENCE
+
+| Module | Vercel Config | Render Config | Env Template |
+|--------|---------------|---------------|--------------|
+| OMS | `oms/vercel.json` | `oms/backend/render.yaml` | `oms/apps/web/.env.example` |
+| B2B | `b2b/vercel.json` | `b2b/backend/render.yaml` | `b2b/apps/web/.env.example` |
+| B2C | (existing) | (existing) | (existing) |
+| Portal | `client-portal/vercel.json` | None | `client-portal/apps/web/.env.example`
+**Database:** None (just redirects to modules)
+**Features:**
+- Login page
+- Service selection: [OMS + WMS] [B2C Courier] [B2B Logistics]
+- Redirects to appropriate module based on selection
+
+---
+
+## DATABASE ARCHITECTURE (COMPLETELY SEPARATED)
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                           DATABASE SEPARATION                                    │
+│                    (NO CROSS-DATABASE CONNECTIONS ALLOWED)                       │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│  ┌───────────────────────┐  ┌───────────────────────┐  ┌───────────────────────┐│
+│  │  Supabase TOKYO       │  │  Supabase SINGAPORE   │  │  Supabase B2B (NEW)   ││
+│  │  (OMS + WMS)          │  │  (B2C Courier)        │  │  (B2B Logistics)      ││
+│  ├───────────────────────┤  ├───────────────────────┤  ├───────────────────────┤│
+│  │  rilakxywitslblkgikzf │  │  qfqztrmnvbdmejyclvvc │  │  (to be created)      ││
+│  │  Region: Tokyo        │  │  Region: Singapore    │  │  Region: TBD          ││
+│  ├───────────────────────┤  ├───────────────────────┤  ├───────────────────────┤│
+│  │  Tables:              │  │  Tables:              │  │  Tables:              ││
+│  │  • users              │  │  • users              │  │  • users              ││
+│  │  • companies          │  │  • companies          │  │  • companies          ││
+│  │  • orders             │  │  • shipments          │  │  • ftl_bookings       ││
+│  │  • order_items        │  │  • ndr                │  │  • ltl_bookings       ││
+│  │  • waves              │  │  • cod_reconciliation │  │  • lorry_receipts     ││
+│  │  • picklists          │  │  • pickup_addresses   │  │  • consignees         ││
+│  │  • inventory          │  │  • transporters       │  │  • pod                ││
+│  │  • skus               │  │  • rate_cards         │  │  • vehicles           ││
+│  │  • warehouses         │  │  • ...                │  │  • drivers            ││
+│  │  • returns            │  │                       │  │  • freight_invoices   ││
+│  │  • ...                │  │                       │  │  • ...                ││
+│  └───────────────────────┘  └───────────────────────┘  └───────────────────────┘│
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## LOCAL DEVELOPMENT PORTS
+
+| Module | Frontend Port | Backend Port | URL |
+|--------|---------------|--------------|-----|
+| OMS + WMS | 3000 | 8000 | http://localhost:3000 |
+| B2B Logistics | 3001 | 8001 | http://localhost:3001 |
+| B2C Courier | 3002 | 8002 | http://localhost:3002 |
+| Client Portal | 3003 | - | http://localhost:3003 |
+
+---
+
+# ⚠️ CODEBASE STRUCTURE RULES (MANDATORY)
+
+## RULE 1: SUPABASE IS SINGLE SOURCE OF TRUTH
+
+**All schema definitions MUST originate from Supabase:**
+
+```
+FLOW: Supabase Table → Backend Model (SQLModel) → Frontend Types (Generated)
+      ────────────────────────────────────────────────────────────────────
+      NEVER create models in backend that don't exist in Supabase first!
+```
+
+### Schema Creation Process:
+```bash
+# Step 1: Create table in Supabase SQL Editor
+CREATE TABLE new_table (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    company_id UUID NOT NULL REFERENCES companies(id),
+    field_name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+# Step 2: Create SQLModel in backend (MUST match Supabase exactly)
+# Step 3: Create API endpoints
+# Step 4: Regenerate frontend types: npm run generate-api:prod
+```
+
+---
+
+## RULE 2: NAMING CONVENTIONS (STRICTLY ENFORCED)
+
+### Database (Supabase) - snake_case
+```sql
+-- Table names: snake_case, plural
+CREATE TABLE orders (...);
+CREATE TABLE order_items (...);
+CREATE TABLE ftl_bookings (...);
+
+-- Column names: snake_case
+company_id, created_at, updated_at, order_no, shipment_status
+```
+
+### Backend (Python) - snake_case for DB, camelCase for API
+```python
+# SQLModel fields: Match database exactly (snake_case)
+class Order(SQLModel, table=True):
+    __tablename__ = "orders"
+
+    id: UUID = Field(primary_key=True)
+    company_id: UUID = Field(foreign_key="companies.id")  # snake_case
+    order_no: str
+    created_at: datetime
+    updated_at: datetime
+
+# Pydantic aliases for API: camelCase
+class OrderResponse(SQLModel):
+    id: UUID
+    companyId: UUID = Field(alias="company_id")  # camelCase for API
+    orderNo: str = Field(alias="order_no")
+    createdAt: datetime = Field(alias="created_at")
+    updatedAt: datetime = Field(alias="updated_at")
+
+    class Config:
+        populate_by_name = True
+```
+
+### Frontend (TypeScript) - camelCase
+```typescript
+// All frontend types use camelCase (auto-generated from API)
+interface Order {
+  id: string;
+  companyId: string;
+  orderNo: string;
+  createdAt: string;
+  updatedAt: string;
+}
+```
+
+---
+
+## RULE 3: REQUIRED FIELDS FOR ALL TABLES
+
+**Every table MUST have these fields:**
+
+```sql
+-- Supabase
+id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+company_id UUID NOT NULL REFERENCES companies(id),
+created_at TIMESTAMPTZ DEFAULT NOW(),
+updated_at TIMESTAMPTZ DEFAULT NOW()
+```
+
+```python
+# Backend SQLModel
+id: UUID = Field(default_factory=uuid4, primary_key=True)
+company_id: UUID = Field(foreign_key="companies.id", index=True)
+created_at: datetime = Field(default_factory=datetime.utcnow)
+updated_at: datetime = Field(default_factory=datetime.utcnow)
+```
+
+---
+
+## RULE 4: DATA TYPE MAPPING (STRICT)
+
+| Supabase (PostgreSQL) | Backend (Python) | Frontend (TypeScript) | Notes |
+|-----------------------|------------------|----------------------|-------|
+| `UUID` | `UUID` | `string` | Auto-serialized |
+| `TIMESTAMPTZ` | `datetime` | `string` (ISO 8601) | Auto-serialized |
+| `NUMERIC(10,2)` | `Decimal` | `string` | ⚠️ Parse in frontend! |
+| `INTEGER` | `int` | `number` | Auto |
+| `BOOLEAN` | `bool` | `boolean` | Auto |
+| `VARCHAR(n)` | `str` | `string` | Auto |
+| `TEXT` | `str` | `string` | Auto |
+| `JSONB` | `dict` | `object` | Auto |
+| `VARCHAR[]` | `List[str]` | `string[]` | Auto |
+
+### CRITICAL: Decimal Handling
+```typescript
+// Frontend MUST use this helper for all Decimal fields
+const parseDecimal = (value: string | number | null | undefined): number => {
+  if (value === null || value === undefined) return 0;
+  if (typeof value === 'string') return parseFloat(value) || 0;
+  return value;
+};
+
+// Usage
+const total = parseDecimal(order.subtotal) + parseDecimal(order.taxAmount);
+```
+
+---
+
+## RULE 5: ENUM CONSISTENCY
+
+**Enums MUST be defined in all three layers:**
+
+```sql
+-- Step 1: Supabase - Create enum type
+CREATE TYPE order_status AS ENUM ('CREATED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED');
+```
+
+```python
+# Step 2: Backend - Python enum (MUST match Supabase exactly)
+class OrderStatus(str, Enum):
+    CREATED = "CREATED"
+    PROCESSING = "PROCESSING"
+    SHIPPED = "SHIPPED"
+    DELIVERED = "DELIVERED"
+    CANCELLED = "CANCELLED"
+```
+
+```typescript
+// Step 3: Frontend - Auto-generated, but verify matches
+type OrderStatus = 'CREATED' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
+```
+
+---
+
+## RULE 6: NO CROSS-MODULE IMPORTS
+
+```
+❌ FORBIDDEN:
+   - oms/backend importing from b2b/backend
+   - b2c/apps/web importing from oms/apps/web
+   - Any shared code between modules
+
+✅ ALLOWED:
+   - API calls between modules (HTTP requests)
+   - Each module is 100% self-contained
+```
+
+---
+
+# ⚠️ MANDATORY DEPLOYMENT CHECKLIST
+
+## BEFORE ANY DEPLOYMENT - MUST FOLLOW THIS SEQUENCE:
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                    DEPLOYMENT CHECKLIST (MANDATORY)                              │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│  STEP 1: BUILD TEST                                                             │
+│  ─────────────────────────────────────────────────────────────────────────────  │
+│  cd oms && npm run build                                                        │
+│  ✓ Must pass with NO errors                                                     │
+│  ✓ Check for TypeScript warnings                                                │
+│                                                                                 │
+│  STEP 2: START LOCAL SERVERS                                                    │
+│  ─────────────────────────────────────────────────────────────────────────────  │
+│  # Terminal 1: Backend                                                          │
+│  cd oms/backend && uvicorn app.main:app --reload --port 8000                    │
+│                                                                                 │
+│  # Terminal 2: Frontend                                                         │
+│  cd oms && npm run dev                                                          │
+│  ✓ Both servers must start without errors                                       │
+│                                                                                 │
+│  STEP 3: TEST AFFECTED PAGES LOCALLY                                            │
+│  ─────────────────────────────────────────────────────────────────────────────  │
+│  ✓ Open http://localhost:3000                                                   │
+│  ✓ Login with test credentials                                                  │
+│  ✓ Navigate to ALL pages affected by changes                                    │
+│  ✓ Verify data loads correctly                                                  │
+│  ✓ Verify forms submit correctly                                                │
+│                                                                                 │
+│  STEP 4: TEST API ENDPOINTS WITH REAL DATA                                      │
+│  ─────────────────────────────────────────────────────────────────────────────  │
+│  ✓ Test GET endpoints return correct data                                       │
+│  ✓ Test POST endpoints create records                                           │
+│  ✓ Test PATCH endpoints update records                                          │
+│  ✓ Test DELETE endpoints remove records                                         │
+│  ✓ Verify multi-tenancy (companyId filtering works)                             │
+│                                                                                 │
+│  STEP 5: PUSH TO PRODUCTION                                                     │
+│  ─────────────────────────────────────────────────────────────────────────────  │
+│  git add .                                                                      │
+│  git commit -m "Description of changes"                                         │
+│  ./scripts/deploy-all.sh                                                        │
+│                                                                                 │
+│  STEP 6: VERIFY PRODUCTION AFTER DEPLOY                                         │
+│  ─────────────────────────────────────────────────────────────────────────────  │
+│  ✓ Wait for Vercel deployment to complete                                       │
+│  ✓ Wait for Render deployment to complete                                       │
+│  ✓ Test production URL: https://oms-sable.vercel.app                            │
+│  ✓ Login and verify affected features work                                      │
+│  ✓ Check Render logs for any backend errors                                     │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Quick Checklist (Copy-Paste for PR/Commits):
+
+```markdown
+## Deployment Checklist
+- [ ] `npm run build` passes
+- [ ] Local backend starts (`uvicorn`)
+- [ ] Local frontend starts (`npm run dev`)
+- [ ] Tested affected pages locally
+- [ ] Tested API endpoints with real data
+- [ ] Pushed to production
+- [ ] Verified production deployment
+```
+
+---
+
+# LEGACY SECTIONS BELOW (Still Valid)
+
+---
+
+## CRITICAL: Complete Deployment Architecture (Updated: 2026-01-22)
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                    COMPLETE DEPLOYMENT ARCHITECTURE                              │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                  │
+│   ┌─────────────────────────── OMS (Main) ────────────────────────────┐         │
+│   │                                                                    │         │
+│   │   VERCEL                    RENDER                   SUPABASE     │         │
+│   │   ┌─────────────┐          ┌─────────────┐          ┌──────────┐ │         │
+│   │   │ oms         │   ───▶   │ cjdquick-api│   ───▶   │ Tokyo    │ │         │
+│   │   │ Next.js 16  │          │ FastAPI     │          │ rilakxy..│ │         │
+│   │   │ Virginia    │          │ Virginia    │          │          │ │         │
+│   │   └─────────────┘          └─────────────┘          └──────────┘ │         │
+│   │   oms-sable.vercel.app     cjdquick-api-vr4w.onrender.com        │         │
+│   └────────────────────────────────────────────────────────────────────┘         │
+│                                                                                  │
+│   ┌─────────────────────────── B2C (Client) ──────────────────────────┐         │
+│   │                                                                    │         │
+│   │   VERCEL                    RENDER                   SUPABASE     │         │
+│   │   ┌─────────────┐          ┌─────────────┐          ┌──────────┐ │         │
+│   │   │b2c-frontend │   ───▶   │cjdquick-b2c │   ───▶   │Singapore │ │         │
+│   │   │ Next.js 16  │          │ FastAPI     │          │ qfqztr.. │ │         │
+│   │   │             │          │ Singapore   │          │          │ │         │
+│   │   └─────────────┘          └─────────────┘          └──────────┘ │         │
+│   │   b2c-frontend-gamma.vercel.app  cjdquick-b2c-api.onrender.com   │         │
+│   └────────────────────────────────────────────────────────────────────┘         │
+│                                                                                  │
+└─────────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## RENDER SERVICES (Updated: 2026-01-22)
+
+### Active Services
+
+| Service Name | Type | Runtime | Region | URL | Database | Status |
+|--------------|------|---------|--------|-----|----------|--------|
+| `cjdquick-api` | Web Service | Python 3 | **Virginia** | https://cjdquick-api-vr4w.onrender.com | Tokyo Supabase | ✅ Active |
+| `cjdquick-b2c-api` | Web Service | Python 3 | **Singapore** | https://cjdquick-b2c-api.onrender.com | Singapore Supabase | ✅ Active |
+
+### Suspended Services
+
+| Service Name | Type | Runtime | Region | Status |
+|--------------|------|---------|--------|--------|
+| `cjdquick-oms` | Web Service | Node | Virginia | ⏸️ Suspended |
+
+---
+
+## VERCEL PROJECTS (Updated: 2026-01-22)
+
+| Project Name | URL | Backend API | Purpose | Status |
+|--------------|-----|-------------|---------|--------|
+| `oms` | https://oms-sable.vercel.app | cjdquick-api-vr4w.onrender.com | **Main OMS Frontend** | ✅ Active |
+| `b2c-frontend` | https://b2c-frontend-gamma.vercel.app | cjdquick-b2c-api.onrender.com | **B2C Client Frontend** | ✅ Active |
+
+---
+
+## SUPABASE DATABASES (Updated: 2026-01-22)
+
+### Main OMS Database (Tokyo)
+
+| Setting | Value |
+|---------|-------|
+| Project Name | CJDQuick OMS |
+| Project Ref | `rilakxywitslblkgikzf` |
+| Region | ap-northeast-1 (Tokyo) |
+| Dashboard | https://supabase.com/dashboard/project/rilakxywitslblkgikzf |
+
+**Connection String (with pgbouncer=true - REQUIRED):**
+```
+postgresql://postgres.rilakxywitslblkgikzf:Aquapurite2026@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+```
+
+### B2C Database (Singapore)
+
+| Setting | Value |
+|---------|-------|
+| Project Name | CJD QUICK B2C |
+| Project Ref | `qfqztrmnvbdmejyclvvc` |
+| Region | ap-southeast-1 (Singapore) |
+| Dashboard | https://supabase.com/dashboard/project/qfqztrmnvbdmejyclvvc |
+
+**Connection String (with pgbouncer=true - REQUIRED):**
+```
+postgresql://postgres.qfqztrmnvbdmejyclvvc:Aquapurite2026@aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+```
+
+---
+
+## LOGIN CREDENTIALS
+
+### Main OMS
+
+| Panel | Email | Password |
+|-------|-------|----------|
+| Master Panel (SUPER_ADMIN) | admin@demo.com | admin123 |
+| Client Portal (CLIENT) | client@fashionforward.com | brand123 |
+
+### B2C Client
+
+| Panel | Email | Password |
+|-------|-------|----------|
+| B2C Admin | admin@b2c-client.com | admin123 |
+
+---
+
+## QUICK REFERENCE CARD
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                           OMS DEPLOYMENT                                │
+├────────────────────────────────────────────────────────────────────────┤
+│  Frontend:  https://oms-sable.vercel.app (Vercel)                      │
+│  Backend:   https://cjdquick-api-vr4w.onrender.com (Render - Virginia) │
+│  Database:  Supabase Tokyo (rilakxywitslblkgikzf)                      │
+│  Login:     admin@demo.com / admin123                                  │
+└────────────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────────────┐
+│                           B2C DEPLOYMENT                                │
+├────────────────────────────────────────────────────────────────────────┤
+│  Frontend:  https://b2c-frontend-gamma.vercel.app (Vercel)             │
+│  Backend:   https://cjdquick-b2c-api.onrender.com (Render - Singapore) │
+│  Database:  Supabase Singapore (qfqztrmnvbdmejyclvvc)                  │
+│  Login:     admin@b2c-client.com / admin123                            │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+---
 
 ## Architecture Pattern: Backend-Centric
 
@@ -65,81 +821,27 @@ Render is configured with `Root Directory: oms/backend`. This means:
 2. Or manually: `./scripts/trigger-render-deploy.sh`
 3. Or: Render Dashboard → Manual Deploy
 
-**Setup Deploy Hook (one-time):**
+---
+
+## GitHub Repositories
+
+| Remote | Repository | Branch | Purpose |
+|--------|------------|--------|---------|
+| `origin` | puneet1409/CJDQuickApp | master | Primary repo, Vercel auto-deploy |
+| `singh` | singhmantoshkumar22/cjdquick-app | main | Render auto-deploy |
+| - | singhmantoshkumar22/cjdquick-b2c | main | B2C Frontend repo |
+
+---
+
+## CRITICAL: Database Connection Format
+
+**ALWAYS use `?pgbouncer=true` in DATABASE_URL for Supabase pooler connections!**
+
 ```bash
-# Add to oms/.env.local:
-RENDER_DEPLOY_HOOK_URL=https://api.render.com/deploy/srv-xxxxx?key=xxxxx
+# Correct format:
+DATABASE_URL=postgresql://postgres.{project-ref}:{password}@{region}.pooler.supabase.com:6543/postgres?pgbouncer=true
 
-# Get URL from: Render Dashboard → cjdquick-api → Settings → Deploy Hook
-```
-
-## Live URLs
-
-| Service | URL | Platform | Status |
-|---------|-----|----------|--------|
-| **Frontend (PRIMARY)** | https://oms-sable.vercel.app | Vercel | ✅ Active |
-| Frontend (Backup) | https://cjdquick-oms.onrender.com | Render | ⏸️ Needs pipeline minutes |
-| **Backend API (PRIMARY)** | https://cjdquick-api-vr4w.onrender.com | Render | ✅ Active |
-| Backend API (B2C) | https://cjdquick-b2c-api.onrender.com | Render | ✅ Active |
-| API Docs | https://cjdquick-api-vr4w.onrender.com/docs | Render | ✅ Active |
-| Database | aws-1-ap-northeast-1.pooler.supabase.com | Supabase | ✅ Active |
-
----
-
-## RENDER SERVICES INVENTORY (Updated: 2026-01-22)
-
-### Active Services
-
-| Service Name | Type | Runtime | Region | URL | Purpose |
-|--------------|------|---------|--------|-----|---------|
-| `cjdquick-api` | Web Service | Python 3 | Virginia | https://cjdquick-api-vr4w.onrender.com | **Main OMS Backend API** |
-| `cjdquick-b2c-api` | Web Service | Python 3 | Singapore | https://cjdquick-b2c-api.onrender.com | B2C Client Backend API |
-
-### Project-Grouped Services
-
-| Project | Service | Type | Runtime | Status | Notes |
-|---------|---------|------|---------|--------|-------|
-| My project | `cjdquick-oms` | Web Service | Node | ❌ Failed | Needs pipeline minutes to deploy |
-
-### Suspended Services (Can be deleted)
-
-| Service Name | Runtime | Region | Reason |
-|--------------|---------|--------|--------|
-| `cjdquick-api` | Python 3 | Singapore | Duplicate - use Virginia instance |
-| `cjdquick-app` | Python 3 | Virginia | Old/unused |
-
-### Recommended Actions
-
-1. **Use Vercel as primary frontend** - No pipeline minute limits, already working
-2. **Keep `cjdquick-api` (Virginia)** - Main backend, fully deployed
-3. **Keep `cjdquick-b2c-api` (Singapore)** - B2C backend
-4. **Optional:** Delete suspended services to clean up
-5. **Optional:** Delete `cjdquick-oms` from Render (use Vercel instead)
-
-### To Add Pipeline Minutes (if needed for cjdquick-oms):
-
-1. Go to: https://dashboard.render.com → Billing
-2. Click "Pipeline Minutes" section
-3. Purchase additional minutes (~$0.004/minute)
-4. Return to cjdquick-oms → Manual Deploy
-
----
-
-## Database Connection (Main OMS)
-
-| Setting | Value |
-|---------|-------|
-| Project Ref | `rilakxywitslblkgikzf` |
-| Region | ap-northeast-1 (Tokyo) |
-| Host | aws-1-ap-northeast-1.pooler.supabase.com |
-| Port | 6543 |
-| Database | postgres |
-| User | postgres.rilakxywitslblkgikzf |
-| Password | Aquapurite2026 |
-
-**Full Connection String (Pooler - for production):**
-```
-postgresql://postgres.rilakxywitslblkgikzf:Aquapurite2026@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres
+# Without pgbouncer=true, connections will timeout or fail!
 ```
 
 ## Git Remotes (IMPORTANT)

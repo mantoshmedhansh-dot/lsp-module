@@ -1,0 +1,15 @@
+{
+  "name": "cjdquick-b2c",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=apps/web",
+    "build": "npm run build --workspace=apps/web",
+    "start": "npm run start --workspace=apps/web",
+    "lint": "npm run lint --workspace=apps/web"
+  },
+  "packageManager": "npm@10.2.4"
+}

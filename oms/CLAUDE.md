@@ -36,7 +36,7 @@ CJDQuick offers **3 distinct services** to clients. These are **completely indep
 │  ├── b2b/                    ← MODULE 2: B2B LOGISTICS (FTL/PTL)                │
 │  │   ├── apps/web/           ← B2B Frontend (Vercel)                            │
 │  │   ├── backend/            ← B2B Backend (Render)                             │
-│  │   └── Database: Supabase B2B (NEW - to be created)                           │
+│  │   └── Database: Supabase Mumbai (ngrjnhfxrmcclqxorjwl)                       │
 │  │                                                                              │
 │  ├── b2c/                    ← MODULE 3: B2C COURIER                            │
 │  │   ├── apps/web/           ← B2C Frontend (Vercel)                            │
@@ -71,7 +71,7 @@ CJDQuick offers **3 distinct services** to clients. These are **completely indep
 **Purpose:** B2B Freight Transport Services (PTL/FTL)
 **Users:** Clients who hand over inventory for B2B distribution
 **Location:** `/CJDQuickApp/b2b/`
-**Database:** NEW Supabase B2B (to be created)
+**Database:** Supabase Mumbai (`ngrjnhfxrmcclqxorjwl`)
 **Features:**
 - FTL Bookings (Full Truck Load)
 - LTL/PTL Bookings (Part Truck Load)
@@ -127,8 +127,8 @@ CJDQuick offers **3 distinct services** to clients. These are **completely indep
 │  │                              MODULE 2: B2B LOGISTICS (NEW)                                   │   │
 │  ├─────────────────────────────────────────────────────────────────────────────────────────────┤   │
 │  │   VERCEL                         RENDER                         SUPABASE                   │   │
-│  │   cjdquick-b2b.vercel.app ───▶   cjdquick-b2b-api.onrender.com ───▶  Mumbai (NEW)          │   │
-│  │   Next.js 16 | Port 3001         FastAPI | Port 8001                  ⏳ TO CREATE         │   │
+│  │   cjdquick-b2b.vercel.app ───▶   cjdquick-b2b-api.onrender.com ───▶  Mumbai (ngrjnh...)   │   │
+│  │   Next.js 16 | Port 3001         FastAPI | Port 8001                  ✅ CREATED          │   │
 │  └─────────────────────────────────────────────────────────────────────────────────────────────┘   │
 │                                                                                                     │
 │  ┌─────────────────────────────────────────────────────────────────────────────────────────────┐   │
@@ -155,7 +155,7 @@ CJDQuick offers **3 distinct services** to clients. These are **completely indep
 | Module | Vercel (Frontend) | Render (Backend) | Supabase (Database) | Status |
 |--------|-------------------|------------------|---------------------|--------|
 | **OMS + WMS** | oms-sable.vercel.app | cjdquick-api-vr4w.onrender.com | Tokyo (rilakxy...) | ✅ Live |
-| **B2B Logistics** | cjdquick-b2b.vercel.app | cjdquick-b2b-api.onrender.com | Mumbai (NEW) | ⏳ To Create |
+| **B2B Logistics** | cjdquick-b2b.vercel.app | cjdquick-b2b-api.onrender.com | Mumbai (ngrjnh...) | ✅ DB Created |
 | **B2C Courier** | b2c-frontend-gamma.vercel.app | cjdquick-b2c-api.onrender.com | Singapore (qfqztr...) | ✅ Live |
 | **Client Portal** | cjdquick-portal.vercel.app | None (static) | None | ⏳ To Create |
 
@@ -164,7 +164,7 @@ CJDQuick offers **3 distinct services** to clients. These are **completely indep
 | Module | Project Name | Region | Project Ref | Status |
 |--------|--------------|--------|-------------|--------|
 | OMS + WMS | CJDQuick OMS | Tokyo (ap-northeast-1) | rilakxywitslblkgikzf | ✅ Live |
-| B2B Logistics | CJDQuick B2B | Mumbai (ap-south-1) | (to be created) | ⏳ Pending |
+| B2B Logistics | CJDQuick B2B | Mumbai (ap-south-1) | ngrjnhfxrmcclqxorjwl | ✅ Created |
 | B2C Courier | CJD QUICK B2C | Singapore (ap-southeast-1) | qfqztrmnvbdmejyclvvc | ✅ Live |
 
 ---

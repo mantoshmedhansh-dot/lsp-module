@@ -627,3 +627,294 @@ postgresql://postgres.qfqztrmnvbdmejyclvvc:Aquapurite2026@aws-0-ap-southeast-1.p
 # 4. Create Vercel deployment
 # 5. Set environment variables
 ```
+
+---
+
+## LOGISTICS & DELIVERY MODULE - IMPLEMENTATION PLAN (2026-01-21)
+
+### Overview
+
+This section documents the comprehensive plan to build a production-grade Logistics & Delivery module comparable to Vinculum and UniCommerce, with three distinct shipping allocation engines for FTL, B2B/PTL, and B2C shipments.
+
+### Gap Analysis Summary
+
+#### Current State vs Industry Standard
+
+| Component | Current State | Industry Standard | Gap Level |
+|-----------|---------------|-------------------|-----------|
+| **FTL Module** | ❌ Not Exists | Lane-wise rates, vehicle types, indent management | Critical |
+| **B2B/PTL N×N Matrix** | ❌ Not Exists | Origin-Destination-Weight rate matrix | Critical |
+| **Cost/Speed/Reliability Scoring** | ❌ Not Exists | Weighted algorithm for carrier selection | Critical |
+| **Auto-allocation Engine** | ❌ Not Exists | Smart carrier selection based on CSR | Critical |
+| **Carrier Performance Metrics** | ⚠️ Basic | TAT, Success%, RTO%, Reliability scoring | High |
+| **Rate Cards** | ⚠️ Basic (40%) | Weight + Zone + Lane based pricing | Medium |
+| **Shipping Rules** | ⚠️ Basic (35%) | Advanced rule engine with CSR | Medium |
+
+### Target Architecture
+
+```
+Logistics & Delivery (Restructured)
+├── 📊 Logistics Dashboard
+│   ├── Overview Metrics
+│   ├── Carrier Performance Scorecards
+│   └── Cost Analysis
+│
+├── 🚚 FTL Management (NEW)
+│   ├── FTL Vendors
+│   ├── Vehicle Types
+│   ├── Lane Rates (O-D Matrix)
+│   ├── Indent/Trip Management
+│   └── FTL Rate Comparison
+│
+├── 📦 B2B/PTL Management (ENHANCED)
+│   ├── PTL Vendors
+│   ├── N×N Rate Matrix
+│   ├── TAT Matrix
+│   ├── LR Management (existing)
+│   ├── Bookings (existing)
+│   └── B2B Rate Comparison
+│
+├── 📬 B2C/Courier Management (ENHANCED)
+│   ├── Courier Partners
+│   ├── Rate Cards (enhanced)
+│   ├── Pincode Serviceability
+│   ├── AWB Management (existing)
+│   └── B2C Rate Comparison
+│
+├── ⚙️ Allocation Engine (NEW)
+│   ├── Allocation Rules
+│   ├── Scoring Configuration (CSR Weights)
+│   ├── Auto-allocation Dashboard
+│   ├── Manual/Forced Allocation
+│   └── Allocation History/Audit
+│
+├── 📈 Performance & Analytics (ENHANCED)
+│   ├── Carrier Scorecards
+│   ├── Lane Performance (FTL/B2B)
+│   ├── Pincode Performance (B2C)
+│   ├── Cost Optimization Reports
+│   └── TAT Analysis
+│
+└── ⚙️ Configuration
+    ├── Transporters (enhanced)
+    ├── Shipping Rules (enhanced)
+    └── Service Pincodes (existing)
+```
+
+### Phase-wise Implementation Plan
+
+#### PHASE 1: Foundation & Data Models (Week 1-2)
+
+**New Database Tables:**
+```sql
+-- FTL Tables
+1. VehicleType - FTL vehicle master (10T, 20T, 32T, Container)
+2. FTLVendor - FTL transporter master
+3. FTLLaneRate - Origin-Destination rate matrix for FTL
+4. FTLIndent - Trip/booking management
+
+-- B2B/PTL Tables
+5. PTLVendor - B2B PTL vendor master
+6. PTLRateMatrix - N×N O-D-Weight rate matrix
+7. PTLTATMatrix - Transit time matrix per lane per vendor
+
+-- Performance Tables
+8. CarrierPerformance - Aggregated metrics per carrier
+9. PincodePerformance - Pincode-level carrier performance (B2C)
+10. LanePerformance - Lane-level performance (FTL/PTL)
+
+-- Allocation Engine Tables
+11. ShippingAllocationRule - Enhanced allocation rules
+12. CSRScoreConfig - Cost/Speed/Reliability weight configuration
+13. AllocationAudit - Full audit trail of allocation decisions
+```
+
+**Deliverables:**
+- [ ] SQLModel models for all new tables
+- [ ] Database migration scripts for Supabase
+- [ ] Basic CRUD APIs for new entities
+- [ ] Enum types (VehicleType, ShipmentType, AllocationMode)
+
+#### PHASE 2: FTL Module (Week 3-4)
+
+**Backend APIs:**
+- `POST/GET/PATCH/DELETE /api/v1/ftl/vendors` - FTL vendor CRUD
+- `POST/GET/PATCH/DELETE /api/v1/ftl/vehicle-types` - Vehicle type master
+- `POST/GET/PATCH/DELETE /api/v1/ftl/lane-rates` - Lane rate matrix CRUD
+- `POST/GET/PATCH /api/v1/ftl/indents` - Trip/indent management
+- `GET /api/v1/ftl/rate-comparison` - Compare rates for a lane
+
+**Frontend Pages:**
+- `/logistics/ftl/vendors` - FTL Vendor management
+- `/logistics/ftl/vehicle-types` - Vehicle type master
+- `/logistics/ftl/lane-rates` - Lane rate matrix (spreadsheet UI)
+- `/logistics/ftl/indents` - Indent/trip management
+- `/logistics/ftl/rate-comparison` - Rate comparison tool
+
+**Features:**
+- Lane-wise rate entry (Origin City → Destination City)
+- Vehicle type based pricing
+- Multi-vendor rate comparison for same lane
+- Indent creation, vehicle assignment, trip tracking
+- FTL cost calculation
+
+#### PHASE 3: Enhanced B2B/PTL Module (Week 5-6)
+
+**Backend APIs:**
+- `POST/GET/PATCH/DELETE /api/v1/b2b/ptl-vendors` - PTL vendor CRUD
+- `POST/GET/PATCH /api/v1/b2b/rate-matrix` - N×N rate matrix
+- `POST/GET/PATCH /api/v1/b2b/tat-matrix` - Transit time matrix
+- `GET /api/v1/b2b/rate-comparison` - Multi-vendor comparison
+- `POST /api/v1/b2b/calculate-rate` - Calculate rate for shipment
+
+**Frontend Pages:**
+- `/logistics/b2b/vendors` - PTL vendor management
+- `/logistics/b2b/rate-matrix` - N×N rate matrix (spreadsheet UI)
+- `/logistics/b2b/tat-matrix` - TAT matrix management
+- `/logistics/b2b/rate-comparison` - Rate comparison tool
+
+**Features:**
+- N×N origin-destination matrix with weight slabs
+- TAT (Transit Time) tracking per lane per vendor
+- Multi-vendor rate comparison with TAT
+- Integration with existing LR/Booking modules
+
+#### PHASE 4: Enhanced B2C Module (Week 7-8)
+
+**Backend APIs:**
+- `GET /api/v1/b2c/rate-comparison` - Carrier rate comparison
+- `GET /api/v1/b2c/carrier-performance` - Carrier performance metrics
+- `GET /api/v1/b2c/pincode-performance` - Pincode-level metrics
+- `POST /api/v1/b2c/calculate-rate` - Calculate shipping rate
+
+**Frontend Pages:**
+- `/logistics/b2c/rate-comparison` - Carrier rate shopping
+- `/logistics/b2c/performance` - Carrier performance dashboard
+- `/logistics/b2c/pincode-analytics` - Pincode-level analytics
+
+**Features:**
+- Carrier rate shopping for pincode
+- Performance scoring (TAT, Success%, RTO%)
+- Pincode-level carrier ranking
+- Historical performance trends
+
+#### PHASE 5: Unified Allocation Engine (Week 9-10)
+
+**Core Allocation Service:**
+```python
+class ShippingAllocationService:
+    """
+    Unified allocation engine for FTL, B2B, and B2C shipments.
+    Uses Cost/Speed/Reliability (CSR) weighted scoring.
+    """
+
+    def allocate(
+        self,
+        shipment: Shipment,
+        mode: AllocationMode,  # AUTO, MANUAL, HYBRID
+        weights: CSRWeights = None  # Cost, Speed, Reliability weights
+    ) -> AllocationResult:
+        # 1. Detect shipment type (FTL, B2B, B2C)
+        shipment_type = self.detect_type(shipment)
+
+        # 2. Get eligible carriers based on serviceability
+        carriers = self.get_eligible_carriers(shipment, shipment_type)
+
+        # 3. Calculate CSR scores for each carrier
+        scored_carriers = self.calculate_csr_scores(carriers, weights)
+
+        # 4. Apply business rules and filters
+        filtered = self.apply_rules(scored_carriers, shipment)
+
+        # 5. Select best carrier (or return options for manual)
+        selected = self.select_carrier(filtered, mode)
+
+        # 6. Log allocation decision with full audit trail
+        self.log_allocation(shipment, selected, reason)
+
+        return AllocationResult(carrier=selected, alternatives=filtered[:3])
+```
+
+**Backend APIs:**
+- `POST /api/v1/allocation/shipping/allocate` - Smart allocation
+- `POST /api/v1/allocation/shipping/allocate-bulk` - Bulk allocation
+- `GET /api/v1/allocation/shipping/suggest` - Get carrier suggestions
+- `POST /api/v1/allocation/shipping/force` - Force manual allocation
+- `GET /api/v1/allocation/shipping/audit` - Allocation audit trail
+- `POST/GET/PATCH /api/v1/allocation/csr-config` - CSR weight config
+
+**Frontend Pages:**
+- `/logistics/allocation/rules` - Allocation rules configuration
+- `/logistics/allocation/csr-config` - CSR weights configuration
+- `/logistics/allocation/dashboard` - Auto-allocation dashboard
+- `/logistics/allocation/manual` - Manual/forced allocation
+- `/logistics/allocation/audit` - Allocation history/audit
+
+**Features:**
+- CSR (Cost/Speed/Reliability) weighted scoring
+- Configurable weights per company (e.g., 70% cost, 20% speed, 10% reliability)
+- Auto-allocation with full explanation
+- Manual override with reason tracking
+- Fallback logic (if primary fails, try secondary)
+- Complete audit trail
+
+#### PHASE 6: Performance Analytics (Week 11-12)
+
+**Backend APIs:**
+- `GET /api/v1/analytics/carrier-scorecard` - Carrier scorecards
+- `GET /api/v1/analytics/lane-performance` - Lane performance (FTL/B2B)
+- `GET /api/v1/analytics/pincode-performance` - Pincode performance (B2C)
+- `GET /api/v1/analytics/cost-savings` - Cost optimization reports
+- `GET /api/v1/analytics/allocation-insights` - Allocation insights
+
+**Frontend Pages:**
+- `/logistics/analytics/scorecards` - Carrier scorecards dashboard
+- `/logistics/analytics/lane-performance` - Lane performance (FTL/B2B)
+- `/logistics/analytics/pincode-performance` - Pincode performance (B2C)
+- `/logistics/analytics/cost-optimization` - Cost savings reports
+- `/logistics/analytics/insights` - Allocation insights
+
+**Features:**
+- Automated performance calculation from delivery data
+- Historical trend analysis
+- Cost savings reports
+- Carrier ranking by performance
+- Actionable recommendations
+
+### Timeline Summary
+
+| Phase | Focus | Duration | Status |
+|-------|-------|----------|--------|
+| Phase 1 | Foundation & Data Models | Week 1-2 | 🔄 In Progress |
+| Phase 2 | FTL Module | Week 3-4 | ⏳ Pending |
+| Phase 3 | B2B/PTL Module | Week 5-6 | ⏳ Pending |
+| Phase 4 | B2C Module | Week 7-8 | ⏳ Pending |
+| Phase 5 | Allocation Engine | Week 9-10 | ⏳ Pending |
+| Phase 6 | Analytics | Week 11-12 | ⏳ Pending |
+
+**Total Duration: 12 weeks (3 months)**
+
+### Key Design Decisions
+
+1. **Shipment Type Auto-Detection:**
+   - Weight > 500kg or Full vehicle → FTL
+   - B2B customer + LTL weight → B2B/PTL
+   - B2C order → B2C Courier
+
+2. **CSR Scoring Formula:**
+   ```
+   Score = (W_cost × Cost_Score) + (W_speed × Speed_Score) + (W_reliability × Reliability_Score)
+   Where: W_cost + W_speed + W_reliability = 1.0
+   Default: 0.5, 0.3, 0.2
+   ```
+
+3. **Performance Metrics Sources:**
+   - Calculate from actual Delivery table data
+   - TAT = Actual delivery date - Ship date
+   - Success% = Delivered / (Delivered + RTO)
+   - Reliability = On-time deliveries / Total deliveries
+
+4. **Multi-tenancy:**
+   - All new tables include `companyId`
+   - CSR weights configurable per company
+   - Lane rates can be company-specific or global

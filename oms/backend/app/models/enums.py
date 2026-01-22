@@ -602,3 +602,93 @@ class TransporterType(str, Enum):
     COURIER = "COURIER"
     SELF = "SELF"
     AGGREGATOR = "AGGREGATOR"
+
+
+# ============================================================================
+# Logistics & Shipping Allocation Enums (Phase 1 - 2026-01-21)
+# ============================================================================
+
+class ShipmentType(str, Enum):
+    """Shipment type for allocation engine"""
+    FTL = "FTL"          # Full Truck Load
+    B2B_PTL = "B2B_PTL"  # B2B Part Truck Load / LTL
+    B2C = "B2C"          # B2C Courier/Express
+
+
+class VehicleCategory(str, Enum):
+    """FTL vehicle categories"""
+    TATA_ACE = "TATA_ACE"         # 750 kg
+    PICKUP_8FT = "PICKUP_8FT"     # 1 ton
+    PICKUP_14FT = "PICKUP_14FT"   # 2.5 ton
+    TAURUS_16FT = "TAURUS_16FT"   # 4 ton
+    TRUCK_19FT = "TRUCK_19FT"     # 7 ton
+    TRUCK_22FT = "TRUCK_22FT"     # 9 ton
+    TRUCK_24FT = "TRUCK_24FT"     # 14 ton
+    TRUCK_32FT = "TRUCK_32FT"     # 15 ton
+    TRAILER_40FT = "TRAILER_40FT" # 21 ton
+    CONTAINER_20FT = "CONTAINER_20FT"  # 20 ton
+    CONTAINER_40FT = "CONTAINER_40FT"  # 26 ton
+
+
+class AllocationMode(str, Enum):
+    """Shipping allocation mode"""
+    AUTO = "AUTO"        # Fully automatic based on CSR scoring
+    MANUAL = "MANUAL"    # Manual carrier selection
+    HYBRID = "HYBRID"    # Auto-suggest with manual confirmation
+
+
+class FTLIndentStatus(str, Enum):
+    """FTL Indent/Trip status"""
+    DRAFT = "DRAFT"
+    CONFIRMED = "CONFIRMED"
+    VEHICLE_ASSIGNED = "VEHICLE_ASSIGNED"
+    LOADING = "LOADING"
+    IN_TRANSIT = "IN_TRANSIT"
+    UNLOADING = "UNLOADING"
+    DELIVERED = "DELIVERED"
+    POD_RECEIVED = "POD_RECEIVED"
+    COMPLETED = "COMPLETED"
+    CANCELLED = "CANCELLED"
+
+
+class PTLBookingStatus(str, Enum):
+    """PTL/B2B Booking status"""
+    PENDING = "PENDING"
+    CONFIRMED = "CONFIRMED"
+    PICKUP_SCHEDULED = "PICKUP_SCHEDULED"
+    PICKED_UP = "PICKED_UP"
+    IN_TRANSIT = "IN_TRANSIT"
+    OUT_FOR_DELIVERY = "OUT_FOR_DELIVERY"
+    DELIVERED = "DELIVERED"
+    POD_PENDING = "POD_PENDING"
+    COMPLETED = "COMPLETED"
+    CANCELLED = "CANCELLED"
+
+
+class RateMatrixType(str, Enum):
+    """Rate matrix types"""
+    WEIGHT_BASED = "WEIGHT_BASED"      # Standard weight slab
+    LANE_BASED = "LANE_BASED"          # Origin-Destination
+    MATRIX = "MATRIX"                  # N×N O-D with weight slabs
+
+
+class PerformanceMetricType(str, Enum):
+    """Carrier performance metric types"""
+    COST = "COST"                  # Cost efficiency
+    SPEED = "SPEED"                # Delivery speed (TAT)
+    RELIABILITY = "RELIABILITY"    # On-time delivery rate
+    SUCCESS_RATE = "SUCCESS_RATE"  # Delivery success rate
+    RTO_RATE = "RTO_RATE"          # Return to origin rate
+    DAMAGE_RATE = "DAMAGE_RATE"    # Damage/loss rate
+
+
+class AllocationDecisionReason(str, Enum):
+    """Reason for allocation decision (audit trail)"""
+    BEST_CSR_SCORE = "BEST_CSR_SCORE"
+    LOWEST_COST = "LOWEST_COST"
+    FASTEST_TAT = "FASTEST_TAT"
+    HIGHEST_RELIABILITY = "HIGHEST_RELIABILITY"
+    RULE_MATCHED = "RULE_MATCHED"
+    MANUAL_OVERRIDE = "MANUAL_OVERRIDE"
+    FALLBACK = "FALLBACK"
+    ONLY_SERVICEABLE = "ONLY_SERVICEABLE"

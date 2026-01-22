@@ -72,6 +72,15 @@ from .enums import (
     CODTransactionType,
     POStatus,
     TransporterType,
+    # Logistics Allocation Enums (Phase 1)
+    ShipmentType,
+    VehicleCategory,
+    AllocationMode,
+    FTLIndentStatus,
+    PTLBookingStatus,
+    RateMatrixType,
+    PerformanceMetricType,
+    AllocationDecisionReason,
 )
 
 # User model and schemas
@@ -604,6 +613,54 @@ from .channel_inventory import (
     ChannelInventorySummary,
     ChannelAllocationItem,
     GRNChannelAllocationRequest,
+)
+
+# Shipping Allocation models and schemas (Phase 1 - Logistics)
+from .shipping_allocation import (
+    # FTL Models
+    FTLVehicleTypeMaster,
+    FTLVendor,
+    FTLLaneRate,
+    FTLIndent,
+    # PTL/B2B Models
+    PTLRateMatrix,
+    PTLTATMatrix,
+    # Performance Models
+    CarrierPerformance,
+    PincodePerformance,
+    LanePerformance,
+    # Allocation Engine Models
+    CSRScoreConfig,
+    ShippingAllocationRule,
+    AllocationAudit,
+    # FTL Response Schemas
+    FTLVehicleTypeMasterResponse,
+    FTLVendorResponse,
+    FTLLaneRateResponse,
+    # FTL Create/Update Schemas
+    FTLVehicleTypeMasterCreate,
+    FTLVehicleTypeMasterUpdate,
+    FTLVendorCreate,
+    FTLVendorUpdate,
+    FTLLaneRateCreate,
+    FTLLaneRateUpdate,
+    # PTL Response Schemas
+    PTLRateMatrixResponse,
+    PTLTATMatrixResponse,
+    # PTL Create/Update Schemas
+    PTLRateMatrixCreate,
+    PTLRateMatrixUpdate,
+    PTLTATMatrixCreate,
+    PTLTATMatrixUpdate,
+    # Allocation Response Schemas
+    CSRScoreConfigResponse,
+    AllocationAuditResponse,
+    ShippingAllocationRuleResponse,
+    # Allocation Create/Update Schemas
+    CSRScoreConfigCreate,
+    CSRScoreConfigUpdate,
+    ShippingAllocationRuleCreate,
+    ShippingAllocationRuleUpdate,
 )
 
 __all__ = [
@@ -1161,4 +1218,57 @@ __all__ = [
     # Channel Allocation
     "ChannelAllocationItem",
     "GRNChannelAllocationRequest",
+    # Logistics Allocation Enums (Phase 1)
+    "ShipmentType",
+    "VehicleCategory",
+    "AllocationMode",
+    "FTLIndentStatus",
+    "PTLBookingStatus",
+    "RateMatrixType",
+    "PerformanceMetricType",
+    "AllocationDecisionReason",
+    # FTL Models
+    "FTLVehicleTypeMaster",
+    "FTLVendor",
+    "FTLLaneRate",
+    "FTLIndent",
+    # PTL/B2B Models
+    "PTLRateMatrix",
+    "PTLTATMatrix",
+    # Performance Models
+    "CarrierPerformance",
+    "PincodePerformance",
+    "LanePerformance",
+    # Allocation Engine Models
+    "CSRScoreConfig",
+    "ShippingAllocationRule",
+    "AllocationAudit",
+    # FTL Response Schemas
+    "FTLVehicleTypeMasterResponse",
+    "FTLVendorResponse",
+    "FTLLaneRateResponse",
+    # FTL Create/Update Schemas
+    "FTLVehicleTypeMasterCreate",
+    "FTLVehicleTypeMasterUpdate",
+    "FTLVendorCreate",
+    "FTLVendorUpdate",
+    "FTLLaneRateCreate",
+    "FTLLaneRateUpdate",
+    # PTL Response Schemas
+    "PTLRateMatrixResponse",
+    "PTLTATMatrixResponse",
+    # PTL Create/Update Schemas
+    "PTLRateMatrixCreate",
+    "PTLRateMatrixUpdate",
+    "PTLTATMatrixCreate",
+    "PTLTATMatrixUpdate",
+    # Allocation Response Schemas
+    "CSRScoreConfigResponse",
+    "AllocationAuditResponse",
+    "ShippingAllocationRuleResponse",
+    # Allocation Create/Update Schemas
+    "CSRScoreConfigCreate",
+    "CSRScoreConfigUpdate",
+    "ShippingAllocationRuleCreate",
+    "ShippingAllocationRuleUpdate",
 ]

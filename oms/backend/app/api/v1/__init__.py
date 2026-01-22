@@ -47,6 +47,9 @@ from .shipments import router as shipments_router
 from .b2b_logistics import router as b2b_logistics_router
 from .channel_inventory import router as channel_inventory_router
 from .packing import router as packing_router
+from .ftl import router as ftl_router
+from .ptl import router as ptl_router
+from .allocation_config import router as allocation_config_router
 
 # Main v1 router
 router = APIRouter(prefix="/v1")
@@ -96,3 +99,6 @@ router.include_router(shipments_router)
 router.include_router(b2b_logistics_router)
 router.include_router(channel_inventory_router)
 router.include_router(packing_router)
+router.include_router(ftl_router)
+router.include_router(ptl_router)
+router.include_router(allocation_config_router)

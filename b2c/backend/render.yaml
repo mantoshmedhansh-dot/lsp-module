@@ -16,4 +16,4 @@ services:
       - key: SECRET_KEY
         sync: false
       - key: FRONTEND_URL
-        value: https://b2c-frontend-gamma.vercel.app
+        value: https://b2c-steel.vercel.app

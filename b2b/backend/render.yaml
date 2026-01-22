@@ -16,4 +16,4 @@ services:
       - key: SECRET_KEY
         sync: false
       - key: FRONTEND_URL
-        value: https://cjdquick-b2b.vercel.app
+        value: https://b2b-eight-umber.vercel.app

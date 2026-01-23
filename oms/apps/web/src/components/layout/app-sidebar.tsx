@@ -111,10 +111,13 @@ type NavItem = NavItemWithSub | NavItemWithHref;
 // COMMAND CENTER
 // ═══════════════════════════════════════════════════════════════════════════
 
-const dashboardNav: NavItemWithHref = {
+const dashboardNav: NavItemWithSub = {
   title: "Dashboard",
   icon: LayoutDashboard,
-  href: "/dashboard",
+  items: [
+    { title: "Overview", href: "/dashboard" },
+    { title: "Seller Panel", href: "/dashboard/seller-panel" },
+  ],
 };
 
 const controlTowerNav: NavItemWithSub = {
@@ -126,6 +129,7 @@ const controlTowerNav: NavItemWithSub = {
     { title: "SLA Monitor", href: "/control-tower/sla" },
     { title: "Detection Rules", href: "/control-tower/rules" },
     { title: "AI Insights", href: "/control-tower/ai-actions" },
+    { title: "Proactive Alerts", href: "/control-tower/proactive" },
   ],
 };
 
@@ -149,6 +153,7 @@ const ordersNav: NavItemWithSub = {
   icon: ShoppingCart,
   items: [
     { title: "All Orders", href: "/orders" },
+    { title: "New Order", href: "/orders/new" },
     { title: "Order Import", href: "/orders/import" },
     { title: "Bulk Actions", href: "/orders/bulk" },
   ],
@@ -260,10 +265,10 @@ const b2cCourierNav: NavItemWithSub = {
   title: "B2C / Courier",
   icon: Package,
   items: [
-    { title: "Courier Partners", href: "/logistics/b2c/partners" },
-    { title: "B2C Rate Cards", href: "/logistics/b2c/rate-cards" },
-    { title: "Pincode Serviceability", href: "/logistics/b2c/pincodes" },
-    { title: "B2C Rate Comparison", href: "/logistics/b2c/rate-comparison" },
+    { title: "Courier Partners", href: "/logistics/transporters" },
+    { title: "B2C Rate Cards", href: "/logistics/rate-cards" },
+    { title: "Pincode Serviceability", href: "/logistics/pincodes" },
+    { title: "Shipping Rules", href: "/logistics/shipping-rules" },
   ],
 };
 
@@ -283,10 +288,11 @@ const logisticsAnalyticsNav: NavItemWithSub = {
   title: "Logistics Analytics",
   icon: LineChart,
   items: [
+    { title: "Logistics Dashboard", href: "/logistics/dashboard" },
     { title: "Carrier Scorecards", href: "/logistics/analytics/carrier-scorecards" },
     { title: "Lane Performance", href: "/logistics/analytics/lane-performance" },
     { title: "Pincode Performance", href: "/logistics/analytics/pincode-performance" },
-    { title: "Cost Optimization", href: "/logistics/analytics/cost-optimization" },
+    { title: "Delivery Performance", href: "/logistics/performance" },
   ],
 };
 
@@ -325,6 +331,7 @@ const financeNav: NavItemWithSub = {
   icon: CreditCard,
   items: [
     { title: "Finance Dashboard", href: "/finance/dashboard" },
+    { title: "Invoices", href: "/finance/invoices" },
     { title: "COD Reconciliation", href: "/finance/cod-reconciliation" },
     { title: "Freight Billing", href: "/finance/freight-billing" },
     { title: "Weight Discrepancy", href: "/finance/weight-discrepancy" },
@@ -337,6 +344,10 @@ const reportsNav: NavItemWithSub = {
   icon: BarChart3,
   items: [
     { title: "Reports Hub", href: "/reports" },
+    { title: "Sales Reports", href: "/reports/sales" },
+    { title: "Inventory Reports", href: "/reports/inventory" },
+    { title: "Logistics Reports", href: "/reports/logistics" },
+    { title: "Finance Reports", href: "/reports/finance" },
     { title: "Scheduled Reports", href: "/reports/scheduled" },
     { title: "Custom Reports", href: "/reports/custom" },
   ],
@@ -606,18 +617,8 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {/* Dashboard - Direct Link */}
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  isActive={pathname === dashboardNav.href}
-                >
-                  <Link href={dashboardNav.href}>
-                    <dashboardNav.icon className="h-4 w-4" />
-                    <span>{dashboardNav.title}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              {/* Dashboard */}
+              <CollapsibleNavItem item={dashboardNav} pathname={pathname} />
               {/* Control Tower */}
               <CollapsibleNavItem item={controlTowerNav} pathname={pathname} />
               {/* NDR Management */}

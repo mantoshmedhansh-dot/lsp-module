@@ -186,10 +186,60 @@ export default function OrderDetailPage({
   async function fetchOrder() {
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/v1/orders/${id}`);
-      if (!response.ok) throw new Error("Failed to fetch order");
-      const data = await response.json();
-      setOrder(data);
+
+      // Fetch order, items, and deliveries in parallel
+      const [orderRes, itemsRes, deliveriesRes] = await Promise.all([
+        fetch(`/api/v1/orders/${id}`),
+        fetch(`/api/v1/orders/${id}/items`),
+        fetch(`/api/v1/orders/${id}/deliveries`).catch(() => ({ ok: false })),
+      ]);
+
+      if (!orderRes.ok) throw new Error("Failed to fetch order");
+
+      const orderData = await orderRes.json();
+      const itemsData = itemsRes.ok ? await itemsRes.json() : [];
+      const deliveriesData = deliveriesRes.ok ? await (deliveriesRes as Response).json() : [];
+
+      // Fetch location if we have locationId
+      let locationData = null;
+      if (orderData.locationId) {
+        try {
+          const locationRes = await fetch(`/api/v1/locations/${orderData.locationId}`);
+          if (locationRes.ok) {
+            locationData = await locationRes.json();
+          }
+        } catch {
+          // Location fetch failed, use placeholder
+        }
+      }
+
+      // Fetch SKU details for each item
+      const itemsWithSku = await Promise.all(
+        (Array.isArray(itemsData) ? itemsData : []).map(async (item: { skuId?: string; sku?: object }) => {
+          if (item.sku) return item; // Already has SKU data
+          if (!item.skuId) return { ...item, sku: { id: '', code: 'N/A', name: 'Unknown', barcodes: [] } };
+
+          try {
+            const skuRes = await fetch(`/api/v1/skus/${item.skuId}`);
+            if (skuRes.ok) {
+              const skuData = await skuRes.json();
+              return { ...item, sku: skuData };
+            }
+          } catch {
+            // SKU fetch failed
+          }
+          return { ...item, sku: { id: item.skuId, code: 'N/A', name: 'Unknown', barcodes: [] } };
+        })
+      );
+
+      // Merge data into order object
+      setOrder({
+        ...orderData,
+        items: itemsWithSku,
+        deliveries: Array.isArray(deliveriesData) ? deliveriesData : [],
+        picklists: [], // TODO: Add picklists endpoint if needed
+        location: locationData || { id: orderData.locationId, code: '', name: 'Unknown' },
+      });
     } catch (error) {
       console.error("Error fetching order:", error);
       toast.error("Failed to load order");
@@ -333,7 +383,7 @@ export default function OrderDetailPage({
           <CardHeader>
             <CardTitle>Order Items</CardTitle>
             <CardDescription>
-              {order.items.length} items in this order
+              {order.items?.length || 0} items in this order
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -350,7 +400,7 @@ export default function OrderDetailPage({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {order.items.map((item) => {
+                {(order.items || []).map((item) => {
                   const itemStatus = itemStatusConfig[item.status] || {
                     label: item.status,
                     color: "text-gray-500",
@@ -360,12 +410,12 @@ export default function OrderDetailPage({
                     <TableRow key={item.id}>
                       <TableCell>
                         <Badge variant="outline" className="font-mono">
-                          {item.sku.code}
+                          {item.sku?.code || 'N/A'}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <div className="font-medium">{item.sku.name}</div>
-                        {item.sku.barcodes?.[0] && (
+                        <div className="font-medium">{item.sku?.name || 'Unknown Product'}</div>
+                        {item.sku?.barcodes?.[0] && (
                           <p className="text-xs text-muted-foreground">
                             {item.sku.barcodes[0]}
                           </p>

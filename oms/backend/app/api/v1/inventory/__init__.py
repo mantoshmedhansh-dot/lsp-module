@@ -360,7 +360,8 @@ def adjust_inventory(
                 locationId=adjustment.locationId,
                 batchNo=adjustment.batchNo,
                 quantity=adjustment.adjustmentQty,
-                serialNumbers=adjustment.serialNumbers or []
+                serialNumbers=adjustment.serialNumbers or [],
+                companyId=location.companyId  # Set company from location
             )
             session.add(inventory)
         else:
@@ -511,7 +512,8 @@ def transfer_inventory(
             costPrice=source_inventory.costPrice,
             expiryDate=source_inventory.expiryDate,
             mfgDate=source_inventory.mfgDate,
-            valuationMethod=source_inventory.valuationMethod
+            valuationMethod=source_inventory.valuationMethod,
+            companyId=source_inventory.companyId  # Inherit company from source
         )
         session.add(dest_inventory)
 

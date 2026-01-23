@@ -258,8 +258,10 @@ def create_inventory(
             detail="Inventory record already exists for this SKU/Bin/Batch combination"
         )
 
-    # Create inventory
-    inventory = Inventory(**inventory_data.model_dump())
+    # Create inventory with company from location
+    inventory_dict = inventory_data.model_dump()
+    inventory_dict["companyId"] = location.companyId
+    inventory = Inventory(**inventory_dict)
     session.add(inventory)
     session.commit()
     session.refresh(inventory)

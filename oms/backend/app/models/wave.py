@@ -363,11 +363,11 @@ class PicklistItem(BaseModel, table=True):
 
 class WaveCreate(CreateBase):
     """Schema for creating a wave"""
-    waveNo: str
+    waveNo: Optional[str] = None  # Auto-generated if not provided
     name: Optional[str] = None
     type: WaveType = WaveType.BATCH_PICK
-    locationId: UUID
-    createdById: UUID
+    locationId: Optional[UUID] = None  # Uses user's default location if not provided
+    createdById: Optional[UUID] = None  # Set from current user if not provided
     maxOrders: int = 50
     maxItems: int = 500
     priorityFrom: Optional[int] = None

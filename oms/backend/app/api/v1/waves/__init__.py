@@ -99,8 +99,19 @@ def create_wave(
     current_user: User = Depends(get_current_user)
 ):
     """Create new wave."""
+    # Get locationId - use provided or user's first location access
+    location_id = data.locationId
+    if not location_id:
+        if current_user.locationAccess and len(current_user.locationAccess) > 0:
+            location_id = current_user.locationAccess[0]
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No location specified and user has no location access"
+            )
+
     # Get location to set companyId
-    location = session.get(Location, data.locationId)
+    location = session.get(Location, location_id)
     if not location:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -109,7 +120,24 @@ def create_wave(
 
     try:
         wave_dict = data.model_dump()
+
+        # Auto-generate waveNo if not provided
+        if not wave_dict.get("waveNo"):
+            # Get count for today to generate unique wave number
+            today = datetime.utcnow().strftime("%Y%m%d")
+            count = session.exec(
+                select(func.count(Wave.id)).where(Wave.waveNo.like(f"WAVE-{today}%"))
+            ).one()
+            wave_dict["waveNo"] = f"WAVE-{today}-{count + 1:03d}"
+
+        # Set createdById from current user if not provided
+        if not wave_dict.get("createdById"):
+            wave_dict["createdById"] = current_user.id
+
+        # Set locationId and companyId
+        wave_dict["locationId"] = location_id
         wave_dict["companyId"] = location.companyId
+
         wave = Wave(**wave_dict)
         session.add(wave)
         session.commit()

@@ -196,7 +196,10 @@ export default function WavesPage() {
         setNewWave({ name: "", type: "BATCH_PICK", priority: 1 });
         fetchWaves();
       } else {
-        toast.error(result.error || "Failed to create wave");
+        const errorMsg = result.detail
+          ? (typeof result.detail === 'string' ? result.detail : JSON.stringify(result.detail))
+          : result.error || "Failed to create wave";
+        toast.error(errorMsg);
       }
     } catch (error) {
       console.error("Error creating wave:", error);

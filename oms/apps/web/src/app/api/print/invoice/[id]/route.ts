@@ -334,6 +334,45 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     const order = await orderRes.json();
 
+    // Fetch order items if not included
+    if (!order.items || order.items.length === 0) {
+      const itemsRes = await fetch(`${backendUrl}/api/v1/orders/${orderId}/items`, {
+        headers: {
+          "Content-Type": "application/json",
+          "X-User-Id": session.user?.id || "",
+          "X-User-Role": session.user?.role || "",
+          "X-Company-Id": session.user?.companyId || "",
+        },
+      });
+      if (itemsRes.ok) {
+        const itemsData = await itemsRes.json();
+        // Fetch SKU details for each item
+        order.items = await Promise.all(
+          (Array.isArray(itemsData) ? itemsData : []).map(async (item: { skuId?: string; sku?: object }) => {
+            if (item.sku) return item;
+            if (!item.skuId) return { ...item, sku: { code: 'N/A', name: 'Unknown' } };
+            try {
+              const skuRes = await fetch(`${backendUrl}/api/v1/skus/${item.skuId}`, {
+                headers: {
+                  "Content-Type": "application/json",
+                  "X-User-Id": session.user?.id || "",
+                  "X-User-Role": session.user?.role || "",
+                  "X-Company-Id": session.user?.companyId || "",
+                },
+              });
+              if (skuRes.ok) {
+                const skuData = await skuRes.json();
+                return { ...item, sku: skuData };
+              }
+            } catch {
+              // SKU fetch failed
+            }
+            return { ...item, sku: { code: 'N/A', name: 'Unknown' } };
+          })
+        );
+      }
+    }
+
     // Fetch company data
     const companyRes = await fetch(`${backendUrl}/api/v1/companies/${order.companyId || session.user?.companyId}`, {
       headers: {
@@ -386,17 +425,17 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
             pincode: order.billingAddress.pincode || "000000",
           }
         : undefined,
-      items: (order.items || []).map((item: { skuCode?: string; sku?: { code?: string }; name?: string; sku_name?: string; hsn?: string; quantity?: number; unitPrice?: number; price?: number; taxRate?: number; taxAmount?: number; discount?: number; totalPrice?: number; total?: number }, index: number) => ({
+      items: (order.items || []).map((item: { skuCode?: string; sku?: { code?: string; name?: string }; name?: string; sku_name?: string; hsn?: string; quantity?: number; unitPrice?: number | string; price?: number | string; taxRate?: number | string; taxAmount?: number | string; discount?: number | string; totalPrice?: number | string; total?: number | string }, index: number) => ({
         slNo: index + 1,
         skuCode: item.skuCode || item.sku?.code || "-",
-        name: item.name || item.sku_name || "Item",
+        name: item.name || item.sku?.name || item.sku_name || "Item",
         hsn: item.hsn,
         quantity: item.quantity || 1,
-        unitPrice: parseFloat(item.unitPrice || item.price || 0),
-        taxRate: item.taxRate ? parseFloat(item.taxRate) : undefined,
-        taxAmount: parseFloat(item.taxAmount || 0),
-        discount: parseFloat(item.discount || 0),
-        totalPrice: parseFloat(item.totalPrice || item.total || (item.quantity || 1) * (item.unitPrice || item.price || 0)),
+        unitPrice: parseFloat(String(item.unitPrice || item.price || 0)),
+        taxRate: item.taxRate ? parseFloat(String(item.taxRate)) : undefined,
+        taxAmount: parseFloat(String(item.taxAmount || 0)),
+        discount: parseFloat(String(item.discount || 0)),
+        totalPrice: parseFloat(String(item.totalPrice || item.total || (item.quantity || 1) * parseFloat(String(item.unitPrice || item.price || 0)))),
       })),
       subtotal: parseFloat(order.subtotal || order.totalAmount || 0),
       totalTax: parseFloat(order.totalTax || order.taxAmount || 0),

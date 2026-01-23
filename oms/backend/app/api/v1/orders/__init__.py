@@ -508,6 +508,142 @@ def delete_order_item(
 
 
 # ============================================================================
+# Order Allocation Endpoint
+# ============================================================================
+
+@router.post("/{order_id}/allocate")
+def allocate_order(
+    order_id: UUID,
+    company_filter: CompanyFilter = Depends(),
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+    _: None = Depends(require_manager())
+):
+    """
+    Allocate inventory for all items in an order.
+    Uses FIFO/LIFO/FEFO based on configuration.
+    """
+    from app.models import AllocationRequest, SKU
+    from app.services.inventory_allocation import InventoryAllocationService
+
+    # Get order
+    order_query = select(Order).where(Order.id == order_id)
+    if company_filter.company_id:
+        location_ids = session.exec(
+            select(Location.id).where(Location.companyId == company_filter.company_id)
+        ).all()
+        order_query = order_query.where(Order.locationId.in_(location_ids))
+
+    order = session.exec(order_query).first()
+    if not order:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Order not found"
+        )
+
+    # Check order status
+    if order.status not in [OrderStatus.CREATED, OrderStatus.CONFIRMED, OrderStatus.PARTIALLY_ALLOCATED]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Cannot allocate order in {order.status.value} status"
+        )
+
+    # Get order items
+    order_items = session.exec(
+        select(OrderItem).where(OrderItem.orderId == order_id)
+    ).all()
+
+    if not order_items:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Order has no items to allocate"
+        )
+
+    # Initialize allocation service
+    allocation_service = InventoryAllocationService(session)
+
+    # Track results
+    results = {
+        "orderId": str(order_id),
+        "orderNo": order.orderNo,
+        "itemsProcessed": 0,
+        "itemsFullyAllocated": 0,
+        "itemsPartiallyAllocated": 0,
+        "itemsNotAllocated": 0,
+        "totalAllocated": 0,
+        "shortfalls": [],
+        "fullyAllocated": False
+    }
+
+    # Process each order item
+    for order_item in order_items:
+        # Skip already fully allocated items
+        already_allocated = order_item.allocatedQty or 0
+        remaining_qty = order_item.quantity - already_allocated
+
+        if remaining_qty <= 0:
+            results["itemsFullyAllocated"] += 1
+            results["itemsProcessed"] += 1
+            continue
+
+        # Create allocation request
+        request = AllocationRequest(
+            skuId=order_item.skuId,
+            requiredQty=remaining_qty,
+            locationId=order.locationId,
+            orderId=order.id,
+            orderItemId=order_item.id,
+        )
+
+        # Allocate inventory
+        result = allocation_service.allocate_inventory(
+            request=request,
+            company_id=order.companyId,
+            allocated_by_id=current_user.id
+        )
+
+        results["itemsProcessed"] += 1
+        results["totalAllocated"] += result.allocatedQty
+
+        # Update order item allocated qty
+        order_item.allocatedQty = already_allocated + result.allocatedQty
+        if result.allocatedQty >= remaining_qty:
+            order_item.status = ItemStatus.ALLOCATED
+            results["itemsFullyAllocated"] += 1
+        elif result.allocatedQty > 0:
+            results["itemsPartiallyAllocated"] += 1
+        else:
+            results["itemsNotAllocated"] += 1
+
+        session.add(order_item)
+
+        # Track shortfalls
+        if result.shortfallQty > 0:
+            sku = session.get(SKU, order_item.skuId)
+            results["shortfalls"].append({
+                "skuId": str(order_item.skuId),
+                "skuCode": sku.code if sku else "Unknown",
+                "required": remaining_qty,
+                "allocated": result.allocatedQty,
+                "shortfall": result.shortfallQty
+            })
+
+    # Update order status
+    if results["itemsFullyAllocated"] == len(order_items):
+        order.status = OrderStatus.ALLOCATED
+        results["fullyAllocated"] = True
+    elif results["itemsFullyAllocated"] + results["itemsPartiallyAllocated"] > 0:
+        order.status = OrderStatus.PARTIALLY_ALLOCATED
+    # If no allocations at all, keep current status
+
+    order.updatedAt = datetime.utcnow()
+    session.add(order)
+    session.commit()
+
+    return results
+
+
+# ============================================================================
 # Delivery Endpoints
 # ============================================================================
 

@@ -242,6 +242,45 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     const order = await orderRes.json();
 
+    // Fetch order items if not included
+    if (!order.items || order.items.length === 0) {
+      const itemsRes = await fetch(`${backendUrl}/api/v1/orders/${orderId}/items`, {
+        headers: {
+          "Content-Type": "application/json",
+          "X-User-Id": session.user?.id || "",
+          "X-User-Role": session.user?.role || "",
+          "X-Company-Id": session.user?.companyId || "",
+        },
+      });
+      if (itemsRes.ok) {
+        const itemsData = await itemsRes.json();
+        // Fetch SKU names for items
+        order.items = await Promise.all(
+          (Array.isArray(itemsData) ? itemsData : []).map(async (item: { skuId?: string; sku?: { name?: string }; name?: string }) => {
+            if (item.sku?.name || item.name) return item;
+            if (!item.skuId) return { ...item, name: 'Item' };
+            try {
+              const skuRes = await fetch(`${backendUrl}/api/v1/skus/${item.skuId}`, {
+                headers: {
+                  "Content-Type": "application/json",
+                  "X-User-Id": session.user?.id || "",
+                  "X-User-Role": session.user?.role || "",
+                  "X-Company-Id": session.user?.companyId || "",
+                },
+              });
+              if (skuRes.ok) {
+                const skuData = await skuRes.json();
+                return { ...item, name: skuData.name, sku: skuData };
+              }
+            } catch {
+              // SKU fetch failed
+            }
+            return { ...item, name: 'Item' };
+          })
+        );
+      }
+    }
+
     // Fetch company/location data for sender info
     const locationRes = await fetch(`${backendUrl}/api/v1/locations/${order.locationId}`, {
       headers: {
@@ -298,7 +337,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       codAmount: order.paymentMode === "COD" ? parseFloat(order.totalAmount) : undefined,
       invoiceValue: parseFloat(order.totalAmount || 0),
       productDescription: order.productDescription ||
-        (order.items?.map((i: { name?: string }) => i.name).join(", ").substring(0, 50)),
+        (order.items?.map((i: { name?: string; sku?: { name?: string } }) => i.name || i.sku?.name || 'Item').join(", ").substring(0, 50)),
       invoiceNo: `INV-${order.orderNo || order.orderNumber || orderId}`,
       routeCode: order.routeCode,
       sortCode: order.sortCode,

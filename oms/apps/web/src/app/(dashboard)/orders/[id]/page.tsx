@@ -354,11 +354,23 @@ export default function OrderDetailPage({
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              window.open(`/api/print/invoice/${id}`, '_blank');
+            }}
+          >
             <Printer className="mr-2 h-4 w-4" />
             Print Invoice
           </Button>
-          <Button variant="outline" size="sm">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              window.open(`/api/print/label/${id}`, '_blank');
+            }}
+          >
             <FileText className="mr-2 h-4 w-4" />
             Print Label
           </Button>

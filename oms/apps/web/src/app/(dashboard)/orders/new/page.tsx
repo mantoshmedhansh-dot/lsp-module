@@ -146,7 +146,8 @@ export default function NewOrderPage() {
       const response = await fetch(`/api/v1/skus?search=${encodeURIComponent(query)}&limit=10`);
       if (response.ok) {
         const data = await response.json();
-        setSkuResults(data.skus);
+        // Backend returns array directly, not { skus: [...] }
+        setSkuResults(Array.isArray(data) ? data : data.skus || []);
       }
     } catch (error) {
       console.error("Error searching SKUs:", error);
@@ -223,14 +224,30 @@ export default function NewOrderPage() {
     setIsSubmitting(true);
 
     try {
+      // Generate order number
+      const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+      const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+      const orderNo = `ORD-${timestamp}-${random}`;
+
       const payload = {
-        ...formData,
-        items: items.map((item) => ({
-          skuId: item.skuId,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          discount: item.discount,
-        })),
+        orderNo,
+        channel: formData.channel,
+        orderType: formData.orderType,
+        paymentMode: formData.paymentMode,
+        customerName: formData.customerName,
+        customerPhone: formData.customerPhone,
+        customerEmail: formData.customerEmail || null,
+        shippingAddress: formData.shippingAddress,
+        locationId: formData.locationId,
+        shipByDate: formData.shipByDate ? new Date(formData.shipByDate).toISOString() : null,
+        remarks: formData.remarks || null,
+        subtotal: totals.subtotal.toFixed(2),
+        taxAmount: totals.taxAmount.toFixed(2),
+        totalAmount: totals.totalAmount.toFixed(2),
+        discount: totals.discount.toFixed(2),
+        shippingCharges: "0.00",
+        codCharges: "0.00",
+        orderDate: new Date().toISOString(),
       };
 
       const response = await fetch("/api/v1/orders", {
@@ -241,10 +258,37 @@ export default function NewOrderPage() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || "Failed to create order");
+        throw new Error(error.detail || error.error || "Failed to create order");
       }
 
       const order = await response.json();
+
+      // Create order items
+      for (const item of items) {
+        const itemTax = (item.unitPrice * item.quantity - item.discount) * 0.18;
+        const itemTotal = item.unitPrice * item.quantity - item.discount + itemTax;
+
+        const itemPayload = {
+          orderId: order.id,
+          skuId: item.skuId,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice.toFixed(2),
+          taxAmount: itemTax.toFixed(2),
+          discount: item.discount.toFixed(2),
+          totalPrice: itemTotal.toFixed(2),
+        };
+
+        const itemResponse = await fetch(`/api/v1/orders/${order.id}/items`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(itemPayload),
+        });
+
+        if (!itemResponse.ok) {
+          console.error("Failed to create order item:", await itemResponse.text());
+        }
+      }
+
       toast.success("Order created successfully");
       router.push(`/orders/${order.id}`);
     } catch (error) {

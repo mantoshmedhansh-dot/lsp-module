@@ -183,6 +183,7 @@ const inboundNav: NavItemWithSub = {
     { title: "Goods Receipt", href: "/inbound/goods-receipt" },
     { title: "ASN Management", href: "/inbound/asn" },
     { title: "Receiving", href: "/inbound/receiving" },
+    { title: "Putaway Tasks", href: "/inbound/putaway" },
     { title: "Inbound QC", href: "/inbound/qc" },
   ],
 };
@@ -200,23 +201,14 @@ const fulfillmentNav: NavItemWithSub = {
   ],
 };
 
-const wmsNav: NavItemWithSub = {
-  title: "WMS Operations",
-  icon: Warehouse,
-  items: [
-    { title: "Putaway Tasks", href: "/wms/putaway" },
-    { title: "Stock Adjustments", href: "/wms/stock-adjustments" },
-    { title: "Cycle Counts", href: "/wms/cycle-counts" },
-  ],
-};
-
 const inventoryNav: NavItemWithSub = {
   title: "Inventory",
   icon: Boxes,
   items: [
     { title: "Stock Overview", href: "/inventory" },
-    { title: "Stock Adjustments", href: "/inventory/adjustment" },
-    { title: "Cycle Count", href: "/inventory/cycle-count" },
+    { title: "Stock Adjustments", href: "/inventory/adjustments" },
+    { title: "Cycle Counts", href: "/inventory/cycle-counts" },
+    { title: "Bin Transfers", href: "/inventory/transfers" },
     { title: "Movement History", href: "/inventory/movements" },
     { title: "Virtual Inventory", href: "/inventory/virtual" },
   ],
@@ -648,9 +640,8 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <CollapsibleNavItem item={inboundNav} pathname={pathname} />
-              <CollapsibleNavItem item={fulfillmentNav} pathname={pathname} />
-              <CollapsibleNavItem item={wmsNav} pathname={pathname} />
               <CollapsibleNavItem item={inventoryNav} pathname={pathname} />
+              <CollapsibleNavItem item={fulfillmentNav} pathname={pathname} />
               <CollapsibleNavItem item={returnsNav} pathname={pathname} />
             </SidebarMenu>
           </SidebarGroupContent>

@@ -1,5 +1,6 @@
 """
 B2B Models: Quotations, Price Lists, Credit Transactions
+Updated to match existing database schema
 """
 from typing import Optional, List
 from uuid import UUID
@@ -13,7 +14,7 @@ from .enums import CreditTransactionType, PaymentTermType
 
 
 # ============================================================================
-# Quotation Status Enum (if not in enums.py)
+# Quotation Status Enum
 # ============================================================================
 
 class QuotationStatus:
@@ -27,20 +28,20 @@ class QuotationStatus:
 
 
 # ============================================================================
-# Price List
+# Price List (matches existing database schema)
 # ============================================================================
 
 class PriceListBase(SQLModel):
-    """Price List base fields"""
-    code: str = Field(index=True)
+    """Price List base fields - matches database"""
+    code: Optional[str] = Field(default=None, index=True)
     name: str
     description: Optional[str] = None
-    currency: str = Field(default="INR")
-    validFrom: Optional[datetime] = None
-    validTo: Optional[datetime] = None
-    isDefault: bool = Field(default=False)
+    effectiveFrom: Optional[datetime] = None
+    effectiveTo: Optional[datetime] = None
+    basedOnMRP: bool = Field(default=False)
+    roundingMethod: Optional[str] = None
+    companyId: Optional[UUID] = Field(default=None, foreign_key="Company.id", index=True)
     isActive: bool = Field(default=True)
-    companyId: UUID = Field(foreign_key="Company.id", index=True)
 
 
 class PriceList(PriceListBase, BaseModel, table=True):
@@ -51,9 +52,15 @@ class PriceList(PriceListBase, BaseModel, table=True):
     items: List["PriceListItem"] = Relationship(back_populates="priceList")
 
 
-class PriceListCreate(PriceListBase):
+class PriceListCreate(SQLModel):
     """Price List creation schema"""
-    pass
+    code: Optional[str] = None
+    name: str
+    description: Optional[str] = None
+    effectiveFrom: Optional[datetime] = None
+    effectiveTo: Optional[datetime] = None
+    basedOnMRP: bool = False
+    roundingMethod: Optional[str] = None
 
 
 class PriceListUpdate(SQLModel):
@@ -61,10 +68,10 @@ class PriceListUpdate(SQLModel):
     code: Optional[str] = None
     name: Optional[str] = None
     description: Optional[str] = None
-    currency: Optional[str] = None
-    validFrom: Optional[datetime] = None
-    validTo: Optional[datetime] = None
-    isDefault: Optional[bool] = None
+    effectiveFrom: Optional[datetime] = None
+    effectiveTo: Optional[datetime] = None
+    basedOnMRP: Optional[bool] = None
+    roundingMethod: Optional[str] = None
     isActive: Optional[bool] = None
 
 
@@ -78,7 +85,7 @@ class PriceListResponse(PriceListBase):
 class PriceListBrief(SQLModel):
     """Price List brief schema"""
     id: UUID
-    code: str
+    code: Optional[str]
     name: str
 
 
@@ -90,12 +97,10 @@ class PriceListItemBase(SQLModel):
     """Price List Item base fields"""
     priceListId: UUID = Field(foreign_key="PriceList.id", index=True)
     skuId: UUID = Field(foreign_key="SKU.id", index=True)
-    unitPrice: Decimal
-    minQty: int = Field(default=1)
-    maxQty: Optional[int] = None
+    price: Decimal
+    minQuantity: int = Field(default=1)
+    maxQuantity: Optional[int] = None
     discountPercent: Optional[Decimal] = None
-    validFrom: Optional[datetime] = None
-    validTo: Optional[datetime] = None
 
 
 class PriceListItem(PriceListItemBase, BaseModel, table=True):
@@ -109,17 +114,17 @@ class PriceListItem(PriceListItemBase, BaseModel, table=True):
 class PriceListItemCreate(SQLModel):
     """Price List Item creation schema"""
     skuId: UUID
-    unitPrice: Decimal
-    minQty: Optional[int] = 1
-    maxQty: Optional[int] = None
+    price: Decimal
+    minQuantity: Optional[int] = 1
+    maxQuantity: Optional[int] = None
     discountPercent: Optional[Decimal] = None
 
 
 class PriceListItemUpdate(SQLModel):
     """Price List Item update schema"""
-    unitPrice: Optional[Decimal] = None
-    minQty: Optional[int] = None
-    maxQty: Optional[int] = None
+    price: Optional[Decimal] = None
+    minQuantity: Optional[int] = None
+    maxQuantity: Optional[int] = None
     discountPercent: Optional[Decimal] = None
 
 
@@ -131,58 +136,39 @@ class PriceListItemResponse(PriceListItemBase):
 
 
 # ============================================================================
-# Pricing Tier
-# ============================================================================
-
-class PricingTierBase(SQLModel):
-    """Pricing Tier base fields"""
-    priceListItemId: UUID = Field(foreign_key="PriceListItem.id", index=True)
-    minQty: int
-    maxQty: Optional[int] = None
-    unitPrice: Decimal
-
-
-class PricingTier(PricingTierBase, BaseModel, table=True):
-    """Pricing Tier model for quantity-based pricing"""
-    __tablename__ = "PricingTier"
-
-
-class PricingTierCreate(PricingTierBase):
-    """Pricing Tier creation schema"""
-    pass
-
-
-class PricingTierResponse(PricingTierBase):
-    """Pricing Tier response schema"""
-    id: UUID
-
-
-# ============================================================================
-# Quotation
+# Quotation (matches existing database schema)
 # ============================================================================
 
 class QuotationBase(SQLModel):
-    """Quotation base fields"""
-    quotationNo: str = Field(unique=True)
+    """Quotation base fields - matches database"""
+    quotationNo: Optional[str] = Field(default=None, unique=True)
     customerId: UUID = Field(foreign_key="Customer.id", index=True)
-    companyId: UUID = Field(foreign_key="Company.id", index=True)
+    companyId: Optional[UUID] = Field(default=None, foreign_key="Company.id", index=True)
+    locationId: Optional[UUID] = Field(default=None, foreign_key="Location.id")
     status: str = Field(default="DRAFT", index=True)
+    validFrom: Optional[datetime] = None
     validUntil: Optional[datetime] = None
     subtotal: Decimal = Field(default=Decimal("0"))
+    discountAmount: Decimal = Field(default=Decimal("0"))
     taxAmount: Decimal = Field(default=Decimal("0"))
-    discount: Decimal = Field(default=Decimal("0"))
+    shippingCharges: Decimal = Field(default=Decimal("0"))
     totalAmount: Decimal = Field(default=Decimal("0"))
     paymentTermType: Optional[str] = None
     paymentTermDays: Optional[int] = None
+    specialTerms: Optional[str] = None
+    remarks: Optional[str] = None
     shippingAddress: Optional[dict] = Field(default=None, sa_column=Column(JSON))
     billingAddress: Optional[dict] = Field(default=None, sa_column=Column(JSON))
-    remarks: Optional[str] = None
-    internalNotes: Optional[str] = None
-    approvedById: Optional[UUID] = None
+    requiresApproval: bool = Field(default=False)
+    approvalLevel: Optional[int] = None
+    approvedById: Optional[UUID] = Field(default=None, foreign_key="User.id")
     approvedAt: Optional[datetime] = None
+    rejectedById: Optional[UUID] = Field(default=None, foreign_key="User.id")
+    rejectedAt: Optional[datetime] = None
     rejectionReason: Optional[str] = None
-    convertedToOrderId: Optional[UUID] = None
+    convertedOrderId: Optional[UUID] = Field(default=None, foreign_key="Order.id")
     convertedAt: Optional[datetime] = None
+    createdById: Optional[UUID] = Field(default=None, foreign_key="User.id")
 
 
 class Quotation(QuotationBase, BaseModel, table=True):
@@ -196,25 +182,29 @@ class Quotation(QuotationBase, BaseModel, table=True):
 class QuotationCreate(SQLModel):
     """Quotation creation schema"""
     customerId: UUID
+    locationId: Optional[UUID] = None
+    validFrom: Optional[datetime] = None
     validUntil: Optional[datetime] = None
     paymentTermType: Optional[str] = None
     paymentTermDays: Optional[int] = None
+    specialTerms: Optional[str] = None
+    remarks: Optional[str] = None
     shippingAddress: Optional[dict] = None
     billingAddress: Optional[dict] = None
-    remarks: Optional[str] = None
     items: Optional[List["QuotationItemCreate"]] = None
 
 
 class QuotationUpdate(SQLModel):
     """Quotation update schema"""
     status: Optional[str] = None
+    validFrom: Optional[datetime] = None
     validUntil: Optional[datetime] = None
     paymentTermType: Optional[str] = None
     paymentTermDays: Optional[int] = None
+    specialTerms: Optional[str] = None
+    remarks: Optional[str] = None
     shippingAddress: Optional[dict] = None
     billingAddress: Optional[dict] = None
-    remarks: Optional[str] = None
-    internalNotes: Optional[str] = None
 
 
 class QuotationResponse(QuotationBase):
@@ -238,9 +228,7 @@ class QuotationItemBase(SQLModel):
     taxRate: Optional[Decimal] = None
     taxAmount: Decimal = Field(default=Decimal("0"))
     discount: Decimal = Field(default=Decimal("0"))
-    discountPercent: Optional[Decimal] = None
     totalPrice: Decimal = Field(default=Decimal("0"))
-    remarks: Optional[str] = None
 
 
 class QuotationItem(QuotationItemBase, BaseModel, table=True):
@@ -257,9 +245,7 @@ class QuotationItemCreate(SQLModel):
     quantity: int
     unitPrice: Decimal
     taxRate: Optional[Decimal] = None
-    discount: Optional[Decimal] = None
-    discountPercent: Optional[Decimal] = None
-    remarks: Optional[str] = None
+    discount: Optional[Decimal] = Decimal("0")
 
 
 class QuotationItemUpdate(SQLModel):
@@ -268,8 +254,6 @@ class QuotationItemUpdate(SQLModel):
     unitPrice: Optional[Decimal] = None
     taxRate: Optional[Decimal] = None
     discount: Optional[Decimal] = None
-    discountPercent: Optional[Decimal] = None
-    remarks: Optional[str] = None
 
 
 class QuotationItemResponse(QuotationItemBase):
@@ -285,8 +269,8 @@ class QuotationItemResponse(QuotationItemBase):
 
 class B2BCreditTransactionBase(SQLModel):
     """B2B Credit Transaction base fields"""
-    transactionNo: str = Field(unique=True)
-    type: CreditTransactionType = Field(index=True)
+    transactionNo: Optional[str] = Field(default=None, unique=True)
+    type: str = Field(index=True)  # String instead of enum for flexibility
     customerId: UUID = Field(foreign_key="Customer.id", index=True)
     amount: Decimal
     balanceBefore: Decimal
@@ -307,7 +291,7 @@ class B2BCreditTransaction(B2BCreditTransactionBase, BaseModel, table=True):
 
 class B2BCreditTransactionCreate(SQLModel):
     """B2B Credit Transaction creation schema"""
-    type: CreditTransactionType
+    type: str
     customerId: UUID
     amount: Decimal
     orderId: Optional[UUID] = None
@@ -322,3 +306,4 @@ class B2BCreditTransactionResponse(B2BCreditTransactionBase):
     """B2B Credit Transaction response schema"""
     id: UUID
     createdAt: datetime
+    updatedAt: datetime

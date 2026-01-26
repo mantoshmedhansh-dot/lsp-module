@@ -1,5 +1,6 @@
 """
 Logistics Extended Models: Rate Cards, Shipping Rules, Service Pincodes, AWB
+Updated to match existing database schema
 """
 from typing import Optional, List
 from uuid import UUID
@@ -8,59 +9,32 @@ from decimal import Decimal
 from sqlmodel import SQLModel, Field, Relationship
 
 from .base import BaseModel
-from .enums import TransporterType
 
 
 # ============================================================================
-# Rate Card Status Enum
-# ============================================================================
-
-class RateCardStatus:
-    DRAFT = "DRAFT"
-    ACTIVE = "ACTIVE"
-    ARCHIVED = "ARCHIVED"
-    SUPERSEDED = "SUPERSEDED"
-
-
-class RateCardType:
-    PREPAID = "PREPAID"
-    COD = "COD"
-    BOTH = "BOTH"
-
-
-class ShippingRuleType:
-    WEIGHT_BASED = "WEIGHT_BASED"
-    PINCODE_BASED = "PINCODE_BASED"
-    PRIORITY_BASED = "PRIORITY_BASED"
-    COST_OPTIMIZED = "COST_OPTIMIZED"
-    DELIVERY_TIME_BASED = "DELIVERY_TIME_BASED"
-
-
-# ============================================================================
-# Rate Card
+# Rate Card (matches existing database schema)
 # ============================================================================
 
 class RateCardBase(SQLModel):
-    """Rate Card base fields"""
-    code: str = Field(index=True)
+    """Rate Card base fields - matches database"""
+    rateCardNo: Optional[str] = Field(default=None, index=True)
     name: str
-    description: Optional[str] = None
-    transporterId: UUID = Field(foreign_key="Transporter.id", index=True)
-    companyId: UUID = Field(foreign_key="Company.id", index=True)
     type: str = Field(default="BOTH", index=True)  # PREPAID, COD, BOTH
     status: str = Field(default="DRAFT", index=True)
-    validFrom: datetime
-    validTo: Optional[datetime] = None
-    baseWeight: Decimal = Field(default=Decimal("0.5"))
-    baseRate: Decimal = Field(default=Decimal("0"))
-    additionalWeightRate: Decimal = Field(default=Decimal("0"))
-    codPercent: Optional[Decimal] = None
-    codMinCharge: Optional[Decimal] = None
-    fuelSurchargePercent: Optional[Decimal] = None
-    minCharge: Optional[Decimal] = None
-    maxWeight: Optional[Decimal] = None
-    volumetricFactor: int = Field(default=5000)
-    isDefault: bool = Field(default=False)
+    transporterId: UUID = Field(foreign_key="Transporter.id", index=True)
+    companyId: Optional[UUID] = Field(default=None, foreign_key="Company.id", index=True)
+    effectiveFrom: Optional[datetime] = None
+    effectiveTo: Optional[datetime] = None
+    baseCost: Optional[Decimal] = Field(default=Decimal("0"))
+    fuelSurcharge: Optional[Decimal] = Field(default=Decimal("0"))
+    codChargesPercent: Optional[Decimal] = None
+    codChargesMin: Optional[Decimal] = None
+    codChargesCap: Optional[Decimal] = None
+    awbCharges: Optional[Decimal] = None
+    rtoChargesPercent: Optional[Decimal] = None
+    remarks: Optional[str] = None
+    approvedAt: Optional[datetime] = None
+    approvedBy: Optional[UUID] = None
 
 
 class RateCard(RateCardBase, BaseModel, table=True):
@@ -73,35 +47,32 @@ class RateCard(RateCardBase, BaseModel, table=True):
 
 class RateCardCreate(SQLModel):
     """Rate Card creation schema"""
-    code: str
+    rateCardNo: Optional[str] = None
     name: str
-    description: Optional[str] = None
-    transporterId: UUID
     type: str = "BOTH"
-    validFrom: datetime
-    validTo: Optional[datetime] = None
-    baseWeight: Decimal = Decimal("0.5")
-    baseRate: Decimal
-    additionalWeightRate: Decimal
-    codPercent: Optional[Decimal] = None
-    codMinCharge: Optional[Decimal] = None
-    fuelSurchargePercent: Optional[Decimal] = None
+    transporterId: UUID
+    effectiveFrom: Optional[datetime] = None
+    effectiveTo: Optional[datetime] = None
+    baseCost: Optional[Decimal] = Decimal("0")
+    fuelSurcharge: Optional[Decimal] = Decimal("0")
+    codChargesPercent: Optional[Decimal] = None
+    codChargesMin: Optional[Decimal] = None
+    awbCharges: Optional[Decimal] = None
+    remarks: Optional[str] = None
     slabs: Optional[List["RateCardSlabCreate"]] = None
 
 
 class RateCardUpdate(SQLModel):
     """Rate Card update schema"""
     name: Optional[str] = None
-    description: Optional[str] = None
     status: Optional[str] = None
-    validTo: Optional[datetime] = None
-    baseWeight: Optional[Decimal] = None
-    baseRate: Optional[Decimal] = None
-    additionalWeightRate: Optional[Decimal] = None
-    codPercent: Optional[Decimal] = None
-    codMinCharge: Optional[Decimal] = None
-    fuelSurchargePercent: Optional[Decimal] = None
-    isDefault: Optional[bool] = None
+    effectiveTo: Optional[datetime] = None
+    baseCost: Optional[Decimal] = None
+    fuelSurcharge: Optional[Decimal] = None
+    codChargesPercent: Optional[Decimal] = None
+    codChargesMin: Optional[Decimal] = None
+    awbCharges: Optional[Decimal] = None
+    remarks: Optional[str] = None
 
 
 class RateCardResponse(RateCardBase):
@@ -151,66 +122,68 @@ class RateCardSlabResponse(RateCardSlabBase):
 
 
 # ============================================================================
-# Shipping Rule
+# Shipping Rule (matches existing database schema)
 # ============================================================================
 
 class ShippingRuleBase(SQLModel):
-    """Shipping Rule base fields"""
-    code: str = Field(index=True)
+    """Shipping Rule base fields - matches database"""
+    ruleNo: Optional[str] = Field(default=None, index=True)
     name: str
-    description: Optional[str] = None
-    type: str = Field(index=True)  # WEIGHT_BASED, PINCODE_BASED, etc.
-    companyId: UUID = Field(foreign_key="Company.id", index=True)
-    locationId: Optional[UUID] = Field(default=None, foreign_key="Location.id")
+    type: str = Field(index=True)  # Enum in DB
+    status: str = Field(default="DRAFT", index=True)  # Enum in DB
     priority: int = Field(default=0)
-    isActive: bool = Field(default=True)
+    description: Optional[str] = None
     transporterId: Optional[UUID] = Field(default=None, foreign_key="Transporter.id")
-    rateCardId: Optional[UUID] = Field(default=None, foreign_key="RateCard.id")
-    channel: Optional[str] = None
-    paymentMode: Optional[str] = None
+    companyId: Optional[UUID] = Field(default=None, foreign_key="Company.id", index=True)
     minWeight: Optional[Decimal] = None
     maxWeight: Optional[Decimal] = None
-    minValue: Optional[Decimal] = None
-    maxValue: Optional[Decimal] = None
-    deliveryType: Optional[str] = None
-    validFrom: Optional[datetime] = None
-    validTo: Optional[datetime] = None
+    fromPincodes: Optional[List[str]] = None
+    toPincodes: Optional[List[str]] = None
+    channels: Optional[List[str]] = None
+    orderTypes: Optional[List[str]] = None
+    paymentModes: Optional[List[str]] = None
+    effectiveFrom: Optional[datetime] = None
+    effectiveTo: Optional[datetime] = None
+    isActive: bool = Field(default=True)
 
 
 class ShippingRule(ShippingRuleBase, BaseModel, table=True):
     """Shipping Rule model"""
     __tablename__ = "ShippingRule"
 
-    # Relationships
-    conditions: List["ShippingRuleCondition"] = Relationship(back_populates="rule")
+    # Relationships - removed as conditions table has different schema
+    # conditions: List["ShippingRuleCondition"] = Relationship(back_populates="rule")
 
 
 class ShippingRuleCreate(SQLModel):
     """Shipping Rule creation schema"""
-    code: str
+    ruleNo: Optional[str] = None
     name: str
-    description: Optional[str] = None
     type: str
-    locationId: Optional[UUID] = None
     priority: int = 0
+    description: Optional[str] = None
     transporterId: Optional[UUID] = None
-    rateCardId: Optional[UUID] = None
-    channel: Optional[str] = None
-    paymentMode: Optional[str] = None
     minWeight: Optional[Decimal] = None
     maxWeight: Optional[Decimal] = None
-    minValue: Optional[Decimal] = None
-    maxValue: Optional[Decimal] = None
+    fromPincodes: Optional[List[str]] = None
+    toPincodes: Optional[List[str]] = None
+    channels: Optional[List[str]] = None
+    orderTypes: Optional[List[str]] = None
+    paymentModes: Optional[List[str]] = None
+    effectiveFrom: Optional[datetime] = None
+    effectiveTo: Optional[datetime] = None
 
 
 class ShippingRuleUpdate(SQLModel):
     """Shipping Rule update schema"""
     name: Optional[str] = None
-    description: Optional[str] = None
     priority: Optional[int] = None
+    description: Optional[str] = None
     isActive: Optional[bool] = None
     transporterId: Optional[UUID] = None
-    rateCardId: Optional[UUID] = None
+    minWeight: Optional[Decimal] = None
+    maxWeight: Optional[Decimal] = None
+    effectiveTo: Optional[datetime] = None
 
 
 class ShippingRuleResponse(ShippingRuleBase):
@@ -221,23 +194,20 @@ class ShippingRuleResponse(ShippingRuleBase):
 
 
 # ============================================================================
-# Shipping Rule Condition
+# Shipping Rule Condition (simplified)
 # ============================================================================
 
 class ShippingRuleConditionBase(SQLModel):
     """Shipping Rule Condition base fields"""
-    ruleId: UUID = Field(foreign_key="ShippingRule.id", index=True)
-    field: str  # e.g., "pincode", "weight", "orderValue"
-    operator: str  # e.g., "eq", "in", "between", "gt", "lt"
-    value: str  # JSON string for complex values
+    shippingRuleId: Optional[UUID] = Field(default=None, foreign_key="ShippingRule.id", index=True)
+    field: str
+    operator: str
+    value: Optional[str] = None
 
 
 class ShippingRuleCondition(ShippingRuleConditionBase, BaseModel, table=True):
     """Shipping Rule Condition model"""
     __tablename__ = "ShippingRuleCondition"
-
-    # Relationships
-    rule: Optional["ShippingRule"] = Relationship(back_populates="conditions")
 
 
 class ShippingRuleConditionCreate(SQLModel):
@@ -260,10 +230,14 @@ class ServicePincodeBase(SQLModel):
     """Service Pincode base fields"""
     pincode: str = Field(index=True)
     transporterId: UUID = Field(foreign_key="Transporter.id", index=True)
+    city: Optional[str] = None
+    state: Optional[str] = None
     zoneCode: Optional[str] = None
     isServiceable: bool = Field(default=True)
     codAvailable: bool = Field(default=True)
     prepaidAvailable: bool = Field(default=True)
+    reverseAvailable: bool = Field(default=False)
+    estimatedDays: Optional[int] = None
 
 
 class ServicePincode(ServicePincodeBase, BaseModel, table=True):
@@ -275,24 +249,33 @@ class ServicePincodeCreate(SQLModel):
     """Service Pincode creation schema"""
     pincode: str
     transporterId: UUID
+    city: Optional[str] = None
+    state: Optional[str] = None
     zoneCode: Optional[str] = None
     isServiceable: bool = True
     codAvailable: bool = True
     prepaidAvailable: bool = True
+    reverseAvailable: bool = False
+    estimatedDays: Optional[int] = None
 
 
 class ServicePincodeUpdate(SQLModel):
     """Service Pincode update schema"""
+    city: Optional[str] = None
+    state: Optional[str] = None
     zoneCode: Optional[str] = None
     isServiceable: Optional[bool] = None
     codAvailable: Optional[bool] = None
     prepaidAvailable: Optional[bool] = None
+    reverseAvailable: Optional[bool] = None
+    estimatedDays: Optional[int] = None
 
 
 class ServicePincodeResponse(ServicePincodeBase):
     """Service Pincode response schema"""
     id: UUID
     createdAt: datetime
+    updatedAt: datetime
 
 
 # ============================================================================
@@ -305,7 +288,7 @@ class AWBBase(SQLModel):
     transporterId: UUID = Field(foreign_key="Transporter.id", index=True)
     isUsed: bool = Field(default=False)
     usedAt: Optional[datetime] = None
-    usedFor: Optional[str] = None  # orderId or deliveryId
+    usedFor: Optional[str] = None
 
 
 class AWB(AWBBase, BaseModel, table=True):
@@ -329,3 +312,4 @@ class AWBResponse(AWBBase):
     """AWB response schema"""
     id: UUID
     createdAt: datetime
+    updatedAt: datetime

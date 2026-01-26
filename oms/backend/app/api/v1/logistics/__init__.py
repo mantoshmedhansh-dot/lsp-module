@@ -79,20 +79,19 @@ def create_rate_card(
 ):
     """Create new rate card."""
     rate_card = RateCard(
-        code=data.code,
+        rateCardNo=data.rateCardNo,
         name=data.name,
-        description=data.description,
         transporterId=data.transporterId,
         companyId=company_filter.company_id,
         type=data.type,
-        validFrom=data.validFrom,
-        validTo=data.validTo,
-        baseWeight=data.baseWeight,
-        baseRate=data.baseRate,
-        additionalWeightRate=data.additionalWeightRate,
-        codPercent=data.codPercent,
-        codMinCharge=data.codMinCharge,
-        fuelSurchargePercent=data.fuelSurchargePercent
+        effectiveFrom=data.effectiveFrom,
+        effectiveTo=data.effectiveTo,
+        baseCost=data.baseCost,
+        fuelSurcharge=data.fuelSurcharge,
+        codChargesPercent=data.codChargesPercent,
+        codChargesMin=data.codChargesMin,
+        awbCharges=data.awbCharges,
+        remarks=data.remarks
     )
 
     session.add(rate_card)

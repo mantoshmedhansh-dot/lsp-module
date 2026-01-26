@@ -41,6 +41,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { parseDecimal, formatNumber } from "@/lib/api";
+import { exportToCSV, type ExportColumn } from "@/lib/utils";
 
 interface Transporter {
   id: string;
@@ -207,6 +208,41 @@ export default function CarrierAnalyticsPage() {
     };
   });
 
+  // Build export data
+  const exportData = transporters.map((t) => {
+    const perf = getCarrierPerformance(t.id);
+    return {
+      code: t.code,
+      name: t.name,
+      type: t.type,
+      totalShipments: perf?.totalShipments || 0,
+      delivered: perf?.deliveredShipments || 0,
+      onTimeRate: perf?.onTimeRate || 0,
+      avgTAT: perf?.avgTATDays || 0,
+      rtoRate: perf?.rtoRate || 0,
+      ndrRate: perf?.ndrRate || 0,
+      overallScore: perf?.overallScore || 0,
+    };
+  });
+
+  // Export carrier analytics to CSV
+  const handleExport = () => {
+    const columns: ExportColumn[] = [
+      { key: "code", header: "Carrier Code" },
+      { key: "name", header: "Carrier Name" },
+      { key: "type", header: "Type" },
+      { key: "totalShipments", header: "Total Shipments" },
+      { key: "delivered", header: "Delivered" },
+      { key: "onTimeRate", header: "On-Time %", formatter: (v) => `${parseDecimal(v).toFixed(1)}%` },
+      { key: "avgTAT", header: "Avg TAT (Days)", formatter: (v) => parseDecimal(v).toFixed(1) },
+      { key: "rtoRate", header: "RTO %", formatter: (v) => `${parseDecimal(v).toFixed(1)}%` },
+      { key: "ndrRate", header: "NDR %", formatter: (v) => `${parseDecimal(v).toFixed(1)}%` },
+      { key: "overallScore", header: "Score", formatter: (v) => parseDecimal(v).toFixed(0) },
+    ];
+    exportToCSV(exportData, columns, `carrier_analytics_${period}`);
+    toast.success("Carrier analytics exported successfully");
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -248,7 +284,7 @@ export default function CarrierAnalyticsPage() {
             )}
             Refresh
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleExport}>
             <Download className="mr-2 h-4 w-4" />
             Export
           </Button>

@@ -40,6 +40,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { parseDecimal, formatNumber } from "@/lib/api";
+import { exportToCSV, type ExportColumn } from "@/lib/utils";
 
 interface CarrierPerformance {
   id: string;
@@ -218,6 +219,22 @@ export default function DeliveryPerformancePage() {
     };
   });
 
+  // Export carrier performance data to CSV
+  const handleExport = () => {
+    const columns: ExportColumn[] = [
+      { key: "code", header: "Carrier Code" },
+      { key: "name", header: "Carrier Name" },
+      { key: "totalShipments", header: "Total Shipments" },
+      { key: "deliveredShipments", header: "Delivered" },
+      { key: "onTimeRate", header: "On-Time %", formatter: (v) => `${parseDecimal(v).toFixed(1)}%` },
+      { key: "avgTATDays", header: "Avg TAT (Days)", formatter: (v) => parseDecimal(v).toFixed(1) },
+      { key: "rtoRate", header: "RTO %", formatter: (v) => `${parseDecimal(v).toFixed(1)}%` },
+      { key: "overallScore", header: "Score", formatter: (v) => parseDecimal(v).toFixed(0) },
+    ];
+    exportToCSV(carrierData, columns, `carrier_performance_${period}`);
+    toast.success("Performance data exported successfully");
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -259,7 +276,7 @@ export default function DeliveryPerformancePage() {
             )}
             Refresh
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleExport}>
             <Download className="mr-2 h-4 w-4" />
             Export
           </Button>

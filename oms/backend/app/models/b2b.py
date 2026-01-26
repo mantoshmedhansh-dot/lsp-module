@@ -94,13 +94,14 @@ class PriceListBrief(SQLModel):
 # ============================================================================
 
 class PriceListItemBase(SQLModel):
-    """Price List Item base fields"""
+    """Price List Item base fields - matches database"""
     priceListId: UUID = Field(foreign_key="PriceList.id", index=True)
     skuId: UUID = Field(foreign_key="SKU.id", index=True)
-    price: Decimal
-    minQuantity: int = Field(default=1)
-    maxQuantity: Optional[int] = None
+    fixedPrice: Optional[Decimal] = None
     discountPercent: Optional[Decimal] = None
+    markup: Optional[Decimal] = None
+    minOrderQty: Optional[int] = None
+    maxOrderQty: Optional[int] = None
 
 
 class PriceListItem(PriceListItemBase, BaseModel, table=True):
@@ -114,18 +115,20 @@ class PriceListItem(PriceListItemBase, BaseModel, table=True):
 class PriceListItemCreate(SQLModel):
     """Price List Item creation schema"""
     skuId: UUID
-    price: Decimal
-    minQuantity: Optional[int] = 1
-    maxQuantity: Optional[int] = None
+    fixedPrice: Optional[Decimal] = None
     discountPercent: Optional[Decimal] = None
+    markup: Optional[Decimal] = None
+    minOrderQty: Optional[int] = None
+    maxOrderQty: Optional[int] = None
 
 
 class PriceListItemUpdate(SQLModel):
     """Price List Item update schema"""
-    price: Optional[Decimal] = None
-    minQuantity: Optional[int] = None
-    maxQuantity: Optional[int] = None
+    fixedPrice: Optional[Decimal] = None
     discountPercent: Optional[Decimal] = None
+    markup: Optional[Decimal] = None
+    minOrderQty: Optional[int] = None
+    maxOrderQty: Optional[int] = None
 
 
 class PriceListItemResponse(PriceListItemBase):
@@ -220,15 +223,20 @@ class QuotationResponse(QuotationBase):
 # ============================================================================
 
 class QuotationItemBase(SQLModel):
-    """Quotation Item base fields"""
+    """Quotation Item base fields - matches database"""
     quotationId: UUID = Field(foreign_key="Quotation.id", index=True)
     skuId: UUID = Field(foreign_key="SKU.id", index=True)
+    skuCode: Optional[str] = None
+    skuName: Optional[str] = None
     quantity: int = Field(default=1)
+    listPrice: Optional[Decimal] = None
     unitPrice: Decimal
-    taxRate: Optional[Decimal] = None
+    discountPercent: Optional[Decimal] = None
+    discountAmount: Decimal = Field(default=Decimal("0"))
+    taxPercent: Optional[Decimal] = None
     taxAmount: Decimal = Field(default=Decimal("0"))
-    discount: Decimal = Field(default=Decimal("0"))
     totalPrice: Decimal = Field(default=Decimal("0"))
+    remarks: Optional[str] = None
 
 
 class QuotationItem(QuotationItemBase, BaseModel, table=True):
@@ -242,25 +250,29 @@ class QuotationItem(QuotationItemBase, BaseModel, table=True):
 class QuotationItemCreate(SQLModel):
     """Quotation Item creation schema"""
     skuId: UUID
+    skuCode: Optional[str] = None
+    skuName: Optional[str] = None
     quantity: int
+    listPrice: Optional[Decimal] = None
     unitPrice: Decimal
-    taxRate: Optional[Decimal] = None
-    discount: Optional[Decimal] = Decimal("0")
+    discountPercent: Optional[Decimal] = None
+    taxPercent: Optional[Decimal] = None
+    remarks: Optional[str] = None
 
 
 class QuotationItemUpdate(SQLModel):
     """Quotation Item update schema"""
     quantity: Optional[int] = None
+    listPrice: Optional[Decimal] = None
     unitPrice: Optional[Decimal] = None
-    taxRate: Optional[Decimal] = None
-    discount: Optional[Decimal] = None
+    discountPercent: Optional[Decimal] = None
+    taxPercent: Optional[Decimal] = None
+    remarks: Optional[str] = None
 
 
 class QuotationItemResponse(QuotationItemBase):
     """Quotation Item response schema"""
     id: UUID
-    createdAt: datetime
-    updatedAt: datetime
 
 
 # ============================================================================

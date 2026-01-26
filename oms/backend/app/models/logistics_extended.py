@@ -88,15 +88,16 @@ class RateCardResponse(RateCardBase):
 # ============================================================================
 
 class RateCardSlabBase(SQLModel):
-    """Rate Card Slab base fields"""
+    """Rate Card Slab base fields - matches database"""
     rateCardId: UUID = Field(foreign_key="RateCard.id", index=True)
     fromWeight: Decimal
     toWeight: Decimal
-    zoneCode: Optional[str] = None
+    zone: Optional[str] = None
+    fromPincode: Optional[str] = None
+    toPincode: Optional[str] = None
     rate: Decimal
-    additionalRate: Optional[Decimal] = None
+    additionalWeightRate: Optional[Decimal] = None
     minCharge: Optional[Decimal] = None
-    maxCharge: Optional[Decimal] = None
 
 
 class RateCardSlab(RateCardSlabBase, BaseModel, table=True):
@@ -111,9 +112,12 @@ class RateCardSlabCreate(SQLModel):
     """Rate Card Slab creation schema"""
     fromWeight: Decimal
     toWeight: Decimal
-    zoneCode: Optional[str] = None
+    zone: Optional[str] = None
+    fromPincode: Optional[str] = None
+    toPincode: Optional[str] = None
     rate: Decimal
-    additionalRate: Optional[Decimal] = None
+    additionalWeightRate: Optional[Decimal] = None
+    minCharge: Optional[Decimal] = None
 
 
 class RateCardSlabResponse(RateCardSlabBase):

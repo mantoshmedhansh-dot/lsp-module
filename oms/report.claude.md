@@ -164,9 +164,9 @@ All decimal fields properly handled with `parseDecimal()` helper in frontend.
 | `2e6ad3a` | fix: Align model field names with exact database columns | 2 |
 | `5bb7f6f` | fix: Re-add PricingTier model and fix ARRAY type for ShippingRule | 2 |
 | `db76bbb` | feat: Add CSV export functionality to analytics pages | 3 |
-| `TBD` | feat: Add CSV export to FTL, PTL, and Inbound pages | 10 |
+| `c9113d0` | feat: Add CSV export to FTL, PTL, and Inbound pages | 9 |
 
-**Total:** 6 commits, 32 file changes
+**Total:** 6 commits, 31 file changes
 
 ---
 

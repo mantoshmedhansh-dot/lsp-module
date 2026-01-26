@@ -23,6 +23,16 @@ export { OpenAPI, configureApiClient, configureServerClient } from './client';
 // Re-export error handling
 export { ApiError, CancelablePromise, CancelError } from './generated';
 
+// Re-export helper utilities for decimal/currency handling
+export {
+  parseDecimal,
+  formatCurrency,
+  formatNumber,
+  calculatePercentage,
+  sumDecimals,
+  calculateOrderTotals,
+} from './helpers';
+
 // Re-export all generated types for use in components
 export type {
   // Auth types

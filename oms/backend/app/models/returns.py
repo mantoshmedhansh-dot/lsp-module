@@ -49,6 +49,14 @@ class Return(BaseModel, table=True):
             index=True
         )
     )
+    companyId: UUID = Field(
+        sa_column=Column(
+            PG_UUID(as_uuid=True),
+            ForeignKey("Company.id"),
+            nullable=False,
+            index=True
+        )
+    )
 
     # Tracking
     awbNo: Optional[str] = Field(default=None)
@@ -140,6 +148,7 @@ class ReturnCreate(CreateBase):
     """Schema for creating return"""
     returnNo: str
     type: ReturnType
+    companyId: UUID
     orderId: Optional[UUID] = None
     awbNo: Optional[str] = None
     reason: Optional[str] = None

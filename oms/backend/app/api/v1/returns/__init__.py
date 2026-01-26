@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlmodel import Session, select, func
 
 from app.core.database import get_session
-from app.core.deps import get_current_user, require_manager
+from app.core.deps import get_current_user, require_manager, CompanyFilter
 from app.models import (
     Return, ReturnCreate, ReturnUpdate, ReturnResponse, ReturnBrief,
     ReturnItem, ReturnItemCreate, ReturnItemUpdate, ReturnItemResponse,
@@ -33,11 +33,16 @@ def list_returns(
     qc_status: Optional[QCStatus] = None,
     date_from: Optional[datetime] = None,
     date_to: Optional[datetime] = None,
+    company_filter: CompanyFilter = Depends(),
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
     """List returns with pagination and filters."""
     query = select(Return)
+
+    # Apply company filter for multi-tenancy
+    if company_filter.company_id:
+        query = query.where(Return.companyId == company_filter.company_id)
 
     if status:
         query = query.where(Return.status == status)
@@ -62,11 +67,16 @@ def list_returns(
 def count_returns(
     status: Optional[ReturnStatus] = None,
     return_type: Optional[ReturnType] = None,
+    company_filter: CompanyFilter = Depends(),
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
     """Get total count of returns."""
     query = select(func.count(Return.id))
+
+    # Apply company filter for multi-tenancy
+    if company_filter.company_id:
+        query = query.where(Return.companyId == company_filter.company_id)
 
     if status:
         query = query.where(Return.status == status)
@@ -79,12 +89,17 @@ def count_returns(
 
 @router.get("/summary")
 def get_return_summary(
+    company_filter: CompanyFilter = Depends(),
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
     """Get return summary statistics."""
     try:
-        returns = session.exec(select(Return)).all()
+        query = select(Return)
+        # Apply company filter for multi-tenancy
+        if company_filter.company_id:
+            query = query.where(Return.companyId == company_filter.company_id)
+        returns = session.exec(query).all()
 
         # Use string comparison to avoid enum issues
         def get_status_str(r):
@@ -137,6 +152,7 @@ def get_return_summary(
 @router.get("/{return_id}", response_model=ReturnResponse)
 def get_return(
     return_id: UUID,
+    company_filter: CompanyFilter = Depends(),
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
@@ -144,6 +160,11 @@ def get_return(
     ret = session.get(Return, return_id)
     if not ret:
         raise HTTPException(status_code=404, detail="Return not found")
+
+    # Check company access
+    if company_filter.company_id and ret.companyId != company_filter.company_id:
+        raise HTTPException(status_code=403, detail="Not authorized to access this return")
+
     return ReturnResponse.model_validate(ret)
 
 

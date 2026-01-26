@@ -108,11 +108,19 @@ class Manifest(BaseModel, table=True):
     # Identity
     manifestNo: str = Field(sa_column=Column(String, unique=True, nullable=False))
 
-    # Foreign Key
+    # Foreign Keys
     transporterId: UUID = Field(
         sa_column=Column(
             PG_UUID(as_uuid=True),
             ForeignKey("Transporter.id"),
+            nullable=False,
+            index=True
+        )
+    )
+    companyId: UUID = Field(
+        sa_column=Column(
+            PG_UUID(as_uuid=True),
+            ForeignKey("Company.id"),
             nullable=False,
             index=True
         )
@@ -231,6 +239,7 @@ class ManifestCreate(CreateBase):
     """Schema for creating manifest"""
     manifestNo: str
     transporterId: UUID
+    companyId: UUID
     vehicleNo: Optional[str] = None
     driverName: Optional[str] = None
     driverPhone: Optional[str] = None
@@ -252,6 +261,7 @@ class ManifestResponse(ResponseBase):
     id: UUID
     manifestNo: str
     transporterId: UUID
+    companyId: UUID
     status: ManifestStatus
     vehicleNo: Optional[str] = None
     driverName: Optional[str] = None

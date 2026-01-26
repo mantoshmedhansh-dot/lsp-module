@@ -58,6 +58,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { FTL_INDENT_STATUSES, getStatusConfig } from "@/lib/constants/statuses";
 
 interface FTLIndent {
   id: string;
@@ -97,17 +98,8 @@ interface VehicleType {
   name: string;
 }
 
-const INDENT_STATUSES = [
-  { value: "DRAFT", label: "Draft", color: "bg-gray-100 text-gray-800" },
-  { value: "REQUESTED", label: "Requested", color: "bg-blue-100 text-blue-800" },
-  { value: "CONFIRMED", label: "Confirmed", color: "bg-indigo-100 text-indigo-800" },
-  { value: "VEHICLE_ASSIGNED", label: "Vehicle Assigned", color: "bg-purple-100 text-purple-800" },
-  { value: "IN_TRANSIT", label: "In Transit", color: "bg-yellow-100 text-yellow-800" },
-  { value: "DELIVERED", label: "Delivered", color: "bg-green-100 text-green-800" },
-  { value: "POD_RECEIVED", label: "POD Received", color: "bg-teal-100 text-teal-800" },
-  { value: "COMPLETED", label: "Completed", color: "bg-emerald-100 text-emerald-800" },
-  { value: "CANCELLED", label: "Cancelled", color: "bg-red-100 text-red-800" },
-];
+// Use centralized status config
+const INDENT_STATUSES = FTL_INDENT_STATUSES;
 
 export default function FTLIndentsPage() {
   const [indents, setIndents] = useState<FTLIndent[]>([]);

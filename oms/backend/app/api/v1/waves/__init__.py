@@ -170,16 +170,19 @@ def list_picklists(
     limit: int = Query(50, ge=1, le=100),
     status: Optional[PicklistStatus] = None,
     assigned_to_id: Optional[UUID] = None,
+    order_id: Optional[UUID] = None,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
-    """List picklists."""
+    """List picklists with optional filters."""
     query = select(Picklist)
 
     if status:
         query = query.where(Picklist.status == status)
     if assigned_to_id:
         query = query.where(Picklist.assignedToId == assigned_to_id)
+    if order_id:
+        query = query.where(Picklist.orderId == order_id)
 
     query = query.offset(skip).limit(limit).order_by(Picklist.createdAt.desc())
     picklists = session.exec(query).all()

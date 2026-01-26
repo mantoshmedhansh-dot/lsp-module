@@ -19,6 +19,8 @@ import {
   RefreshCw,
   Printer,
   FileText,
+  ClipboardList,
+  User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -92,10 +94,20 @@ interface Picklist {
   id: string;
   picklistNo: string;
   status: string;
+  assignedToId: string | null;
+  assignedToName?: string;
+  startedAt: string | null;
+  completedAt: string | null;
+  createdAt: string;
   items: Array<{
     id: string;
     requiredQty: number;
     pickedQty: number;
+    skuId: string;
+    skuCode?: string;
+    skuName?: string;
+    binId: string;
+    binCode?: string;
   }>;
 }
 
@@ -187,11 +199,12 @@ export default function OrderDetailPage({
     try {
       setIsLoading(true);
 
-      // Fetch order, items, and deliveries in parallel
-      const [orderRes, itemsRes, deliveriesRes] = await Promise.all([
+      // Fetch order, items, deliveries, and picklists in parallel
+      const [orderRes, itemsRes, deliveriesRes, picklistsRes] = await Promise.all([
         fetch(`/api/v1/orders/${id}`),
         fetch(`/api/v1/orders/${id}/items`),
         fetch(`/api/v1/orders/${id}/deliveries`).catch(() => ({ ok: false })),
+        fetch(`/api/v1/waves/picklists?order_id=${id}`).catch(() => ({ ok: false })),
       ]);
 
       if (!orderRes.ok) throw new Error("Failed to fetch order");
@@ -199,6 +212,7 @@ export default function OrderDetailPage({
       const orderData = await orderRes.json();
       const itemsData = itemsRes.ok ? await itemsRes.json() : [];
       const deliveriesData = deliveriesRes.ok ? await (deliveriesRes as Response).json() : [];
+      const picklistsData = picklistsRes.ok ? await (picklistsRes as Response).json() : [];
 
       // Fetch location if we have locationId
       let locationData = null;
@@ -232,12 +246,28 @@ export default function OrderDetailPage({
         })
       );
 
+      // Fetch picklist items for each picklist
+      const picklistsWithItems = await Promise.all(
+        (Array.isArray(picklistsData) ? picklistsData : []).map(async (picklist: { id: string }) => {
+          try {
+            const itemsRes = await fetch(`/api/v1/waves/picklists/${picklist.id}/items`);
+            if (itemsRes.ok) {
+              const items = await itemsRes.json();
+              return { ...picklist, items: Array.isArray(items) ? items : [] };
+            }
+          } catch {
+            // Items fetch failed
+          }
+          return { ...picklist, items: [] };
+        })
+      );
+
       // Merge data into order object
       setOrder({
         ...orderData,
         items: itemsWithSku,
         deliveries: Array.isArray(deliveriesData) ? deliveriesData : [],
-        picklists: [], // TODO: Add picklists endpoint if needed
+        picklists: picklistsWithItems,
         location: locationData || { id: orderData.locationId, code: '', name: 'Unknown' },
       });
     } catch (error) {
@@ -590,6 +620,89 @@ export default function OrderDetailPage({
               )}
             </CardContent>
           </Card>
+
+          {/* Picklist Info */}
+          {order.picklists && order.picklists.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <ClipboardList className="h-4 w-4" />
+                  Picklists
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {order.picklists.map((picklist) => {
+                  const totalRequired = picklist.items.reduce(
+                    (sum, item) => sum + (item.requiredQty || 0),
+                    0
+                  );
+                  const totalPicked = picklist.items.reduce(
+                    (sum, item) => sum + (item.pickedQty || 0),
+                    0
+                  );
+                  const progress =
+                    totalRequired > 0
+                      ? Math.round((totalPicked / totalRequired) * 100)
+                      : 0;
+
+                  return (
+                    <div key={picklist.id} className="space-y-2 p-3 bg-muted/50 rounded-lg">
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium text-sm">{picklist.picklistNo}</span>
+                        <Badge
+                          variant="outline"
+                          className={
+                            picklist.status === "COMPLETED"
+                              ? "bg-green-100 text-green-800"
+                              : picklist.status === "IN_PROGRESS"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-gray-100 text-gray-800"
+                          }
+                        >
+                          {picklist.status}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <span>{picklist.items.length} item(s)</span>
+                        <span>•</span>
+                        <span>
+                          {totalPicked}/{totalRequired} picked ({progress}%)
+                        </span>
+                      </div>
+                      {picklist.assignedToName && (
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <User className="h-3 w-3" />
+                          <span>Assigned to: {picklist.assignedToName}</span>
+                        </div>
+                      )}
+                      {picklist.completedAt && (
+                        <div className="flex items-center gap-1 text-xs text-green-600">
+                          <CheckCircle className="h-3 w-3" />
+                          <span>
+                            Completed:{" "}
+                            {format(new Date(picklist.completedAt), "dd MMM yyyy, HH:mm")}
+                          </span>
+                        </div>
+                      )}
+                      {/* Progress bar */}
+                      <div className="w-full bg-gray-200 rounded-full h-1.5">
+                        <div
+                          className={`h-1.5 rounded-full ${
+                            progress === 100
+                              ? "bg-green-500"
+                              : progress > 0
+                              ? "bg-yellow-500"
+                              : "bg-gray-300"
+                          }`}
+                          style={{ width: `${progress}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Delivery Info */}
           {order.deliveries.length > 0 && (

@@ -484,26 +484,23 @@ export default function CompaniesPage() {
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="code">Company Code {editingCompany ? "*" : "(Auto-generated)"}</Label>
-                  {editingCompany ? (
+                  <Label htmlFor="code">Company Code *</Label>
+                  <div className="relative">
                     <Input
                       id="code"
-                      value={formData.code}
+                      value={editingCompany ? formData.code : previewCode}
                       onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
                       required
-                      disabled
+                      readOnly={!editingCompany}
+                      className={!editingCompany ? "bg-muted font-mono" : "font-mono"}
+                      placeholder={editingCompany ? "Company code" : "Auto-generated from name"}
                     />
-                  ) : (
-                    <div className="flex items-center h-10 px-3 rounded-md border bg-muted text-muted-foreground">
-                      {isLoadingCode ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : previewCode ? (
-                        <span className="font-mono font-medium">{previewCode}</span>
-                      ) : (
-                        <span className="text-sm">Enter company name to generate</span>
-                      )}
-                    </div>
-                  )}
+                    {!editingCompany && isLoadingCode && (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="name">Company Name *</Label>

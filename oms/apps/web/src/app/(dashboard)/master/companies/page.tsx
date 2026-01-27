@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import {
@@ -81,7 +81,6 @@ export default function CompaniesPage() {
     cin: "",
   });
   const [previewCode, setPreviewCode] = useState<string>("");
-  const [isLoadingCode, setIsLoadingCode] = useState(false);
 
   const canManageCompanies = session?.user?.role === "SUPER_ADMIN";
 
@@ -117,39 +116,48 @@ export default function CompaniesPage() {
     { label: "Total Users", value: companies.reduce((acc, c) => acc + (c._count?.users || 0), 0).toString(), icon: Users, color: "orange" },
   ];
 
-  // Debounce timer ref
-  const codePreviewTimer = useRef<NodeJS.Timeout | null>(null);
+  // Generate company code preview from name (client-side)
+  function generateCodePreview(name: string): string {
+    if (!name || name.length < 2) return "";
 
-  async function fetchPreviewCode(name: string) {
-    if (!name || name.length < 2) {
-      setPreviewCode("");
-      return;
+    // Common words to exclude
+    const stopWords = new Set(['the', 'and', 'of', 'for', 'in', 'a', 'an', 'pvt', 'ltd', 'private', 'limited',
+      'llp', 'inc', 'corp', 'corporation', 'company', 'co', 'llc']);
+
+    // Clean and split the name
+    const words = name.replace(/[^a-zA-Z\s]/g, '').toLowerCase().split(/\s+/).filter(w => w);
+    const meaningfulWords = words.filter(w => !stopWords.has(w));
+
+    // Use meaningful words, or original if none
+    const wordsToUse = meaningfulWords.length > 0 ? meaningfulWords : words;
+
+    let prefix: string;
+    if (wordsToUse.length >= 3) {
+      // Use first letter of first 3 words
+      prefix = wordsToUse.slice(0, 3).map(w => w[0]).join('').toUpperCase();
+    } else if (wordsToUse.length === 2) {
+      // Use first letter of first word + first 2 letters of second word
+      prefix = (wordsToUse[0][0] + wordsToUse[1].slice(0, 2)).toUpperCase();
+    } else if (wordsToUse.length === 1) {
+      // Use first 3 letters of the word
+      prefix = wordsToUse[0].slice(0, 3).toUpperCase();
+    } else {
+      prefix = 'CMP';
     }
-    setIsLoadingCode(true);
-    try {
-      const response = await fetch(`/api/v1/companies/preview-code?name=${encodeURIComponent(name)}`);
-      if (response.ok) {
-        const data = await response.json();
-        setPreviewCode(data.code);
-      }
-    } catch (error) {
-      console.error("Error fetching preview code:", error);
-    } finally {
-      setIsLoadingCode(false);
-    }
+
+    // Ensure prefix is exactly 3 characters
+    prefix = prefix.slice(0, 3).padEnd(3, 'X');
+
+    // Show preview with placeholder sequence (actual number assigned on create)
+    return `${prefix}-0001`;
   }
 
   function handleNameChange(name: string) {
     setFormData({ ...formData, name });
-    // Only fetch preview code when creating new company
+    // Generate preview code when creating new company
     if (!editingCompany) {
-      // Debounce the API call
-      if (codePreviewTimer.current) {
-        clearTimeout(codePreviewTimer.current);
-      }
-      codePreviewTimer.current = setTimeout(() => {
-        fetchPreviewCode(name);
-      }, 300);
+      const code = generateCodePreview(name);
+      setPreviewCode(code);
     }
   }
 
@@ -485,22 +493,15 @@ export default function CompaniesPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="code">Company Code *</Label>
-                  <div className="relative">
-                    <Input
-                      id="code"
-                      value={editingCompany ? formData.code : previewCode}
-                      onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                      required
-                      readOnly={!editingCompany}
-                      className={!editingCompany ? "bg-muted font-mono" : "font-mono"}
-                      placeholder={editingCompany ? "Company code" : "Auto-generated from name"}
-                    />
-                    {!editingCompany && isLoadingCode && (
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                      </div>
-                    )}
-                  </div>
+                  <Input
+                    id="code"
+                    value={editingCompany ? formData.code : previewCode}
+                    onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
+                    required
+                    readOnly={!editingCompany}
+                    className={!editingCompany ? "bg-muted font-mono" : "font-mono"}
+                    placeholder={editingCompany ? "Company code" : "Auto-generated from name"}
+                  />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="name">Company Name *</Label>

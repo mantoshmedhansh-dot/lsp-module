@@ -13,7 +13,6 @@ from app.core.deps import get_current_user, require_super_admin, CompanyFilter
 from app.models import (
     Company, CompanyCreate, CompanyUpdate, CompanyResponse, CompanyBrief
 )
-from app.models.system import Sequence
 
 router = APIRouter(prefix="/companies", tags=["Companies"])
 
@@ -22,7 +21,7 @@ def generate_company_code(name: str, session: Session) -> str:
     """
     Generate company code in format: XXX-0001
     - XXX = First 3 uppercase letters from company name (excluding common words)
-    - 0001 = Sequential number padded to 4 digits
+    - 0001 = Sequential number based on existing companies count
     """
     # Common words to exclude
     stop_words = {'the', 'and', 'of', 'for', 'in', 'a', 'an', 'pvt', 'ltd', 'private', 'limited',
@@ -52,35 +51,20 @@ def generate_company_code(name: str, session: Session) -> str:
     # Ensure prefix is exactly 3 characters
     prefix = prefix[:3].ljust(3, 'X')
 
-    # Get or create sequence for company codes
-    sequence = session.exec(
-        select(Sequence).where(Sequence.name == "company_code")
-    ).first()
-
-    if not sequence:
-        sequence = Sequence(
-            name="company_code",
-            prefix="",
-            currentValue=0,
-            increment=1
-        )
-        session.add(sequence)
-
-    # Increment sequence
-    sequence.currentValue += sequence.increment
-    next_number = sequence.currentValue
+    # Get current count of companies to determine next number
+    company_count = session.exec(select(func.count(Company.id))).one()
+    next_number = company_count + 1
 
     # Format: XXX-0001
     code = f"{prefix}-{next_number:04d}"
 
-    # Check if code already exists (handle edge cases)
+    # Check if code already exists and increment if needed
     existing = session.exec(
         select(Company).where(Company.code == code)
     ).first()
 
     while existing:
-        sequence.currentValue += sequence.increment
-        next_number = sequence.currentValue
+        next_number += 1
         code = f"{prefix}-{next_number:04d}"
         existing = session.exec(
             select(Company).where(Company.code == code)
@@ -91,8 +75,8 @@ def generate_company_code(name: str, session: Session) -> str:
 
 def preview_company_code(name: str, session: Session) -> str:
     """
-    Preview what the company code would be without incrementing the sequence.
-    Uses the same logic as generate_company_code but doesn't modify the sequence.
+    Preview what the company code would be.
+    Uses the same logic as generate_company_code.
     """
     # Common words to exclude
     stop_words = {'the', 'and', 'of', 'for', 'in', 'a', 'an', 'pvt', 'ltd', 'private', 'limited',
@@ -119,12 +103,9 @@ def preview_company_code(name: str, session: Session) -> str:
     # Ensure prefix is exactly 3 characters
     prefix = prefix[:3].ljust(3, 'X')
 
-    # Get current sequence value (don't increment)
-    sequence = session.exec(
-        select(Sequence).where(Sequence.name == "company_code")
-    ).first()
-
-    next_number = (sequence.currentValue if sequence else 0) + 1
+    # Get current count of companies to determine next number
+    company_count = session.exec(select(func.count(Company.id))).one()
+    next_number = company_count + 1
 
     return f"{prefix}-{next_number:04d}"
 

@@ -492,16 +492,19 @@ export default function CompaniesPage() {
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="code">Company Code *</Label>
+                  <Label htmlFor="code">Company Code {editingCompany && "*"}</Label>
                   <Input
                     id="code"
                     value={editingCompany ? formData.code : previewCode}
                     onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                    required
+                    required={!!editingCompany}
                     readOnly={!editingCompany}
                     className={!editingCompany ? "bg-muted font-mono" : "font-mono"}
                     placeholder={editingCompany ? "Company code" : "Auto-generated from name"}
                   />
+                  {!editingCompany && (
+                    <p className="text-xs text-muted-foreground">Code will be auto-generated when you create</p>
+                  )}
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="name">Company Name *</Label>

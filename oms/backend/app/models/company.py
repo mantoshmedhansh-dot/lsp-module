@@ -332,8 +332,8 @@ class CompanyCreate(CreateBase):
     code: Optional[str] = None  # Auto-generated if not provided
     name: str
     legalName: Optional[str] = None
-    gst: Optional[str] = None
-    pan: Optional[str] = None
+    gst: str  # Mandatory - GST Number
+    pan: str  # Mandatory - PAN Number
     cin: Optional[str] = None
     logo: Optional[str] = None
     email: Optional[str] = None

@@ -199,6 +199,15 @@ export default function CompaniesPage() {
       toast.error("Company code is required");
       return;
     }
+    // GST and PAN are mandatory
+    if (!formData.gst) {
+      toast.error("GST Number is required");
+      return;
+    }
+    if (!formData.pan) {
+      toast.error("PAN Number is required");
+      return;
+    }
 
     try {
       setIsSaving(true);
@@ -216,7 +225,7 @@ export default function CompaniesPage() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || "Failed to save company");
+        throw new Error(error.detail || error.error || "Failed to save company");
       }
 
       toast.success(editingCompany ? "Company updated" : "Company created");
@@ -528,23 +537,25 @@ export default function CompaniesPage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="gst">GST Number</Label>
+                  <Label htmlFor="gst">GST Number *</Label>
                   <Input
                     id="gst"
                     value={formData.gst}
                     onChange={(e) => setFormData({ ...formData, gst: e.target.value.toUpperCase() })}
                     placeholder="27AABCU9603R1ZM"
                     maxLength={15}
+                    required
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="pan">PAN Number</Label>
+                  <Label htmlFor="pan">PAN Number *</Label>
                   <Input
                     id="pan"
                     value={formData.pan}
                     onChange={(e) => setFormData({ ...formData, pan: e.target.value.toUpperCase() })}
                     placeholder="AABCU9603R"
                     maxLength={10}
+                    required
                   />
                 </div>
               </div>

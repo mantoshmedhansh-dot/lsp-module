@@ -373,8 +373,8 @@ const warehouseSetupNav: NavItemWithSub = {
   title: "Warehouse Setup",
   icon: Warehouse,
   items: [
-    { title: "Locations", href: "/setup/locations" },
-    { title: "Zones & Bins", href: "/setup/zones" },
+    { title: "Locations", href: "/settings/locations" },
+    { title: "Zones & Bins", href: "/wms/zones" },
   ],
 };
 
@@ -382,11 +382,11 @@ const logisticsSetupNav: NavItemWithSub = {
   title: "Logistics Setup",
   icon: Route,
   items: [
-    { title: "Transporters", href: "/setup/transporters" },
-    { title: "Rate Cards", href: "/setup/rate-cards" },
-    { title: "Shipping Rules", href: "/setup/shipping-rules" },
-    { title: "Allocation Rules", href: "/setup/allocation-rules" },
-    { title: "Serviceability", href: "/setup/pincodes" },
+    { title: "Transporters", href: "/logistics/transporters" },
+    { title: "Rate Cards", href: "/logistics/rate-cards" },
+    { title: "Shipping Rules", href: "/logistics/shipping-rules" },
+    { title: "Allocation Rules", href: "/logistics/allocation-rules" },
+    { title: "Serviceability", href: "/logistics/pincodes" },
   ],
 };
 
@@ -394,8 +394,8 @@ const channelsNav: NavItemWithSub = {
   title: "Channels",
   icon: Store,
   items: [
-    { title: "Marketplace Integrations", href: "/setup/channels" },
-    { title: "Sync Settings", href: "/setup/channels/sync" },
+    { title: "Marketplace Integrations", href: "/channels" },
+    { title: "Sync Settings", href: "/channels/sync" },
   ],
 };
 
@@ -403,8 +403,8 @@ const qcSetupNav: NavItemWithSub = {
   title: "Quality Control",
   icon: BadgeCheck,
   items: [
-    { title: "QC Templates", href: "/setup/qc-templates" },
-    { title: "QC Parameters", href: "/setup/qc-parameters" },
+    { title: "QC Templates", href: "/wms/qc/templates" },
+    { title: "QC Executions", href: "/wms/qc/executions" },
   ],
 };
 
@@ -412,7 +412,7 @@ const notificationsNav: NavItemWithSub = {
   title: "Notifications",
   icon: Bell,
   items: [
-    { title: "Alert Rules", href: "/setup/alerts" },
+    { title: "Detection Rules", href: "/control-tower/rules" },
     { title: "Communication Templates", href: "/setup/templates" },
   ],
 };

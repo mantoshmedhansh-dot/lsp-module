@@ -520,10 +520,15 @@ export const AWBResponseSchema = {
             type: 'string',
             format: 'date-time',
             title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
         }
     },
     type: 'object',
-    required: ['awbNo', 'transporterId', 'id', 'createdAt'],
+    required: ['awbNo', 'transporterId', 'id', 'createdAt', 'updatedAt'],
     title: 'AWBResponse',
     description: 'AWB response schema'
 } as const;
@@ -1802,7 +1807,8 @@ export const B2BConsigneeUpdateSchema = {
 export const B2BCreditTransactionCreateSchema = {
     properties: {
         type: {
-            '$ref': '#/components/schemas/CreditTransactionType'
+            type: 'string',
+            title: 'Type'
         },
         customerId: {
             type: 'string',
@@ -1900,11 +1906,19 @@ export const B2BCreditTransactionCreateSchema = {
 export const B2BCreditTransactionResponseSchema = {
     properties: {
         transactionNo: {
-            type: 'string',
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
             title: 'Transactionno'
         },
         type: {
-            '$ref': '#/components/schemas/CreditTransactionType'
+            type: 'string',
+            title: 'Type'
         },
         customerId: {
             type: 'string',
@@ -2016,10 +2030,15 @@ export const B2BCreditTransactionResponseSchema = {
             type: 'string',
             format: 'date-time',
             title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
         }
     },
     type: 'object',
-    required: ['transactionNo', 'type', 'customerId', 'amount', 'balanceBefore', 'balanceAfter', 'id', 'createdAt'],
+    required: ['type', 'customerId', 'amount', 'balanceBefore', 'balanceAfter', 'id', 'createdAt', 'updatedAt'],
     title: 'B2BCreditTransactionResponse',
     description: 'B2B Credit Transaction response schema'
 } as const;
@@ -3124,6 +3143,39 @@ export const BookingTypeSchema = {
     description: 'Booking types'
 } as const;
 
+export const BrandBriefSchema = {
+    properties: {
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        code: {
+            type: 'string',
+            title: 'Code'
+        },
+        name: {
+            type: 'string',
+            title: 'Name'
+        },
+        logo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Logo'
+        }
+    },
+    type: 'object',
+    required: ['id', 'code', 'name'],
+    title: 'BrandBrief',
+    description: 'Brief brand info for lists and references'
+} as const;
+
 export const BrandCreateSchema = {
     properties: {
         code: {
@@ -3211,11 +3263,29 @@ export const BrandCreateSchema = {
                 }
             ],
             title: 'Address'
+        },
+        settings: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Settings'
+        },
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
         }
     },
     type: 'object',
-    required: ['code', 'name'],
-    title: 'BrandCreate'
+    required: ['code', 'name', 'companyId'],
+    title: 'BrandCreate',
+    description: 'Schema for creating a new brand'
 } as const;
 
 export const BrandResponseSchema = {
@@ -3314,6 +3384,17 @@ export const BrandResponseSchema = {
 
 export const BrandUpdateSchema = {
     properties: {
+        code: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Code'
+        },
         name: {
             anyOf: [
                 {
@@ -3391,6 +3472,30 @@ export const BrandUpdateSchema = {
             ],
             title: 'Website'
         },
+        address: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Address'
+        },
+        settings: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Settings'
+        },
         isActive: {
             anyOf: [
                 {
@@ -3404,7 +3509,8 @@ export const BrandUpdateSchema = {
         }
     },
     type: 'object',
-    title: 'BrandUpdate'
+    title: 'BrandUpdate',
+    description: 'Schema for updating a brand'
 } as const;
 
 export const BulkAllocationRequestSchema = {
@@ -6021,7 +6127,14 @@ export const CompanyBriefSchema = {
 export const CompanyCreateSchema = {
     properties: {
         code: {
-            type: 'string',
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
             title: 'Code'
         },
         name: {
@@ -6040,25 +6153,11 @@ export const CompanyCreateSchema = {
             title: 'Legalname'
         },
         gst: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
+            type: 'string',
             title: 'Gst'
         },
         pan: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
+            type: 'string',
             title: 'Pan'
         },
         cin: {
@@ -6143,7 +6242,7 @@ export const CompanyCreateSchema = {
         }
     },
     type: 'object',
-    required: ['code', 'name'],
+    required: ['name', 'gst', 'pan'],
     title: 'CompanyCreate'
 } as const;
 
@@ -6474,13 +6573,6 @@ export const CreditStatusSchema = {
     enum: ['AVAILABLE', 'EXHAUSTED', 'ON_HOLD', 'OVERDUE'],
     title: 'CreditStatus',
     description: 'Credit status for B2B customers'
-} as const;
-
-export const CreditTransactionTypeSchema = {
-    type: 'string',
-    enum: ['CREDIT_LIMIT_SET', 'CREDIT_LIMIT_INCREASE', 'CREDIT_LIMIT_DECREASE', 'ORDER_PLACED', 'ORDER_CANCELLED', 'PAYMENT_RECEIVED', 'REFUND'],
-    title: 'CreditTransactionType',
-    description: 'Credit transaction types'
 } as const;
 
 export const CustomerBriefSchema = {
@@ -13036,15 +13128,22 @@ export const InventoryAdjustmentSchema = {
     properties: {
         skuId: {
             type: 'string',
+            format: 'uuid',
             title: 'Skuid'
         },
         binId: {
             type: 'string',
+            format: 'uuid',
             title: 'Binid'
         },
-        quantity: {
+        locationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Locationid'
+        },
+        adjustmentQty: {
             type: 'integer',
-            title: 'Quantity'
+            title: 'Adjustmentqty'
         },
         reason: {
             type: 'string',
@@ -13060,11 +13159,37 @@ export const InventoryAdjustmentSchema = {
                 }
             ],
             title: 'Batchno'
+        },
+        serialNumbers: {
+            anyOf: [
+                {
+                    items: {
+                        type: 'string'
+                    },
+                    type: 'array'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Serialnumbers'
+        },
+        remarks: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Remarks'
         }
     },
     type: 'object',
-    required: ['skuId', 'binId', 'quantity', 'reason'],
-    title: 'InventoryAdjustment'
+    required: ['skuId', 'binId', 'locationId', 'adjustmentQty', 'reason'],
+    title: 'InventoryAdjustment',
+    description: 'Schema for inventory adjustment'
 } as const;
 
 export const InventoryAllocationBriefSchema = {
@@ -13681,7 +13806,6 @@ export const InventoryResponseSchema = {
     properties: {
         id: {
             type: 'string',
-            format: 'uuid',
             title: 'Id'
         },
         quantity: {
@@ -13691,6 +13815,10 @@ export const InventoryResponseSchema = {
         reservedQty: {
             type: 'integer',
             title: 'Reservedqty'
+        },
+        availableQty: {
+            type: 'integer',
+            title: 'Availableqty'
         },
         batchNo: {
             anyOf: [
@@ -13703,7 +13831,11 @@ export const InventoryResponseSchema = {
             ],
             title: 'Batchno'
         },
-        lotNo: {
+        skuId: {
+            type: 'string',
+            title: 'Skuid'
+        },
+        skuCode: {
             anyOf: [
                 {
                     type: 'string'
@@ -13712,126 +13844,31 @@ export const InventoryResponseSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Lotno'
+            title: 'Skucode'
         },
-        expiryDate: {
+        skuName: {
             anyOf: [
                 {
-                    type: 'string',
-                    format: 'date-time'
+                    type: 'string'
                 },
                 {
                     type: 'null'
                 }
             ],
-            title: 'Expirydate'
-        },
-        mfgDate: {
-            anyOf: [
-                {
-                    type: 'string',
-                    format: 'date-time'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Mfgdate'
-        },
-        mrp: {
-            anyOf: [
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Mrp'
-        },
-        costPrice: {
-            anyOf: [
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Costprice'
-        },
-        serialNumbers: {
-            anyOf: [
-                {
-                    items: {
-                        type: 'string'
-                    },
-                    type: 'array'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Serialnumbers'
-        },
-        valuationMethod: {
-            anyOf: [
-                {
-                    '$ref': '#/components/schemas/InventoryValuationMethod'
-                },
-                {
-                    type: 'null'
-                }
-            ]
-        },
-        fifoSequence: {
-            anyOf: [
-                {
-                    type: 'integer'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Fifosequence'
-        },
-        skuId: {
-            type: 'string',
-            format: 'uuid',
-            title: 'Skuid'
+            title: 'Skuname'
         },
         binId: {
             type: 'string',
-            format: 'uuid',
             title: 'Binid'
         },
         locationId: {
             type: 'string',
-            format: 'uuid',
             title: 'Locationid'
-        },
-        createdAt: {
-            type: 'string',
-            format: 'date-time',
-            title: 'Createdat'
-        },
-        updatedAt: {
-            type: 'string',
-            format: 'date-time',
-            title: 'Updatedat'
-        },
-        availableQty: {
-            type: 'integer',
-            title: 'Availableqty',
-            default: 0
         }
     },
     type: 'object',
-    required: ['id', 'quantity', 'reservedQty', 'skuId', 'binId', 'locationId', 'createdAt', 'updatedAt'],
-    title: 'InventoryResponse',
-    description: 'Schema for inventory API responses'
+    required: ['id', 'quantity', 'reservedQty', 'availableQty', 'skuId', 'binId', 'locationId'],
+    title: 'InventoryResponse'
 } as const;
 
 export const InventorySummarySchema = {
@@ -14277,79 +14314,6 @@ export const LocationCreateSchema = {
             '$ref': '#/components/schemas/LocationType'
         },
         address: {
-            additionalProperties: true,
-            type: 'object',
-            title: 'Address'
-        },
-        contactPerson: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Contactperson'
-        },
-        contactPhone: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Contactphone'
-        },
-        contactEmail: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Contactemail'
-        },
-        gst: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Gst'
-        }
-    },
-    type: 'object',
-    required: ['code', 'name', 'type', 'address'],
-    title: 'LocationCreate'
-} as const;
-
-export const LocationResponseSchema = {
-    properties: {
-        id: {
-            type: 'string',
-            title: 'Id'
-        },
-        code: {
-            type: 'string',
-            title: 'Code'
-        },
-        name: {
-            type: 'string',
-            title: 'Name'
-        },
-        type: {
-            type: 'string',
-            title: 'Type'
-        },
-        address: {
             anyOf: [
                 {
                     additionalProperties: true,
@@ -14405,60 +14369,57 @@ export const LocationResponseSchema = {
             ],
             title: 'Gst'
         },
-        isActive: {
-            type: 'boolean',
-            title: 'Isactive'
+        settings: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Settings'
+        },
+        valuationMethod: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Valuationmethod'
         },
         companyId: {
             type: 'string',
+            format: 'uuid',
             title: 'Companyid'
         }
     },
     type: 'object',
-    required: ['id', 'code', 'name', 'type', 'isActive', 'companyId'],
-    title: 'LocationResponse'
+    required: ['code', 'name', 'type', 'companyId'],
+    title: 'LocationCreate'
 } as const;
 
-export const LocationTypeSchema = {
-    type: 'string',
-    enum: ['WAREHOUSE', 'STORE', 'HUB', 'VIRTUAL'],
-    title: 'LocationType',
-    description: 'Types of fulfillment locations'
-} as const;
-
-export const LocationUpdateSchema = {
+export const LocationResponseSchema = {
     properties: {
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
         code: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
+            type: 'string',
             title: 'Code'
         },
         name: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
+            type: 'string',
             title: 'Name'
         },
         type: {
-            anyOf: [
-                {
-                    '$ref': '#/components/schemas/LocationType'
-                },
-                {
-                    type: 'null'
-                }
-            ]
+            '$ref': '#/components/schemas/LocationType'
         },
         address: {
             anyOf: [
@@ -14538,6 +14499,96 @@ export const LocationUpdateSchema = {
                 }
             ],
             title: 'Valuationmethod'
+        },
+        isActive: {
+            type: 'boolean',
+            title: 'Isactive'
+        },
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        }
+    },
+    type: 'object',
+    required: ['id', 'code', 'name', 'type', 'isActive', 'companyId', 'createdAt', 'updatedAt'],
+    title: 'LocationResponse'
+} as const;
+
+export const LocationTypeSchema = {
+    type: 'string',
+    enum: ['WAREHOUSE', 'STORE', 'HUB', 'VIRTUAL'],
+    title: 'LocationType',
+    description: 'Types of fulfillment locations'
+} as const;
+
+export const LocationUpdateSchema = {
+    properties: {
+        name: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Name'
+        },
+        address: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Address'
+        },
+        contactPerson: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Contactperson'
+        },
+        contactPhone: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Contactphone'
+        },
+        contactEmail: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Contactemail'
         },
         isActive: {
             anyOf: [
@@ -15520,6 +15571,11 @@ export const ManifestCreateSchema = {
             format: 'uuid',
             title: 'Transporterid'
         },
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
         vehicleNo: {
             anyOf: [
                 {
@@ -15555,7 +15611,7 @@ export const ManifestCreateSchema = {
         }
     },
     type: 'object',
-    required: ['manifestNo', 'transporterId'],
+    required: ['manifestNo', 'transporterId', 'companyId'],
     title: 'ManifestCreate',
     description: 'Schema for creating manifest'
 } as const;
@@ -15575,6 +15631,11 @@ export const ManifestResponseSchema = {
             type: 'string',
             format: 'uuid',
             title: 'Transporterid'
+        },
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
         },
         status: {
             '$ref': '#/components/schemas/ManifestStatus'
@@ -15659,7 +15720,7 @@ export const ManifestResponseSchema = {
         }
     },
     type: 'object',
-    required: ['id', 'manifestNo', 'transporterId', 'status', 'createdAt', 'updatedAt'],
+    required: ['id', 'manifestNo', 'transporterId', 'companyId', 'status', 'createdAt', 'updatedAt'],
     title: 'ManifestResponse',
     description: 'Schema for manifest API responses'
 } as const;
@@ -16757,7 +16818,7 @@ export const OrderCreateSchema = {
         },
         items: {
             items: {
-                '$ref': '#/components/schemas/OrderItemCreate'
+                '$ref': '#/components/schemas/app__api__routes__orders__OrderItemCreate'
             },
             type: 'array',
             title: 'Items'
@@ -17097,32 +17158,104 @@ export const OrderImportUpdateSchema = {
 
 export const OrderItemCreateSchema = {
     properties: {
+        orderId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Orderid'
+        },
         skuId: {
             type: 'string',
+            format: 'uuid',
             title: 'Skuid'
+        },
+        externalItemId: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalitemid'
         },
         quantity: {
             type: 'integer',
             title: 'Quantity'
         },
         unitPrice: {
-            type: 'number',
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
             title: 'Unitprice'
         },
         taxAmount: {
-            type: 'number',
-            title: 'Taxamount',
-            default: 0
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
+            title: 'Taxamount'
         },
         discount: {
-            type: 'number',
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
             title: 'Discount',
-            default: 0
+            default: '0'
+        },
+        totalPrice: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
+            title: 'Totalprice'
+        },
+        serialNumbers: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Serialnumbers',
+            default: []
+        },
+        batchNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Batchno'
         }
     },
     type: 'object',
-    required: ['skuId', 'quantity', 'unitPrice'],
-    title: 'OrderItemCreate'
+    required: ['orderId', 'skuId', 'quantity', 'unitPrice', 'taxAmount', 'totalPrice'],
+    title: 'OrderItemCreate',
+    description: 'Schema for creating order item'
 } as const;
 
 export const OrderItemResponseSchema = {
@@ -17312,6 +17445,7 @@ export const OrderResponseSchema = {
     properties: {
         id: {
             type: 'string',
+            format: 'uuid',
             title: 'Id'
         },
         orderNo: {
@@ -17330,20 +17464,16 @@ export const OrderResponseSchema = {
             title: 'Externalorderno'
         },
         channel: {
-            type: 'string',
-            title: 'Channel'
+            '$ref': '#/components/schemas/Channel'
         },
         orderType: {
-            type: 'string',
-            title: 'Ordertype'
+            '$ref': '#/components/schemas/OrderType'
         },
         paymentMode: {
-            type: 'string',
-            title: 'Paymentmode'
+            '$ref': '#/components/schemas/PaymentMode'
         },
         status: {
-            type: 'string',
-            title: 'Status'
+            '$ref': '#/components/schemas/OrderStatus'
         },
         customerName: {
             type: 'string',
@@ -17364,24 +17494,51 @@ export const OrderResponseSchema = {
             ],
             title: 'Customeremail'
         },
+        shippingAddress: {
+            additionalProperties: true,
+            type: 'object',
+            title: 'Shippingaddress'
+        },
+        billingAddress: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Billingaddress'
+        },
         subtotal: {
-            type: 'number',
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
             title: 'Subtotal'
         },
         taxAmount: {
-            type: 'number',
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
             title: 'Taxamount'
         },
         shippingCharges: {
-            type: 'number',
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
             title: 'Shippingcharges'
         },
         discount: {
-            type: 'number',
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
             title: 'Discount'
         },
+        codCharges: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Codcharges'
+        },
         totalAmount: {
-            type: 'number',
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
             title: 'Totalamount'
         },
         orderDate: {
@@ -17389,19 +17546,180 @@ export const OrderResponseSchema = {
             format: 'date-time',
             title: 'Orderdate'
         },
+        shipByDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Shipbydate'
+        },
+        promisedDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Promiseddate'
+        },
+        priority: {
+            type: 'integer',
+            title: 'Priority',
+            default: 0
+        },
+        tags: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Tags',
+            default: []
+        },
+        remarks: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Remarks'
+        },
         locationId: {
             type: 'string',
+            format: 'uuid',
             title: 'Locationid'
+        },
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        customerId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Customerid'
+        },
+        paymentTermType: {
+            anyOf: [
+                {
+                    '$ref': '#/components/schemas/PaymentTermType'
+                },
+                {
+                    type: 'null'
+                }
+            ]
+        },
+        paymentTermDays: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Paymenttermdays'
+        },
+        creditDueDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Creditduedate'
+        },
+        poNumber: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Ponumber'
+        },
+        gstInvoiceNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Gstinvoiceno'
+        },
+        gstInvoiceDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Gstinvoicedate'
+        },
+        eWayBillNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Ewaybillno'
+        },
+        irnNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Irnno'
         },
         createdAt: {
             type: 'string',
             format: 'date-time',
             title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
         }
     },
     type: 'object',
-    required: ['id', 'orderNo', 'channel', 'orderType', 'paymentMode', 'status', 'customerName', 'customerPhone', 'subtotal', 'taxAmount', 'shippingCharges', 'discount', 'totalAmount', 'orderDate', 'locationId', 'createdAt'],
-    title: 'OrderResponse'
+    required: ['id', 'orderNo', 'channel', 'orderType', 'paymentMode', 'status', 'customerName', 'customerPhone', 'shippingAddress', 'subtotal', 'taxAmount', 'shippingCharges', 'discount', 'codCharges', 'totalAmount', 'orderDate', 'locationId', 'companyId', 'createdAt', 'updatedAt'],
+    title: 'OrderResponse',
+    description: 'Schema for order API responses'
 } as const;
 
 export const OrderStatusSchema = {
@@ -19546,7 +19864,14 @@ export const PincodePerformanceResponseSchema = {
 export const PriceListCreateSchema = {
     properties: {
         code: {
-            type: 'string',
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
             title: 'Code'
         },
         name: {
@@ -19564,12 +19889,7 @@ export const PriceListCreateSchema = {
             ],
             title: 'Description'
         },
-        currency: {
-            type: 'string',
-            title: 'Currency',
-            default: 'INR'
-        },
-        validFrom: {
+        effectiveFrom: {
             anyOf: [
                 {
                     type: 'string',
@@ -19579,9 +19899,9 @@ export const PriceListCreateSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Validfrom'
+            title: 'Effectivefrom'
         },
-        validTo: {
+        effectiveTo: {
             anyOf: [
                 {
                     type: 'string',
@@ -19591,26 +19911,27 @@ export const PriceListCreateSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Validto'
+            title: 'Effectiveto'
         },
-        isDefault: {
+        basedOnMRP: {
             type: 'boolean',
-            title: 'Isdefault',
+            title: 'Basedonmrp',
             default: false
         },
-        isActive: {
-            type: 'boolean',
-            title: 'Isactive',
-            default: true
-        },
-        companyId: {
-            type: 'string',
-            format: 'uuid',
-            title: 'Companyid'
+        roundingMethod: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Roundingmethod'
         }
     },
     type: 'object',
-    required: ['code', 'name', 'companyId'],
+    required: ['name'],
     title: 'PriceListCreate',
     description: 'Price List creation schema'
 } as const;
@@ -19622,7 +19943,7 @@ export const PriceListItemCreateSchema = {
             format: 'uuid',
             title: 'Skuid'
         },
-        unitPrice: {
+        fixedPrice: {
             anyOf: [
                 {
                     type: 'number'
@@ -19630,32 +19951,12 @@ export const PriceListItemCreateSchema = {
                 {
                     type: 'string',
                     pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                }
-            ],
-            title: 'Unitprice'
-        },
-        minQty: {
-            anyOf: [
-                {
-                    type: 'integer'
                 },
                 {
                     type: 'null'
                 }
             ],
-            title: 'Minqty',
-            default: 1
-        },
-        maxQty: {
-            anyOf: [
-                {
-                    type: 'integer'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Maxqty'
+            title: 'Fixedprice'
         },
         discountPercent: {
             anyOf: [
@@ -19671,10 +19972,47 @@ export const PriceListItemCreateSchema = {
                 }
             ],
             title: 'Discountpercent'
+        },
+        markup: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Markup'
+        },
+        minOrderQty: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Minorderqty'
+        },
+        maxOrderQty: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Maxorderqty'
         }
     },
     type: 'object',
-    required: ['skuId', 'unitPrice'],
+    required: ['skuId'],
     title: 'PriceListItemCreate',
     description: 'Price List Item creation schema'
 } as const;
@@ -19691,26 +20029,17 @@ export const PriceListItemResponseSchema = {
             format: 'uuid',
             title: 'Skuid'
         },
-        unitPrice: {
-            type: 'string',
-            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
-            title: 'Unitprice'
-        },
-        minQty: {
-            type: 'integer',
-            title: 'Minqty',
-            default: 1
-        },
-        maxQty: {
+        fixedPrice: {
             anyOf: [
                 {
-                    type: 'integer'
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
                 },
                 {
                     type: 'null'
                 }
             ],
-            title: 'Maxqty'
+            title: 'Fixedprice'
         },
         discountPercent: {
             anyOf: [
@@ -19724,29 +20053,39 @@ export const PriceListItemResponseSchema = {
             ],
             title: 'Discountpercent'
         },
-        validFrom: {
+        markup: {
             anyOf: [
                 {
                     type: 'string',
-                    format: 'date-time'
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
                 },
                 {
                     type: 'null'
                 }
             ],
-            title: 'Validfrom'
+            title: 'Markup'
         },
-        validTo: {
+        minOrderQty: {
             anyOf: [
                 {
-                    type: 'string',
-                    format: 'date-time'
+                    type: 'integer'
                 },
                 {
                     type: 'null'
                 }
             ],
-            title: 'Validto'
+            title: 'Minorderqty'
+        },
+        maxOrderQty: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Maxorderqty'
         },
         id: {
             type: 'string',
@@ -19765,14 +20104,14 @@ export const PriceListItemResponseSchema = {
         }
     },
     type: 'object',
-    required: ['priceListId', 'skuId', 'unitPrice', 'id', 'createdAt', 'updatedAt'],
+    required: ['priceListId', 'skuId', 'id', 'createdAt', 'updatedAt'],
     title: 'PriceListItemResponse',
     description: 'Price List Item response schema'
 } as const;
 
 export const PriceListItemUpdateSchema = {
     properties: {
-        unitPrice: {
+        fixedPrice: {
             anyOf: [
                 {
                     type: 'number'
@@ -19785,29 +20124,7 @@ export const PriceListItemUpdateSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Unitprice'
-        },
-        minQty: {
-            anyOf: [
-                {
-                    type: 'integer'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Minqty'
-        },
-        maxQty: {
-            anyOf: [
-                {
-                    type: 'integer'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Maxqty'
+            title: 'Fixedprice'
         },
         discountPercent: {
             anyOf: [
@@ -19823,6 +20140,43 @@ export const PriceListItemUpdateSchema = {
                 }
             ],
             title: 'Discountpercent'
+        },
+        markup: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Markup'
+        },
+        minOrderQty: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Minorderqty'
+        },
+        maxOrderQty: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Maxorderqty'
         }
     },
     type: 'object',
@@ -19833,7 +20187,14 @@ export const PriceListItemUpdateSchema = {
 export const PriceListResponseSchema = {
     properties: {
         code: {
-            type: 'string',
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
             title: 'Code'
         },
         name: {
@@ -19851,12 +20212,7 @@ export const PriceListResponseSchema = {
             ],
             title: 'Description'
         },
-        currency: {
-            type: 'string',
-            title: 'Currency',
-            default: 'INR'
-        },
-        validFrom: {
+        effectiveFrom: {
             anyOf: [
                 {
                     type: 'string',
@@ -19866,9 +20222,9 @@ export const PriceListResponseSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Validfrom'
+            title: 'Effectivefrom'
         },
-        validTo: {
+        effectiveTo: {
             anyOf: [
                 {
                     type: 'string',
@@ -19878,22 +20234,40 @@ export const PriceListResponseSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Validto'
+            title: 'Effectiveto'
         },
-        isDefault: {
+        basedOnMRP: {
             type: 'boolean',
-            title: 'Isdefault',
+            title: 'Basedonmrp',
             default: false
+        },
+        roundingMethod: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Roundingmethod'
+        },
+        companyId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Companyid'
         },
         isActive: {
             type: 'boolean',
             title: 'Isactive',
             default: true
-        },
-        companyId: {
-            type: 'string',
-            format: 'uuid',
-            title: 'Companyid'
         },
         id: {
             type: 'string',
@@ -19912,7 +20286,7 @@ export const PriceListResponseSchema = {
         }
     },
     type: 'object',
-    required: ['code', 'name', 'companyId', 'id', 'createdAt', 'updatedAt'],
+    required: ['name', 'id', 'createdAt', 'updatedAt'],
     title: 'PriceListResponse',
     description: 'Price List response schema'
 } as const;
@@ -19952,18 +20326,7 @@ export const PriceListUpdateSchema = {
             ],
             title: 'Description'
         },
-        currency: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Currency'
-        },
-        validFrom: {
+        effectiveFrom: {
             anyOf: [
                 {
                     type: 'string',
@@ -19973,9 +20336,9 @@ export const PriceListUpdateSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Validfrom'
+            title: 'Effectivefrom'
         },
-        validTo: {
+        effectiveTo: {
             anyOf: [
                 {
                     type: 'string',
@@ -19985,9 +20348,9 @@ export const PriceListUpdateSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Validto'
+            title: 'Effectiveto'
         },
-        isDefault: {
+        basedOnMRP: {
             anyOf: [
                 {
                     type: 'boolean'
@@ -19996,7 +20359,18 @@ export const PriceListUpdateSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Isdefault'
+            title: 'Basedonmrp'
+        },
+        roundingMethod: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Roundingmethod'
         },
         isActive: {
             anyOf: [
@@ -22773,6 +23147,30 @@ export const QuotationCreateSchema = {
             format: 'uuid',
             title: 'Customerid'
         },
+        locationId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Locationid'
+        },
+        validFrom: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Validfrom'
+        },
         validUntil: {
             anyOf: [
                 {
@@ -22807,6 +23205,28 @@ export const QuotationCreateSchema = {
             ],
             title: 'Paymenttermdays'
         },
+        specialTerms: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Specialterms'
+        },
+        remarks: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Remarks'
+        },
         shippingAddress: {
             anyOf: [
                 {
@@ -22830,17 +23250,6 @@ export const QuotationCreateSchema = {
                 }
             ],
             title: 'Billingaddress'
-        },
-        remarks: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Remarks'
         },
         items: {
             anyOf: [
@@ -22870,9 +23279,46 @@ export const QuotationItemCreateSchema = {
             format: 'uuid',
             title: 'Skuid'
         },
+        skuCode: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Skucode'
+        },
+        skuName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Skuname'
+        },
         quantity: {
             type: 'integer',
             title: 'Quantity'
+        },
+        listPrice: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Listprice'
         },
         unitPrice: {
             anyOf: [
@@ -22885,36 +23331,6 @@ export const QuotationItemCreateSchema = {
                 }
             ],
             title: 'Unitprice'
-        },
-        taxRate: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Taxrate'
-        },
-        discount: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Discount'
         },
         discountPercent: {
             anyOf: [
@@ -22930,6 +23346,21 @@ export const QuotationItemCreateSchema = {
                 }
             ],
             title: 'Discountpercent'
+        },
+        taxPercent: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Taxpercent'
         },
         remarks: {
             anyOf: [
@@ -22961,17 +23392,34 @@ export const QuotationItemResponseSchema = {
             format: 'uuid',
             title: 'Skuid'
         },
+        skuCode: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Skucode'
+        },
+        skuName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Skuname'
+        },
         quantity: {
             type: 'integer',
             title: 'Quantity',
             default: 1
         },
-        unitPrice: {
-            type: 'string',
-            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
-            title: 'Unitprice'
-        },
-        taxRate: {
+        listPrice: {
             anyOf: [
                 {
                     type: 'string',
@@ -22981,19 +23429,12 @@ export const QuotationItemResponseSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Taxrate'
+            title: 'Listprice'
         },
-        taxAmount: {
+        unitPrice: {
             type: 'string',
             pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
-            title: 'Taxamount',
-            default: '0'
-        },
-        discount: {
-            type: 'string',
-            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
-            title: 'Discount',
-            default: '0'
+            title: 'Unitprice'
         },
         discountPercent: {
             anyOf: [
@@ -23006,6 +23447,30 @@ export const QuotationItemResponseSchema = {
                 }
             ],
             title: 'Discountpercent'
+        },
+        discountAmount: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Discountamount',
+            default: '0'
+        },
+        taxPercent: {
+            anyOf: [
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Taxpercent'
+        },
+        taxAmount: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Taxamount',
+            default: '0'
         },
         totalPrice: {
             type: 'string',
@@ -23028,20 +23493,10 @@ export const QuotationItemResponseSchema = {
             type: 'string',
             format: 'uuid',
             title: 'Id'
-        },
-        createdAt: {
-            type: 'string',
-            format: 'date-time',
-            title: 'Createdat'
-        },
-        updatedAt: {
-            type: 'string',
-            format: 'date-time',
-            title: 'Updatedat'
         }
     },
     type: 'object',
-    required: ['quotationId', 'skuId', 'unitPrice', 'id', 'createdAt', 'updatedAt'],
+    required: ['quotationId', 'skuId', 'unitPrice', 'id'],
     title: 'QuotationItemResponse',
     description: 'Quotation Item response schema'
 } as const;
@@ -23049,7 +23504,14 @@ export const QuotationItemResponseSchema = {
 export const QuotationResponseSchema = {
     properties: {
         quotationNo: {
-            type: 'string',
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
             title: 'Quotationno'
         },
         customerId: {
@@ -23058,14 +23520,45 @@ export const QuotationResponseSchema = {
             title: 'Customerid'
         },
         companyId: {
-            type: 'string',
-            format: 'uuid',
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
             title: 'Companyid'
+        },
+        locationId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Locationid'
         },
         status: {
             type: 'string',
             title: 'Status',
             default: 'DRAFT'
+        },
+        validFrom: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Validfrom'
         },
         validUntil: {
             anyOf: [
@@ -23085,16 +23578,22 @@ export const QuotationResponseSchema = {
             title: 'Subtotal',
             default: '0'
         },
+        discountAmount: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Discountamount',
+            default: '0'
+        },
         taxAmount: {
             type: 'string',
             pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
             title: 'Taxamount',
             default: '0'
         },
-        discount: {
+        shippingCharges: {
             type: 'string',
             pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
-            title: 'Discount',
+            title: 'Shippingcharges',
             default: '0'
         },
         totalAmount: {
@@ -23125,6 +23624,28 @@ export const QuotationResponseSchema = {
             ],
             title: 'Paymenttermdays'
         },
+        specialTerms: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Specialterms'
+        },
+        remarks: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Remarks'
+        },
         shippingAddress: {
             anyOf: [
                 {
@@ -23149,27 +23670,21 @@ export const QuotationResponseSchema = {
             ],
             title: 'Billingaddress'
         },
-        remarks: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Remarks'
+        requiresApproval: {
+            type: 'boolean',
+            title: 'Requiresapproval',
+            default: false
         },
-        internalNotes: {
+        approvalLevel: {
             anyOf: [
                 {
-                    type: 'string'
+                    type: 'integer'
                 },
                 {
                     type: 'null'
                 }
             ],
-            title: 'Internalnotes'
+            title: 'Approvallevel'
         },
         approvedById: {
             anyOf: [
@@ -23195,6 +23710,30 @@ export const QuotationResponseSchema = {
             ],
             title: 'Approvedat'
         },
+        rejectedById: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Rejectedbyid'
+        },
+        rejectedAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Rejectedat'
+        },
         rejectionReason: {
             anyOf: [
                 {
@@ -23206,7 +23745,7 @@ export const QuotationResponseSchema = {
             ],
             title: 'Rejectionreason'
         },
-        convertedToOrderId: {
+        convertedOrderId: {
             anyOf: [
                 {
                     type: 'string',
@@ -23216,7 +23755,7 @@ export const QuotationResponseSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Convertedtoorderid'
+            title: 'Convertedorderid'
         },
         convertedAt: {
             anyOf: [
@@ -23229,6 +23768,18 @@ export const QuotationResponseSchema = {
                 }
             ],
             title: 'Convertedat'
+        },
+        createdById: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Createdbyid'
         },
         id: {
             type: 'string',
@@ -23261,7 +23812,7 @@ export const QuotationResponseSchema = {
         }
     },
     type: 'object',
-    required: ['quotationNo', 'customerId', 'companyId', 'id', 'createdAt', 'updatedAt'],
+    required: ['customerId', 'id', 'createdAt', 'updatedAt'],
     title: 'QuotationResponse',
     description: 'Quotation response schema'
 } as const;
@@ -23278,6 +23829,18 @@ export const QuotationUpdateSchema = {
                 }
             ],
             title: 'Status'
+        },
+        validFrom: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Validfrom'
         },
         validUntil: {
             anyOf: [
@@ -23313,6 +23876,28 @@ export const QuotationUpdateSchema = {
             ],
             title: 'Paymenttermdays'
         },
+        specialTerms: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Specialterms'
+        },
+        remarks: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Remarks'
+        },
         shippingAddress: {
             anyOf: [
                 {
@@ -23336,6 +23921,140 @@ export const QuotationUpdateSchema = {
                 }
             ],
             title: 'Billingaddress'
+        }
+    },
+    type: 'object',
+    title: 'QuotationUpdate',
+    description: 'Quotation update schema'
+} as const;
+
+export const RateCardCreateSchema = {
+    properties: {
+        rateCardNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Ratecardno'
+        },
+        name: {
+            type: 'string',
+            title: 'Name'
+        },
+        type: {
+            type: 'string',
+            title: 'Type',
+            default: 'BOTH'
+        },
+        transporterId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Transporterid'
+        },
+        effectiveFrom: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Effectivefrom'
+        },
+        effectiveTo: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Effectiveto'
+        },
+        baseCost: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Basecost',
+            default: '0'
+        },
+        fuelSurcharge: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Fuelsurcharge',
+            default: '0'
+        },
+        codChargesPercent: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Codchargespercent'
+        },
+        codChargesMin: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Codchargesmin'
+        },
+        awbCharges: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Awbcharges'
         },
         remarks: {
             anyOf: [
@@ -23347,153 +24066,6 @@ export const QuotationUpdateSchema = {
                 }
             ],
             title: 'Remarks'
-        },
-        internalNotes: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Internalnotes'
-        }
-    },
-    type: 'object',
-    title: 'QuotationUpdate',
-    description: 'Quotation update schema'
-} as const;
-
-export const RateCardCreateSchema = {
-    properties: {
-        code: {
-            type: 'string',
-            title: 'Code'
-        },
-        name: {
-            type: 'string',
-            title: 'Name'
-        },
-        description: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Description'
-        },
-        transporterId: {
-            type: 'string',
-            format: 'uuid',
-            title: 'Transporterid'
-        },
-        type: {
-            type: 'string',
-            title: 'Type',
-            default: 'BOTH'
-        },
-        validFrom: {
-            type: 'string',
-            format: 'date-time',
-            title: 'Validfrom'
-        },
-        validTo: {
-            anyOf: [
-                {
-                    type: 'string',
-                    format: 'date-time'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Validto'
-        },
-        baseWeight: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                }
-            ],
-            title: 'Baseweight',
-            default: '0.5'
-        },
-        baseRate: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                }
-            ],
-            title: 'Baserate'
-        },
-        additionalWeightRate: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                }
-            ],
-            title: 'Additionalweightrate'
-        },
-        codPercent: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Codpercent'
-        },
-        codMinCharge: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Codmincharge'
-        },
-        fuelSurchargePercent: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Fuelsurchargepercent'
         },
         slabs: {
             anyOf: [
@@ -23511,22 +24083,14 @@ export const RateCardCreateSchema = {
         }
     },
     type: 'object',
-    required: ['code', 'name', 'transporterId', 'validFrom', 'baseRate', 'additionalWeightRate'],
+    required: ['name', 'transporterId'],
     title: 'RateCardCreate',
     description: 'Rate Card creation schema'
 } as const;
 
 export const RateCardResponseSchema = {
     properties: {
-        code: {
-            type: 'string',
-            title: 'Code'
-        },
-        name: {
-            type: 'string',
-            title: 'Name'
-        },
-        description: {
+        rateCardNo: {
             anyOf: [
                 {
                     type: 'string'
@@ -23535,17 +24099,11 @@ export const RateCardResponseSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Description'
+            title: 'Ratecardno'
         },
-        transporterId: {
+        name: {
             type: 'string',
-            format: 'uuid',
-            title: 'Transporterid'
-        },
-        companyId: {
-            type: 'string',
-            format: 'uuid',
-            title: 'Companyid'
+            title: 'Name'
         },
         type: {
             type: 'string',
@@ -23557,12 +24115,24 @@ export const RateCardResponseSchema = {
             title: 'Status',
             default: 'DRAFT'
         },
-        validFrom: {
+        transporterId: {
             type: 'string',
-            format: 'date-time',
-            title: 'Validfrom'
+            format: 'uuid',
+            title: 'Transporterid'
         },
-        validTo: {
+        companyId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Companyid'
+        },
+        effectiveFrom: {
             anyOf: [
                 {
                     type: 'string',
@@ -23572,27 +24142,47 @@ export const RateCardResponseSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Validto'
+            title: 'Effectivefrom'
         },
-        baseWeight: {
-            type: 'string',
-            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
-            title: 'Baseweight',
-            default: '0.5'
+        effectiveTo: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Effectiveto'
         },
-        baseRate: {
-            type: 'string',
-            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
-            title: 'Baserate',
+        baseCost: {
+            anyOf: [
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Basecost',
             default: '0'
         },
-        additionalWeightRate: {
-            type: 'string',
-            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
-            title: 'Additionalweightrate',
+        fuelSurcharge: {
+            anyOf: [
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Fuelsurcharge',
             default: '0'
         },
-        codPercent: {
+        codChargesPercent: {
             anyOf: [
                 {
                     type: 'string',
@@ -23602,9 +24192,9 @@ export const RateCardResponseSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Codpercent'
+            title: 'Codchargespercent'
         },
-        codMinCharge: {
+        codChargesMin: {
             anyOf: [
                 {
                     type: 'string',
@@ -23614,9 +24204,9 @@ export const RateCardResponseSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Codmincharge'
+            title: 'Codchargesmin'
         },
-        fuelSurchargePercent: {
+        codChargesCap: {
             anyOf: [
                 {
                     type: 'string',
@@ -23626,9 +24216,9 @@ export const RateCardResponseSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Fuelsurchargepercent'
+            title: 'Codchargescap'
         },
-        minCharge: {
+        awbCharges: {
             anyOf: [
                 {
                     type: 'string',
@@ -23638,9 +24228,9 @@ export const RateCardResponseSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Mincharge'
+            title: 'Awbcharges'
         },
-        maxWeight: {
+        rtoChargesPercent: {
             anyOf: [
                 {
                     type: 'string',
@@ -23650,17 +24240,42 @@ export const RateCardResponseSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Maxweight'
+            title: 'Rtochargespercent'
         },
-        volumetricFactor: {
-            type: 'integer',
-            title: 'Volumetricfactor',
-            default: 5000
+        remarks: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Remarks'
         },
-        isDefault: {
-            type: 'boolean',
-            title: 'Isdefault',
-            default: false
+        approvedAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Approvedat'
+        },
+        approvedBy: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Approvedby'
         },
         id: {
             type: 'string',
@@ -23693,7 +24308,7 @@ export const RateCardResponseSchema = {
         }
     },
     type: 'object',
-    required: ['code', 'name', 'transporterId', 'companyId', 'validFrom', 'id', 'createdAt', 'updatedAt'],
+    required: ['name', 'transporterId', 'id', 'createdAt', 'updatedAt'],
     title: 'RateCardResponse',
     description: 'Rate Card response schema'
 } as const;
@@ -23724,7 +24339,7 @@ export const RateCardSlabCreateSchema = {
             ],
             title: 'Toweight'
         },
-        zoneCode: {
+        zone: {
             anyOf: [
                 {
                     type: 'string'
@@ -23733,7 +24348,29 @@ export const RateCardSlabCreateSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Zonecode'
+            title: 'Zone'
+        },
+        fromPincode: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Frompincode'
+        },
+        toPincode: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Topincode'
         },
         rate: {
             anyOf: [
@@ -23747,7 +24384,7 @@ export const RateCardSlabCreateSchema = {
             ],
             title: 'Rate'
         },
-        additionalRate: {
+        additionalWeightRate: {
             anyOf: [
                 {
                     type: 'number'
@@ -23760,7 +24397,22 @@ export const RateCardSlabCreateSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Additionalrate'
+            title: 'Additionalweightrate'
+        },
+        minCharge: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Mincharge'
         }
     },
     type: 'object',
@@ -23786,7 +24438,7 @@ export const RateCardSlabResponseSchema = {
             pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
             title: 'Toweight'
         },
-        zoneCode: {
+        zone: {
             anyOf: [
                 {
                     type: 'string'
@@ -23795,14 +24447,36 @@ export const RateCardSlabResponseSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Zonecode'
+            title: 'Zone'
+        },
+        fromPincode: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Frompincode'
+        },
+        toPincode: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Topincode'
         },
         rate: {
             type: 'string',
             pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
             title: 'Rate'
         },
-        additionalRate: {
+        additionalWeightRate: {
             anyOf: [
                 {
                     type: 'string',
@@ -23812,7 +24486,7 @@ export const RateCardSlabResponseSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Additionalrate'
+            title: 'Additionalweightrate'
         },
         minCharge: {
             anyOf: [
@@ -23825,18 +24499,6 @@ export const RateCardSlabResponseSchema = {
                 }
             ],
             title: 'Mincharge'
-        },
-        maxCharge: {
-            anyOf: [
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Maxcharge'
         },
         id: {
             type: 'string',
@@ -23863,17 +24525,6 @@ export const RateCardUpdateSchema = {
             ],
             title: 'Name'
         },
-        description: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Description'
-        },
         status: {
             anyOf: [
                 {
@@ -23885,7 +24536,7 @@ export const RateCardUpdateSchema = {
             ],
             title: 'Status'
         },
-        validTo: {
+        effectiveTo: {
             anyOf: [
                 {
                     type: 'string',
@@ -23895,9 +24546,9 @@ export const RateCardUpdateSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Validto'
+            title: 'Effectiveto'
         },
-        baseWeight: {
+        baseCost: {
             anyOf: [
                 {
                     type: 'number'
@@ -23910,9 +24561,9 @@ export const RateCardUpdateSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Baseweight'
+            title: 'Basecost'
         },
-        baseRate: {
+        fuelSurcharge: {
             anyOf: [
                 {
                     type: 'number'
@@ -23925,9 +24576,9 @@ export const RateCardUpdateSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Baserate'
+            title: 'Fuelsurcharge'
         },
-        additionalWeightRate: {
+        codChargesPercent: {
             anyOf: [
                 {
                     type: 'number'
@@ -23940,9 +24591,9 @@ export const RateCardUpdateSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Additionalweightrate'
+            title: 'Codchargespercent'
         },
-        codPercent: {
+        codChargesMin: {
             anyOf: [
                 {
                     type: 'number'
@@ -23955,9 +24606,9 @@ export const RateCardUpdateSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Codpercent'
+            title: 'Codchargesmin'
         },
-        codMinCharge: {
+        awbCharges: {
             anyOf: [
                 {
                     type: 'number'
@@ -23970,33 +24621,18 @@ export const RateCardUpdateSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Codmincharge'
+            title: 'Awbcharges'
         },
-        fuelSurchargePercent: {
+        remarks: {
             anyOf: [
                 {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                    type: 'string'
                 },
                 {
                     type: 'null'
                 }
             ],
-            title: 'Fuelsurchargepercent'
-        },
-        isDefault: {
-            anyOf: [
-                {
-                    type: 'boolean'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Isdefault'
+            title: 'Remarks'
         }
     },
     type: 'object',
@@ -24146,6 +24782,11 @@ export const ReturnCreateSchema = {
         type: {
             '$ref': '#/components/schemas/ReturnType'
         },
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
         orderId: {
             anyOf: [
                 {
@@ -24193,7 +24834,7 @@ export const ReturnCreateSchema = {
         }
     },
     type: 'object',
-    required: ['returnNo', 'type'],
+    required: ['returnNo', 'type', 'companyId'],
     title: 'ReturnCreate',
     description: 'Schema for creating return'
 } as const;
@@ -24880,6 +25521,10 @@ export const SKUCreateSchema = {
                     type: 'number'
                 },
                 {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
                     type: 'null'
                 }
             ],
@@ -24889,6 +25534,10 @@ export const SKUCreateSchema = {
             anyOf: [
                 {
                     type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
                 },
                 {
                     type: 'null'
@@ -24902,6 +25551,10 @@ export const SKUCreateSchema = {
                     type: 'number'
                 },
                 {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
                     type: 'null'
                 }
             ],
@@ -24911,6 +25564,10 @@ export const SKUCreateSchema = {
             anyOf: [
                 {
                     type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
                 },
                 {
                     type: 'null'
@@ -24924,6 +25581,10 @@ export const SKUCreateSchema = {
                     type: 'number'
                 },
                 {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
                     type: 'null'
                 }
             ],
@@ -24933,6 +25594,10 @@ export const SKUCreateSchema = {
             anyOf: [
                 {
                     type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
                 },
                 {
                     type: 'null'
@@ -24946,6 +25611,10 @@ export const SKUCreateSchema = {
                     type: 'number'
                 },
                 {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
                     type: 'null'
                 }
             ],
@@ -24957,10 +25626,46 @@ export const SKUCreateSchema = {
                     type: 'number'
                 },
                 {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
                     type: 'null'
                 }
             ],
             title: 'Taxrate'
+        },
+        isSerialised: {
+            type: 'boolean',
+            title: 'Isserialised',
+            default: false
+        },
+        isBatchTracked: {
+            type: 'boolean',
+            title: 'Isbatchtracked',
+            default: false
+        },
+        reorderLevel: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Reorderlevel'
+        },
+        reorderQty: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Reorderqty'
         },
         barcodes: {
             items: {
@@ -24977,11 +25682,40 @@ export const SKUCreateSchema = {
             type: 'array',
             title: 'Images',
             default: []
+        },
+        attributes: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Attributes'
+        },
+        valuationMethod: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Valuationmethod'
+        },
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
         }
     },
     type: 'object',
-    required: ['code', 'name'],
-    title: 'SKUCreate'
+    required: ['code', 'name', 'companyId'],
+    title: 'SKUCreate',
+    description: 'Schema for creating a new SKU'
 } as const;
 
 export const SKUResponseSchema = {
@@ -26128,6 +26862,28 @@ export const ServicePincodeCreateSchema = {
             format: 'uuid',
             title: 'Transporterid'
         },
+        city: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'City'
+        },
+        state: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'State'
+        },
         zoneCode: {
             anyOf: [
                 {
@@ -26153,6 +26909,22 @@ export const ServicePincodeCreateSchema = {
             type: 'boolean',
             title: 'Prepaidavailable',
             default: true
+        },
+        reverseAvailable: {
+            type: 'boolean',
+            title: 'Reverseavailable',
+            default: false
+        },
+        estimatedDays: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Estimateddays'
         }
     },
     type: 'object',
@@ -26172,6 +26944,28 @@ export const ServicePincodeResponseSchema = {
             format: 'uuid',
             title: 'Transporterid'
         },
+        city: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'City'
+        },
+        state: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'State'
+        },
         zoneCode: {
             anyOf: [
                 {
@@ -26198,6 +26992,22 @@ export const ServicePincodeResponseSchema = {
             title: 'Prepaidavailable',
             default: true
         },
+        reverseAvailable: {
+            type: 'boolean',
+            title: 'Reverseavailable',
+            default: false
+        },
+        estimatedDays: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Estimateddays'
+        },
         id: {
             type: 'string',
             format: 'uuid',
@@ -26207,16 +27017,43 @@ export const ServicePincodeResponseSchema = {
             type: 'string',
             format: 'date-time',
             title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
         }
     },
     type: 'object',
-    required: ['pincode', 'transporterId', 'id', 'createdAt'],
+    required: ['pincode', 'transporterId', 'id', 'createdAt', 'updatedAt'],
     title: 'ServicePincodeResponse',
     description: 'Service Pincode response schema'
 } as const;
 
 export const ServicePincodeUpdateSchema = {
     properties: {
+        city: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'City'
+        },
+        state: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'State'
+        },
         zoneCode: {
             anyOf: [
                 {
@@ -26260,6 +27097,28 @@ export const ServicePincodeUpdateSchema = {
                 }
             ],
             title: 'Prepaidavailable'
+        },
+        reverseAvailable: {
+            anyOf: [
+                {
+                    type: 'boolean'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Reverseavailable'
+        },
+        estimatedDays: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Estimateddays'
         }
     },
     type: 'object',
@@ -27600,13 +28459,29 @@ export const ShippingAllocationRuleUpdateSchema = {
 
 export const ShippingRuleCreateSchema = {
     properties: {
-        code: {
-            type: 'string',
-            title: 'Code'
+        ruleNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Ruleno'
         },
         name: {
             type: 'string',
             title: 'Name'
+        },
+        type: {
+            type: 'string',
+            title: 'Type'
+        },
+        priority: {
+            type: 'integer',
+            title: 'Priority',
+            default: 0
         },
         description: {
             anyOf: [
@@ -27619,27 +28494,6 @@ export const ShippingRuleCreateSchema = {
             ],
             title: 'Description'
         },
-        type: {
-            type: 'string',
-            title: 'Type'
-        },
-        locationId: {
-            anyOf: [
-                {
-                    type: 'string',
-                    format: 'uuid'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Locationid'
-        },
-        priority: {
-            type: 'integer',
-            title: 'Priority',
-            default: 0
-        },
         transporterId: {
             anyOf: [
                 {
@@ -27651,40 +28505,6 @@ export const ShippingRuleCreateSchema = {
                 }
             ],
             title: 'Transporterid'
-        },
-        rateCardId: {
-            anyOf: [
-                {
-                    type: 'string',
-                    format: 'uuid'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Ratecardid'
-        },
-        channel: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Channel'
-        },
-        paymentMode: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Paymentmode'
         },
         minWeight: {
             anyOf: [
@@ -27716,52 +28536,137 @@ export const ShippingRuleCreateSchema = {
             ],
             title: 'Maxweight'
         },
-        minValue: {
+        fromPincodes: {
             anyOf: [
                 {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                    items: {
+                        type: 'string'
+                    },
+                    type: 'array'
                 },
                 {
                     type: 'null'
                 }
             ],
-            title: 'Minvalue'
+            title: 'Frompincodes'
         },
-        maxValue: {
+        toPincodes: {
             anyOf: [
                 {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                    items: {
+                        type: 'string'
+                    },
+                    type: 'array'
                 },
                 {
                     type: 'null'
                 }
             ],
-            title: 'Maxvalue'
+            title: 'Topincodes'
+        },
+        channels: {
+            anyOf: [
+                {
+                    items: {
+                        type: 'string'
+                    },
+                    type: 'array'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Channels'
+        },
+        orderTypes: {
+            anyOf: [
+                {
+                    items: {
+                        type: 'string'
+                    },
+                    type: 'array'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Ordertypes'
+        },
+        paymentModes: {
+            anyOf: [
+                {
+                    items: {
+                        type: 'string'
+                    },
+                    type: 'array'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Paymentmodes'
+        },
+        effectiveFrom: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Effectivefrom'
+        },
+        effectiveTo: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Effectiveto'
         }
     },
     type: 'object',
-    required: ['code', 'name', 'type'],
+    required: ['name', 'type'],
     title: 'ShippingRuleCreate',
     description: 'Shipping Rule creation schema'
 } as const;
 
 export const ShippingRuleResponseSchema = {
     properties: {
-        code: {
-            type: 'string',
-            title: 'Code'
+        ruleNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Ruleno'
         },
         name: {
             type: 'string',
             title: 'Name'
+        },
+        type: {
+            type: 'string',
+            title: 'Type'
+        },
+        status: {
+            type: 'string',
+            title: 'Status',
+            default: 'DRAFT'
+        },
+        priority: {
+            type: 'integer',
+            title: 'Priority',
+            default: 0
         },
         description: {
             anyOf: [
@@ -27773,37 +28678,6 @@ export const ShippingRuleResponseSchema = {
                 }
             ],
             title: 'Description'
-        },
-        type: {
-            type: 'string',
-            title: 'Type'
-        },
-        companyId: {
-            type: 'string',
-            format: 'uuid',
-            title: 'Companyid'
-        },
-        locationId: {
-            anyOf: [
-                {
-                    type: 'string',
-                    format: 'uuid'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Locationid'
-        },
-        priority: {
-            type: 'integer',
-            title: 'Priority',
-            default: 0
-        },
-        isActive: {
-            type: 'boolean',
-            title: 'Isactive',
-            default: true
         },
         transporterId: {
             anyOf: [
@@ -27817,7 +28691,7 @@ export const ShippingRuleResponseSchema = {
             ],
             title: 'Transporterid'
         },
-        rateCardId: {
+        companyId: {
             anyOf: [
                 {
                     type: 'string',
@@ -27827,29 +28701,7 @@ export const ShippingRuleResponseSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Ratecardid'
-        },
-        channel: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Channel'
-        },
-        paymentMode: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Paymentmode'
+            title: 'Companyid'
         },
         minWeight: {
             anyOf: [
@@ -27875,42 +28727,77 @@ export const ShippingRuleResponseSchema = {
             ],
             title: 'Maxweight'
         },
-        minValue: {
+        fromPincodes: {
             anyOf: [
                 {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                    items: {
+                        type: 'string'
+                    },
+                    type: 'array'
                 },
                 {
                     type: 'null'
                 }
             ],
-            title: 'Minvalue'
+            title: 'Frompincodes'
         },
-        maxValue: {
+        toPincodes: {
             anyOf: [
                 {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                    items: {
+                        type: 'string'
+                    },
+                    type: 'array'
                 },
                 {
                     type: 'null'
                 }
             ],
-            title: 'Maxvalue'
+            title: 'Topincodes'
         },
-        deliveryType: {
+        channels: {
             anyOf: [
                 {
-                    type: 'string'
+                    items: {
+                        type: 'string'
+                    },
+                    type: 'array'
                 },
                 {
                     type: 'null'
                 }
             ],
-            title: 'Deliverytype'
+            title: 'Channels'
         },
-        validFrom: {
+        orderTypes: {
+            anyOf: [
+                {
+                    items: {
+                        type: 'string'
+                    },
+                    type: 'array'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Ordertypes'
+        },
+        paymentModes: {
+            anyOf: [
+                {
+                    items: {
+                        type: 'string'
+                    },
+                    type: 'array'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Paymentmodes'
+        },
+        effectiveFrom: {
             anyOf: [
                 {
                     type: 'string',
@@ -27920,9 +28807,9 @@ export const ShippingRuleResponseSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Validfrom'
+            title: 'Effectivefrom'
         },
-        validTo: {
+        effectiveTo: {
             anyOf: [
                 {
                     type: 'string',
@@ -27932,7 +28819,12 @@ export const ShippingRuleResponseSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Validto'
+            title: 'Effectiveto'
+        },
+        isActive: {
+            type: 'boolean',
+            title: 'Isactive',
+            default: true
         },
         id: {
             type: 'string',
@@ -27951,7 +28843,7 @@ export const ShippingRuleResponseSchema = {
         }
     },
     type: 'object',
-    required: ['code', 'name', 'type', 'companyId', 'id', 'createdAt', 'updatedAt'],
+    required: ['name', 'type', 'id', 'createdAt', 'updatedAt'],
     title: 'ShippingRuleResponse',
     description: 'Shipping Rule response schema'
 } as const;
@@ -27969,17 +28861,6 @@ export const ShippingRuleUpdateSchema = {
             ],
             title: 'Name'
         },
-        description: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Description'
-        },
         priority: {
             anyOf: [
                 {
@@ -27990,6 +28871,17 @@ export const ShippingRuleUpdateSchema = {
                 }
             ],
             title: 'Priority'
+        },
+        description: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Description'
         },
         isActive: {
             anyOf: [
@@ -28014,17 +28906,47 @@ export const ShippingRuleUpdateSchema = {
             ],
             title: 'Transporterid'
         },
-        rateCardId: {
+        minWeight: {
             anyOf: [
                 {
+                    type: 'number'
+                },
+                {
                     type: 'string',
-                    format: 'uuid'
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
                 },
                 {
                     type: 'null'
                 }
             ],
-            title: 'Ratecardid'
+            title: 'Minweight'
+        },
+        maxWeight: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Maxweight'
+        },
+        effectiveTo: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Effectiveto'
         }
     },
     type: 'object',
@@ -31191,25 +32113,17 @@ export const ZoneUpdateSchema = {
     title: 'ZoneUpdate'
 } as const;
 
-export const app__api__routes__inventory__InventoryResponseSchema = {
+export const app__api__routes__brands__BrandCreateSchema = {
     properties: {
-        id: {
+        code: {
             type: 'string',
-            title: 'Id'
+            title: 'Code'
         },
-        quantity: {
-            type: 'integer',
-            title: 'Quantity'
+        name: {
+            type: 'string',
+            title: 'Name'
         },
-        reservedQty: {
-            type: 'integer',
-            title: 'Reservedqty'
-        },
-        availableQty: {
-            type: 'integer',
-            title: 'Availableqty'
-        },
-        batchNo: {
+        logo: {
             anyOf: [
                 {
                     type: 'string'
@@ -31218,13 +32132,9 @@ export const app__api__routes__inventory__InventoryResponseSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Batchno'
+            title: 'Logo'
         },
-        skuId: {
-            type: 'string',
-            title: 'Skuid'
-        },
-        skuCode: {
+        description: {
             anyOf: [
                 {
                     type: 'string'
@@ -31233,9 +32143,9 @@ export const app__api__routes__inventory__InventoryResponseSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Skucode'
+            title: 'Description'
         },
-        skuName: {
+        contactPerson: {
             anyOf: [
                 {
                     type: 'string'
@@ -31244,23 +32154,60 @@ export const app__api__routes__inventory__InventoryResponseSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Skuname'
+            title: 'Contactperson'
         },
-        binId: {
-            type: 'string',
-            title: 'Binid'
+        contactEmail: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Contactemail'
         },
-        locationId: {
-            type: 'string',
-            title: 'Locationid'
+        contactPhone: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Contactphone'
+        },
+        website: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Website'
+        },
+        address: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Address'
         }
     },
     type: 'object',
-    required: ['id', 'quantity', 'reservedQty', 'availableQty', 'skuId', 'binId', 'locationId'],
-    title: 'InventoryResponse'
+    required: ['code', 'name'],
+    title: 'BrandCreate'
 } as const;
 
-export const app__api__routes__locations__LocationUpdateSchema = {
+export const app__api__routes__brands__BrandUpdateSchema = {
     properties: {
         name: {
             anyOf: [
@@ -31272,6 +32219,209 @@ export const app__api__routes__locations__LocationUpdateSchema = {
                 }
             ],
             title: 'Name'
+        },
+        logo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Logo'
+        },
+        description: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Description'
+        },
+        contactPerson: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Contactperson'
+        },
+        contactEmail: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Contactemail'
+        },
+        contactPhone: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Contactphone'
+        },
+        website: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Website'
+        },
+        isActive: {
+            anyOf: [
+                {
+                    type: 'boolean'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Isactive'
+        }
+    },
+    type: 'object',
+    title: 'BrandUpdate'
+} as const;
+
+export const app__api__routes__inventory__InventoryAdjustmentSchema = {
+    properties: {
+        skuId: {
+            type: 'string',
+            title: 'Skuid'
+        },
+        binId: {
+            type: 'string',
+            title: 'Binid'
+        },
+        quantity: {
+            type: 'integer',
+            title: 'Quantity'
+        },
+        reason: {
+            type: 'string',
+            title: 'Reason'
+        },
+        batchNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Batchno'
+        }
+    },
+    type: 'object',
+    required: ['skuId', 'binId', 'quantity', 'reason'],
+    title: 'InventoryAdjustment'
+} as const;
+
+export const app__api__routes__locations__LocationCreateSchema = {
+    properties: {
+        code: {
+            type: 'string',
+            title: 'Code'
+        },
+        name: {
+            type: 'string',
+            title: 'Name'
+        },
+        type: {
+            '$ref': '#/components/schemas/LocationType'
+        },
+        address: {
+            additionalProperties: true,
+            type: 'object',
+            title: 'Address'
+        },
+        contactPerson: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Contactperson'
+        },
+        contactPhone: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Contactphone'
+        },
+        contactEmail: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Contactemail'
+        },
+        gst: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Gst'
+        }
+    },
+    type: 'object',
+    required: ['code', 'name', 'type', 'address'],
+    title: 'LocationCreate'
+} as const;
+
+export const app__api__routes__locations__LocationResponseSchema = {
+    properties: {
+        id: {
+            type: 'string',
+            title: 'Id'
+        },
+        code: {
+            type: 'string',
+            title: 'Code'
+        },
+        name: {
+            type: 'string',
+            title: 'Name'
+        },
+        type: {
+            type: 'string',
+            title: 'Type'
         },
         address: {
             anyOf: [
@@ -31318,20 +32468,330 @@ export const app__api__routes__locations__LocationUpdateSchema = {
             ],
             title: 'Contactemail'
         },
-        isActive: {
+        gst: {
             anyOf: [
                 {
-                    type: 'boolean'
+                    type: 'string'
                 },
                 {
                     type: 'null'
                 }
             ],
+            title: 'Gst'
+        },
+        isActive: {
+            type: 'boolean',
             title: 'Isactive'
+        },
+        companyId: {
+            type: 'string',
+            title: 'Companyid'
         }
     },
     type: 'object',
-    title: 'LocationUpdate'
+    required: ['id', 'code', 'name', 'type', 'isActive', 'companyId'],
+    title: 'LocationResponse'
+} as const;
+
+export const app__api__routes__orders__OrderItemCreateSchema = {
+    properties: {
+        skuId: {
+            type: 'string',
+            title: 'Skuid'
+        },
+        quantity: {
+            type: 'integer',
+            title: 'Quantity'
+        },
+        unitPrice: {
+            type: 'number',
+            title: 'Unitprice'
+        },
+        taxAmount: {
+            type: 'number',
+            title: 'Taxamount',
+            default: 0
+        },
+        discount: {
+            type: 'number',
+            title: 'Discount',
+            default: 0
+        }
+    },
+    type: 'object',
+    required: ['skuId', 'quantity', 'unitPrice'],
+    title: 'OrderItemCreate'
+} as const;
+
+export const app__api__routes__orders__OrderResponseSchema = {
+    properties: {
+        id: {
+            type: 'string',
+            title: 'Id'
+        },
+        orderNo: {
+            type: 'string',
+            title: 'Orderno'
+        },
+        externalOrderNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalorderno'
+        },
+        channel: {
+            type: 'string',
+            title: 'Channel'
+        },
+        orderType: {
+            type: 'string',
+            title: 'Ordertype'
+        },
+        paymentMode: {
+            type: 'string',
+            title: 'Paymentmode'
+        },
+        status: {
+            type: 'string',
+            title: 'Status'
+        },
+        customerName: {
+            type: 'string',
+            title: 'Customername'
+        },
+        customerPhone: {
+            type: 'string',
+            title: 'Customerphone'
+        },
+        customerEmail: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Customeremail'
+        },
+        subtotal: {
+            type: 'number',
+            title: 'Subtotal'
+        },
+        taxAmount: {
+            type: 'number',
+            title: 'Taxamount'
+        },
+        shippingCharges: {
+            type: 'number',
+            title: 'Shippingcharges'
+        },
+        discount: {
+            type: 'number',
+            title: 'Discount'
+        },
+        totalAmount: {
+            type: 'number',
+            title: 'Totalamount'
+        },
+        orderDate: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Orderdate'
+        },
+        locationId: {
+            type: 'string',
+            title: 'Locationid'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        }
+    },
+    type: 'object',
+    required: ['id', 'orderNo', 'channel', 'orderType', 'paymentMode', 'status', 'customerName', 'customerPhone', 'subtotal', 'taxAmount', 'shippingCharges', 'discount', 'totalAmount', 'orderDate', 'locationId', 'createdAt'],
+    title: 'OrderResponse'
+} as const;
+
+export const app__api__routes__skus__SKUCreateSchema = {
+    properties: {
+        code: {
+            type: 'string',
+            title: 'Code'
+        },
+        name: {
+            type: 'string',
+            title: 'Name'
+        },
+        description: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Description'
+        },
+        category: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Category'
+        },
+        subCategory: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Subcategory'
+        },
+        brand: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Brand'
+        },
+        hsn: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Hsn'
+        },
+        weight: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Weight'
+        },
+        length: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Length'
+        },
+        width: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Width'
+        },
+        height: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Height'
+        },
+        mrp: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Mrp'
+        },
+        costPrice: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Costprice'
+        },
+        sellingPrice: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Sellingprice'
+        },
+        taxRate: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Taxrate'
+        },
+        barcodes: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Barcodes',
+            default: []
+        },
+        images: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Images',
+            default: []
+        }
+    },
+    type: 'object',
+    required: ['code', 'name'],
+    title: 'SKUCreate'
 } as const;
 
 export const app__api__routes__skus__SKUResponseSchema = {
@@ -31668,110 +33128,7 @@ export const app__api__routes__users__UserResponseSchema = {
     title: 'UserResponse'
 } as const;
 
-export const app__models__company__LocationCreateSchema = {
-    properties: {
-        code: {
-            type: 'string',
-            title: 'Code'
-        },
-        name: {
-            type: 'string',
-            title: 'Name'
-        },
-        type: {
-            '$ref': '#/components/schemas/LocationType'
-        },
-        address: {
-            anyOf: [
-                {
-                    additionalProperties: true,
-                    type: 'object'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Address'
-        },
-        contactPerson: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Contactperson'
-        },
-        contactPhone: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Contactphone'
-        },
-        contactEmail: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Contactemail'
-        },
-        gst: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Gst'
-        },
-        settings: {
-            anyOf: [
-                {
-                    additionalProperties: true,
-                    type: 'object'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Settings'
-        },
-        valuationMethod: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Valuationmethod'
-        },
-        companyId: {
-            type: 'string',
-            format: 'uuid',
-            title: 'Companyid'
-        }
-    },
-    type: 'object',
-    required: ['code', 'name', 'type', 'companyId'],
-    title: 'LocationCreate'
-} as const;
-
-export const app__models__company__LocationResponseSchema = {
+export const app__models__brand__BrandResponseSchema = {
     properties: {
         id: {
             type: 'string',
@@ -31786,8 +33143,155 @@ export const app__models__company__LocationResponseSchema = {
             type: 'string',
             title: 'Name'
         },
+        logo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Logo'
+        },
+        description: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Description'
+        },
+        contactPerson: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Contactperson'
+        },
+        contactEmail: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Contactemail'
+        },
+        contactPhone: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Contactphone'
+        },
+        website: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Website'
+        },
+        address: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Address'
+        },
+        settings: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Settings'
+        },
+        isActive: {
+            type: 'boolean',
+            title: 'Isactive'
+        },
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        }
+    },
+    type: 'object',
+    required: ['id', 'code', 'name', 'isActive', 'companyId', 'createdAt', 'updatedAt'],
+    title: 'BrandResponse',
+    description: 'Schema for brand API responses'
+} as const;
+
+export const app__models__company__LocationUpdateSchema = {
+    properties: {
+        code: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Code'
+        },
+        name: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Name'
+        },
         type: {
-            '$ref': '#/components/schemas/LocationType'
+            anyOf: [
+                {
+                    '$ref': '#/components/schemas/LocationType'
+                },
+                {
+                    type: 'null'
+                }
+            ]
         },
         address: {
             anyOf: [
@@ -31869,54 +33373,35 @@ export const app__models__company__LocationResponseSchema = {
             title: 'Valuationmethod'
         },
         isActive: {
-            type: 'boolean',
+            anyOf: [
+                {
+                    type: 'boolean'
+                },
+                {
+                    type: 'null'
+                }
+            ],
             title: 'Isactive'
-        },
-        companyId: {
-            type: 'string',
-            format: 'uuid',
-            title: 'Companyid'
-        },
-        createdAt: {
-            type: 'string',
-            format: 'date-time',
-            title: 'Createdat'
-        },
-        updatedAt: {
-            type: 'string',
-            format: 'date-time',
-            title: 'Updatedat'
         }
     },
     type: 'object',
-    required: ['id', 'code', 'name', 'type', 'isActive', 'companyId', 'createdAt', 'updatedAt'],
-    title: 'LocationResponse'
+    title: 'LocationUpdate'
 } as const;
 
-export const app__models__inventory__InventoryAdjustmentSchema = {
+export const app__models__inventory__InventoryResponseSchema = {
     properties: {
-        skuId: {
+        id: {
             type: 'string',
             format: 'uuid',
-            title: 'Skuid'
+            title: 'Id'
         },
-        binId: {
-            type: 'string',
-            format: 'uuid',
-            title: 'Binid'
-        },
-        locationId: {
-            type: 'string',
-            format: 'uuid',
-            title: 'Locationid'
-        },
-        adjustmentQty: {
+        quantity: {
             type: 'integer',
-            title: 'Adjustmentqty'
+            title: 'Quantity'
         },
-        reason: {
-            type: 'string',
-            title: 'Reason'
+        reservedQty: {
+            type: 'integer',
+            title: 'Reservedqty'
         },
         batchNo: {
             anyOf: [
@@ -31928,6 +33413,65 @@ export const app__models__inventory__InventoryAdjustmentSchema = {
                 }
             ],
             title: 'Batchno'
+        },
+        lotNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Lotno'
+        },
+        expiryDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Expirydate'
+        },
+        mfgDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Mfgdate'
+        },
+        mrp: {
+            anyOf: [
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Mrp'
+        },
+        costPrice: {
+            anyOf: [
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Costprice'
         },
         serialNumbers: {
             anyOf: [
@@ -31943,22 +33487,62 @@ export const app__models__inventory__InventoryAdjustmentSchema = {
             ],
             title: 'Serialnumbers'
         },
-        remarks: {
+        valuationMethod: {
             anyOf: [
                 {
-                    type: 'string'
+                    '$ref': '#/components/schemas/InventoryValuationMethod'
+                },
+                {
+                    type: 'null'
+                }
+            ]
+        },
+        fifoSequence: {
+            anyOf: [
+                {
+                    type: 'integer'
                 },
                 {
                     type: 'null'
                 }
             ],
-            title: 'Remarks'
+            title: 'Fifosequence'
+        },
+        skuId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Skuid'
+        },
+        binId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Binid'
+        },
+        locationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Locationid'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        },
+        availableQty: {
+            type: 'integer',
+            title: 'Availableqty',
+            default: 0
         }
     },
     type: 'object',
-    required: ['skuId', 'binId', 'locationId', 'adjustmentQty', 'reason'],
-    title: 'InventoryAdjustment',
-    description: 'Schema for inventory adjustment'
+    required: ['id', 'quantity', 'reservedQty', 'skuId', 'binId', 'locationId', 'createdAt', 'updatedAt'],
+    title: 'InventoryResponse',
+    description: 'Schema for inventory API responses'
 } as const;
 
 export const app__models__order__OrderCreateSchema = {
@@ -32206,657 +33790,6 @@ export const app__models__order__OrderCreateSchema = {
     required: ['orderNo', 'channel', 'paymentMode', 'customerName', 'customerPhone', 'shippingAddress', 'subtotal', 'taxAmount', 'totalAmount', 'orderDate', 'locationId'],
     title: 'OrderCreate',
     description: 'Schema for creating an order'
-} as const;
-
-export const app__models__order__OrderItemCreateSchema = {
-    properties: {
-        orderId: {
-            type: 'string',
-            format: 'uuid',
-            title: 'Orderid'
-        },
-        skuId: {
-            type: 'string',
-            format: 'uuid',
-            title: 'Skuid'
-        },
-        externalItemId: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Externalitemid'
-        },
-        quantity: {
-            type: 'integer',
-            title: 'Quantity'
-        },
-        unitPrice: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                }
-            ],
-            title: 'Unitprice'
-        },
-        taxAmount: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                }
-            ],
-            title: 'Taxamount'
-        },
-        discount: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                }
-            ],
-            title: 'Discount',
-            default: '0'
-        },
-        totalPrice: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                }
-            ],
-            title: 'Totalprice'
-        },
-        serialNumbers: {
-            items: {
-                type: 'string'
-            },
-            type: 'array',
-            title: 'Serialnumbers',
-            default: []
-        },
-        batchNo: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Batchno'
-        }
-    },
-    type: 'object',
-    required: ['orderId', 'skuId', 'quantity', 'unitPrice', 'taxAmount', 'totalPrice'],
-    title: 'OrderItemCreate',
-    description: 'Schema for creating order item'
-} as const;
-
-export const app__models__order__OrderResponseSchema = {
-    properties: {
-        id: {
-            type: 'string',
-            format: 'uuid',
-            title: 'Id'
-        },
-        orderNo: {
-            type: 'string',
-            title: 'Orderno'
-        },
-        externalOrderNo: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Externalorderno'
-        },
-        channel: {
-            '$ref': '#/components/schemas/Channel'
-        },
-        orderType: {
-            '$ref': '#/components/schemas/OrderType'
-        },
-        paymentMode: {
-            '$ref': '#/components/schemas/PaymentMode'
-        },
-        status: {
-            '$ref': '#/components/schemas/OrderStatus'
-        },
-        customerName: {
-            type: 'string',
-            title: 'Customername'
-        },
-        customerPhone: {
-            type: 'string',
-            title: 'Customerphone'
-        },
-        customerEmail: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Customeremail'
-        },
-        shippingAddress: {
-            additionalProperties: true,
-            type: 'object',
-            title: 'Shippingaddress'
-        },
-        billingAddress: {
-            anyOf: [
-                {
-                    additionalProperties: true,
-                    type: 'object'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Billingaddress'
-        },
-        subtotal: {
-            type: 'string',
-            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
-            title: 'Subtotal'
-        },
-        taxAmount: {
-            type: 'string',
-            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
-            title: 'Taxamount'
-        },
-        shippingCharges: {
-            type: 'string',
-            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
-            title: 'Shippingcharges'
-        },
-        discount: {
-            type: 'string',
-            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
-            title: 'Discount'
-        },
-        codCharges: {
-            type: 'string',
-            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
-            title: 'Codcharges'
-        },
-        totalAmount: {
-            type: 'string',
-            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
-            title: 'Totalamount'
-        },
-        orderDate: {
-            type: 'string',
-            format: 'date-time',
-            title: 'Orderdate'
-        },
-        shipByDate: {
-            anyOf: [
-                {
-                    type: 'string',
-                    format: 'date-time'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Shipbydate'
-        },
-        promisedDate: {
-            anyOf: [
-                {
-                    type: 'string',
-                    format: 'date-time'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Promiseddate'
-        },
-        priority: {
-            type: 'integer',
-            title: 'Priority',
-            default: 0
-        },
-        tags: {
-            items: {
-                type: 'string'
-            },
-            type: 'array',
-            title: 'Tags',
-            default: []
-        },
-        remarks: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Remarks'
-        },
-        locationId: {
-            type: 'string',
-            format: 'uuid',
-            title: 'Locationid'
-        },
-        companyId: {
-            type: 'string',
-            format: 'uuid',
-            title: 'Companyid'
-        },
-        customerId: {
-            anyOf: [
-                {
-                    type: 'string',
-                    format: 'uuid'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Customerid'
-        },
-        paymentTermType: {
-            anyOf: [
-                {
-                    '$ref': '#/components/schemas/PaymentTermType'
-                },
-                {
-                    type: 'null'
-                }
-            ]
-        },
-        paymentTermDays: {
-            anyOf: [
-                {
-                    type: 'integer'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Paymenttermdays'
-        },
-        creditDueDate: {
-            anyOf: [
-                {
-                    type: 'string',
-                    format: 'date-time'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Creditduedate'
-        },
-        poNumber: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Ponumber'
-        },
-        gstInvoiceNo: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Gstinvoiceno'
-        },
-        gstInvoiceDate: {
-            anyOf: [
-                {
-                    type: 'string',
-                    format: 'date-time'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Gstinvoicedate'
-        },
-        eWayBillNo: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Ewaybillno'
-        },
-        irnNo: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Irnno'
-        },
-        createdAt: {
-            type: 'string',
-            format: 'date-time',
-            title: 'Createdat'
-        },
-        updatedAt: {
-            type: 'string',
-            format: 'date-time',
-            title: 'Updatedat'
-        }
-    },
-    type: 'object',
-    required: ['id', 'orderNo', 'channel', 'orderType', 'paymentMode', 'status', 'customerName', 'customerPhone', 'shippingAddress', 'subtotal', 'taxAmount', 'shippingCharges', 'discount', 'codCharges', 'totalAmount', 'orderDate', 'locationId', 'companyId', 'createdAt', 'updatedAt'],
-    title: 'OrderResponse',
-    description: 'Schema for order API responses'
-} as const;
-
-export const app__models__sku__SKUCreateSchema = {
-    properties: {
-        code: {
-            type: 'string',
-            title: 'Code'
-        },
-        name: {
-            type: 'string',
-            title: 'Name'
-        },
-        description: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Description'
-        },
-        category: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Category'
-        },
-        subCategory: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Subcategory'
-        },
-        brand: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Brand'
-        },
-        hsn: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Hsn'
-        },
-        weight: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Weight'
-        },
-        length: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Length'
-        },
-        width: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Width'
-        },
-        height: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Height'
-        },
-        mrp: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Mrp'
-        },
-        costPrice: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Costprice'
-        },
-        sellingPrice: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Sellingprice'
-        },
-        taxRate: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Taxrate'
-        },
-        isSerialised: {
-            type: 'boolean',
-            title: 'Isserialised',
-            default: false
-        },
-        isBatchTracked: {
-            type: 'boolean',
-            title: 'Isbatchtracked',
-            default: false
-        },
-        reorderLevel: {
-            anyOf: [
-                {
-                    type: 'integer'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Reorderlevel'
-        },
-        reorderQty: {
-            anyOf: [
-                {
-                    type: 'integer'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Reorderqty'
-        },
-        barcodes: {
-            items: {
-                type: 'string'
-            },
-            type: 'array',
-            title: 'Barcodes',
-            default: []
-        },
-        images: {
-            items: {
-                type: 'string'
-            },
-            type: 'array',
-            title: 'Images',
-            default: []
-        },
-        attributes: {
-            anyOf: [
-                {
-                    additionalProperties: true,
-                    type: 'object'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Attributes'
-        },
-        valuationMethod: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Valuationmethod'
-        },
-        companyId: {
-            type: 'string',
-            format: 'uuid',
-            title: 'Companyid'
-        }
-    },
-    type: 'object',
-    required: ['code', 'name', 'companyId'],
-    title: 'SKUCreate',
-    description: 'Schema for creating a new SKU'
 } as const;
 
 export const app__models__user__UserUpdateSchema = {

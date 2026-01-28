@@ -126,6 +126,7 @@ export type AWBResponse = {
     usedFor?: (string | null);
     id: string;
     createdAt: string;
+    updatedAt: string;
 };
 
 /**
@@ -389,7 +390,7 @@ export type B2BConsigneeUpdate = {
  * B2B Credit Transaction creation schema
  */
 export type B2BCreditTransactionCreate = {
-    type: CreditTransactionType;
+    type: string;
     customerId: string;
     amount: (number | string);
     orderId?: (string | null);
@@ -404,8 +405,8 @@ export type B2BCreditTransactionCreate = {
  * B2B Credit Transaction response schema
  */
 export type B2BCreditTransactionResponse = {
-    transactionNo: string;
-    type: CreditTransactionType;
+    transactionNo?: (string | null);
+    type: string;
     customerId: string;
     amount: string;
     balanceBefore: string;
@@ -419,6 +420,7 @@ export type B2BCreditTransactionResponse = {
     createdById?: (string | null);
     id: string;
     createdAt: string;
+    updatedAt: string;
 };
 
 /**
@@ -611,6 +613,19 @@ export const BookingType = {
     FTL: 'FTL'
 } as const;
 
+/**
+ * Brief brand info for lists and references
+ */
+export type BrandBrief = {
+    id: string;
+    code: string;
+    name: string;
+    logo?: (string | null);
+};
+
+/**
+ * Schema for creating a new brand
+ */
 export type BrandCreate = {
     code: string;
     name: string;
@@ -623,6 +638,10 @@ export type BrandCreate = {
     address?: ({
     [key: string]: unknown;
 } | null);
+    settings?: ({
+    [key: string]: unknown;
+} | null);
+    companyId: string;
 };
 
 export type BrandResponse = {
@@ -639,7 +658,11 @@ export type BrandResponse = {
     companyId: string;
 };
 
+/**
+ * Schema for updating a brand
+ */
 export type BrandUpdate = {
+    code?: (string | null);
     name?: (string | null);
     logo?: (string | null);
     description?: (string | null);
@@ -647,6 +670,12 @@ export type BrandUpdate = {
     contactEmail?: (string | null);
     contactPhone?: (string | null);
     website?: (string | null);
+    address?: ({
+    [key: string]: unknown;
+} | null);
+    settings?: ({
+    [key: string]: unknown;
+} | null);
     isActive?: (boolean | null);
 };
 
@@ -1190,11 +1219,11 @@ export type CompanyBrief = {
 };
 
 export type CompanyCreate = {
-    code: string;
+    code?: (string | null);
     name: string;
     legalName?: (string | null);
-    gst?: (string | null);
-    pan?: (string | null);
+    gst: string;
+    pan: string;
     cin?: (string | null);
     logo?: (string | null);
     email?: (string | null);
@@ -1273,24 +1302,6 @@ export const CreditStatus = {
     EXHAUSTED: 'EXHAUSTED',
     ON_HOLD: 'ON_HOLD',
     OVERDUE: 'OVERDUE'
-} as const;
-
-/**
- * Credit transaction types
- */
-export type CreditTransactionType = 'CREDIT_LIMIT_SET' | 'CREDIT_LIMIT_INCREASE' | 'CREDIT_LIMIT_DECREASE' | 'ORDER_PLACED' | 'ORDER_CANCELLED' | 'PAYMENT_RECEIVED' | 'REFUND';
-
-/**
- * Credit transaction types
- */
-export const CreditTransactionType = {
-    CREDIT_LIMIT_SET: 'CREDIT_LIMIT_SET',
-    CREDIT_LIMIT_INCREASE: 'CREDIT_LIMIT_INCREASE',
-    CREDIT_LIMIT_DECREASE: 'CREDIT_LIMIT_DECREASE',
-    ORDER_PLACED: 'ORDER_PLACED',
-    ORDER_CANCELLED: 'ORDER_CANCELLED',
-    PAYMENT_RECEIVED: 'PAYMENT_RECEIVED',
-    REFUND: 'REFUND'
 } as const;
 
 /**
@@ -2457,12 +2468,18 @@ export type InboundUpdate = {
     completedAt?: (string | null);
 };
 
+/**
+ * Schema for inventory adjustment
+ */
 export type InventoryAdjustment = {
     skuId: string;
     binId: string;
-    quantity: number;
+    locationId: string;
+    adjustmentQty: number;
     reason: string;
     batchNo?: (string | null);
+    serialNumbers?: (Array<(string)> | null);
+    remarks?: (string | null);
 };
 
 /**
@@ -2565,28 +2582,17 @@ export type InventoryMovementResponse = {
     createdAt: string;
 };
 
-/**
- * Schema for inventory API responses
- */
 export type InventoryResponse = {
     id: string;
     quantity: number;
     reservedQty: number;
+    availableQty: number;
     batchNo?: (string | null);
-    lotNo?: (string | null);
-    expiryDate?: (string | null);
-    mfgDate?: (string | null);
-    mrp?: (string | null);
-    costPrice?: (string | null);
-    serialNumbers?: (Array<(string)> | null);
-    valuationMethod?: (InventoryValuationMethod | null);
-    fifoSequence?: (number | null);
     skuId: string;
+    skuCode?: (string | null);
+    skuName?: (string | null);
     binId: string;
     locationId: string;
-    createdAt: string;
-    updatedAt: string;
-    availableQty?: number;
 };
 
 /**
@@ -2722,20 +2728,6 @@ export type LocationCreate = {
     code: string;
     name: string;
     type: LocationType;
-    address: {
-        [key: string]: unknown;
-    };
-    contactPerson?: (string | null);
-    contactPhone?: (string | null);
-    contactEmail?: (string | null);
-    gst?: (string | null);
-};
-
-export type LocationResponse = {
-    id: string;
-    code: string;
-    name: string;
-    type: string;
     address?: ({
     [key: string]: unknown;
 } | null);
@@ -2743,8 +2735,33 @@ export type LocationResponse = {
     contactPhone?: (string | null);
     contactEmail?: (string | null);
     gst?: (string | null);
+    settings?: ({
+    [key: string]: unknown;
+} | null);
+    valuationMethod?: (string | null);
+    companyId: string;
+};
+
+export type LocationResponse = {
+    id: string;
+    code: string;
+    name: string;
+    type: LocationType;
+    address?: ({
+    [key: string]: unknown;
+} | null);
+    contactPerson?: (string | null);
+    contactPhone?: (string | null);
+    contactEmail?: (string | null);
+    gst?: (string | null);
+    settings?: ({
+    [key: string]: unknown;
+} | null);
+    valuationMethod?: (string | null);
     isActive: boolean;
     companyId: string;
+    createdAt: string;
+    updatedAt: string;
 };
 
 /**
@@ -2763,20 +2780,13 @@ export const LocationType = {
 } as const;
 
 export type LocationUpdate = {
-    code?: (string | null);
     name?: (string | null);
-    type?: (LocationType | null);
     address?: ({
     [key: string]: unknown;
 } | null);
     contactPerson?: (string | null);
     contactPhone?: (string | null);
     contactEmail?: (string | null);
-    gst?: (string | null);
-    settings?: ({
-    [key: string]: unknown;
-} | null);
-    valuationMethod?: (string | null);
     isActive?: (boolean | null);
 };
 
@@ -2934,6 +2944,7 @@ export type ManifestBrief = {
 export type ManifestCreate = {
     manifestNo: string;
     transporterId: string;
+    companyId: string;
     vehicleNo?: (string | null);
     driverName?: (string | null);
     driverPhone?: (string | null);
@@ -2946,6 +2957,7 @@ export type ManifestResponse = {
     id: string;
     manifestNo: string;
     transporterId: string;
+    companyId: string;
     status: ManifestStatus;
     vehicleNo?: (string | null);
     driverName?: (string | null);
@@ -3200,7 +3212,7 @@ export type OrderCreate = {
     billingAddress?: ({
     [key: string]: unknown;
 } | null);
-    items: Array<OrderItemCreate>;
+    items: Array<app__api__routes__orders__OrderItemCreate>;
     locationId: string;
     externalOrderNo?: (string | null);
     remarks?: (string | null);
@@ -3267,12 +3279,20 @@ export type OrderImportUpdate = {
 } | null);
 };
 
+/**
+ * Schema for creating order item
+ */
 export type OrderItemCreate = {
+    orderId: string;
     skuId: string;
+    externalItemId?: (string | null);
     quantity: number;
-    unitPrice: number;
-    taxAmount?: number;
-    discount?: number;
+    unitPrice: (number | string);
+    taxAmount: (number | string);
+    discount?: (number | string);
+    totalPrice: (number | string);
+    serialNumbers?: Array<(string)>;
+    batchNo?: (string | null);
 };
 
 /**
@@ -3311,25 +3331,51 @@ export type OrderItemUpdate = {
     serialNumbers?: (Array<(string)> | null);
 };
 
+/**
+ * Schema for order API responses
+ */
 export type OrderResponse = {
     id: string;
     orderNo: string;
     externalOrderNo?: (string | null);
-    channel: string;
-    orderType: string;
-    paymentMode: string;
-    status: string;
+    channel: Channel;
+    orderType: OrderType;
+    paymentMode: PaymentMode;
+    status: OrderStatus;
     customerName: string;
     customerPhone: string;
     customerEmail?: (string | null);
-    subtotal: number;
-    taxAmount: number;
-    shippingCharges: number;
-    discount: number;
-    totalAmount: number;
+    shippingAddress: {
+        [key: string]: unknown;
+    };
+    billingAddress?: ({
+    [key: string]: unknown;
+} | null);
+    subtotal: string;
+    taxAmount: string;
+    shippingCharges: string;
+    discount: string;
+    codCharges: string;
+    totalAmount: string;
     orderDate: string;
+    shipByDate?: (string | null);
+    promisedDate?: (string | null);
+    priority?: number;
+    tags?: Array<(string)>;
+    remarks?: (string | null);
     locationId: string;
+    companyId: string;
+    customerId?: (string | null);
+    paymentTermType?: (PaymentTermType | null);
+    paymentTermDays?: (number | null);
+    creditDueDate?: (string | null);
+    poNumber?: (string | null);
+    gstInvoiceNo?: (string | null);
+    gstInvoiceDate?: (string | null);
+    eWayBillNo?: (string | null);
+    irnNo?: (string | null);
     createdAt: string;
+    updatedAt: string;
 };
 
 /**
@@ -3827,15 +3873,13 @@ export type PincodePerformanceResponse = {
  * Price List creation schema
  */
 export type PriceListCreate = {
-    code: string;
+    code?: (string | null);
     name: string;
     description?: (string | null);
-    currency?: string;
-    validFrom?: (string | null);
-    validTo?: (string | null);
-    isDefault?: boolean;
-    isActive?: boolean;
-    companyId: string;
+    effectiveFrom?: (string | null);
+    effectiveTo?: (string | null);
+    basedOnMRP?: boolean;
+    roundingMethod?: (string | null);
 };
 
 /**
@@ -3843,10 +3887,11 @@ export type PriceListCreate = {
  */
 export type PriceListItemCreate = {
     skuId: string;
-    unitPrice: (number | string);
-    minQty?: (number | null);
-    maxQty?: (number | null);
+    fixedPrice?: (number | string | null);
     discountPercent?: (number | string | null);
+    markup?: (number | string | null);
+    minOrderQty?: (number | null);
+    maxOrderQty?: (number | null);
 };
 
 /**
@@ -3855,12 +3900,11 @@ export type PriceListItemCreate = {
 export type PriceListItemResponse = {
     priceListId: string;
     skuId: string;
-    unitPrice: string;
-    minQty?: number;
-    maxQty?: (number | null);
+    fixedPrice?: (string | null);
     discountPercent?: (string | null);
-    validFrom?: (string | null);
-    validTo?: (string | null);
+    markup?: (string | null);
+    minOrderQty?: (number | null);
+    maxOrderQty?: (number | null);
     id: string;
     createdAt: string;
     updatedAt: string;
@@ -3870,25 +3914,26 @@ export type PriceListItemResponse = {
  * Price List Item update schema
  */
 export type PriceListItemUpdate = {
-    unitPrice?: (number | string | null);
-    minQty?: (number | null);
-    maxQty?: (number | null);
+    fixedPrice?: (number | string | null);
     discountPercent?: (number | string | null);
+    markup?: (number | string | null);
+    minOrderQty?: (number | null);
+    maxOrderQty?: (number | null);
 };
 
 /**
  * Price List response schema
  */
 export type PriceListResponse = {
-    code: string;
+    code?: (string | null);
     name: string;
     description?: (string | null);
-    currency?: string;
-    validFrom?: (string | null);
-    validTo?: (string | null);
-    isDefault?: boolean;
+    effectiveFrom?: (string | null);
+    effectiveTo?: (string | null);
+    basedOnMRP?: boolean;
+    roundingMethod?: (string | null);
+    companyId?: (string | null);
     isActive?: boolean;
-    companyId: string;
     id: string;
     createdAt: string;
     updatedAt: string;
@@ -3901,10 +3946,10 @@ export type PriceListUpdate = {
     code?: (string | null);
     name?: (string | null);
     description?: (string | null);
-    currency?: (string | null);
-    validFrom?: (string | null);
-    validTo?: (string | null);
-    isDefault?: (boolean | null);
+    effectiveFrom?: (string | null);
+    effectiveTo?: (string | null);
+    basedOnMRP?: (boolean | null);
+    roundingMethod?: (string | null);
     isActive?: (boolean | null);
 };
 
@@ -4446,16 +4491,19 @@ export const QCType = {
  */
 export type QuotationCreate = {
     customerId: string;
+    locationId?: (string | null);
+    validFrom?: (string | null);
     validUntil?: (string | null);
     paymentTermType?: (string | null);
     paymentTermDays?: (number | null);
+    specialTerms?: (string | null);
+    remarks?: (string | null);
     shippingAddress?: ({
     [key: string]: unknown;
 } | null);
     billingAddress?: ({
     [key: string]: unknown;
 } | null);
-    remarks?: (string | null);
     items?: (Array<QuotationItemCreate> | null);
 };
 
@@ -4464,11 +4512,13 @@ export type QuotationCreate = {
  */
 export type QuotationItemCreate = {
     skuId: string;
+    skuCode?: (string | null);
+    skuName?: (string | null);
     quantity: number;
+    listPrice?: (number | string | null);
     unitPrice: (number | string);
-    taxRate?: (number | string | null);
-    discount?: (number | string | null);
     discountPercent?: (number | string | null);
+    taxPercent?: (number | string | null);
     remarks?: (string | null);
 };
 
@@ -4478,47 +4528,56 @@ export type QuotationItemCreate = {
 export type QuotationItemResponse = {
     quotationId: string;
     skuId: string;
+    skuCode?: (string | null);
+    skuName?: (string | null);
     quantity?: number;
+    listPrice?: (string | null);
     unitPrice: string;
-    taxRate?: (string | null);
-    taxAmount?: string;
-    discount?: string;
     discountPercent?: (string | null);
+    discountAmount?: string;
+    taxPercent?: (string | null);
+    taxAmount?: string;
     totalPrice?: string;
     remarks?: (string | null);
     id: string;
-    createdAt: string;
-    updatedAt: string;
 };
 
 /**
  * Quotation response schema
  */
 export type QuotationResponse = {
-    quotationNo: string;
+    quotationNo?: (string | null);
     customerId: string;
-    companyId: string;
+    companyId?: (string | null);
+    locationId?: (string | null);
     status?: string;
+    validFrom?: (string | null);
     validUntil?: (string | null);
     subtotal?: string;
+    discountAmount?: string;
     taxAmount?: string;
-    discount?: string;
+    shippingCharges?: string;
     totalAmount?: string;
     paymentTermType?: (string | null);
     paymentTermDays?: (number | null);
+    specialTerms?: (string | null);
+    remarks?: (string | null);
     shippingAddress?: ({
     [key: string]: unknown;
 } | null);
     billingAddress?: ({
     [key: string]: unknown;
 } | null);
-    remarks?: (string | null);
-    internalNotes?: (string | null);
+    requiresApproval?: boolean;
+    approvalLevel?: (number | null);
     approvedById?: (string | null);
     approvedAt?: (string | null);
+    rejectedById?: (string | null);
+    rejectedAt?: (string | null);
     rejectionReason?: (string | null);
-    convertedToOrderId?: (string | null);
+    convertedOrderId?: (string | null);
     convertedAt?: (string | null);
+    createdById?: (string | null);
     id: string;
     createdAt: string;
     updatedAt: string;
@@ -4530,36 +4589,36 @@ export type QuotationResponse = {
  */
 export type QuotationUpdate = {
     status?: (string | null);
+    validFrom?: (string | null);
     validUntil?: (string | null);
     paymentTermType?: (string | null);
     paymentTermDays?: (number | null);
+    specialTerms?: (string | null);
+    remarks?: (string | null);
     shippingAddress?: ({
     [key: string]: unknown;
 } | null);
     billingAddress?: ({
     [key: string]: unknown;
 } | null);
-    remarks?: (string | null);
-    internalNotes?: (string | null);
 };
 
 /**
  * Rate Card creation schema
  */
 export type RateCardCreate = {
-    code: string;
+    rateCardNo?: (string | null);
     name: string;
-    description?: (string | null);
-    transporterId: string;
     type?: string;
-    validFrom: string;
-    validTo?: (string | null);
-    baseWeight?: (number | string);
-    baseRate: (number | string);
-    additionalWeightRate: (number | string);
-    codPercent?: (number | string | null);
-    codMinCharge?: (number | string | null);
-    fuelSurchargePercent?: (number | string | null);
+    transporterId: string;
+    effectiveFrom?: (string | null);
+    effectiveTo?: (string | null);
+    baseCost?: (number | string | null);
+    fuelSurcharge?: (number | string | null);
+    codChargesPercent?: (number | string | null);
+    codChargesMin?: (number | string | null);
+    awbCharges?: (number | string | null);
+    remarks?: (string | null);
     slabs?: (Array<RateCardSlabCreate> | null);
 };
 
@@ -4567,25 +4626,24 @@ export type RateCardCreate = {
  * Rate Card response schema
  */
 export type RateCardResponse = {
-    code: string;
+    rateCardNo?: (string | null);
     name: string;
-    description?: (string | null);
-    transporterId: string;
-    companyId: string;
     type?: string;
     status?: string;
-    validFrom: string;
-    validTo?: (string | null);
-    baseWeight?: string;
-    baseRate?: string;
-    additionalWeightRate?: string;
-    codPercent?: (string | null);
-    codMinCharge?: (string | null);
-    fuelSurchargePercent?: (string | null);
-    minCharge?: (string | null);
-    maxWeight?: (string | null);
-    volumetricFactor?: number;
-    isDefault?: boolean;
+    transporterId: string;
+    companyId?: (string | null);
+    effectiveFrom?: (string | null);
+    effectiveTo?: (string | null);
+    baseCost?: (string | null);
+    fuelSurcharge?: (string | null);
+    codChargesPercent?: (string | null);
+    codChargesMin?: (string | null);
+    codChargesCap?: (string | null);
+    awbCharges?: (string | null);
+    rtoChargesPercent?: (string | null);
+    remarks?: (string | null);
+    approvedAt?: (string | null);
+    approvedBy?: (string | null);
     id: string;
     createdAt: string;
     updatedAt: string;
@@ -4598,9 +4656,12 @@ export type RateCardResponse = {
 export type RateCardSlabCreate = {
     fromWeight: (number | string);
     toWeight: (number | string);
-    zoneCode?: (string | null);
+    zone?: (string | null);
+    fromPincode?: (string | null);
+    toPincode?: (string | null);
     rate: (number | string);
-    additionalRate?: (number | string | null);
+    additionalWeightRate?: (number | string | null);
+    minCharge?: (number | string | null);
 };
 
 /**
@@ -4610,11 +4671,12 @@ export type RateCardSlabResponse = {
     rateCardId: string;
     fromWeight: string;
     toWeight: string;
-    zoneCode?: (string | null);
+    zone?: (string | null);
+    fromPincode?: (string | null);
+    toPincode?: (string | null);
     rate: string;
-    additionalRate?: (string | null);
+    additionalWeightRate?: (string | null);
     minCharge?: (string | null);
-    maxCharge?: (string | null);
     id: string;
 };
 
@@ -4623,16 +4685,14 @@ export type RateCardSlabResponse = {
  */
 export type RateCardUpdate = {
     name?: (string | null);
-    description?: (string | null);
     status?: (string | null);
-    validTo?: (string | null);
-    baseWeight?: (number | string | null);
-    baseRate?: (number | string | null);
-    additionalWeightRate?: (number | string | null);
-    codPercent?: (number | string | null);
-    codMinCharge?: (number | string | null);
-    fuelSurchargePercent?: (number | string | null);
-    isDefault?: (boolean | null);
+    effectiveTo?: (string | null);
+    baseCost?: (number | string | null);
+    fuelSurcharge?: (number | string | null);
+    codChargesPercent?: (number | string | null);
+    codChargesMin?: (number | string | null);
+    awbCharges?: (number | string | null);
+    remarks?: (string | null);
 };
 
 /**
@@ -4685,6 +4745,7 @@ export type ReturnBrief = {
 export type ReturnCreate = {
     returnNo: string;
     type: ReturnType;
+    companyId: string;
     orderId?: (string | null);
     awbNo?: (string | null);
     reason?: (string | null);
@@ -4826,6 +4887,9 @@ export type SKUBrief = {
     isActive: boolean;
 };
 
+/**
+ * Schema for creating a new SKU
+ */
 export type SKUCreate = {
     code: string;
     name: string;
@@ -4834,16 +4898,25 @@ export type SKUCreate = {
     subCategory?: (string | null);
     brand?: (string | null);
     hsn?: (string | null);
-    weight?: (number | null);
-    length?: (number | null);
-    width?: (number | null);
-    height?: (number | null);
-    mrp?: (number | null);
-    costPrice?: (number | null);
-    sellingPrice?: (number | null);
-    taxRate?: (number | null);
+    weight?: (number | string | null);
+    length?: (number | string | null);
+    width?: (number | string | null);
+    height?: (number | string | null);
+    mrp?: (number | string | null);
+    costPrice?: (number | string | null);
+    sellingPrice?: (number | string | null);
+    taxRate?: (number | string | null);
+    isSerialised?: boolean;
+    isBatchTracked?: boolean;
+    reorderLevel?: (number | null);
+    reorderQty?: (number | null);
     barcodes?: Array<(string)>;
     images?: Array<(string)>;
+    attributes?: ({
+    [key: string]: unknown;
+} | null);
+    valuationMethod?: (string | null);
+    companyId: string;
 };
 
 /**
@@ -5022,10 +5095,14 @@ export type SequenceResponse = {
 export type ServicePincodeCreate = {
     pincode: string;
     transporterId: string;
+    city?: (string | null);
+    state?: (string | null);
     zoneCode?: (string | null);
     isServiceable?: boolean;
     codAvailable?: boolean;
     prepaidAvailable?: boolean;
+    reverseAvailable?: boolean;
+    estimatedDays?: (number | null);
 };
 
 /**
@@ -5034,22 +5111,31 @@ export type ServicePincodeCreate = {
 export type ServicePincodeResponse = {
     pincode: string;
     transporterId: string;
+    city?: (string | null);
+    state?: (string | null);
     zoneCode?: (string | null);
     isServiceable?: boolean;
     codAvailable?: boolean;
     prepaidAvailable?: boolean;
+    reverseAvailable?: boolean;
+    estimatedDays?: (number | null);
     id: string;
     createdAt: string;
+    updatedAt: string;
 };
 
 /**
  * Service Pincode update schema
  */
 export type ServicePincodeUpdate = {
+    city?: (string | null);
+    state?: (string | null);
     zoneCode?: (string | null);
     isServiceable?: (boolean | null);
     codAvailable?: (boolean | null);
     prepaidAvailable?: (boolean | null);
+    reverseAvailable?: (boolean | null);
+    estimatedDays?: (number | null);
 };
 
 /**
@@ -5271,45 +5357,45 @@ export type ShippingAllocationRuleUpdate = {
  * Shipping Rule creation schema
  */
 export type ShippingRuleCreate = {
-    code: string;
+    ruleNo?: (string | null);
     name: string;
-    description?: (string | null);
     type: string;
-    locationId?: (string | null);
     priority?: number;
+    description?: (string | null);
     transporterId?: (string | null);
-    rateCardId?: (string | null);
-    channel?: (string | null);
-    paymentMode?: (string | null);
     minWeight?: (number | string | null);
     maxWeight?: (number | string | null);
-    minValue?: (number | string | null);
-    maxValue?: (number | string | null);
+    fromPincodes?: (Array<(string)> | null);
+    toPincodes?: (Array<(string)> | null);
+    channels?: (Array<(string)> | null);
+    orderTypes?: (Array<(string)> | null);
+    paymentModes?: (Array<(string)> | null);
+    effectiveFrom?: (string | null);
+    effectiveTo?: (string | null);
 };
 
 /**
  * Shipping Rule response schema
  */
 export type ShippingRuleResponse = {
-    code: string;
+    ruleNo?: (string | null);
     name: string;
-    description?: (string | null);
     type: string;
-    companyId: string;
-    locationId?: (string | null);
+    status?: string;
     priority?: number;
-    isActive?: boolean;
+    description?: (string | null);
     transporterId?: (string | null);
-    rateCardId?: (string | null);
-    channel?: (string | null);
-    paymentMode?: (string | null);
+    companyId?: (string | null);
     minWeight?: (string | null);
     maxWeight?: (string | null);
-    minValue?: (string | null);
-    maxValue?: (string | null);
-    deliveryType?: (string | null);
-    validFrom?: (string | null);
-    validTo?: (string | null);
+    fromPincodes?: (Array<(string)> | null);
+    toPincodes?: (Array<(string)> | null);
+    channels?: (Array<(string)> | null);
+    orderTypes?: (Array<(string)> | null);
+    paymentModes?: (Array<(string)> | null);
+    effectiveFrom?: (string | null);
+    effectiveTo?: (string | null);
+    isActive?: boolean;
     id: string;
     createdAt: string;
     updatedAt: string;
@@ -5320,11 +5406,13 @@ export type ShippingRuleResponse = {
  */
 export type ShippingRuleUpdate = {
     name?: (string | null);
-    description?: (string | null);
     priority?: (number | null);
+    description?: (string | null);
     isActive?: (boolean | null);
     transporterId?: (string | null);
-    rateCardId?: (string | null);
+    minWeight?: (number | string | null);
+    maxWeight?: (number | string | null);
+    effectiveTo?: (string | null);
 };
 
 /**
@@ -6061,28 +6149,115 @@ export type ZoneUpdate = {
     isActive?: (boolean | null);
 };
 
-export type app__api__routes__inventory__InventoryResponse = {
-    id: string;
-    quantity: number;
-    reservedQty: number;
-    availableQty: number;
-    batchNo?: (string | null);
-    skuId: string;
-    skuCode?: (string | null);
-    skuName?: (string | null);
-    binId: string;
-    locationId: string;
+export type app__api__routes__brands__BrandCreate = {
+    code: string;
+    name: string;
+    logo?: (string | null);
+    description?: (string | null);
+    contactPerson?: (string | null);
+    contactEmail?: (string | null);
+    contactPhone?: (string | null);
+    website?: (string | null);
+    address?: ({
+    [key: string]: unknown;
+} | null);
 };
 
-export type app__api__routes__locations__LocationUpdate = {
+export type app__api__routes__brands__BrandUpdate = {
     name?: (string | null);
+    logo?: (string | null);
+    description?: (string | null);
+    contactPerson?: (string | null);
+    contactEmail?: (string | null);
+    contactPhone?: (string | null);
+    website?: (string | null);
+    isActive?: (boolean | null);
+};
+
+export type app__api__routes__inventory__InventoryAdjustment = {
+    skuId: string;
+    binId: string;
+    quantity: number;
+    reason: string;
+    batchNo?: (string | null);
+};
+
+export type app__api__routes__locations__LocationCreate = {
+    code: string;
+    name: string;
+    type: LocationType;
+    address: {
+        [key: string]: unknown;
+    };
+    contactPerson?: (string | null);
+    contactPhone?: (string | null);
+    contactEmail?: (string | null);
+    gst?: (string | null);
+};
+
+export type app__api__routes__locations__LocationResponse = {
+    id: string;
+    code: string;
+    name: string;
+    type: string;
     address?: ({
     [key: string]: unknown;
 } | null);
     contactPerson?: (string | null);
     contactPhone?: (string | null);
     contactEmail?: (string | null);
-    isActive?: (boolean | null);
+    gst?: (string | null);
+    isActive: boolean;
+    companyId: string;
+};
+
+export type app__api__routes__orders__OrderItemCreate = {
+    skuId: string;
+    quantity: number;
+    unitPrice: number;
+    taxAmount?: number;
+    discount?: number;
+};
+
+export type app__api__routes__orders__OrderResponse = {
+    id: string;
+    orderNo: string;
+    externalOrderNo?: (string | null);
+    channel: string;
+    orderType: string;
+    paymentMode: string;
+    status: string;
+    customerName: string;
+    customerPhone: string;
+    customerEmail?: (string | null);
+    subtotal: number;
+    taxAmount: number;
+    shippingCharges: number;
+    discount: number;
+    totalAmount: number;
+    orderDate: string;
+    locationId: string;
+    createdAt: string;
+};
+
+export type app__api__routes__skus__SKUCreate = {
+    code: string;
+    name: string;
+    description?: (string | null);
+    category?: (string | null);
+    subCategory?: (string | null);
+    brand?: (string | null);
+    hsn?: (string | null);
+    weight?: (number | null);
+    length?: (number | null);
+    width?: (number | null);
+    height?: (number | null);
+    mrp?: (number | null);
+    costPrice?: (number | null);
+    sellingPrice?: (number | null);
+    taxRate?: (number | null);
+    barcodes?: Array<(string)>;
+    images?: Array<(string)>;
 };
 
 export type app__api__routes__skus__SKUResponse = {
@@ -6133,58 +6308,71 @@ export type app__api__routes__users__UserResponse = {
     companyId?: (string | null);
 };
 
-export type app__models__company__LocationCreate = {
-    code: string;
-    name: string;
-    type: LocationType;
-    address?: ({
-    [key: string]: unknown;
-} | null);
-    contactPerson?: (string | null);
-    contactPhone?: (string | null);
-    contactEmail?: (string | null);
-    gst?: (string | null);
-    settings?: ({
-    [key: string]: unknown;
-} | null);
-    valuationMethod?: (string | null);
-    companyId: string;
-};
-
-export type app__models__company__LocationResponse = {
+/**
+ * Schema for brand API responses
+ */
+export type app__models__brand__BrandResponse = {
     id: string;
     code: string;
     name: string;
-    type: LocationType;
+    logo?: (string | null);
+    description?: (string | null);
+    contactPerson?: (string | null);
+    contactEmail?: (string | null);
+    contactPhone?: (string | null);
+    website?: (string | null);
     address?: ({
     [key: string]: unknown;
 } | null);
-    contactPerson?: (string | null);
-    contactPhone?: (string | null);
-    contactEmail?: (string | null);
-    gst?: (string | null);
     settings?: ({
     [key: string]: unknown;
 } | null);
-    valuationMethod?: (string | null);
     isActive: boolean;
     companyId: string;
     createdAt: string;
     updatedAt: string;
 };
 
+export type app__models__company__LocationUpdate = {
+    code?: (string | null);
+    name?: (string | null);
+    type?: (LocationType | null);
+    address?: ({
+    [key: string]: unknown;
+} | null);
+    contactPerson?: (string | null);
+    contactPhone?: (string | null);
+    contactEmail?: (string | null);
+    gst?: (string | null);
+    settings?: ({
+    [key: string]: unknown;
+} | null);
+    valuationMethod?: (string | null);
+    isActive?: (boolean | null);
+};
+
 /**
- * Schema for inventory adjustment
+ * Schema for inventory API responses
  */
-export type app__models__inventory__InventoryAdjustment = {
+export type app__models__inventory__InventoryResponse = {
+    id: string;
+    quantity: number;
+    reservedQty: number;
+    batchNo?: (string | null);
+    lotNo?: (string | null);
+    expiryDate?: (string | null);
+    mfgDate?: (string | null);
+    mrp?: (string | null);
+    costPrice?: (string | null);
+    serialNumbers?: (Array<(string)> | null);
+    valuationMethod?: (InventoryValuationMethod | null);
+    fifoSequence?: (number | null);
     skuId: string;
     binId: string;
     locationId: string;
-    adjustmentQty: number;
-    reason: string;
-    batchNo?: (string | null);
-    serialNumbers?: (Array<(string)> | null);
-    remarks?: (string | null);
+    createdAt: string;
+    updatedAt: string;
+    availableQty?: number;
 };
 
 /**
@@ -6222,101 +6410,6 @@ export type app__models__order__OrderCreate = {
     paymentTermType?: (PaymentTermType | null);
     paymentTermDays?: (number | null);
     poNumber?: (string | null);
-};
-
-/**
- * Schema for creating order item
- */
-export type app__models__order__OrderItemCreate = {
-    orderId: string;
-    skuId: string;
-    externalItemId?: (string | null);
-    quantity: number;
-    unitPrice: (number | string);
-    taxAmount: (number | string);
-    discount?: (number | string);
-    totalPrice: (number | string);
-    serialNumbers?: Array<(string)>;
-    batchNo?: (string | null);
-};
-
-/**
- * Schema for order API responses
- */
-export type app__models__order__OrderResponse = {
-    id: string;
-    orderNo: string;
-    externalOrderNo?: (string | null);
-    channel: Channel;
-    orderType: OrderType;
-    paymentMode: PaymentMode;
-    status: OrderStatus;
-    customerName: string;
-    customerPhone: string;
-    customerEmail?: (string | null);
-    shippingAddress: {
-        [key: string]: unknown;
-    };
-    billingAddress?: ({
-    [key: string]: unknown;
-} | null);
-    subtotal: string;
-    taxAmount: string;
-    shippingCharges: string;
-    discount: string;
-    codCharges: string;
-    totalAmount: string;
-    orderDate: string;
-    shipByDate?: (string | null);
-    promisedDate?: (string | null);
-    priority?: number;
-    tags?: Array<(string)>;
-    remarks?: (string | null);
-    locationId: string;
-    companyId: string;
-    customerId?: (string | null);
-    paymentTermType?: (PaymentTermType | null);
-    paymentTermDays?: (number | null);
-    creditDueDate?: (string | null);
-    poNumber?: (string | null);
-    gstInvoiceNo?: (string | null);
-    gstInvoiceDate?: (string | null);
-    eWayBillNo?: (string | null);
-    irnNo?: (string | null);
-    createdAt: string;
-    updatedAt: string;
-};
-
-/**
- * Schema for creating a new SKU
- */
-export type app__models__sku__SKUCreate = {
-    code: string;
-    name: string;
-    description?: (string | null);
-    category?: (string | null);
-    subCategory?: (string | null);
-    brand?: (string | null);
-    hsn?: (string | null);
-    weight?: (number | string | null);
-    length?: (number | string | null);
-    width?: (number | string | null);
-    height?: (number | string | null);
-    mrp?: (number | string | null);
-    costPrice?: (number | string | null);
-    sellingPrice?: (number | string | null);
-    taxRate?: (number | string | null);
-    isSerialised?: boolean;
-    isBatchTracked?: boolean;
-    reorderLevel?: (number | null);
-    reorderQty?: (number | null);
-    barcodes?: Array<(string)>;
-    images?: Array<(string)>;
-    attributes?: ({
-    [key: string]: unknown;
-} | null);
-    valuationMethod?: (string | null);
-    companyId: string;
 };
 
 /**
@@ -6405,6 +6498,15 @@ export type DeleteUserApiV1UsersUserIdDeleteData = {
 
 export type DeleteUserApiV1UsersUserIdDeleteResponse = (void);
 
+export type GetPreviewCodeApiV1CompaniesPreviewCodeGetData = {
+    /**
+     * Company name to generate code for
+     */
+    name: string;
+};
+
+export type GetPreviewCodeApiV1CompaniesPreviewCodeGetResponse = (unknown);
+
 export type ListCompaniesApiV1CompaniesGetData = {
     isActive?: (boolean | null);
     limit?: number;
@@ -6445,6 +6547,55 @@ export type DeleteCompanyApiV1CompaniesCompanyIdDeleteData = {
 
 export type DeleteCompanyApiV1CompaniesCompanyIdDeleteResponse = (void);
 
+export type GetPreviewCodeApiV1BrandsPreviewCodeGetData = {
+    /**
+     * Brand name to generate code for
+     */
+    name: string;
+};
+
+export type GetPreviewCodeApiV1BrandsPreviewCodeGetResponse = (unknown);
+
+export type ListBrandsApiV1BrandsGetData = {
+    isActive?: (boolean | null);
+    limit?: number;
+    search?: (string | null);
+    skip?: number;
+};
+
+export type ListBrandsApiV1BrandsGetResponse = (Array<BrandBrief>);
+
+export type CreateBrandApiV1BrandsPostData = {
+    requestBody: BrandCreate;
+};
+
+export type CreateBrandApiV1BrandsPostResponse = (app__models__brand__BrandResponse);
+
+export type CountBrandsApiV1BrandsCountGetData = {
+    isActive?: (boolean | null);
+};
+
+export type CountBrandsApiV1BrandsCountGetResponse = (unknown);
+
+export type GetBrandApiV1BrandsBrandIdGetData = {
+    brandId: string;
+};
+
+export type GetBrandApiV1BrandsBrandIdGetResponse = (app__models__brand__BrandResponse);
+
+export type UpdateBrandApiV1BrandsBrandIdPatchData = {
+    brandId: string;
+    requestBody: BrandUpdate;
+};
+
+export type UpdateBrandApiV1BrandsBrandIdPatchResponse = (app__models__brand__BrandResponse);
+
+export type DeleteBrandApiV1BrandsBrandIdDeleteData = {
+    brandId: string;
+};
+
+export type DeleteBrandApiV1BrandsBrandIdDeleteResponse = (void);
+
 export type ListLocationsApiV1LocationsGetData = {
     isActive?: (boolean | null);
     limit?: number;
@@ -6456,23 +6607,23 @@ export type ListLocationsApiV1LocationsGetData = {
 export type ListLocationsApiV1LocationsGetResponse = (Array<LocationBrief>);
 
 export type CreateLocationApiV1LocationsPostData = {
-    requestBody: app__models__company__LocationCreate;
+    requestBody: LocationCreate;
 };
 
-export type CreateLocationApiV1LocationsPostResponse = (app__models__company__LocationResponse);
+export type CreateLocationApiV1LocationsPostResponse = (LocationResponse);
 
 export type GetLocationApiV1LocationsLocationIdGetData = {
     locationId: string;
 };
 
-export type GetLocationApiV1LocationsLocationIdGetResponse = (app__models__company__LocationResponse);
+export type GetLocationApiV1LocationsLocationIdGetResponse = (LocationResponse);
 
 export type UpdateLocationApiV1LocationsLocationIdPatchData = {
     locationId: string;
-    requestBody: LocationUpdate;
+    requestBody: app__models__company__LocationUpdate;
 };
 
-export type UpdateLocationApiV1LocationsLocationIdPatchResponse = (app__models__company__LocationResponse);
+export type UpdateLocationApiV1LocationsLocationIdPatchResponse = (LocationResponse);
 
 export type DeleteLocationApiV1LocationsLocationIdDeleteData = {
     locationId: string;
@@ -6634,7 +6785,7 @@ export type ListSkusApiV1SkusGetData = {
 export type ListSkusApiV1SkusGetResponse = (Array<SKUBrief>);
 
 export type CreateSkuApiV1SkusPostData = {
-    requestBody: app__models__sku__SKUCreate;
+    requestBody: SKUCreate;
 };
 
 export type CreateSkuApiV1SkusPostResponse = (SKUResponse);
@@ -6685,13 +6836,13 @@ export type ListInventoryApiV1InventoryGetData = {
     skuId?: (string | null);
 };
 
-export type ListInventoryApiV1InventoryGetResponse = (Array<InventoryResponse>);
+export type ListInventoryApiV1InventoryGetResponse = (Array<app__models__inventory__InventoryResponse>);
 
 export type CreateInventoryApiV1InventoryPostData = {
     requestBody: InventoryCreate;
 };
 
-export type CreateInventoryApiV1InventoryPostResponse = (InventoryResponse);
+export type CreateInventoryApiV1InventoryPostResponse = (app__models__inventory__InventoryResponse);
 
 export type CountInventoryApiV1InventoryCountGetData = {
     locationId?: (string | null);
@@ -6710,14 +6861,14 @@ export type GetInventoryApiV1InventoryInventoryIdGetData = {
     inventoryId: string;
 };
 
-export type GetInventoryApiV1InventoryInventoryIdGetResponse = (InventoryResponse);
+export type GetInventoryApiV1InventoryInventoryIdGetResponse = (app__models__inventory__InventoryResponse);
 
 export type UpdateInventoryApiV1InventoryInventoryIdPatchData = {
     inventoryId: string;
     requestBody: InventoryUpdate;
 };
 
-export type UpdateInventoryApiV1InventoryInventoryIdPatchResponse = (InventoryResponse);
+export type UpdateInventoryApiV1InventoryInventoryIdPatchResponse = (app__models__inventory__InventoryResponse);
 
 export type DeleteInventoryApiV1InventoryInventoryIdDeleteData = {
     inventoryId: string;
@@ -6726,10 +6877,10 @@ export type DeleteInventoryApiV1InventoryInventoryIdDeleteData = {
 export type DeleteInventoryApiV1InventoryInventoryIdDeleteResponse = (void);
 
 export type AdjustInventoryApiV1InventoryAdjustPostData = {
-    requestBody: app__models__inventory__InventoryAdjustment;
+    requestBody: InventoryAdjustment;
 };
 
-export type AdjustInventoryApiV1InventoryAdjustPostResponse = (InventoryResponse);
+export type AdjustInventoryApiV1InventoryAdjustPostResponse = (app__models__inventory__InventoryResponse);
 
 export type TransferInventoryApiV1InventoryTransferPostData = {
     requestBody: InventoryTransfer;
@@ -6758,7 +6909,7 @@ export type CreateOrderApiV1OrdersPostData = {
     requestBody: app__models__order__OrderCreate;
 };
 
-export type CreateOrderApiV1OrdersPostResponse = (app__models__order__OrderResponse);
+export type CreateOrderApiV1OrdersPostResponse = (OrderResponse);
 
 export type CountOrdersApiV1OrdersCountGetData = {
     channel?: (Channel | null);
@@ -6783,26 +6934,26 @@ export type GetOrderApiV1OrdersOrderIdGetData = {
     orderId: string;
 };
 
-export type GetOrderApiV1OrdersOrderIdGetResponse = (app__models__order__OrderResponse);
+export type GetOrderApiV1OrdersOrderIdGetResponse = (OrderResponse);
 
 export type UpdateOrderApiV1OrdersOrderIdPatchData = {
     orderId: string;
     requestBody: OrderUpdate;
 };
 
-export type UpdateOrderApiV1OrdersOrderIdPatchResponse = (app__models__order__OrderResponse);
+export type UpdateOrderApiV1OrdersOrderIdPatchResponse = (OrderResponse);
 
 export type GetOrderByNumberApiV1OrdersNumberOrderNoGetData = {
     orderNo: string;
 };
 
-export type GetOrderByNumberApiV1OrdersNumberOrderNoGetResponse = (app__models__order__OrderResponse);
+export type GetOrderByNumberApiV1OrdersNumberOrderNoGetResponse = (OrderResponse);
 
 export type CancelOrderApiV1OrdersOrderIdCancelPostData = {
     orderId: string;
 };
 
-export type CancelOrderApiV1OrdersOrderIdCancelPostResponse = (app__models__order__OrderResponse);
+export type CancelOrderApiV1OrdersOrderIdCancelPostResponse = (OrderResponse);
 
 export type ListOrderItemsApiV1OrdersOrderIdItemsGetData = {
     orderId: string;
@@ -6812,7 +6963,7 @@ export type ListOrderItemsApiV1OrdersOrderIdItemsGetResponse = (Array<OrderItemR
 
 export type CreateOrderItemApiV1OrdersOrderIdItemsPostData = {
     orderId: string;
-    requestBody: app__models__order__OrderItemCreate;
+    requestBody: OrderItemCreate;
 };
 
 export type CreateOrderItemApiV1OrdersOrderIdItemsPostResponse = (OrderItemResponse);
@@ -7084,6 +7235,7 @@ export type CountWavesApiV1WavesCountGetResponse = (unknown);
 export type ListPicklistsApiV1WavesPicklistsGetData = {
     assignedToId?: (string | null);
     limit?: number;
+    orderId?: (string | null);
     skip?: number;
     status?: (PicklistStatus | null);
 };
@@ -9911,13 +10063,13 @@ export type ListOrdersApiOrdersGetData = {
     toDate?: (string | null);
 };
 
-export type ListOrdersApiOrdersGetResponse = (Array<OrderResponse>);
+export type ListOrdersApiOrdersGetResponse = (Array<app__api__routes__orders__OrderResponse>);
 
 export type CreateOrderApiOrdersPostData = {
     requestBody: OrderCreate;
 };
 
-export type CreateOrderApiOrdersPostResponse = (OrderResponse);
+export type CreateOrderApiOrdersPostResponse = (app__api__routes__orders__OrderResponse);
 
 export type GetOrderCountsApiOrdersCountGetData = {
     locationId?: (string | null);
@@ -9929,7 +10081,7 @@ export type GetOrderApiOrdersOrderIdGetData = {
     orderId: string;
 };
 
-export type GetOrderApiOrdersOrderIdGetResponse = (OrderResponse);
+export type GetOrderApiOrdersOrderIdGetResponse = (app__api__routes__orders__OrderResponse);
 
 export type UpdateOrderStatusApiOrdersOrderIdStatusPatchData = {
     newStatus: OrderStatus;
@@ -9950,7 +10102,7 @@ export type ListSkusApiSkusGetData = {
 export type ListSkusApiSkusGetResponse = (Array<app__api__routes__skus__SKUResponse>);
 
 export type CreateSkuApiSkusPostData = {
-    requestBody: SKUCreate;
+    requestBody: app__api__routes__skus__SKUCreate;
 };
 
 export type CreateSkuApiSkusPostResponse = (app__api__routes__skus__SKUResponse);
@@ -9983,7 +10135,7 @@ export type ListInventoryApiInventoryGetData = {
     skuId?: (string | null);
 };
 
-export type ListInventoryApiInventoryGetResponse = (Array<app__api__routes__inventory__InventoryResponse>);
+export type ListInventoryApiInventoryGetResponse = (Array<InventoryResponse>);
 
 export type GetInventorySummaryApiInventorySummaryGetData = {
     locationId?: (string | null);
@@ -9992,7 +10144,7 @@ export type GetInventorySummaryApiInventorySummaryGetData = {
 export type GetInventorySummaryApiInventorySummaryGetResponse = (unknown);
 
 export type CreateAdjustmentApiInventoryAdjustmentsPostData = {
-    requestBody: InventoryAdjustment;
+    requestBody: app__api__routes__inventory__InventoryAdjustment;
 };
 
 export type CreateAdjustmentApiInventoryAdjustmentsPostResponse = (unknown);
@@ -10010,26 +10162,26 @@ export type ListLocationsApiLocationsGetData = {
     type?: (LocationType | null);
 };
 
-export type ListLocationsApiLocationsGetResponse = (Array<LocationResponse>);
+export type ListLocationsApiLocationsGetResponse = (Array<app__api__routes__locations__LocationResponse>);
 
 export type CreateLocationApiLocationsPostData = {
-    requestBody: LocationCreate;
+    requestBody: app__api__routes__locations__LocationCreate;
 };
 
-export type CreateLocationApiLocationsPostResponse = (LocationResponse);
+export type CreateLocationApiLocationsPostResponse = (app__api__routes__locations__LocationResponse);
 
 export type GetLocationApiLocationsLocationIdGetData = {
     locationId: string;
 };
 
-export type GetLocationApiLocationsLocationIdGetResponse = (LocationResponse);
+export type GetLocationApiLocationsLocationIdGetResponse = (app__api__routes__locations__LocationResponse);
 
 export type UpdateLocationApiLocationsLocationIdPatchData = {
     locationId: string;
-    requestBody: app__api__routes__locations__LocationUpdate;
+    requestBody: LocationUpdate;
 };
 
-export type UpdateLocationApiLocationsLocationIdPatchResponse = (LocationResponse);
+export type UpdateLocationApiLocationsLocationIdPatchResponse = (app__api__routes__locations__LocationResponse);
 
 export type ListBrandsApiBrandsGetData = {
     isActive?: (boolean | null);
@@ -10041,7 +10193,7 @@ export type ListBrandsApiBrandsGetData = {
 export type ListBrandsApiBrandsGetResponse = (Array<BrandResponse>);
 
 export type CreateBrandApiBrandsPostData = {
-    requestBody: BrandCreate;
+    requestBody: app__api__routes__brands__BrandCreate;
 };
 
 export type CreateBrandApiBrandsPostResponse = (BrandResponse);
@@ -10054,7 +10206,7 @@ export type GetBrandApiBrandsBrandIdGetResponse = (BrandResponse);
 
 export type UpdateBrandApiBrandsBrandIdPatchData = {
     brandId: string;
-    requestBody: BrandUpdate;
+    requestBody: app__api__routes__brands__BrandUpdate;
 };
 
 export type UpdateBrandApiBrandsBrandIdPatchResponse = (BrandResponse);

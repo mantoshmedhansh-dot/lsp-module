@@ -14,7 +14,8 @@ from ..deps import get_current_user
 router = APIRouter()
 
 
-class InventoryResponse(BaseModel):
+class LegacyInventoryResponse(BaseModel):
+    """Legacy response model - use InventoryResponse from app.models.inventory instead"""
     id: str
     quantity: int
     reservedQty: int
@@ -46,7 +47,7 @@ class InventoryMove(BaseModel):
     batchNo: Optional[str] = None
 
 
-@router.get("", response_model=List[InventoryResponse])
+@router.get("", response_model=List[LegacyInventoryResponse])
 async def list_inventory(
     page: int = Query(1, ge=1),
     pageSize: int = Query(10, ge=1, le=100),
@@ -75,7 +76,7 @@ async def list_inventory(
 
     result = []
     for inv in inventories:
-        result.append(InventoryResponse(
+        result.append(LegacyInventoryResponse(
             id=inv.id,
             quantity=inv.quantity,
             reservedQty=inv.reservedQty,

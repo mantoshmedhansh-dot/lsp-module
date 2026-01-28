@@ -13,6 +13,9 @@ import {
   X,
   Barcode,
   Copy,
+  Upload,
+  Download,
+  FileSpreadsheet,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -77,8 +80,8 @@ interface SKU {
   taxRate: number | null;
   isSerialised: boolean;
   isBatchTracked: boolean;
-  barcodes: string[];
-  images: string[];
+  barcodes: string[] | null;
+  images: string[] | null;
   createdAt: string;
 }
 
@@ -88,9 +91,9 @@ interface SKUResponse {
   page: number;
   limit: number;
   totalPages: number;
-  filters: {
-    categories: string[];
-    brands: string[];
+  filters?: {
+    categories?: string[];
+    brands?: string[];
   };
 }
 
@@ -119,6 +122,9 @@ export default function SKUMasterPage() {
   const [data, setData] = useState<SKUResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [importData, setImportData] = useState<string>("");
+  const [isImporting, setIsImporting] = useState(false);
   const [editingSku, setEditingSku] = useState<SKU | null>(null);
   const [formData, setFormData] = useState(initialFormData);
 
@@ -145,7 +151,27 @@ export default function SKUMasterPage() {
       const response = await fetch(`/api/v1/skus?${params}`);
       if (!response.ok) throw new Error("Failed to fetch SKUs");
       const result = await response.json();
-      setData(result);
+
+      // Handle both array response and paginated response
+      if (Array.isArray(result)) {
+        // API returned just an array
+        const categories = [...new Set(result.map((s: SKU) => s.category).filter(Boolean))] as string[];
+        const brands = [...new Set(result.map((s: SKU) => s.brand).filter(Boolean))] as string[];
+        setData({
+          skus: result,
+          total: result.length,
+          page: 1,
+          limit: result.length,
+          totalPages: 1,
+          filters: { categories, brands }
+        });
+      } else {
+        // API returned paginated response
+        setData({
+          ...result,
+          filters: result.filters || { categories: [], brands: [] }
+        });
+      }
     } catch (error) {
       console.error("Error fetching SKUs:", error);
       toast.error("Failed to load SKUs");
@@ -175,19 +201,20 @@ export default function SKUMasterPage() {
         category: formData.category || null,
         brand: formData.brand || null,
         hsn: formData.hsn || null,
-        weight: formData.weight || null,
-        length: formData.length || null,
-        width: formData.width || null,
-        height: formData.height || null,
-        mrp: formData.mrp || null,
-        costPrice: formData.costPrice || null,
-        sellingPrice: formData.sellingPrice || null,
-        taxRate: formData.taxRate || null,
+        weight: formData.weight ? parseFloat(formData.weight) : null,
+        length: formData.length ? parseFloat(formData.length) : null,
+        width: formData.width ? parseFloat(formData.width) : null,
+        height: formData.height ? parseFloat(formData.height) : null,
+        mrp: formData.mrp ? parseFloat(formData.mrp) : null,
+        costPrice: formData.costPrice ? parseFloat(formData.costPrice) : null,
+        sellingPrice: formData.sellingPrice ? parseFloat(formData.sellingPrice) : null,
+        taxRate: formData.taxRate ? parseFloat(formData.taxRate) : null,
         isSerialised: formData.isSerialised,
         isBatchTracked: formData.isBatchTracked,
         barcodes: formData.barcodes
           ? formData.barcodes.split(",").map((b) => b.trim())
           : [],
+        companyId: session?.user?.companyId,
       };
 
       const response = await fetch(url, {
@@ -254,7 +281,7 @@ export default function SKUMasterPage() {
       taxRate: sku.taxRate?.toString() || "",
       isSerialised: sku.isSerialised,
       isBatchTracked: sku.isBatchTracked,
-      barcodes: sku.barcodes.join(", "),
+      barcodes: sku.barcodes?.join(", ") || "",
     });
     setIsDialogOpen(true);
   }
@@ -263,6 +290,139 @@ export default function SKUMasterPage() {
     setEditingSku(null);
     setFormData(initialFormData);
     setIsDialogOpen(true);
+  }
+
+  async function handleBulkImport() {
+    if (!importData.trim()) {
+      toast.error("Please paste CSV data");
+      return;
+    }
+
+    setIsImporting(true);
+    try {
+      // Parse CSV data
+      const lines = importData.trim().split("\n");
+      const headers = lines[0].split(",").map((h) => h.trim().toLowerCase());
+
+      // Map header names to expected fields
+      const headerMap: Record<string, string> = {
+        "sku code": "code",
+        "code": "code",
+        "sku": "code",
+        "name": "name",
+        "product name": "name",
+        "description": "description",
+        "category": "category",
+        "brand": "brand",
+        "hsn": "hsn",
+        "hsn code": "hsn",
+        "mrp": "mrp",
+        "cost price": "costPrice",
+        "cost": "costPrice",
+        "selling price": "sellingPrice",
+        "price": "sellingPrice",
+        "weight": "weight",
+        "weight (g)": "weight",
+        "barcode": "barcodes",
+        "barcodes": "barcodes",
+      };
+
+      const skusToCreate = [];
+      const errors: string[] = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(",").map((v) => v.trim());
+        if (values.length < 2 || !values[0]) continue; // Skip empty lines
+
+        const skuData: Record<string, unknown> = {};
+
+        headers.forEach((header, index) => {
+          const field = headerMap[header] || header;
+          const value = values[index] || "";
+
+          if (field === "code" || field === "name" || field === "description" ||
+              field === "category" || field === "brand" || field === "hsn") {
+            skuData[field] = value || null;
+          } else if (field === "mrp" || field === "costPrice" || field === "sellingPrice" ||
+                     field === "weight" || field === "taxRate") {
+            skuData[field] = value ? parseFloat(value) : null;
+          } else if (field === "barcodes") {
+            skuData[field] = value ? value.split(";").map((b) => b.trim()) : [];
+          }
+        });
+
+        if (!skuData.code || !skuData.name) {
+          errors.push(`Row ${i + 1}: Missing required fields (code or name)`);
+          continue;
+        }
+
+        // Add companyId from session
+        skuData.companyId = session?.user?.companyId;
+        skusToCreate.push(skuData);
+      }
+
+      if (skusToCreate.length === 0) {
+        toast.error("No valid SKUs found in the data");
+        return;
+      }
+
+      // Create SKUs one by one
+      let successCount = 0;
+      let failCount = 0;
+
+      for (const sku of skusToCreate) {
+        try {
+          const response = await fetch("/api/v1/skus", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(sku),
+          });
+
+          if (response.ok) {
+            successCount++;
+          } else {
+            failCount++;
+            const error = await response.json();
+            errors.push(`${sku.code}: ${error.detail || "Failed to create"}`);
+          }
+        } catch {
+          failCount++;
+          errors.push(`${sku.code}: Network error`);
+        }
+      }
+
+      if (successCount > 0) {
+        toast.success(`Created ${successCount} SKUs`);
+        fetchSKUs();
+      }
+      if (failCount > 0) {
+        toast.error(`Failed to create ${failCount} SKUs`);
+        console.error("Import errors:", errors);
+      }
+
+      setIsImportDialogOpen(false);
+      setImportData("");
+    } catch (error) {
+      console.error("Import error:", error);
+      toast.error("Failed to parse CSV data");
+    } finally {
+      setIsImporting(false);
+    }
+  }
+
+  function downloadTemplate() {
+    const template = `SKU Code,Name,Description,Category,Brand,HSN,MRP,Cost Price,Selling Price,Weight (g),Barcode
+AQP-001,Aquapurite Purifier 10L,Water purifier with RO+UV,Water Purifiers,Aquapurite,84212110,15000,8000,12000,5000,8901234567890
+AQP-002,Aquapurite Filter Cartridge,Replacement filter cartridge,Spare Parts,Aquapurite,84219990,500,200,400,200,8901234567891`;
+
+    const blob = new Blob([template], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "sku_import_template.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Template downloaded");
   }
 
   function copyToClipboard(text: string) {
@@ -289,10 +449,16 @@ export default function SKUMasterPage() {
           </p>
         </div>
         {canManageSKUs && (
-          <Button onClick={openCreateDialog}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add SKU
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setIsImportDialogOpen(true)}>
+              <Upload className="mr-2 h-4 w-4" />
+              Import
+            </Button>
+            <Button onClick={openCreateDialog}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add SKU
+            </Button>
+          </div>
         )}
       </div>
 
@@ -326,7 +492,7 @@ export default function SKUMasterPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Categories</SelectItem>
-                  {data?.filters.categories.map((cat) => (
+                  {data?.filters?.categories?.map((cat) => (
                     <SelectItem key={cat} value={cat}>
                       {cat}
                     </SelectItem>
@@ -346,7 +512,7 @@ export default function SKUMasterPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Brands</SelectItem>
-                  {data?.filters.brands.map((brand) => (
+                  {data?.filters?.brands?.map((brand) => (
                     <SelectItem key={brand} value={brand}>
                       {brand}
                     </SelectItem>
@@ -420,7 +586,7 @@ export default function SKUMasterPage() {
                             <Copy className="h-3 w-3" />
                           </Button>
                         </div>
-                        {sku.barcodes.length > 0 && (
+                        {sku.barcodes && sku.barcodes.length > 0 && (
                           <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
                             <Barcode className="h-3 w-3" />
                             {sku.barcodes[0]}
@@ -812,6 +978,94 @@ export default function SKUMasterPage() {
               <Button type="submit">{editingSku ? "Update" : "Create"}</Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Import Dialog */}
+      <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Import SKUs</DialogTitle>
+            <DialogDescription>
+              Import multiple SKUs at once using CSV format. Download the template to see the expected format.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={downloadTemplate}>
+                <Download className="mr-2 h-4 w-4" />
+                Download Template
+              </Button>
+            </div>
+
+            {/* File Upload */}
+            <div className="grid gap-2">
+              <Label>Upload CSV File</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="file"
+                  accept=".csv,.txt"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = (event) => {
+                        const text = event.target?.result as string;
+                        setImportData(text);
+                      };
+                      reader.readAsText(file);
+                    }
+                  }}
+                  className="cursor-pointer"
+                />
+              </div>
+            </div>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">Or paste data</span>
+              </div>
+            </div>
+
+            <div className="grid gap-2">
+              <Label>Paste CSV Data</Label>
+              <textarea
+                className="min-h-[150px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 font-mono"
+                placeholder={`SKU Code,Name,Description,Category,Brand,HSN,MRP,Cost Price,Selling Price,Weight (g),Barcode
+AQP-001,Aquapurite Purifier 10L,Water purifier,Water Purifiers,Aquapurite,84212110,15000,8000,12000,5000,8901234567890`}
+                value={importData}
+                onChange={(e) => setImportData(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Required columns: SKU Code, Name. Optional: Description, Category, Brand, HSN, MRP, Cost Price, Selling Price, Weight, Barcode
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setIsImportDialogOpen(false);
+                setImportData("");
+              }}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleBulkImport} disabled={isImporting || !importData.trim()}>
+              {isImporting ? (
+                <>Importing...</>
+              ) : (
+                <>
+                  <FileSpreadsheet className="mr-2 h-4 w-4" />
+                  Import SKUs
+                </>
+              )}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

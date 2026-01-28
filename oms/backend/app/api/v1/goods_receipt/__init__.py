@@ -17,7 +17,7 @@ from app.models import (
     GoodsReceiptItem, GoodsReceiptItemCreate, GoodsReceiptItemUpdate,
     GoodsReceiptItemResponse,
     GoodsReceiptStatus, Location, User, SKU, Inventory, Bin, Zone,
-    ChannelInventoryRule, ChannelInventory
+    ChannelInventoryRule, ChannelInventory, ZoneType
 )
 from app.services.fifo_sequence import FifoSequenceService
 
@@ -473,7 +473,7 @@ def post_goods_receipt(
                 select(Bin)
                 .join(Zone)
                 .where(Zone.locationId == gr.locationId)
-                .where(Zone.type == "SALEABLE")
+                .where(Zone.type == ZoneType.SALEABLE)
                 .where(Bin.isActive == True)
                 .limit(1)
             ).first()
@@ -481,9 +481,12 @@ def post_goods_receipt(
                 target_bin_id = default_bin.id
 
         if not target_bin_id:
+            # Get SKU code for better error message
+            sku = session.exec(select(SKU).where(SKU.id == item.skuId)).first()
+            sku_info = sku.code if sku else str(item.skuId)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"No target bin specified or available for SKU {item.skuId}"
+                detail=f"No bin available in SALEABLE zone at this location for SKU {sku_info}. Please create a bin in a SALEABLE zone first."
             )
 
         # Get next FIFO sequence

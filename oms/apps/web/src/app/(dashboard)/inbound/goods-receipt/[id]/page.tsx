@@ -240,6 +240,7 @@ export default function GoodsReceiptDetailPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          goodsReceiptId: grId,
           skuId: selectedSku.id,
           expectedQty: itemForm.expectedQty,
           receivedQty: itemForm.receivedQty,
@@ -256,7 +257,10 @@ export default function GoodsReceiptDetailPage() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.detail || "Failed to add item");
+        const errorMessage = typeof error.detail === 'string'
+          ? error.detail
+          : (error.detail?.msg || error.message || JSON.stringify(error.detail) || "Failed to add item");
+        throw new Error(errorMessage);
       }
 
       toast.success("Item added successfully");
@@ -265,7 +269,10 @@ export default function GoodsReceiptDetailPage() {
       fetchGoodsReceipt();
     } catch (error) {
       console.error("Error adding item:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to add item");
+      const errorMessage = error instanceof Error
+        ? error.message
+        : (typeof error === 'string' ? error : "Failed to add item");
+      toast.error(errorMessage);
     } finally {
       setActionLoading(null);
     }
@@ -298,7 +305,10 @@ export default function GoodsReceiptDetailPage() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.detail || `Failed to ${action} goods receipt`);
+        const errorMessage = typeof error.detail === 'string'
+          ? error.detail
+          : (error.detail?.msg || error.message || JSON.stringify(error.detail) || `Failed to ${action} goods receipt`);
+        throw new Error(errorMessage);
       }
 
       const actionLabels: Record<string, string> = {
@@ -313,7 +323,10 @@ export default function GoodsReceiptDetailPage() {
       fetchGoodsReceipt();
     } catch (error) {
       console.error(`Error ${action} goods receipt:`, error);
-      toast.error(error instanceof Error ? error.message : `Failed to ${action}`);
+      const errorMessage = error instanceof Error
+        ? error.message
+        : (typeof error === 'string' ? error : `Failed to ${action}`);
+      toast.error(errorMessage);
     } finally {
       setActionLoading(null);
     }

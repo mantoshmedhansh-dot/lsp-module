@@ -118,6 +118,22 @@ const zoneTypeColors: Record<string, string> = {
   HAZMAT: "bg-rose-500",
 };
 
+// Zone type prefixes for auto-generated codes
+const zoneTypePrefixes: Record<string, string> = {
+  SALEABLE: "SALE",
+  DAMAGED: "DMG",
+  QC: "QC",
+  RETURNS: "RET",
+  DISPATCH: "DSP",
+  RECEIVING: "RCV",
+  BULK: "BLK",
+  PICK: "PCK",
+  STAGING: "STG",
+  COLD: "CLD",
+  FROZEN: "FRZ",
+  HAZMAT: "HZM",
+};
+
 export default function ZonesPage() {
   const { data: session } = useSession();
   const [zones, setZones] = useState<Zone[]>([]);
@@ -136,7 +152,7 @@ export default function ZonesPage() {
     name: "",
     type: "SALEABLE",
     description: "",
-    temperatureType: "",
+    temperatureType: "NONE",
     minTemp: "",
     maxTemp: "",
     priority: "100",
@@ -146,6 +162,58 @@ export default function ZonesPage() {
   const canManageZones = ["SUPER_ADMIN", "ADMIN"].includes(
     session?.user?.role || ""
   );
+
+  // Auto-generate zone code and name based on location and type
+  function generateZoneCodeAndName(locationId: string, zoneType: string) {
+    const location = locations.find((l) => l.id === locationId);
+    if (!location) return { code: "", name: "" };
+
+    // Extract location short code (e.g., "NOI" from "WH-NOI-0002")
+    const locationParts = location.code.split("-");
+    const locationShortCode = locationParts.length >= 2 ? locationParts[1] : location.code.substring(0, 3).toUpperCase();
+
+    // Get zone type prefix
+    const typePrefix = zoneTypePrefixes[zoneType] || zoneType.substring(0, 3).toUpperCase();
+
+    // Count existing zones of this type at this location to generate sequence
+    const existingZonesOfType = zones.filter(
+      (z) => z.locationId === locationId && z.type === zoneType
+    );
+    const sequence = String(existingZonesOfType.length + 1).padStart(2, "0");
+
+    // Generate code: TYPE-LOCATION-SEQ (e.g., SALE-NOI-01)
+    const code = `${typePrefix}-${locationShortCode}-${sequence}`;
+
+    // Get zone type label for name
+    const zoneTypeInfo = zoneTypes.find((t) => t.value === zoneType);
+    const typeLabel = zoneTypeInfo?.label || zoneType;
+
+    // Generate name: "Type Zone - Location Name" (e.g., "Saleable Zone - Noida")
+    const name = `${typeLabel} Zone - ${location.name}`;
+
+    return { code, name };
+  }
+
+  // Update code and name when location or type changes
+  function handleLocationChange(locationId: string) {
+    const { code, name } = generateZoneCodeAndName(locationId, formData.type);
+    setFormData((prev) => ({
+      ...prev,
+      locationId,
+      code,
+      name,
+    }));
+  }
+
+  function handleTypeChange(zoneType: string) {
+    const { code, name } = generateZoneCodeAndName(formData.locationId, zoneType);
+    setFormData((prev) => ({
+      ...prev,
+      type: zoneType,
+      code,
+      name,
+    }));
+  }
 
   useEffect(() => {
     fetchLocations();
@@ -206,7 +274,7 @@ export default function ZonesPage() {
         priority: parseInt(formData.priority) || 100,
         minTemp: formData.minTemp ? parseFloat(formData.minTemp) : null,
         maxTemp: formData.maxTemp ? parseFloat(formData.maxTemp) : null,
-        temperatureType: formData.temperatureType || null,
+        temperatureType: formData.temperatureType === "NONE" ? null : formData.temperatureType,
       };
 
       const url = editingZone
@@ -262,7 +330,7 @@ export default function ZonesPage() {
       name: "",
       type: "SALEABLE",
       description: "",
-      temperatureType: "",
+      temperatureType: "NONE",
       minTemp: "",
       maxTemp: "",
       priority: "100",
@@ -277,7 +345,7 @@ export default function ZonesPage() {
       name: zone.name,
       type: zone.type,
       description: zone.description || "",
-      temperatureType: zone.temperatureType || "",
+      temperatureType: zone.temperatureType || "NONE",
       minTemp: zone.minTemp?.toString() || "",
       maxTemp: zone.maxTemp?.toString() || "",
       priority: zone.priority.toString(),
@@ -288,7 +356,21 @@ export default function ZonesPage() {
 
   function openCreateDialog() {
     setEditingZone(null);
-    resetForm();
+    // Reset form and auto-generate code/name for first location and default type
+    const defaultLocationId = locations[0]?.id || "";
+    const defaultType = "SALEABLE";
+    const { code, name } = generateZoneCodeAndName(defaultLocationId, defaultType);
+    setFormData({
+      code,
+      name,
+      type: defaultType,
+      description: "",
+      temperatureType: "NONE",
+      minTemp: "",
+      maxTemp: "",
+      priority: "100",
+      locationId: defaultLocationId,
+    });
     setIsDialogOpen(true);
   }
 
@@ -543,9 +625,7 @@ export default function ZonesPage() {
                   <Label htmlFor="locationId">Location *</Label>
                   <Select
                     value={formData.locationId}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, locationId: value })
-                    }
+                    onValueChange={editingZone ? (value) => setFormData({ ...formData, locationId: value }) : handleLocationChange}
                     disabled={!!editingZone}
                   >
                     <SelectTrigger>
@@ -564,9 +644,7 @@ export default function ZonesPage() {
                   <Label htmlFor="type">Zone Type *</Label>
                   <Select
                     value={formData.type}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, type: value })
-                    }
+                    onValueChange={editingZone ? (value) => setFormData({ ...formData, type: value }) : handleTypeChange}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select type" />
@@ -589,7 +667,9 @@ export default function ZonesPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="code">Zone Code *</Label>
+                  <Label htmlFor="code">
+                    Zone Code * {!editingZone && <span className="text-xs text-muted-foreground">(Auto-generated)</span>}
+                  </Label>
                   <Input
                     id="code"
                     value={formData.code}
@@ -599,20 +679,23 @@ export default function ZonesPage() {
                         code: e.target.value.toUpperCase(),
                       })
                     }
-                    placeholder="e.g., ZONE-A1"
-                    disabled={!!editingZone}
+                    placeholder="e.g., SALE-NOI-01"
+                    disabled={true}
                     required
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="name">Zone Name *</Label>
+                  <Label htmlFor="name">
+                    Zone Name * {!editingZone && <span className="text-xs text-muted-foreground">(Auto-generated)</span>}
+                  </Label>
                   <Input
                     id="name"
                     value={formData.name}
                     onChange={(e) =>
                       setFormData({ ...formData, name: e.target.value })
                     }
-                    placeholder="e.g., Main Pick Zone"
+                    placeholder="e.g., Saleable Zone - Noida"
+                    disabled={!editingZone}
                     required
                   />
                 </div>
@@ -665,7 +748,7 @@ export default function ZonesPage() {
                         <SelectValue placeholder="Not controlled" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Not controlled</SelectItem>
+                        <SelectItem value="NONE">Not controlled</SelectItem>
                         {temperatureTypes.map((temp) => (
                           <SelectItem key={temp.value} value={temp.value}>
                             {temp.label}
@@ -684,7 +767,7 @@ export default function ZonesPage() {
                         setFormData({ ...formData, minTemp: e.target.value })
                       }
                       placeholder="e.g., 2"
-                      disabled={!formData.temperatureType}
+                      disabled={formData.temperatureType === "NONE"}
                     />
                   </div>
                   <div className="grid gap-2">
@@ -697,7 +780,7 @@ export default function ZonesPage() {
                         setFormData({ ...formData, maxTemp: e.target.value })
                       }
                       placeholder="e.g., 8"
-                      disabled={!formData.temperatureType}
+                      disabled={formData.temperatureType === "NONE"}
                     />
                   </div>
                 </div>

@@ -1,8 +1,7 @@
 import { redirect } from "next/navigation";
 
-// Redirect to the legacy WMS picklist page for now
-// This allows gradual migration while keeping the new URL structure
-export default function PicklistPage() {
-  // TODO: Implement dedicated picklist page or copy from WMS
+// Fulfillment picklist redirects to WMS picklist which has the full implementation
+// This maintains URL flexibility while avoiding code duplication
+export default function FulfillmentPicklistPage() {
   redirect("/wms/picklist");
 }

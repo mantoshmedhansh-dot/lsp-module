@@ -15,7 +15,7 @@ from app.models.api_key import APIKey
 from app.models.order import Order, OrderItem, OrderStatus
 from app.models.sku import SKU
 from app.models.customer import Customer
-from app.models.location import Location
+from app.models.company import Location
 from app.models.external_order import (
     ExternalOrderCreate,
     ExternalOrderResponse,

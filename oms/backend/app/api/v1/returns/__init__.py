@@ -13,7 +13,11 @@ from app.core.deps import get_current_user, require_manager, CompanyFilter
 from app.models import (
     Return, ReturnCreate, ReturnUpdate, ReturnResponse, ReturnBrief,
     ReturnItem, ReturnItemCreate, ReturnItemUpdate, ReturnItemResponse,
-    User, ReturnType, ReturnStatus, QCStatus
+    User, ReturnType, ReturnStatus, QCStatus,
+    # Phase 4: WMS Integration
+    ReturnZoneRouting, ReturnReceiveRequest, ReturnQCRequest,
+    ReturnRestockRequest, ReturnZoneRoutingCreate, ReturnZoneRoutingResponse,
+    Inventory
 )
 
 router = APIRouter(prefix="/returns", tags=["Returns"])
@@ -331,3 +335,342 @@ def update_return_item(
     session.commit()
     session.refresh(item)
     return ReturnItemResponse.model_validate(item)
+
+
+# ============================================================================
+# Phase 4: WMS Workflow Endpoints
+# ============================================================================
+
+@router.post("/{return_id}/receive-at-warehouse", response_model=ReturnResponse)
+def receive_return_at_warehouse(
+    return_id: UUID,
+    data: "ReturnReceiveRequest",
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Receive return at warehouse with optional GRN creation.
+    This is the enhanced WMS receiving workflow.
+    """
+    from app.models import (
+        ReturnReceiveRequest, GoodsReceipt, GoodsReceiptItem,
+        Location, SKU
+    )
+
+    ret = session.get(Return, return_id)
+    if not ret:
+        raise HTTPException(status_code=404, detail="Return not found")
+
+    # Verify location exists
+    location = session.get(Location, data.locationId)
+    if not location:
+        raise HTTPException(status_code=404, detail="Location not found")
+
+    # Update return with receiving info
+    ret.locationId = data.locationId
+    ret.status = ReturnStatus.RECEIVED
+    ret.receivedAt = datetime.utcnow()
+    ret.receivedBy = current_user.id
+    ret.vehicleNumber = data.vehicleNumber
+    ret.driverName = data.driverName
+    ret.driverPhone = data.driverPhone
+
+    # Process items if provided
+    if data.items:
+        for item_data in data.items:
+            item = session.get(ReturnItem, item_data.itemId)
+            if item and item.returnId == return_id:
+                item.receivedQty = item_data.receivedQty
+                item.destinationBinId = item_data.destinationBinId
+                item.batchNo = item_data.batchNo
+                item.lotNo = item_data.lotNo
+                session.add(item)
+
+    # Create GRN if requested
+    if data.createGrn:
+        # Generate GRN number
+        grn_no = f"GRN-RET-{ret.returnNo}"
+
+        grn = GoodsReceipt(
+            grNo=grn_no,
+            companyId=ret.companyId,
+            locationId=data.locationId,
+            returnId=return_id,
+            inboundSource="RETURN_SALES" if ret.type == ReturnType.CUSTOMER_RETURN else "RETURN_RTO",
+            status="PENDING",
+            vehicleNumber=data.vehicleNumber,
+            driverName=data.driverName,
+            remarks=data.remarks or f"Auto-created from Return {ret.returnNo}"
+        )
+        session.add(grn)
+        session.flush()
+
+        # Create GRN items from return items
+        query = select(ReturnItem).where(ReturnItem.returnId == return_id)
+        return_items = session.exec(query).all()
+
+        for ri in return_items:
+            grn_item = GoodsReceiptItem(
+                goodsReceiptId=grn.id,
+                skuId=ri.skuId,
+                expectedQty=ri.quantity,
+                receivedQty=ri.receivedQty,
+                acceptedQty=ri.receivedQty,
+                binId=ri.destinationBinId,
+                batchNo=ri.batchNo,
+                lotNo=ri.lotNo,
+                status="PENDING"
+            )
+            session.add(grn_item)
+
+        ret.goodsReceiptId = grn.id
+
+    session.add(ret)
+    session.commit()
+    session.refresh(ret)
+
+    return ReturnResponse.model_validate(ret)
+
+
+@router.post("/{return_id}/complete-qc", response_model=ReturnResponse)
+def complete_return_qc(
+    return_id: UUID,
+    data: "ReturnQCRequest",
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Complete QC for return items with grade and action assignment.
+    Uses zone routing rules to determine destination zones.
+    """
+    from app.models import ReturnQCRequest, ReturnZoneRouting
+
+    ret = session.get(Return, return_id)
+    if not ret:
+        raise HTTPException(status_code=404, detail="Return not found")
+
+    all_passed = True
+    all_failed = True
+
+    for item_qc in data.items:
+        item = session.get(ReturnItem, item_qc.itemId)
+        if not item or item.returnId != return_id:
+            continue
+
+        item.qcStatus = item_qc.qcStatus
+        item.qcGrade = item_qc.qcGrade
+        item.action = item_qc.action
+        item.qcRemarks = item_qc.remarks
+
+        # Track pass/fail status
+        if item_qc.qcStatus == "PASSED":
+            all_failed = False
+        else:
+            all_passed = False
+
+        # Get zone routing if location is set
+        if ret.locationId and item_qc.qcGrade:
+            routing = session.exec(
+                select(ReturnZoneRouting)
+                .where(ReturnZoneRouting.locationId == ret.locationId)
+                .where(ReturnZoneRouting.qcGrade == item_qc.qcGrade)
+                .where(ReturnZoneRouting.isActive == True)
+                .order_by(ReturnZoneRouting.priority)
+            ).first()
+
+            if routing:
+                item.action = routing.action
+                # Set destination zone on return if not already set
+                if not ret.destinationZoneId and routing.destinationZoneId:
+                    ret.destinationZoneId = routing.destinationZoneId
+
+        session.add(item)
+
+    # Update return QC status
+    ret.qcCompletedAt = datetime.utcnow()
+    ret.qcCompletedBy = current_user.id
+    ret.qcRemarks = data.remarks
+
+    if all_passed:
+        ret.qcStatus = QCStatus.PASSED
+        ret.status = ReturnStatus.QC_PASSED
+    elif all_failed:
+        ret.qcStatus = QCStatus.FAILED
+        ret.status = ReturnStatus.QC_FAILED
+    else:
+        ret.qcStatus = QCStatus.PARTIAL
+        ret.status = ReturnStatus.QC_PASSED  # Partial is still considered passed
+
+    session.add(ret)
+    session.commit()
+    session.refresh(ret)
+
+    return ReturnResponse.model_validate(ret)
+
+
+@router.post("/{return_id}/restock", response_model=ReturnResponse)
+def restock_return_items(
+    return_id: UUID,
+    data: "ReturnRestockRequest",
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Restock QC-passed return items to saleable inventory.
+    Creates inventory entries and updates bin stock.
+    """
+    from app.models import ReturnRestockRequest, Inventory, Bin
+
+    ret = session.get(Return, return_id)
+    if not ret:
+        raise HTTPException(status_code=404, detail="Return not found")
+
+    if ret.qcStatus != QCStatus.PASSED and ret.qcStatus != QCStatus.PARTIAL:
+        raise HTTPException(
+            status_code=400,
+            detail="Return must pass QC before restocking"
+        )
+
+    for item_restock in data.items:
+        item = session.get(ReturnItem, item_restock.itemId)
+        if not item or item.returnId != return_id:
+            continue
+
+        if item.qcStatus != "PASSED":
+            continue  # Skip items that didn't pass QC
+
+        # Verify destination bin
+        bin_obj = session.get(Bin, item_restock.destinationBinId)
+        if not bin_obj:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Bin not found: {item_restock.destinationBinId}"
+            )
+
+        # Check for existing inventory in this bin
+        existing_inv = session.exec(
+            select(Inventory)
+            .where(Inventory.skuId == item.skuId)
+            .where(Inventory.binId == item_restock.destinationBinId)
+            .where(Inventory.companyId == ret.companyId)
+        ).first()
+
+        if existing_inv:
+            # Add to existing inventory
+            existing_inv.quantity = (existing_inv.quantity or 0) + item_restock.restockQty
+            existing_inv.availableQty = (existing_inv.availableQty or 0) + item_restock.restockQty
+            session.add(existing_inv)
+            item.restockedInventoryId = existing_inv.id
+        else:
+            # Create new inventory entry
+            new_inv = Inventory(
+                companyId=ret.companyId,
+                locationId=ret.locationId,
+                skuId=item.skuId,
+                binId=item_restock.destinationBinId,
+                quantity=item_restock.restockQty,
+                availableQty=item_restock.restockQty,
+                reservedQty=0,
+                batchNo=item_restock.batchNo or item.batchNo,
+                lotNo=item_restock.lotNo or item.lotNo,
+            )
+            session.add(new_inv)
+            session.flush()
+            item.restockedInventoryId = new_inv.id
+
+        item.restockedQty = (item.restockedQty or 0) + item_restock.restockQty
+        item.restockedBinId = item_restock.destinationBinId
+        session.add(item)
+
+    # Check if all items are fully restocked
+    query = select(ReturnItem).where(ReturnItem.returnId == return_id)
+    all_items = session.exec(query).all()
+
+    all_processed = all(
+        (i.restockedQty >= i.receivedQty) or (i.disposedQty >= i.receivedQty) or (i.qcStatus != "PASSED")
+        for i in all_items
+    )
+
+    if all_processed:
+        ret.status = ReturnStatus.PROCESSED
+        ret.processedAt = datetime.utcnow()
+
+    session.add(ret)
+    session.commit()
+    session.refresh(ret)
+
+    return ReturnResponse.model_validate(ret)
+
+
+# ============================================================================
+# Zone Routing Configuration Endpoints
+# ============================================================================
+
+@router.get("/zone-routing", response_model=List["ReturnZoneRoutingResponse"])
+def list_zone_routing(
+    location_id: Optional[UUID] = None,
+    company_filter: CompanyFilter = Depends(),
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """List zone routing rules."""
+    from app.models import ReturnZoneRouting, ReturnZoneRoutingResponse
+
+    query = select(ReturnZoneRouting)
+
+    if company_filter.company_id:
+        query = query.where(ReturnZoneRouting.companyId == company_filter.company_id)
+
+    if location_id:
+        query = query.where(ReturnZoneRouting.locationId == location_id)
+
+    query = query.order_by(ReturnZoneRouting.priority)
+    rules = session.exec(query).all()
+
+    return [ReturnZoneRoutingResponse.model_validate(r) for r in rules]
+
+
+@router.post("/zone-routing", response_model="ReturnZoneRoutingResponse", status_code=status.HTTP_201_CREATED)
+def create_zone_routing(
+    data: "ReturnZoneRoutingCreate",
+    company_filter: CompanyFilter = Depends(),
+    session: Session = Depends(get_session),
+    current_user: User = Depends(require_manager)
+):
+    """Create zone routing rule."""
+    from app.models import ReturnZoneRouting, ReturnZoneRoutingCreate, ReturnZoneRoutingResponse
+
+    if not company_filter.company_id:
+        raise HTTPException(status_code=400, detail="Company ID required")
+
+    rule = ReturnZoneRouting(
+        companyId=company_filter.company_id,
+        locationId=data.locationId,
+        qcGrade=data.qcGrade,
+        destinationZoneId=data.destinationZoneId,
+        action=data.action,
+        priority=data.priority
+    )
+
+    session.add(rule)
+    session.commit()
+    session.refresh(rule)
+
+    return ReturnZoneRoutingResponse.model_validate(rule)
+
+
+@router.delete("/zone-routing/{rule_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_zone_routing(
+    rule_id: UUID,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(require_manager)
+):
+    """Delete zone routing rule."""
+    from app.models import ReturnZoneRouting
+
+    rule = session.get(ReturnZoneRouting, rule_id)
+    if not rule:
+        raise HTTPException(status_code=404, detail="Rule not found")
+
+    session.delete(rule)
+    session.commit()

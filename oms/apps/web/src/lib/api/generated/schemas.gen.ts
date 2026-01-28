@@ -3594,7 +3594,6 @@ export const BrandResponseSchema = {
     properties: {
         id: {
             type: 'string',
-            format: 'uuid',
             title: 'Id'
         },
         code: {
@@ -3671,69 +3670,22 @@ export const BrandResponseSchema = {
             ],
             title: 'Website'
         },
-        address: {
-            anyOf: [
-                {
-                    additionalProperties: true,
-                    type: 'object'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Address'
-        },
-        settings: {
-            anyOf: [
-                {
-                    additionalProperties: true,
-                    type: 'object'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Settings'
-        },
         isActive: {
             type: 'boolean',
             title: 'Isactive'
         },
         companyId: {
             type: 'string',
-            format: 'uuid',
             title: 'Companyid'
-        },
-        createdAt: {
-            type: 'string',
-            format: 'date-time',
-            title: 'Createdat'
-        },
-        updatedAt: {
-            type: 'string',
-            format: 'date-time',
-            title: 'Updatedat'
         }
     },
     type: 'object',
-    required: ['id', 'code', 'name', 'isActive', 'companyId', 'createdAt', 'updatedAt'],
-    title: 'BrandResponse',
-    description: 'Schema for brand API responses'
+    required: ['id', 'code', 'name', 'isActive', 'companyId'],
+    title: 'BrandResponse'
 } as const;
 
 export const BrandUpdateSchema = {
     properties: {
-        code: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Code'
-        },
         name: {
             anyOf: [
                 {
@@ -3811,30 +3763,6 @@ export const BrandUpdateSchema = {
             ],
             title: 'Website'
         },
-        address: {
-            anyOf: [
-                {
-                    additionalProperties: true,
-                    type: 'object'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Address'
-        },
-        settings: {
-            anyOf: [
-                {
-                    additionalProperties: true,
-                    type: 'object'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Settings'
-        },
         isActive: {
             anyOf: [
                 {
@@ -3848,8 +3776,7 @@ export const BrandUpdateSchema = {
         }
     },
     type: 'object',
-    title: 'BrandUpdate',
-    description: 'Schema for updating a brand'
+    title: 'BrandUpdate'
 } as const;
 
 export const BulkAllocationRequestSchema = {
@@ -15233,7 +15160,14 @@ export const LocationBriefSchema = {
 export const LocationCreateSchema = {
     properties: {
         code: {
-            type: 'string',
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
             title: 'Code'
         },
         name: {
@@ -15329,7 +15263,7 @@ export const LocationCreateSchema = {
         }
     },
     type: 'object',
-    required: ['code', 'name', 'type', 'companyId'],
+    required: ['name', 'type', 'companyId'],
     title: 'LocationCreate'
 } as const;
 
@@ -15464,6 +15398,17 @@ export const LocationTypeSchema = {
 
 export const LocationUpdateSchema = {
     properties: {
+        code: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Code'
+        },
         name: {
             anyOf: [
                 {
@@ -15474,6 +15419,16 @@ export const LocationUpdateSchema = {
                 }
             ],
             title: 'Name'
+        },
+        type: {
+            anyOf: [
+                {
+                    '$ref': '#/components/schemas/LocationType'
+                },
+                {
+                    type: 'null'
+                }
+            ]
         },
         address: {
             anyOf: [
@@ -15519,6 +15474,40 @@ export const LocationUpdateSchema = {
                 }
             ],
             title: 'Contactemail'
+        },
+        gst: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Gst'
+        },
+        settings: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Settings'
+        },
+        valuationMethod: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Valuationmethod'
         },
         isActive: {
             anyOf: [
@@ -15593,7 +15582,7 @@ export const LoginRequestSchema = {
 export const LoginResponseSchema = {
     properties: {
         user: {
-            '$ref': '#/components/schemas/app__schemas__auth__UserResponse'
+            '$ref': '#/components/schemas/UserResponse'
         },
         token: {
             type: 'string',
@@ -18248,104 +18237,32 @@ export const OrderImportUpdateSchema = {
 
 export const OrderItemCreateSchema = {
     properties: {
-        orderId: {
-            type: 'string',
-            format: 'uuid',
-            title: 'Orderid'
-        },
         skuId: {
             type: 'string',
-            format: 'uuid',
             title: 'Skuid'
-        },
-        externalItemId: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Externalitemid'
         },
         quantity: {
             type: 'integer',
             title: 'Quantity'
         },
         unitPrice: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                }
-            ],
+            type: 'number',
             title: 'Unitprice'
         },
         taxAmount: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                }
-            ],
-            title: 'Taxamount'
+            type: 'number',
+            title: 'Taxamount',
+            default: 0
         },
         discount: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                }
-            ],
+            type: 'number',
             title: 'Discount',
-            default: '0'
-        },
-        totalPrice: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                }
-            ],
-            title: 'Totalprice'
-        },
-        serialNumbers: {
-            items: {
-                type: 'string'
-            },
-            type: 'array',
-            title: 'Serialnumbers',
-            default: []
-        },
-        batchNo: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Batchno'
+            default: 0
         }
     },
     type: 'object',
-    required: ['orderId', 'skuId', 'quantity', 'unitPrice', 'taxAmount', 'totalPrice'],
-    title: 'OrderItemCreate',
-    description: 'Schema for creating order item'
+    required: ['skuId', 'quantity', 'unitPrice'],
+    title: 'OrderItemCreate'
 } as const;
 
 export const OrderItemResponseSchema = {
@@ -26611,10 +26528,6 @@ export const SKUCreateSchema = {
                     type: 'number'
                 },
                 {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
                     type: 'null'
                 }
             ],
@@ -26624,10 +26537,6 @@ export const SKUCreateSchema = {
             anyOf: [
                 {
                     type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
                 },
                 {
                     type: 'null'
@@ -26641,10 +26550,6 @@ export const SKUCreateSchema = {
                     type: 'number'
                 },
                 {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
                     type: 'null'
                 }
             ],
@@ -26654,10 +26559,6 @@ export const SKUCreateSchema = {
             anyOf: [
                 {
                     type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
                 },
                 {
                     type: 'null'
@@ -26671,10 +26572,6 @@ export const SKUCreateSchema = {
                     type: 'number'
                 },
                 {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
                     type: 'null'
                 }
             ],
@@ -26684,10 +26581,6 @@ export const SKUCreateSchema = {
             anyOf: [
                 {
                     type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
                 },
                 {
                     type: 'null'
@@ -26701,10 +26594,6 @@ export const SKUCreateSchema = {
                     type: 'number'
                 },
                 {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
                     type: 'null'
                 }
             ],
@@ -26716,46 +26605,10 @@ export const SKUCreateSchema = {
                     type: 'number'
                 },
                 {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
                     type: 'null'
                 }
             ],
             title: 'Taxrate'
-        },
-        isSerialised: {
-            type: 'boolean',
-            title: 'Isserialised',
-            default: false
-        },
-        isBatchTracked: {
-            type: 'boolean',
-            title: 'Isbatchtracked',
-            default: false
-        },
-        reorderLevel: {
-            anyOf: [
-                {
-                    type: 'integer'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Reorderlevel'
-        },
-        reorderQty: {
-            anyOf: [
-                {
-                    type: 'integer'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Reorderqty'
         },
         barcodes: {
             items: {
@@ -26772,47 +26625,17 @@ export const SKUCreateSchema = {
             type: 'array',
             title: 'Images',
             default: []
-        },
-        attributes: {
-            anyOf: [
-                {
-                    additionalProperties: true,
-                    type: 'object'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Attributes'
-        },
-        valuationMethod: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Valuationmethod'
-        },
-        companyId: {
-            type: 'string',
-            format: 'uuid',
-            title: 'Companyid'
         }
     },
     type: 'object',
-    required: ['code', 'name', 'companyId'],
-    title: 'SKUCreate',
-    description: 'Schema for creating a new SKU'
+    required: ['code', 'name'],
+    title: 'SKUCreate'
 } as const;
 
 export const SKUResponseSchema = {
     properties: {
         id: {
             type: 'string',
-            format: 'uuid',
             title: 'Id'
         },
         code: {
@@ -26878,59 +26701,10 @@ export const SKUResponseSchema = {
             ],
             title: 'Hsn'
         },
-        weight: {
-            anyOf: [
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Weight'
-        },
-        length: {
-            anyOf: [
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Length'
-        },
-        width: {
-            anyOf: [
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Width'
-        },
-        height: {
-            anyOf: [
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Height'
-        },
         mrp: {
             anyOf: [
                 {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                    type: 'number'
                 },
                 {
                     type: 'null'
@@ -26941,8 +26715,7 @@ export const SKUResponseSchema = {
         costPrice: {
             anyOf: [
                 {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                    type: 'number'
                 },
                 {
                     type: 'null'
@@ -26953,8 +26726,7 @@ export const SKUResponseSchema = {
         sellingPrice: {
             anyOf: [
                 {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                    type: 'number'
                 },
                 {
                     type: 'null'
@@ -26962,81 +26734,11 @@ export const SKUResponseSchema = {
             ],
             title: 'Sellingprice'
         },
-        taxRate: {
-            anyOf: [
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Taxrate'
-        },
-        isSerialised: {
-            type: 'boolean',
-            title: 'Isserialised'
-        },
-        isBatchTracked: {
-            type: 'boolean',
-            title: 'Isbatchtracked'
-        },
-        reorderLevel: {
-            anyOf: [
-                {
-                    type: 'integer'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Reorderlevel'
-        },
-        reorderQty: {
-            anyOf: [
-                {
-                    type: 'integer'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Reorderqty'
-        },
-        barcodes: {
-            items: {
-                type: 'string'
-            },
-            type: 'array',
-            title: 'Barcodes',
-            default: []
-        },
-        images: {
-            items: {
-                type: 'string'
-            },
-            type: 'array',
-            title: 'Images',
-            default: []
-        },
-        attributes: {
-            anyOf: [
-                {
-                    additionalProperties: true,
-                    type: 'object'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Attributes'
-        },
         isActive: {
             type: 'boolean',
             title: 'Isactive'
         },
-        valuationMethod: {
+        companyId: {
             anyOf: [
                 {
                     type: 'string'
@@ -27045,40 +26747,27 @@ export const SKUResponseSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Valuationmethod'
-        },
-        isVariantParent: {
-            type: 'boolean',
-            title: 'Isvariantparent'
-        },
-        isVariant: {
-            type: 'boolean',
-            title: 'Isvariant'
-        },
-        companyId: {
-            type: 'string',
-            format: 'uuid',
             title: 'Companyid'
-        },
-        createdAt: {
-            type: 'string',
-            format: 'date-time',
-            title: 'Createdat'
-        },
-        updatedAt: {
-            type: 'string',
-            format: 'date-time',
-            title: 'Updatedat'
         }
     },
     type: 'object',
-    required: ['id', 'code', 'name', 'isSerialised', 'isBatchTracked', 'isActive', 'isVariantParent', 'isVariant', 'companyId', 'createdAt', 'updatedAt'],
-    title: 'SKUResponse',
-    description: 'Schema for SKU API responses'
+    required: ['id', 'code', 'name', 'isActive'],
+    title: 'SKUResponse'
 } as const;
 
 export const SKUUpdateSchema = {
     properties: {
+        code: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Code'
+        },
         name: {
             anyOf: [
                 {
@@ -27112,6 +26801,17 @@ export const SKUUpdateSchema = {
             ],
             title: 'Category'
         },
+        subCategory: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Subcategory'
+        },
         brand: {
             anyOf: [
                 {
@@ -27123,10 +26823,85 @@ export const SKUUpdateSchema = {
             ],
             title: 'Brand'
         },
+        hsn: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Hsn'
+        },
+        weight: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Weight'
+        },
+        length: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Length'
+        },
+        width: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Width'
+        },
+        height: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Height'
+        },
         mrp: {
             anyOf: [
                 {
                     type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
                 },
                 {
                     type: 'null'
@@ -27140,6 +26915,10 @@ export const SKUUpdateSchema = {
                     type: 'number'
                 },
                 {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
                     type: 'null'
                 }
             ],
@@ -27151,10 +26930,113 @@ export const SKUUpdateSchema = {
                     type: 'number'
                 },
                 {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
                     type: 'null'
                 }
             ],
             title: 'Sellingprice'
+        },
+        taxRate: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Taxrate'
+        },
+        isSerialised: {
+            anyOf: [
+                {
+                    type: 'boolean'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Isserialised'
+        },
+        isBatchTracked: {
+            anyOf: [
+                {
+                    type: 'boolean'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Isbatchtracked'
+        },
+        reorderLevel: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Reorderlevel'
+        },
+        reorderQty: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Reorderqty'
+        },
+        barcodes: {
+            anyOf: [
+                {
+                    items: {
+                        type: 'string'
+                    },
+                    type: 'array'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Barcodes'
+        },
+        images: {
+            anyOf: [
+                {
+                    items: {
+                        type: 'string'
+                    },
+                    type: 'array'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Images'
+        },
+        attributes: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Attributes'
         },
         isActive: {
             anyOf: [
@@ -27166,10 +27048,44 @@ export const SKUUpdateSchema = {
                 }
             ],
             title: 'Isactive'
+        },
+        valuationMethod: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Valuationmethod'
+        },
+        isVariantParent: {
+            anyOf: [
+                {
+                    type: 'boolean'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Isvariantparent'
+        },
+        isVariant: {
+            anyOf: [
+                {
+                    type: 'boolean'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Isvariant'
         }
     },
     type: 'object',
-    title: 'SKUUpdate'
+    title: 'SKUUpdate',
+    description: 'Schema for updating a SKU'
 } as const;
 
 export const SKUValuationResponseSchema = {
@@ -30586,7 +30502,6 @@ export const UserCreateSchema = {
     properties: {
         email: {
             type: 'string',
-            format: 'email',
             title: 'Email'
         },
         password: {
@@ -30608,6 +30523,17 @@ export const UserCreateSchema = {
             ],
             title: 'Phone'
         },
+        avatar: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Avatar'
+        },
         role: {
             '$ref': '#/components/schemas/UserRole',
             default: 'OPERATOR'
@@ -30615,7 +30541,8 @@ export const UserCreateSchema = {
         companyId: {
             anyOf: [
                 {
-                    type: 'string'
+                    type: 'string',
+                    format: 'uuid'
                 },
                 {
                     type: 'null'
@@ -30625,7 +30552,8 @@ export const UserCreateSchema = {
         },
         locationAccess: {
             items: {
-                type: 'string'
+                type: 'string',
+                format: 'uuid'
             },
             type: 'array',
             title: 'Locationaccess',
@@ -30634,7 +30562,8 @@ export const UserCreateSchema = {
     },
     type: 'object',
     required: ['email', 'password', 'name'],
-    title: 'UserCreate'
+    title: 'UserCreate',
+    description: 'Schema for creating a new user'
 } as const;
 
 export const UserLoginSchema = {
@@ -30744,28 +30673,6 @@ export const UserRoleSchema = {
 
 export const UserUpdateSchema = {
     properties: {
-        email: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Email'
-        },
-        password: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Password'
-        },
         name: {
             anyOf: [
                 {
@@ -30788,17 +30695,6 @@ export const UserUpdateSchema = {
             ],
             title: 'Phone'
         },
-        avatar: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Avatar'
-        },
         role: {
             anyOf: [
                 {
@@ -30820,24 +30716,11 @@ export const UserUpdateSchema = {
             ],
             title: 'Isactive'
         },
-        companyId: {
-            anyOf: [
-                {
-                    type: 'string',
-                    format: 'uuid'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Companyid'
-        },
         locationAccess: {
             anyOf: [
                 {
                     items: {
-                        type: 'string',
-                        format: 'uuid'
+                        type: 'string'
                     },
                     type: 'array'
                 },
@@ -30849,8 +30732,7 @@ export const UserUpdateSchema = {
         }
     },
     type: 'object',
-    title: 'UserUpdate',
-    description: 'Schema for updating a user (all fields optional)'
+    title: 'UserUpdate'
 } as const;
 
 export const ValidationErrorSchema = {
@@ -33060,195 +32942,6 @@ export const app__api__routes__brands__BrandCreateSchema = {
     title: 'BrandCreate'
 } as const;
 
-export const app__api__routes__brands__BrandResponseSchema = {
-    properties: {
-        id: {
-            type: 'string',
-            title: 'Id'
-        },
-        code: {
-            type: 'string',
-            title: 'Code'
-        },
-        name: {
-            type: 'string',
-            title: 'Name'
-        },
-        logo: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Logo'
-        },
-        description: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Description'
-        },
-        contactPerson: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Contactperson'
-        },
-        contactEmail: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Contactemail'
-        },
-        contactPhone: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Contactphone'
-        },
-        website: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Website'
-        },
-        isActive: {
-            type: 'boolean',
-            title: 'Isactive'
-        },
-        companyId: {
-            type: 'string',
-            title: 'Companyid'
-        }
-    },
-    type: 'object',
-    required: ['id', 'code', 'name', 'isActive', 'companyId'],
-    title: 'BrandResponse'
-} as const;
-
-export const app__api__routes__brands__BrandUpdateSchema = {
-    properties: {
-        name: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Name'
-        },
-        logo: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Logo'
-        },
-        description: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Description'
-        },
-        contactPerson: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Contactperson'
-        },
-        contactEmail: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Contactemail'
-        },
-        contactPhone: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Contactphone'
-        },
-        website: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Website'
-        },
-        isActive: {
-            anyOf: [
-                {
-                    type: 'boolean'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Isactive'
-        }
-    },
-    type: 'object',
-    title: 'BrandUpdate'
-} as const;
-
 export const app__api__routes__locations__LocationCreateSchema = {
     properties: {
         code: {
@@ -33405,6 +33098,80 @@ export const app__api__routes__locations__LocationResponseSchema = {
     title: 'LocationResponse'
 } as const;
 
+export const app__api__routes__locations__LocationUpdateSchema = {
+    properties: {
+        name: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Name'
+        },
+        address: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Address'
+        },
+        contactPerson: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Contactperson'
+        },
+        contactPhone: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Contactphone'
+        },
+        contactEmail: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Contactemail'
+        },
+        isActive: {
+            anyOf: [
+                {
+                    type: 'boolean'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Isactive'
+        }
+    },
+    type: 'object',
+    title: 'LocationUpdate'
+} as const;
+
 export const app__api__routes__orders__OrderCreateSchema = {
     properties: {
         channel: {
@@ -33455,7 +33222,7 @@ export const app__api__routes__orders__OrderCreateSchema = {
         },
         items: {
             items: {
-                '$ref': '#/components/schemas/app__api__routes__orders__OrderItemCreate'
+                '$ref': '#/components/schemas/OrderItemCreate'
             },
             type: 'array',
             title: 'Items'
@@ -33490,36 +33257,6 @@ export const app__api__routes__orders__OrderCreateSchema = {
     type: 'object',
     required: ['channel', 'paymentMode', 'customerName', 'customerPhone', 'shippingAddress', 'items', 'locationId'],
     title: 'OrderCreate'
-} as const;
-
-export const app__api__routes__orders__OrderItemCreateSchema = {
-    properties: {
-        skuId: {
-            type: 'string',
-            title: 'Skuid'
-        },
-        quantity: {
-            type: 'integer',
-            title: 'Quantity'
-        },
-        unitPrice: {
-            type: 'number',
-            title: 'Unitprice'
-        },
-        taxAmount: {
-            type: 'number',
-            title: 'Taxamount',
-            default: 0
-        },
-        discount: {
-            type: 'number',
-            title: 'Discount',
-            default: 0
-        }
-    },
-    type: 'object',
-    required: ['skuId', 'quantity', 'unitPrice'],
-    title: 'OrderItemCreate'
 } as const;
 
 export const app__api__routes__orders__OrderResponseSchema = {
@@ -33618,14 +33355,17 @@ export const app__api__routes__orders__OrderResponseSchema = {
     title: 'OrderResponse'
 } as const;
 
-export const app__api__routes__skus__SKUCreateSchema = {
+export const app__api__routes__skus__SKUUpdateSchema = {
     properties: {
-        code: {
-            type: 'string',
-            title: 'Code'
-        },
         name: {
-            type: 'string',
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
             title: 'Name'
         },
         description: {
@@ -33650,17 +33390,6 @@ export const app__api__routes__skus__SKUCreateSchema = {
             ],
             title: 'Category'
         },
-        subCategory: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Subcategory'
-        },
         brand: {
             anyOf: [
                 {
@@ -33671,61 +33400,6 @@ export const app__api__routes__skus__SKUCreateSchema = {
                 }
             ],
             title: 'Brand'
-        },
-        hsn: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Hsn'
-        },
-        weight: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Weight'
-        },
-        length: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Length'
-        },
-        width: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Width'
-        },
-        height: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Height'
         },
         mrp: {
             anyOf: [
@@ -33760,54 +33434,92 @@ export const app__api__routes__skus__SKUCreateSchema = {
             ],
             title: 'Sellingprice'
         },
-        taxRate: {
+        isActive: {
             anyOf: [
                 {
-                    type: 'number'
+                    type: 'boolean'
                 },
                 {
                     type: 'null'
                 }
             ],
-            title: 'Taxrate'
+            title: 'Isactive'
+        }
+    },
+    type: 'object',
+    title: 'SKUUpdate'
+} as const;
+
+export const app__api__routes__users__UserCreateSchema = {
+    properties: {
+        email: {
+            type: 'string',
+            format: 'email',
+            title: 'Email'
         },
-        barcodes: {
+        password: {
+            type: 'string',
+            title: 'Password'
+        },
+        name: {
+            type: 'string',
+            title: 'Name'
+        },
+        phone: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Phone'
+        },
+        role: {
+            '$ref': '#/components/schemas/UserRole',
+            default: 'OPERATOR'
+        },
+        companyId: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Companyid'
+        },
+        locationAccess: {
             items: {
                 type: 'string'
             },
             type: 'array',
-            title: 'Barcodes',
-            default: []
-        },
-        images: {
-            items: {
-                type: 'string'
-            },
-            type: 'array',
-            title: 'Images',
+            title: 'Locationaccess',
             default: []
         }
     },
     type: 'object',
-    required: ['code', 'name'],
-    title: 'SKUCreate'
+    required: ['email', 'password', 'name'],
+    title: 'UserCreate'
 } as const;
 
-export const app__api__routes__skus__SKUResponseSchema = {
+export const app__api__routes__users__UserResponseSchema = {
     properties: {
         id: {
             type: 'string',
             title: 'Id'
         },
-        code: {
+        email: {
             type: 'string',
-            title: 'Code'
+            title: 'Email'
         },
         name: {
             type: 'string',
             title: 'Name'
         },
-        description: {
+        phone: {
             anyOf: [
                 {
                     type: 'string'
@@ -33816,9 +33528,9 @@ export const app__api__routes__skus__SKUResponseSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Description'
+            title: 'Phone'
         },
-        category: {
+        avatar: {
             anyOf: [
                 {
                     type: 'string'
@@ -33827,73 +33539,11 @@ export const app__api__routes__skus__SKUResponseSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Category'
+            title: 'Avatar'
         },
-        subCategory: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Subcategory'
-        },
-        brand: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Brand'
-        },
-        hsn: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Hsn'
-        },
-        mrp: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Mrp'
-        },
-        costPrice: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Costprice'
-        },
-        sellingPrice: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Sellingprice'
+        role: {
+            type: 'string',
+            title: 'Role'
         },
         isActive: {
             type: 'boolean',
@@ -33912,24 +33562,26 @@ export const app__api__routes__skus__SKUResponseSchema = {
         }
     },
     type: 'object',
-    required: ['id', 'code', 'name', 'isActive'],
-    title: 'SKUResponse'
+    required: ['id', 'email', 'name', 'role', 'isActive'],
+    title: 'UserResponse'
 } as const;
 
-export const app__api__routes__users__UserUpdateSchema = {
+export const app__models__brand__BrandResponseSchema = {
     properties: {
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        code: {
+            type: 'string',
+            title: 'Code'
+        },
         name: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
+            type: 'string',
             title: 'Name'
         },
-        phone: {
+        logo: {
             anyOf: [
                 {
                     type: 'string'
@@ -33938,49 +33590,114 @@ export const app__api__routes__users__UserUpdateSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Phone'
+            title: 'Logo'
         },
-        role: {
+        description: {
             anyOf: [
                 {
-                    '$ref': '#/components/schemas/UserRole'
+                    type: 'string'
                 },
                 {
                     type: 'null'
                 }
-            ]
+            ],
+            title: 'Description'
+        },
+        contactPerson: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Contactperson'
+        },
+        contactEmail: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Contactemail'
+        },
+        contactPhone: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Contactphone'
+        },
+        website: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Website'
+        },
+        address: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Address'
+        },
+        settings: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Settings'
         },
         isActive: {
-            anyOf: [
-                {
-                    type: 'boolean'
-                },
-                {
-                    type: 'null'
-                }
-            ],
+            type: 'boolean',
             title: 'Isactive'
         },
-        locationAccess: {
-            anyOf: [
-                {
-                    items: {
-                        type: 'string'
-                    },
-                    type: 'array'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Locationaccess'
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
         }
     },
     type: 'object',
-    title: 'UserUpdate'
+    required: ['id', 'code', 'name', 'isActive', 'companyId', 'createdAt', 'updatedAt'],
+    title: 'BrandResponse',
+    description: 'Schema for brand API responses'
 } as const;
 
-export const app__models__company__LocationUpdateSchema = {
+export const app__models__brand__BrandUpdateSchema = {
     properties: {
         code: {
             anyOf: [
@@ -34004,15 +33721,71 @@ export const app__models__company__LocationUpdateSchema = {
             ],
             title: 'Name'
         },
-        type: {
+        logo: {
             anyOf: [
                 {
-                    '$ref': '#/components/schemas/LocationType'
+                    type: 'string'
                 },
                 {
                     type: 'null'
                 }
-            ]
+            ],
+            title: 'Logo'
+        },
+        description: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Description'
+        },
+        contactPerson: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Contactperson'
+        },
+        contactEmail: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Contactemail'
+        },
+        contactPhone: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Contactphone'
+        },
+        website: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Website'
         },
         address: {
             anyOf: [
@@ -34026,50 +33799,6 @@ export const app__models__company__LocationUpdateSchema = {
             ],
             title: 'Address'
         },
-        contactPerson: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Contactperson'
-        },
-        contactPhone: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Contactphone'
-        },
-        contactEmail: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Contactemail'
-        },
-        gst: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Gst'
-        },
         settings: {
             anyOf: [
                 {
@@ -34081,17 +33810,6 @@ export const app__models__company__LocationUpdateSchema = {
                 }
             ],
             title: 'Settings'
-        },
-        valuationMethod: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Valuationmethod'
         },
         isActive: {
             anyOf: [
@@ -34106,7 +33824,8 @@ export const app__models__company__LocationUpdateSchema = {
         }
     },
     type: 'object',
-    title: 'LocationUpdate'
+    title: 'BrandUpdate',
+    description: 'Schema for updating a brand'
 } as const;
 
 export const app__models__inventory__InventoryAdjustmentSchema = {
@@ -34177,9 +33896,19 @@ export const app__models__inventory__InventoryAdjustmentSchema = {
     description: 'Schema for inventory adjustment'
 } as const;
 
-export const app__models__sku__SKUUpdateSchema = {
+export const app__models__order__OrderItemCreateSchema = {
     properties: {
-        code: {
+        orderId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Orderid'
+        },
+        skuId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Skuid'
+        },
+        externalItemId: {
             anyOf: [
                 {
                     type: 'string'
@@ -34188,17 +33917,95 @@ export const app__models__sku__SKUUpdateSchema = {
                     type: 'null'
                 }
             ],
+            title: 'Externalitemid'
+        },
+        quantity: {
+            type: 'integer',
+            title: 'Quantity'
+        },
+        unitPrice: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
+            title: 'Unitprice'
+        },
+        taxAmount: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
+            title: 'Taxamount'
+        },
+        discount: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
+            title: 'Discount',
+            default: '0'
+        },
+        totalPrice: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
+            title: 'Totalprice'
+        },
+        serialNumbers: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Serialnumbers',
+            default: []
+        },
+        batchNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Batchno'
+        }
+    },
+    type: 'object',
+    required: ['orderId', 'skuId', 'quantity', 'unitPrice', 'taxAmount', 'totalPrice'],
+    title: 'OrderItemCreate',
+    description: 'Schema for creating order item'
+} as const;
+
+export const app__models__sku__SKUCreateSchema = {
+    properties: {
+        code: {
+            type: 'string',
             title: 'Code'
         },
         name: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
+            type: 'string',
             title: 'Name'
         },
         description: {
@@ -34377,25 +34184,260 @@ export const app__models__sku__SKUUpdateSchema = {
             title: 'Taxrate'
         },
         isSerialised: {
+            type: 'boolean',
+            title: 'Isserialised',
+            default: false
+        },
+        isBatchTracked: {
+            type: 'boolean',
+            title: 'Isbatchtracked',
+            default: false
+        },
+        reorderLevel: {
             anyOf: [
                 {
-                    type: 'boolean'
+                    type: 'integer'
                 },
                 {
                     type: 'null'
                 }
             ],
+            title: 'Reorderlevel'
+        },
+        reorderQty: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Reorderqty'
+        },
+        barcodes: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Barcodes',
+            default: []
+        },
+        images: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Images',
+            default: []
+        },
+        attributes: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Attributes'
+        },
+        valuationMethod: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Valuationmethod'
+        },
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        }
+    },
+    type: 'object',
+    required: ['code', 'name', 'companyId'],
+    title: 'SKUCreate',
+    description: 'Schema for creating a new SKU'
+} as const;
+
+export const app__models__sku__SKUResponseSchema = {
+    properties: {
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        code: {
+            type: 'string',
+            title: 'Code'
+        },
+        name: {
+            type: 'string',
+            title: 'Name'
+        },
+        description: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Description'
+        },
+        category: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Category'
+        },
+        subCategory: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Subcategory'
+        },
+        brand: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Brand'
+        },
+        hsn: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Hsn'
+        },
+        weight: {
+            anyOf: [
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Weight'
+        },
+        length: {
+            anyOf: [
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Length'
+        },
+        width: {
+            anyOf: [
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Width'
+        },
+        height: {
+            anyOf: [
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Height'
+        },
+        mrp: {
+            anyOf: [
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Mrp'
+        },
+        costPrice: {
+            anyOf: [
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Costprice'
+        },
+        sellingPrice: {
+            anyOf: [
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Sellingprice'
+        },
+        taxRate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Taxrate'
+        },
+        isSerialised: {
+            type: 'boolean',
             title: 'Isserialised'
         },
         isBatchTracked: {
-            anyOf: [
-                {
-                    type: 'boolean'
-                },
-                {
-                    type: 'null'
-                }
-            ],
+            type: 'boolean',
             title: 'Isbatchtracked'
         },
         reorderLevel: {
@@ -34421,32 +34463,20 @@ export const app__models__sku__SKUUpdateSchema = {
             title: 'Reorderqty'
         },
         barcodes: {
-            anyOf: [
-                {
-                    items: {
-                        type: 'string'
-                    },
-                    type: 'array'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Barcodes'
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Barcodes',
+            default: []
         },
         images: {
-            anyOf: [
-                {
-                    items: {
-                        type: 'string'
-                    },
-                    type: 'array'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Images'
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Images',
+            default: []
         },
         attributes: {
             anyOf: [
@@ -34461,14 +34491,7 @@ export const app__models__sku__SKUUpdateSchema = {
             title: 'Attributes'
         },
         isActive: {
-            anyOf: [
-                {
-                    type: 'boolean'
-                },
-                {
-                    type: 'null'
-                }
-            ],
+            type: 'boolean',
             title: 'Isactive'
         },
         valuationMethod: {
@@ -34483,99 +34506,33 @@ export const app__models__sku__SKUUpdateSchema = {
             title: 'Valuationmethod'
         },
         isVariantParent: {
-            anyOf: [
-                {
-                    type: 'boolean'
-                },
-                {
-                    type: 'null'
-                }
-            ],
+            type: 'boolean',
             title: 'Isvariantparent'
         },
         isVariant: {
-            anyOf: [
-                {
-                    type: 'boolean'
-                },
-                {
-                    type: 'null'
-                }
-            ],
+            type: 'boolean',
             title: 'Isvariant'
-        }
-    },
-    type: 'object',
-    title: 'SKUUpdate',
-    description: 'Schema for updating a SKU'
-} as const;
-
-export const app__models__user__UserCreateSchema = {
-    properties: {
-        email: {
-            type: 'string',
-            title: 'Email'
-        },
-        password: {
-            type: 'string',
-            title: 'Password'
-        },
-        name: {
-            type: 'string',
-            title: 'Name'
-        },
-        phone: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Phone'
-        },
-        avatar: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Avatar'
-        },
-        role: {
-            '$ref': '#/components/schemas/UserRole',
-            default: 'OPERATOR'
         },
         companyId: {
-            anyOf: [
-                {
-                    type: 'string',
-                    format: 'uuid'
-                },
-                {
-                    type: 'null'
-                }
-            ],
+            type: 'string',
+            format: 'uuid',
             title: 'Companyid'
         },
-        locationAccess: {
-            items: {
-                type: 'string',
-                format: 'uuid'
-            },
-            type: 'array',
-            title: 'Locationaccess',
-            default: []
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
         }
     },
     type: 'object',
-    required: ['email', 'password', 'name'],
-    title: 'UserCreate',
-    description: 'Schema for creating a new user'
+    required: ['id', 'code', 'name', 'isSerialised', 'isBatchTracked', 'isActive', 'isVariantParent', 'isVariant', 'companyId', 'createdAt', 'updatedAt'],
+    title: 'SKUResponse',
+    description: 'Schema for SKU API responses'
 } as const;
 
 export const app__models__user__UserResponseSchema = {
@@ -34672,18 +34629,39 @@ export const app__models__user__UserResponseSchema = {
     description: 'Schema for user API responses'
 } as const;
 
-export const app__schemas__auth__UserResponseSchema = {
+export const app__models__user__UserUpdateSchema = {
     properties: {
-        id: {
-            type: 'string',
-            title: 'Id'
-        },
         email: {
-            type: 'string',
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
             title: 'Email'
         },
+        password: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Password'
+        },
         name: {
-            type: 'string',
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
             title: 'Name'
         },
         phone: {
@@ -34709,26 +34687,55 @@ export const app__schemas__auth__UserResponseSchema = {
             title: 'Avatar'
         },
         role: {
-            type: 'string',
-            title: 'Role'
+            anyOf: [
+                {
+                    '$ref': '#/components/schemas/UserRole'
+                },
+                {
+                    type: 'null'
+                }
+            ]
         },
         isActive: {
-            type: 'boolean',
+            anyOf: [
+                {
+                    type: 'boolean'
+                },
+                {
+                    type: 'null'
+                }
+            ],
             title: 'Isactive'
         },
         companyId: {
             anyOf: [
                 {
-                    type: 'string'
+                    type: 'string',
+                    format: 'uuid'
                 },
                 {
                     type: 'null'
                 }
             ],
             title: 'Companyid'
+        },
+        locationAccess: {
+            anyOf: [
+                {
+                    items: {
+                        type: 'string',
+                        format: 'uuid'
+                    },
+                    type: 'array'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Locationaccess'
         }
     },
     type: 'object',
-    required: ['id', 'email', 'name', 'role', 'isActive'],
-    title: 'UserResponse'
+    title: 'UserUpdate',
+    description: 'Schema for updating a user (all fields optional)'
 } as const;

@@ -54,6 +54,17 @@ from .ftl import router as ftl_router
 from .ptl import router as ptl_router
 from .allocation_config import router as allocation_config_router
 
+# WMS Inbound Phase 1 routers
+from .external_po import router as external_po_router
+from .asn import router as asn_router
+from .upload_batch import router as upload_batch_router
+
+# WMS Inbound Phase 3 routers
+from .stock_transfer import router as stock_transfer_router
+
+# WMS Inbound Phase 5 routers
+from .wms_dashboard import router as wms_dashboard_router
+
 # Main v1 router
 router = APIRouter(prefix="/v1")
 
@@ -108,3 +119,14 @@ router.include_router(packing_router)
 router.include_router(ftl_router)
 router.include_router(ptl_router)
 router.include_router(allocation_config_router)
+
+# WMS Inbound Phase 1
+router.include_router(external_po_router)
+router.include_router(asn_router)
+router.include_router(upload_batch_router)
+
+# WMS Inbound Phase 3
+router.include_router(stock_transfer_router)
+
+# WMS Inbound Phase 5
+router.include_router(wms_dashboard_router)

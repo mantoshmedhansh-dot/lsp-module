@@ -17,7 +17,9 @@ from app.models import (
     GoodsReceiptItem, GoodsReceiptItemCreate, GoodsReceiptItemUpdate,
     GoodsReceiptItemResponse,
     GoodsReceiptStatus, Location, User, SKU, Inventory, Bin, Zone,
-    ChannelInventoryRule, ChannelInventory, ZoneType
+    ChannelInventoryRule, ChannelInventory, ZoneType,
+    # Phase 2 imports
+    Return, ReturnItem,
 )
 from app.services.fifo_sequence import FifoSequenceService
 
@@ -819,3 +821,384 @@ def cancel_goods_receipt(
     session.refresh(gr)
 
     return build_gr_response(gr, session)
+
+
+# ============================================================================
+# Phase 2: Create from Source Endpoints
+# ============================================================================
+
+@router.post("/from-external-po/{external_po_id}", response_model=GoodsReceiptResponse, status_code=status.HTTP_201_CREATED)
+def create_gr_from_external_po(
+    external_po_id: UUID,
+    vehicle_number: Optional[str] = None,
+    driver_name: Optional[str] = None,
+    gate_entry_no: Optional[str] = None,
+    notes: Optional[str] = None,
+    company_filter: CompanyFilter = Depends(),
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+    _: None = Depends(require_manager())
+):
+    """
+    Create a Goods Receipt from an External Purchase Order.
+    Auto-populates expected items from the external PO.
+    """
+    from app.models import ExternalPurchaseOrder, ExternalPOItem
+
+    # Fetch external PO
+    ext_po = session.exec(
+        select(ExternalPurchaseOrder).where(ExternalPurchaseOrder.id == external_po_id)
+    ).first()
+
+    if not ext_po:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="External purchase order not found"
+        )
+
+    if ext_po.status == "CLOSED":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="External PO is already closed"
+        )
+
+    if ext_po.status == "CANCELLED":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="External PO is cancelled"
+        )
+
+    # Validate location
+    location = session.exec(
+        select(Location).where(Location.id == ext_po.location_id)
+    ).first()
+    if not location:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Location not found"
+        )
+
+    # Generate GR number
+    gr_no = generate_gr_number(session)
+
+    # Create goods receipt
+    goods_receipt = GoodsReceipt(
+        grNo=gr_no,
+        status=GoodsReceiptStatus.DRAFT.value,
+        movementType="101",  # GR from PO
+        locationId=ext_po.location_id,
+        companyId=ext_po.company_id,
+        externalPoId=external_po_id,
+        externalReferenceType="EXTERNAL_PO",
+        externalReferenceNo=ext_po.external_po_number,
+        inboundSource="PURCHASE",
+        vehicleNumber=vehicle_number,
+        driverName=driver_name,
+        gateEntryNo=gate_entry_no,
+        gateEntryTime=datetime.utcnow() if gate_entry_no else None,
+        source="EXTERNAL_PO",
+        notes=notes,
+    )
+    session.add(goods_receipt)
+    session.flush()
+
+    # Get pending items from external PO
+    ext_po_items = session.exec(
+        select(ExternalPOItem)
+        .where(ExternalPOItem.external_po_id == external_po_id)
+        .where(ExternalPOItem.status != "CLOSED")
+    ).all()
+
+    total_qty = 0
+    for ext_item in ext_po_items:
+        pending_qty = ext_item.ordered_qty - ext_item.received_qty
+        if pending_qty <= 0:
+            continue
+
+        # Try to find matching SKU by external code
+        sku = None
+        if ext_item.sku_id:
+            sku = session.exec(select(SKU).where(SKU.id == ext_item.sku_id)).first()
+        else:
+            # Try to match by code
+            sku = session.exec(
+                select(SKU).where(SKU.code == ext_item.external_sku_code)
+            ).first()
+
+        if not sku:
+            # Skip items without mapped SKU (or could create placeholder)
+            continue
+
+        # Create GR item
+        gr_item = GoodsReceiptItem(
+            goodsReceiptId=goods_receipt.id,
+            skuId=sku.id,
+            expectedQty=pending_qty,
+            receivedQty=0,
+            acceptedQty=0,
+            rejectedQty=0,
+            costPrice=ext_item.unit_price,
+        )
+        session.add(gr_item)
+        total_qty += pending_qty
+
+    goods_receipt.totalQty = total_qty
+    session.add(goods_receipt)
+    session.commit()
+    session.refresh(goods_receipt)
+
+    return build_gr_response(goods_receipt, session)
+
+
+@router.post("/from-asn/{asn_id}", response_model=GoodsReceiptResponse, status_code=status.HTTP_201_CREATED)
+def create_gr_from_asn(
+    asn_id: UUID,
+    vehicle_number: Optional[str] = None,
+    driver_name: Optional[str] = None,
+    gate_entry_no: Optional[str] = None,
+    notes: Optional[str] = None,
+    company_filter: CompanyFilter = Depends(),
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+    _: None = Depends(require_manager())
+):
+    """
+    Create a Goods Receipt from an Advance Shipping Notice.
+    Auto-populates expected items from the ASN.
+    """
+    from app.models import AdvanceShippingNotice, ASNItem, ExternalPurchaseOrder
+
+    # Fetch ASN
+    asn = session.exec(
+        select(AdvanceShippingNotice).where(AdvanceShippingNotice.id == asn_id)
+    ).first()
+
+    if not asn:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Advance shipping notice not found"
+        )
+
+    if asn.status == "RECEIVED":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="ASN has already been fully received"
+        )
+
+    if asn.status == "CANCELLED":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="ASN is cancelled"
+        )
+
+    # Check if GRN already exists for this ASN
+    existing_gr = session.exec(
+        select(GoodsReceipt)
+        .where(GoodsReceipt.asnId == asn_id)
+        .where(GoodsReceipt.status != GoodsReceiptStatus.CANCELLED.value)
+    ).first()
+
+    if existing_gr:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"GRN {existing_gr.grNo} already exists for this ASN"
+        )
+
+    # Validate location
+    location = session.exec(
+        select(Location).where(Location.id == asn.location_id)
+    ).first()
+    if not location:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Location not found"
+        )
+
+    # Generate GR number
+    gr_no = generate_gr_number(session)
+
+    # Get external PO number if linked
+    ext_po_number = None
+    if asn.external_po_id:
+        ext_po = session.exec(
+            select(ExternalPurchaseOrder).where(ExternalPurchaseOrder.id == asn.external_po_id)
+        ).first()
+        if ext_po:
+            ext_po_number = ext_po.external_po_number
+
+    # Create goods receipt
+    goods_receipt = GoodsReceipt(
+        grNo=gr_no,
+        status=GoodsReceiptStatus.DRAFT.value,
+        movementType="101",
+        locationId=asn.location_id,
+        companyId=asn.company_id,
+        asnId=asn_id,
+        asnNo=asn.asn_no,
+        externalPoId=asn.external_po_id,
+        purchaseOrderId=asn.purchase_order_id,
+        externalReferenceType="ASN",
+        externalReferenceNo=asn.external_asn_no or asn.asn_no,
+        inboundSource="PURCHASE",
+        vehicleNumber=vehicle_number or asn.vehicle_number,
+        driverName=driver_name or asn.driver_name,
+        gateEntryNo=gate_entry_no,
+        gateEntryTime=datetime.utcnow() if gate_entry_no else None,
+        source="ASN",
+        notes=notes,
+    )
+    session.add(goods_receipt)
+    session.flush()
+
+    # Get items from ASN
+    asn_items = session.exec(
+        select(ASNItem)
+        .where(ASNItem.asn_id == asn_id)
+        .where(ASNItem.status != "RECEIVED")
+    ).all()
+
+    total_qty = 0
+    for asn_item in asn_items:
+        pending_qty = asn_item.expected_qty - asn_item.received_qty
+        if pending_qty <= 0:
+            continue
+
+        # Try to find matching SKU
+        sku = None
+        if asn_item.sku_id:
+            sku = session.exec(select(SKU).where(SKU.id == asn_item.sku_id)).first()
+        elif asn_item.external_sku_code:
+            sku = session.exec(
+                select(SKU).where(SKU.code == asn_item.external_sku_code)
+            ).first()
+
+        if not sku:
+            continue
+
+        # Create GR item with batch info from ASN
+        gr_item = GoodsReceiptItem(
+            goodsReceiptId=goods_receipt.id,
+            skuId=sku.id,
+            expectedQty=pending_qty,
+            receivedQty=0,
+            acceptedQty=0,
+            rejectedQty=0,
+            batchNo=asn_item.batch_no,
+            lotNo=asn_item.lot_no,
+            expiryDate=asn_item.expiry_date,
+            mfgDate=asn_item.mfg_date,
+        )
+        session.add(gr_item)
+        total_qty += pending_qty
+
+    goods_receipt.totalQty = total_qty
+    session.add(goods_receipt)
+
+    # Update ASN status to RECEIVING
+    if asn.status in ["EXPECTED", "IN_TRANSIT", "ARRIVED"]:
+        asn.status = "RECEIVING"
+        if not asn.actual_arrival:
+            asn.actual_arrival = datetime.utcnow()
+        asn.goods_receipt_id = goods_receipt.id
+        session.add(asn)
+
+    session.commit()
+    session.refresh(goods_receipt)
+
+    return build_gr_response(goods_receipt, session)
+
+
+@router.post("/from-return/{return_id}", response_model=GoodsReceiptResponse, status_code=status.HTTP_201_CREATED)
+def create_gr_from_return(
+    return_id: UUID,
+    location_id: UUID,
+    notes: Optional[str] = None,
+    company_filter: CompanyFilter = Depends(),
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+    _: None = Depends(require_manager())
+):
+    """
+    Create a Goods Receipt from a Return (Sales Return / RTO).
+    """
+    from app.models import Return, ReturnItem
+
+    # Fetch return
+    ret = session.exec(
+        select(Return).where(Return.id == return_id)
+    ).first()
+
+    if not ret:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Return not found"
+        )
+
+    # Determine inbound source and movement type based on return type
+    inbound_source = "RETURN_SALES"
+    movement_type = "104"  # Return from customer
+
+    if hasattr(ret, 'returnType'):
+        if ret.returnType == "RTO":
+            inbound_source = "RETURN_RTO"
+            movement_type = "105"
+        elif ret.returnType == "DAMAGE":
+            inbound_source = "RETURN_DAMAGE"
+            movement_type = "104"
+
+    # Validate location
+    location = session.exec(
+        select(Location).where(Location.id == location_id)
+    ).first()
+    if not location:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Location not found"
+        )
+
+    # Generate GR number
+    gr_no = generate_gr_number(session)
+
+    # Create goods receipt
+    goods_receipt = GoodsReceipt(
+        grNo=gr_no,
+        status=GoodsReceiptStatus.DRAFT.value,
+        movementType=movement_type,
+        locationId=location_id,
+        companyId=company_filter.company_id,
+        returnId=return_id,
+        externalReferenceType="RETURN",
+        externalReferenceNo=ret.returnNo if hasattr(ret, 'returnNo') else str(return_id),
+        inboundSource=inbound_source,
+        source="RETURN",
+        notes=notes,
+    )
+    session.add(goods_receipt)
+    session.flush()
+
+    # Get items from return
+    return_items = session.exec(
+        select(ReturnItem).where(ReturnItem.returnId == return_id)
+    ).all()
+
+    total_qty = 0
+    for ret_item in return_items:
+        qty = ret_item.quantity if hasattr(ret_item, 'quantity') else 1
+
+        gr_item = GoodsReceiptItem(
+            goodsReceiptId=goods_receipt.id,
+            skuId=ret_item.skuId,
+            expectedQty=qty,
+            receivedQty=0,
+            acceptedQty=0,
+            rejectedQty=0,
+        )
+        session.add(gr_item)
+        total_qty += qty
+
+    goods_receipt.totalQty = total_qty
+    session.add(goods_receipt)
+    session.commit()
+    session.refresh(goods_receipt)
+
+    return build_gr_response(goods_receipt, session)

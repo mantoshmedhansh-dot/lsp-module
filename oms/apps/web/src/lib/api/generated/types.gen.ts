@@ -703,9 +703,6 @@ export type BrandCreate = {
     companyId: string;
 };
 
-/**
- * Schema for brand API responses
- */
 export type BrandResponse = {
     id: string;
     code: string;
@@ -716,23 +713,11 @@ export type BrandResponse = {
     contactEmail?: (string | null);
     contactPhone?: (string | null);
     website?: (string | null);
-    address?: ({
-    [key: string]: unknown;
-} | null);
-    settings?: ({
-    [key: string]: unknown;
-} | null);
     isActive: boolean;
     companyId: string;
-    createdAt: string;
-    updatedAt: string;
 };
 
-/**
- * Schema for updating a brand
- */
 export type BrandUpdate = {
-    code?: (string | null);
     name?: (string | null);
     logo?: (string | null);
     description?: (string | null);
@@ -740,12 +725,6 @@ export type BrandUpdate = {
     contactEmail?: (string | null);
     contactPhone?: (string | null);
     website?: (string | null);
-    address?: ({
-    [key: string]: unknown;
-} | null);
-    settings?: ({
-    [key: string]: unknown;
-} | null);
     isActive?: (boolean | null);
 };
 
@@ -2920,7 +2899,7 @@ export type LocationBrief = {
 };
 
 export type LocationCreate = {
-    code: string;
+    code?: (string | null);
     name: string;
     type: LocationType;
     address?: ({
@@ -2975,13 +2954,20 @@ export const LocationType = {
 } as const;
 
 export type LocationUpdate = {
+    code?: (string | null);
     name?: (string | null);
+    type?: (LocationType | null);
     address?: ({
     [key: string]: unknown;
 } | null);
     contactPerson?: (string | null);
     contactPhone?: (string | null);
     contactEmail?: (string | null);
+    gst?: (string | null);
+    settings?: ({
+    [key: string]: unknown;
+} | null);
+    valuationMethod?: (string | null);
     isActive?: (boolean | null);
 };
 
@@ -3002,7 +2988,7 @@ export type LoginRequest = {
 };
 
 export type LoginResponse = {
-    user: app__schemas__auth__UserResponse;
+    user: UserResponse;
     token: string;
 };
 
@@ -3492,20 +3478,12 @@ export type OrderImportUpdate = {
 } | null);
 };
 
-/**
- * Schema for creating order item
- */
 export type OrderItemCreate = {
-    orderId: string;
     skuId: string;
-    externalItemId?: (string | null);
     quantity: number;
-    unitPrice: (number | string);
-    taxAmount: (number | string);
-    discount?: (number | string);
-    totalPrice: (number | string);
-    serialNumbers?: Array<(string)>;
-    batchNo?: (string | null);
+    unitPrice: number;
+    taxAmount?: number;
+    discount?: number;
 };
 
 /**
@@ -5100,12 +5078,48 @@ export type SKUBrief = {
     isActive: boolean;
 };
 
-/**
- * Schema for creating a new SKU
- */
 export type SKUCreate = {
     code: string;
     name: string;
+    description?: (string | null);
+    category?: (string | null);
+    subCategory?: (string | null);
+    brand?: (string | null);
+    hsn?: (string | null);
+    weight?: (number | null);
+    length?: (number | null);
+    width?: (number | null);
+    height?: (number | null);
+    mrp?: (number | null);
+    costPrice?: (number | null);
+    sellingPrice?: (number | null);
+    taxRate?: (number | null);
+    barcodes?: Array<(string)>;
+    images?: Array<(string)>;
+};
+
+export type SKUResponse = {
+    id: string;
+    code: string;
+    name: string;
+    description?: (string | null);
+    category?: (string | null);
+    subCategory?: (string | null);
+    brand?: (string | null);
+    hsn?: (string | null);
+    mrp?: (number | null);
+    costPrice?: (number | null);
+    sellingPrice?: (number | null);
+    isActive: boolean;
+    companyId?: (string | null);
+};
+
+/**
+ * Schema for updating a SKU
+ */
+export type SKUUpdate = {
+    code?: (string | null);
+    name?: (string | null);
     description?: (string | null);
     category?: (string | null);
     subCategory?: (string | null);
@@ -5119,66 +5133,19 @@ export type SKUCreate = {
     costPrice?: (number | string | null);
     sellingPrice?: (number | string | null);
     taxRate?: (number | string | null);
-    isSerialised?: boolean;
-    isBatchTracked?: boolean;
+    isSerialised?: (boolean | null);
+    isBatchTracked?: (boolean | null);
     reorderLevel?: (number | null);
     reorderQty?: (number | null);
-    barcodes?: Array<(string)>;
-    images?: Array<(string)>;
+    barcodes?: (Array<(string)> | null);
+    images?: (Array<(string)> | null);
     attributes?: ({
     [key: string]: unknown;
 } | null);
-    valuationMethod?: (string | null);
-    companyId: string;
-};
-
-/**
- * Schema for SKU API responses
- */
-export type SKUResponse = {
-    id: string;
-    code: string;
-    name: string;
-    description?: (string | null);
-    category?: (string | null);
-    subCategory?: (string | null);
-    brand?: (string | null);
-    hsn?: (string | null);
-    weight?: (string | null);
-    length?: (string | null);
-    width?: (string | null);
-    height?: (string | null);
-    mrp?: (string | null);
-    costPrice?: (string | null);
-    sellingPrice?: (string | null);
-    taxRate?: (string | null);
-    isSerialised: boolean;
-    isBatchTracked: boolean;
-    reorderLevel?: (number | null);
-    reorderQty?: (number | null);
-    barcodes?: Array<(string)>;
-    images?: Array<(string)>;
-    attributes?: ({
-    [key: string]: unknown;
-} | null);
-    isActive: boolean;
-    valuationMethod?: (string | null);
-    isVariantParent: boolean;
-    isVariant: boolean;
-    companyId: string;
-    createdAt: string;
-    updatedAt: string;
-};
-
-export type SKUUpdate = {
-    name?: (string | null);
-    description?: (string | null);
-    category?: (string | null);
-    brand?: (string | null);
-    mrp?: (number | null);
-    costPrice?: (number | null);
-    sellingPrice?: (number | null);
     isActive?: (boolean | null);
+    valuationMethod?: (string | null);
+    isVariantParent?: (boolean | null);
+    isVariant?: (boolean | null);
 };
 
 /**
@@ -5807,11 +5774,15 @@ export type UserBrief = {
     avatar?: (string | null);
 };
 
+/**
+ * Schema for creating a new user
+ */
 export type UserCreate = {
     email: string;
     password: string;
     name: string;
     phone?: (string | null);
+    avatar?: (string | null);
     role?: UserRole;
     companyId?: (string | null);
     locationAccess?: Array<(string)>;
@@ -5864,18 +5835,11 @@ export const UserRole = {
     CLIENT: 'CLIENT'
 } as const;
 
-/**
- * Schema for updating a user (all fields optional)
- */
 export type UserUpdate = {
-    email?: (string | null);
-    password?: (string | null);
     name?: (string | null);
     phone?: (string | null);
-    avatar?: (string | null);
     role?: (UserRole | null);
     isActive?: (boolean | null);
-    companyId?: (string | null);
     locationAccess?: (Array<(string)> | null);
 };
 
@@ -6349,31 +6313,6 @@ export type app__api__routes__brands__BrandCreate = {
 } | null);
 };
 
-export type app__api__routes__brands__BrandResponse = {
-    id: string;
-    code: string;
-    name: string;
-    logo?: (string | null);
-    description?: (string | null);
-    contactPerson?: (string | null);
-    contactEmail?: (string | null);
-    contactPhone?: (string | null);
-    website?: (string | null);
-    isActive: boolean;
-    companyId: string;
-};
-
-export type app__api__routes__brands__BrandUpdate = {
-    name?: (string | null);
-    logo?: (string | null);
-    description?: (string | null);
-    contactPerson?: (string | null);
-    contactEmail?: (string | null);
-    contactPhone?: (string | null);
-    website?: (string | null);
-    isActive?: (boolean | null);
-};
-
 export type app__api__routes__locations__LocationCreate = {
     code: string;
     name: string;
@@ -6403,6 +6342,17 @@ export type app__api__routes__locations__LocationResponse = {
     companyId: string;
 };
 
+export type app__api__routes__locations__LocationUpdate = {
+    name?: (string | null);
+    address?: ({
+    [key: string]: unknown;
+} | null);
+    contactPerson?: (string | null);
+    contactPhone?: (string | null);
+    contactEmail?: (string | null);
+    isActive?: (boolean | null);
+};
+
 export type app__api__routes__orders__OrderCreate = {
     channel: Channel;
     orderType?: OrderType;
@@ -6416,18 +6366,10 @@ export type app__api__routes__orders__OrderCreate = {
     billingAddress?: ({
     [key: string]: unknown;
 } | null);
-    items: Array<app__api__routes__orders__OrderItemCreate>;
+    items: Array<OrderItemCreate>;
     locationId: string;
     externalOrderNo?: (string | null);
     remarks?: (string | null);
-};
-
-export type app__api__routes__orders__OrderItemCreate = {
-    skuId: string;
-    quantity: number;
-    unitPrice: number;
-    taxAmount?: number;
-    discount?: number;
 };
 
 export type app__api__routes__orders__OrderResponse = {
@@ -6451,65 +6393,81 @@ export type app__api__routes__orders__OrderResponse = {
     createdAt: string;
 };
 
-export type app__api__routes__skus__SKUCreate = {
-    code: string;
-    name: string;
+export type app__api__routes__skus__SKUUpdate = {
+    name?: (string | null);
     description?: (string | null);
     category?: (string | null);
-    subCategory?: (string | null);
     brand?: (string | null);
-    hsn?: (string | null);
-    weight?: (number | null);
-    length?: (number | null);
-    width?: (number | null);
-    height?: (number | null);
     mrp?: (number | null);
     costPrice?: (number | null);
     sellingPrice?: (number | null);
-    taxRate?: (number | null);
-    barcodes?: Array<(string)>;
-    images?: Array<(string)>;
+    isActive?: (boolean | null);
 };
 
-export type app__api__routes__skus__SKUResponse = {
-    id: string;
-    code: string;
+export type app__api__routes__users__UserCreate = {
+    email: string;
+    password: string;
     name: string;
-    description?: (string | null);
-    category?: (string | null);
-    subCategory?: (string | null);
-    brand?: (string | null);
-    hsn?: (string | null);
-    mrp?: (number | null);
-    costPrice?: (number | null);
-    sellingPrice?: (number | null);
+    phone?: (string | null);
+    role?: UserRole;
+    companyId?: (string | null);
+    locationAccess?: Array<(string)>;
+};
+
+export type app__api__routes__users__UserResponse = {
+    id: string;
+    email: string;
+    name: string;
+    phone?: (string | null);
+    avatar?: (string | null);
+    role: string;
     isActive: boolean;
     companyId?: (string | null);
 };
 
-export type app__api__routes__users__UserUpdate = {
-    name?: (string | null);
-    phone?: (string | null);
-    role?: (UserRole | null);
-    isActive?: (boolean | null);
-    locationAccess?: (Array<(string)> | null);
-};
-
-export type app__models__company__LocationUpdate = {
-    code?: (string | null);
-    name?: (string | null);
-    type?: (LocationType | null);
+/**
+ * Schema for brand API responses
+ */
+export type app__models__brand__BrandResponse = {
+    id: string;
+    code: string;
+    name: string;
+    logo?: (string | null);
+    description?: (string | null);
+    contactPerson?: (string | null);
+    contactEmail?: (string | null);
+    contactPhone?: (string | null);
+    website?: (string | null);
     address?: ({
     [key: string]: unknown;
 } | null);
-    contactPerson?: (string | null);
-    contactPhone?: (string | null);
-    contactEmail?: (string | null);
-    gst?: (string | null);
     settings?: ({
     [key: string]: unknown;
 } | null);
-    valuationMethod?: (string | null);
+    isActive: boolean;
+    companyId: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Schema for updating a brand
+ */
+export type app__models__brand__BrandUpdate = {
+    code?: (string | null);
+    name?: (string | null);
+    logo?: (string | null);
+    description?: (string | null);
+    contactPerson?: (string | null);
+    contactEmail?: (string | null);
+    contactPhone?: (string | null);
+    website?: (string | null);
+    address?: ({
+    [key: string]: unknown;
+} | null);
+    settings?: ({
+    [key: string]: unknown;
+} | null);
     isActive?: (boolean | null);
 };
 
@@ -6528,11 +6486,27 @@ export type app__models__inventory__InventoryAdjustment = {
 };
 
 /**
- * Schema for updating a SKU
+ * Schema for creating order item
  */
-export type app__models__sku__SKUUpdate = {
-    code?: (string | null);
-    name?: (string | null);
+export type app__models__order__OrderItemCreate = {
+    orderId: string;
+    skuId: string;
+    externalItemId?: (string | null);
+    quantity: number;
+    unitPrice: (number | string);
+    taxAmount: (number | string);
+    discount?: (number | string);
+    totalPrice: (number | string);
+    serialNumbers?: Array<(string)>;
+    batchNo?: (string | null);
+};
+
+/**
+ * Schema for creating a new SKU
+ */
+export type app__models__sku__SKUCreate = {
+    code: string;
+    name: string;
     description?: (string | null);
     category?: (string | null);
     subCategory?: (string | null);
@@ -6546,33 +6520,55 @@ export type app__models__sku__SKUUpdate = {
     costPrice?: (number | string | null);
     sellingPrice?: (number | string | null);
     taxRate?: (number | string | null);
-    isSerialised?: (boolean | null);
-    isBatchTracked?: (boolean | null);
+    isSerialised?: boolean;
+    isBatchTracked?: boolean;
     reorderLevel?: (number | null);
     reorderQty?: (number | null);
-    barcodes?: (Array<(string)> | null);
-    images?: (Array<(string)> | null);
+    barcodes?: Array<(string)>;
+    images?: Array<(string)>;
     attributes?: ({
     [key: string]: unknown;
 } | null);
-    isActive?: (boolean | null);
     valuationMethod?: (string | null);
-    isVariantParent?: (boolean | null);
-    isVariant?: (boolean | null);
+    companyId: string;
 };
 
 /**
- * Schema for creating a new user
+ * Schema for SKU API responses
  */
-export type app__models__user__UserCreate = {
-    email: string;
-    password: string;
+export type app__models__sku__SKUResponse = {
+    id: string;
+    code: string;
     name: string;
-    phone?: (string | null);
-    avatar?: (string | null);
-    role?: UserRole;
-    companyId?: (string | null);
-    locationAccess?: Array<(string)>;
+    description?: (string | null);
+    category?: (string | null);
+    subCategory?: (string | null);
+    brand?: (string | null);
+    hsn?: (string | null);
+    weight?: (string | null);
+    length?: (string | null);
+    width?: (string | null);
+    height?: (string | null);
+    mrp?: (string | null);
+    costPrice?: (string | null);
+    sellingPrice?: (string | null);
+    taxRate?: (string | null);
+    isSerialised: boolean;
+    isBatchTracked: boolean;
+    reorderLevel?: (number | null);
+    reorderQty?: (number | null);
+    barcodes?: Array<(string)>;
+    images?: Array<(string)>;
+    attributes?: ({
+    [key: string]: unknown;
+} | null);
+    isActive: boolean;
+    valuationMethod?: (string | null);
+    isVariantParent: boolean;
+    isVariant: boolean;
+    companyId: string;
+    createdAt: string;
+    updatedAt: string;
 };
 
 /**
@@ -6593,15 +6589,19 @@ export type app__models__user__UserResponse = {
     updatedAt: string;
 };
 
-export type app__schemas__auth__UserResponse = {
-    id: string;
-    email: string;
-    name: string;
+/**
+ * Schema for updating a user (all fields optional)
+ */
+export type app__models__user__UserUpdate = {
+    email?: (string | null);
+    password?: (string | null);
+    name?: (string | null);
     phone?: (string | null);
     avatar?: (string | null);
-    role: string;
-    isActive: boolean;
+    role?: (UserRole | null);
+    isActive?: (boolean | null);
     companyId?: (string | null);
+    locationAccess?: (Array<(string)> | null);
 };
 
 export type LoginApiV1AuthLoginPostData = {
@@ -6613,7 +6613,7 @@ export type LoginApiV1AuthLoginPostResponse = (UserLoginResponse);
 export type GetMeApiV1AuthMeGetResponse = (app__models__user__UserResponse);
 
 export type UpdateMeApiV1AuthMePatchData = {
-    requestBody: UserUpdate;
+    requestBody: app__models__user__UserUpdate;
 };
 
 export type UpdateMeApiV1AuthMePatchResponse = (app__models__user__UserResponse);
@@ -6633,7 +6633,7 @@ export type ListUsersApiV1UsersGetData = {
 export type ListUsersApiV1UsersGetResponse = (Array<UserBrief>);
 
 export type CreateUserApiV1UsersPostData = {
-    requestBody: app__models__user__UserCreate;
+    requestBody: UserCreate;
 };
 
 export type CreateUserApiV1UsersPostResponse = (app__models__user__UserResponse);
@@ -6652,7 +6652,7 @@ export type GetUserApiV1UsersUserIdGetData = {
 export type GetUserApiV1UsersUserIdGetResponse = (app__models__user__UserResponse);
 
 export type UpdateUserApiV1UsersUserIdPatchData = {
-    requestBody: UserUpdate;
+    requestBody: app__models__user__UserUpdate;
     userId: string;
 };
 
@@ -6735,7 +6735,7 @@ export type CreateBrandApiV1BrandsPostData = {
     requestBody: BrandCreate;
 };
 
-export type CreateBrandApiV1BrandsPostResponse = (BrandResponse);
+export type CreateBrandApiV1BrandsPostResponse = (app__models__brand__BrandResponse);
 
 export type CountBrandsApiV1BrandsCountGetData = {
     isActive?: (boolean | null);
@@ -6747,14 +6747,14 @@ export type GetBrandApiV1BrandsBrandIdGetData = {
     brandId: string;
 };
 
-export type GetBrandApiV1BrandsBrandIdGetResponse = (BrandResponse);
+export type GetBrandApiV1BrandsBrandIdGetResponse = (app__models__brand__BrandResponse);
 
 export type UpdateBrandApiV1BrandsBrandIdPatchData = {
     brandId: string;
-    requestBody: BrandUpdate;
+    requestBody: app__models__brand__BrandUpdate;
 };
 
-export type UpdateBrandApiV1BrandsBrandIdPatchResponse = (BrandResponse);
+export type UpdateBrandApiV1BrandsBrandIdPatchResponse = (app__models__brand__BrandResponse);
 
 export type DeleteBrandApiV1BrandsBrandIdDeleteData = {
     brandId: string;
@@ -6842,6 +6842,19 @@ export type CancelOrderApiV1OrdersExternalExternalOrderIdCancelPostData = {
 
 export type CancelOrderApiV1OrdersExternalExternalOrderIdCancelPostResponse = (unknown);
 
+export type GetPreviewCodeApiV1LocationsPreviewCodeGetData = {
+    /**
+     * Location name to generate code for
+     */
+    name: string;
+    /**
+     * Location type (WAREHOUSE, STORE, HUB, VIRTUAL)
+     */
+    type: string;
+};
+
+export type GetPreviewCodeApiV1LocationsPreviewCodeGetResponse = (unknown);
+
 export type ListLocationsApiV1LocationsGetData = {
     isActive?: (boolean | null);
     limit?: number;
@@ -6866,7 +6879,7 @@ export type GetLocationApiV1LocationsLocationIdGetResponse = (LocationResponse);
 
 export type UpdateLocationApiV1LocationsLocationIdPatchData = {
     locationId: string;
-    requestBody: app__models__company__LocationUpdate;
+    requestBody: LocationUpdate;
 };
 
 export type UpdateLocationApiV1LocationsLocationIdPatchResponse = (LocationResponse);
@@ -7031,10 +7044,10 @@ export type ListSkusApiV1SkusGetData = {
 export type ListSkusApiV1SkusGetResponse = (Array<SKUBrief>);
 
 export type CreateSkuApiV1SkusPostData = {
-    requestBody: SKUCreate;
+    requestBody: app__models__sku__SKUCreate;
 };
 
-export type CreateSkuApiV1SkusPostResponse = (SKUResponse);
+export type CreateSkuApiV1SkusPostResponse = (app__models__sku__SKUResponse);
 
 export type CountSkusApiV1SkusCountGetData = {
     brand?: (string | null);
@@ -7052,14 +7065,14 @@ export type GetSkuApiV1SkusSkuIdGetData = {
     skuId: string;
 };
 
-export type GetSkuApiV1SkusSkuIdGetResponse = (SKUResponse);
+export type GetSkuApiV1SkusSkuIdGetResponse = (app__models__sku__SKUResponse);
 
 export type UpdateSkuApiV1SkusSkuIdPatchData = {
-    requestBody: app__models__sku__SKUUpdate;
+    requestBody: SKUUpdate;
     skuId: string;
 };
 
-export type UpdateSkuApiV1SkusSkuIdPatchResponse = (SKUResponse);
+export type UpdateSkuApiV1SkusSkuIdPatchResponse = (app__models__sku__SKUResponse);
 
 export type DeleteSkuApiV1SkusSkuIdDeleteData = {
     skuId: string;
@@ -7071,7 +7084,7 @@ export type GetSkuByCodeApiV1SkusCodeCodeGetData = {
     code: string;
 };
 
-export type GetSkuByCodeApiV1SkusCodeCodeGetResponse = (SKUResponse);
+export type GetSkuByCodeApiV1SkusCodeCodeGetResponse = (app__models__sku__SKUResponse);
 
 export type ListInventoryApiV1InventoryGetData = {
     batchNo?: (string | null);
@@ -7209,7 +7222,7 @@ export type ListOrderItemsApiV1OrdersOrderIdItemsGetResponse = (Array<OrderItemR
 
 export type CreateOrderItemApiV1OrdersOrderIdItemsPostData = {
     orderId: string;
-    requestBody: OrderItemCreate;
+    requestBody: app__models__order__OrderItemCreate;
 };
 
 export type CreateOrderItemApiV1OrdersOrderIdItemsPostResponse = (OrderItemResponse);
@@ -7685,6 +7698,12 @@ export type DeleteInboundItemApiV1InboundItemsItemIdDeleteData = {
 };
 
 export type DeleteInboundItemApiV1InboundItemsItemIdDeleteResponse = (void);
+
+export type DebugLocationZonesBinsApiV1GoodsReceiptsDebugLocationLocationIdGetData = {
+    locationId: string;
+};
+
+export type DebugLocationZonesBinsApiV1GoodsReceiptsDebugLocationLocationIdGetResponse = (unknown);
 
 export type TestInventoryCreationDebugApiV1GoodsReceiptsTestInvPostResponse = (unknown);
 
@@ -10262,7 +10281,7 @@ export type LoginApiAuthLoginPostData = {
 
 export type LoginApiAuthLoginPostResponse = (LoginResponse);
 
-export type GetCurrentUserInfoApiAuthMeGetResponse = (app__schemas__auth__UserResponse);
+export type GetCurrentUserInfoApiAuthMeGetResponse = (UserResponse);
 
 export type ListUsersApiUsersGetData = {
     page?: number;
@@ -10271,26 +10290,26 @@ export type ListUsersApiUsersGetData = {
     search?: (string | null);
 };
 
-export type ListUsersApiUsersGetResponse = (Array<UserResponse>);
+export type ListUsersApiUsersGetResponse = (Array<app__api__routes__users__UserResponse>);
 
 export type CreateUserApiUsersPostData = {
-    requestBody: UserCreate;
+    requestBody: app__api__routes__users__UserCreate;
 };
 
-export type CreateUserApiUsersPostResponse = (UserResponse);
+export type CreateUserApiUsersPostResponse = (app__api__routes__users__UserResponse);
 
 export type GetUserApiUsersUserIdGetData = {
     userId: string;
 };
 
-export type GetUserApiUsersUserIdGetResponse = (UserResponse);
+export type GetUserApiUsersUserIdGetResponse = (app__api__routes__users__UserResponse);
 
 export type UpdateUserApiUsersUserIdPatchData = {
-    requestBody: app__api__routes__users__UserUpdate;
+    requestBody: UserUpdate;
     userId: string;
 };
 
-export type UpdateUserApiUsersUserIdPatchResponse = (UserResponse);
+export type UpdateUserApiUsersUserIdPatchResponse = (app__api__routes__users__UserResponse);
 
 export type DeleteUserApiUsersUserIdDeleteData = {
     userId: string;
@@ -10345,26 +10364,26 @@ export type ListSkusApiSkusGetData = {
     search?: (string | null);
 };
 
-export type ListSkusApiSkusGetResponse = (Array<app__api__routes__skus__SKUResponse>);
+export type ListSkusApiSkusGetResponse = (Array<SKUResponse>);
 
 export type CreateSkuApiSkusPostData = {
-    requestBody: app__api__routes__skus__SKUCreate;
+    requestBody: SKUCreate;
 };
 
-export type CreateSkuApiSkusPostResponse = (app__api__routes__skus__SKUResponse);
+export type CreateSkuApiSkusPostResponse = (SKUResponse);
 
 export type GetSkuApiSkusSkuIdGetData = {
     skuId: string;
 };
 
-export type GetSkuApiSkusSkuIdGetResponse = (app__api__routes__skus__SKUResponse);
+export type GetSkuApiSkusSkuIdGetResponse = (SKUResponse);
 
 export type UpdateSkuApiSkusSkuIdPatchData = {
-    requestBody: SKUUpdate;
+    requestBody: app__api__routes__skus__SKUUpdate;
     skuId: string;
 };
 
-export type UpdateSkuApiSkusSkuIdPatchResponse = (app__api__routes__skus__SKUResponse);
+export type UpdateSkuApiSkusSkuIdPatchResponse = (SKUResponse);
 
 export type DeleteSkuApiSkusSkuIdDeleteData = {
     skuId: string;
@@ -10424,7 +10443,7 @@ export type GetLocationApiLocationsLocationIdGetResponse = (app__api__routes__lo
 
 export type UpdateLocationApiLocationsLocationIdPatchData = {
     locationId: string;
-    requestBody: LocationUpdate;
+    requestBody: app__api__routes__locations__LocationUpdate;
 };
 
 export type UpdateLocationApiLocationsLocationIdPatchResponse = (app__api__routes__locations__LocationResponse);
@@ -10436,26 +10455,26 @@ export type ListBrandsApiBrandsGetData = {
     search?: (string | null);
 };
 
-export type ListBrandsApiBrandsGetResponse = (Array<app__api__routes__brands__BrandResponse>);
+export type ListBrandsApiBrandsGetResponse = (Array<BrandResponse>);
 
 export type CreateBrandApiBrandsPostData = {
     requestBody: app__api__routes__brands__BrandCreate;
 };
 
-export type CreateBrandApiBrandsPostResponse = (app__api__routes__brands__BrandResponse);
+export type CreateBrandApiBrandsPostResponse = (BrandResponse);
 
 export type GetBrandApiBrandsBrandIdGetData = {
     brandId: string;
 };
 
-export type GetBrandApiBrandsBrandIdGetResponse = (app__api__routes__brands__BrandResponse);
+export type GetBrandApiBrandsBrandIdGetResponse = (BrandResponse);
 
 export type UpdateBrandApiBrandsBrandIdPatchData = {
     brandId: string;
-    requestBody: app__api__routes__brands__BrandUpdate;
+    requestBody: BrandUpdate;
 };
 
-export type UpdateBrandApiBrandsBrandIdPatchResponse = (app__api__routes__brands__BrandResponse);
+export type UpdateBrandApiBrandsBrandIdPatchResponse = (BrandResponse);
 
 export type DeleteBrandApiBrandsBrandIdDeleteData = {
     brandId: string;

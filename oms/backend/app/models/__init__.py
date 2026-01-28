@@ -279,6 +279,16 @@ from .returns import (
     ReturnItemUpdate,
     ReturnItemResponse,
     ReturnSummary,
+    # Phase 4: WMS Integration
+    ReturnZoneRouting,
+    ReturnReceiveRequest,
+    ReturnItemReceive,
+    ReturnQCRequest,
+    ReturnItemQC,
+    ReturnRestockRequest,
+    ReturnItemRestock,
+    ReturnZoneRoutingCreate,
+    ReturnZoneRoutingResponse,
 )
 
 # Inbound models and schemas
@@ -377,6 +387,11 @@ from .goods_receipt import (
     GoodsReceiptItemCreate,
     GoodsReceiptItemUpdate,
     GoodsReceiptItemResponse,
+    # Phase 2: Create from source schemas
+    GRNFromExternalPOCreate,
+    GRNFromASNCreate,
+    GRNFromReturnCreate,
+    GRNFromSTOCreate,
 )
 
 # Inventory Allocation models and schemas
@@ -631,6 +646,59 @@ from .channel_inventory import (
     ChannelInventorySummary,
     ChannelAllocationItem,
     GRNChannelAllocationRequest,
+)
+
+# External PO models and schemas (WMS Inbound Phase 1)
+from .external_po import (
+    ExternalPurchaseOrder,
+    ExternalPurchaseOrderCreate,
+    ExternalPurchaseOrderUpdate,
+    ExternalPurchaseOrderRead,
+    ExternalPOItem,
+    ExternalPOItemCreate,
+    ExternalPOItemUpdate,
+    ExternalPOItemRead,
+)
+
+# ASN models and schemas (WMS Inbound Phase 1)
+from .asn import (
+    AdvanceShippingNotice,
+    AdvanceShippingNoticeCreate,
+    AdvanceShippingNoticeUpdate,
+    AdvanceShippingNoticeRead,
+    ASNItem,
+    ASNItemCreate,
+    ASNItemUpdate,
+    ASNItemRead,
+)
+
+# Upload Batch models and schemas (WMS Inbound Phase 1)
+from .upload_batch import (
+    UploadBatch,
+    UploadBatchCreate,
+    UploadBatchUpdate,
+    UploadBatchRead,
+    UploadError,
+    ExternalPOUploadRow,
+    ASNUploadRow,
+    OpeningStockUploadRow,
+    UploadResult,
+)
+
+# Stock Transfer Order models and schemas (WMS Inbound Phase 3)
+from .stock_transfer import (
+    StockTransferOrder,
+    StockTransferOrderCreate,
+    StockTransferOrderUpdate,
+    StockTransferOrderRead,
+    STOItem,
+    STOItemCreate,
+    STOItemUpdate,
+    STOItemRead,
+    STOApproveRequest,
+    STOShipRequest,
+    STOReceiveRequest,
+    STOItemReceive,
 )
 
 # Shipping Allocation models and schemas (Phase 1 - Logistics)
@@ -1042,6 +1110,11 @@ __all__ = [
     "GoodsReceiptItemCreate",
     "GoodsReceiptItemUpdate",
     "GoodsReceiptItemResponse",
+    # GRN from Source (Phase 2)
+    "GRNFromExternalPOCreate",
+    "GRNFromASNCreate",
+    "GRNFromReturnCreate",
+    "GRNFromSTOCreate",
     # InventoryAllocation
     "InventoryAllocation",
     "InventoryAllocationCreate",
@@ -1297,4 +1370,45 @@ __all__ = [
     "CarrierPerformanceResponse",
     "PincodePerformanceResponse",
     "LanePerformanceResponse",
+    # External PO (WMS Inbound Phase 1)
+    "ExternalPurchaseOrder",
+    "ExternalPurchaseOrderCreate",
+    "ExternalPurchaseOrderUpdate",
+    "ExternalPurchaseOrderRead",
+    "ExternalPOItem",
+    "ExternalPOItemCreate",
+    "ExternalPOItemUpdate",
+    "ExternalPOItemRead",
+    # ASN (WMS Inbound Phase 1)
+    "AdvanceShippingNotice",
+    "AdvanceShippingNoticeCreate",
+    "AdvanceShippingNoticeUpdate",
+    "AdvanceShippingNoticeRead",
+    "ASNItem",
+    "ASNItemCreate",
+    "ASNItemUpdate",
+    "ASNItemRead",
+    # Upload Batch (WMS Inbound Phase 1)
+    "UploadBatch",
+    "UploadBatchCreate",
+    "UploadBatchUpdate",
+    "UploadBatchRead",
+    "UploadError",
+    "ExternalPOUploadRow",
+    "ASNUploadRow",
+    "OpeningStockUploadRow",
+    "UploadResult",
+    # Stock Transfer Order (WMS Inbound Phase 3)
+    "StockTransferOrder",
+    "StockTransferOrderCreate",
+    "StockTransferOrderUpdate",
+    "StockTransferOrderRead",
+    "STOItem",
+    "STOItemCreate",
+    "STOItemUpdate",
+    "STOItemRead",
+    "STOApproveRequest",
+    "STOShipRequest",
+    "STOReceiveRequest",
+    "STOItemReceive",
 ]

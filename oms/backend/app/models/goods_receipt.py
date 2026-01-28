@@ -46,7 +46,32 @@ class GoodsReceipt(BaseModel, table=True):
         default=None,
         sa_column=Column(PG_UUID(as_uuid=True), ForeignKey("PurchaseOrder.id"))
     )
-    asnNo: Optional[str] = Field(default=None)  # Advance Shipping Notice
+    asnNo: Optional[str] = Field(default=None)  # Advance Shipping Notice (legacy)
+
+    # Phase 2: Enhanced references
+    externalPoId: Optional[UUID] = Field(
+        default=None,
+        sa_column=Column(PG_UUID(as_uuid=True), ForeignKey("external_purchase_orders.id"))
+    )
+    asnId: Optional[UUID] = Field(
+        default=None,
+        sa_column=Column(PG_UUID(as_uuid=True), ForeignKey("advance_shipping_notices.id"))
+    )
+    returnId: Optional[UUID] = Field(
+        default=None,
+        sa_column=Column(PG_UUID(as_uuid=True), ForeignKey("Return.id"))
+    )
+    stockTransferId: Optional[UUID] = Field(default=None)
+
+    # External reference (for display/search)
+    externalReferenceType: Optional[str] = Field(default=None, sa_column=Column(String(50)))
+    externalReferenceNo: Optional[str] = Field(default=None, sa_column=Column(String(100)))
+
+    # Inbound source type
+    inboundSource: str = Field(
+        default="PURCHASE",
+        sa_column=Column(String(50), nullable=False, default="PURCHASE")
+    )  # PURCHASE, RETURN_SALES, RETURN_RTO, TRANSFER_IN, etc.
 
     # Status
     status: str = Field(
@@ -101,6 +126,26 @@ class GoodsReceipt(BaseModel, table=True):
 
     # Notes
     notes: Optional[str] = Field(default=None, sa_column=Column(Text))
+
+    # Vehicle/Delivery Details (Phase 2)
+    vehicleNumber: Optional[str] = Field(default=None, sa_column=Column(String(50)))
+    driverName: Optional[str] = Field(default=None, sa_column=Column(String(100)))
+    gateEntryNo: Optional[str] = Field(default=None, sa_column=Column(String(50)))
+    gateEntryTime: Optional[datetime] = Field(default=None)
+
+    # Quality Summary (Phase 2)
+    totalAcceptedQty: int = Field(default=0, sa_column=Column(Integer, default=0))
+    totalRejectedQty: int = Field(default=0, sa_column=Column(Integer, default=0))
+
+    # Source tracking (Phase 2)
+    source: str = Field(
+        default="MANUAL",
+        sa_column=Column(String(50), nullable=False, default="MANUAL")
+    )  # MANUAL, UPLOAD, API, ASN, EXTERNAL_PO
+    uploadBatchId: Optional[UUID] = Field(
+        default=None,
+        sa_column=Column(PG_UUID(as_uuid=True), ForeignKey("upload_batches.id"))
+    )
 
     # Relationships
     items: List["GoodsReceiptItem"] = Relationship(back_populates="goodsReceipt")
@@ -196,12 +241,32 @@ class GoodsReceiptCreate(CreateBase):
     locationId: UUID
     companyId: UUID
     notes: Optional[str] = None
+    # Phase 2 fields
+    externalPoId: Optional[UUID] = None
+    asnId: Optional[UUID] = None
+    returnId: Optional[UUID] = None
+    stockTransferId: Optional[UUID] = None
+    externalReferenceType: Optional[str] = None
+    externalReferenceNo: Optional[str] = None
+    inboundSource: str = "PURCHASE"
+    vehicleNumber: Optional[str] = None
+    driverName: Optional[str] = None
+    gateEntryNo: Optional[str] = None
+    gateEntryTime: Optional[datetime] = None
+    source: str = "MANUAL"
 
 
 class GoodsReceiptUpdate(UpdateBase):
     asnNo: Optional[str] = None
     status: Optional[str] = None
     notes: Optional[str] = None
+    # Phase 2 fields
+    externalReferenceType: Optional[str] = None
+    externalReferenceNo: Optional[str] = None
+    vehicleNumber: Optional[str] = None
+    driverName: Optional[str] = None
+    gateEntryNo: Optional[str] = None
+    gateEntryTime: Optional[datetime] = None
 
 
 class GoodsReceiptResponse(ResponseBase):
@@ -223,8 +288,25 @@ class GoodsReceiptResponse(ResponseBase):
     notes: Optional[str] = None
     createdAt: datetime
     updatedAt: datetime
+    # Phase 2 fields
+    externalPoId: Optional[UUID] = None
+    asnId: Optional[UUID] = None
+    returnId: Optional[UUID] = None
+    stockTransferId: Optional[UUID] = None
+    externalReferenceType: Optional[str] = None
+    externalReferenceNo: Optional[str] = None
+    inboundSource: str = "PURCHASE"
+    vehicleNumber: Optional[str] = None
+    driverName: Optional[str] = None
+    gateEntryNo: Optional[str] = None
+    gateEntryTime: Optional[datetime] = None
+    totalAcceptedQty: int = 0
+    totalRejectedQty: int = 0
+    source: str = "MANUAL"
     # Computed
     itemCount: Optional[int] = None
+    externalPoNumber: Optional[str] = None
+    asnNumber: Optional[str] = None
 
 
 class GoodsReceiptBrief(ResponseBase):
@@ -297,6 +379,46 @@ class GoodsReceiptItemResponse(ResponseBase):
     # Computed
     skuCode: Optional[str] = None
     skuName: Optional[str] = None
+
+
+# ============================================================================
+# Phase 2: Create from Source Schemas
+# ============================================================================
+
+class GRNFromExternalPOCreate(SQLModel):
+    """Create GRN from External Purchase Order"""
+    external_po_id: UUID
+    location_id: UUID
+    vehicle_number: Optional[str] = None
+    driver_name: Optional[str] = None
+    gate_entry_no: Optional[str] = None
+    notes: Optional[str] = None
+    # If not provided, all pending items from PO will be included
+    item_ids: Optional[List[UUID]] = None
+
+
+class GRNFromASNCreate(SQLModel):
+    """Create GRN from Advance Shipping Notice"""
+    asn_id: UUID
+    vehicle_number: Optional[str] = None
+    driver_name: Optional[str] = None
+    gate_entry_no: Optional[str] = None
+    notes: Optional[str] = None
+
+
+class GRNFromReturnCreate(SQLModel):
+    """Create GRN from Return"""
+    return_id: UUID
+    location_id: UUID
+    notes: Optional[str] = None
+
+
+class GRNFromSTOCreate(SQLModel):
+    """Create GRN from Stock Transfer Order"""
+    sto_id: UUID
+    vehicle_number: Optional[str] = None
+    driver_name: Optional[str] = None
+    notes: Optional[str] = None
 
 
 # Update forward reference

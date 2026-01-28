@@ -1,6 +1,7 @@
 """
 Locations API v1 - Location, Zone, and Bin management endpoints
 """
+import re
 from decimal import Decimal
 from typing import List, Optional
 from uuid import UUID
@@ -21,9 +22,117 @@ from app.models import (
 router = APIRouter(prefix="/locations", tags=["Locations"])
 
 
+# Location type prefixes
+LOCATION_TYPE_PREFIX = {
+    "WAREHOUSE": "WH",
+    "STORE": "ST",
+    "HUB": "HB",
+    "VIRTUAL": "VT",
+}
+
+
+def generate_location_code(name: str, location_type: str, session: Session) -> str:
+    """
+    Generate location code in format: TYPE-XXX-0001
+    - TYPE = WH (Warehouse), ST (Store), HB (Hub), VT (Virtual)
+    - XXX = First 3 uppercase letters from location name
+    - 0001 = Sequential number
+    """
+    # Get type prefix
+    type_prefix = LOCATION_TYPE_PREFIX.get(location_type, "LC")
+
+    # Common words to exclude
+    stop_words = {'the', 'and', 'of', 'for', 'in', 'a', 'an', 'main', 'central', 'primary'}
+
+    # Clean and split the name
+    words = re.sub(r'[^a-zA-Z\s]', '', name).lower().split()
+    meaningful_words = [w for w in words if w not in stop_words]
+
+    # If no meaningful words, use original words
+    if not meaningful_words:
+        meaningful_words = words
+
+    # Generate name prefix from meaningful words
+    if len(meaningful_words) >= 2:
+        # Use first letter of first 2 words + first letter of last word
+        name_prefix = (meaningful_words[0][0] + meaningful_words[1][0] +
+                      (meaningful_words[-1][0] if len(meaningful_words) > 2 else meaningful_words[0][1] if len(meaningful_words[0]) > 1 else 'X')).upper()
+    elif len(meaningful_words) == 1:
+        # Use first 3 letters of the word
+        name_prefix = meaningful_words[0][:3].upper()
+    else:
+        name_prefix = 'LOC'
+
+    # Ensure prefix is exactly 3 characters
+    name_prefix = name_prefix[:3].ljust(3, 'X')
+
+    # Get current count of locations to determine next number
+    location_count = session.exec(select(func.count(Location.id))).one()
+    next_number = location_count + 1
+
+    # Format: TYPE-XXX-0001
+    code = f"{type_prefix}-{name_prefix}-{next_number:04d}"
+
+    # Check if code already exists and increment if needed
+    existing = session.exec(
+        select(Location).where(Location.code == code)
+    ).first()
+
+    while existing:
+        next_number += 1
+        code = f"{type_prefix}-{name_prefix}-{next_number:04d}"
+        existing = session.exec(
+            select(Location).where(Location.code == code)
+        ).first()
+
+    return code
+
+
+def preview_location_code(name: str, location_type: str, session: Session) -> str:
+    """Preview what the location code would be."""
+    type_prefix = LOCATION_TYPE_PREFIX.get(location_type, "LC")
+
+    stop_words = {'the', 'and', 'of', 'for', 'in', 'a', 'an', 'main', 'central', 'primary'}
+    words = re.sub(r'[^a-zA-Z\s]', '', name).lower().split()
+    meaningful_words = [w for w in words if w not in stop_words]
+
+    if not meaningful_words:
+        meaningful_words = words
+
+    if len(meaningful_words) >= 2:
+        name_prefix = (meaningful_words[0][0] + meaningful_words[1][0] +
+                      (meaningful_words[-1][0] if len(meaningful_words) > 2 else meaningful_words[0][1] if len(meaningful_words[0]) > 1 else 'X')).upper()
+    elif len(meaningful_words) == 1:
+        name_prefix = meaningful_words[0][:3].upper()
+    else:
+        name_prefix = 'LOC'
+
+    name_prefix = name_prefix[:3].ljust(3, 'X')
+
+    location_count = session.exec(select(func.count(Location.id))).one()
+    next_number = location_count + 1
+
+    return f"{type_prefix}-{name_prefix}-{next_number:04d}"
+
+
 # ============================================================================
 # Location Endpoints
 # ============================================================================
+
+@router.get("/preview-code")
+def get_preview_code(
+    name: str = Query(..., min_length=1, description="Location name to generate code for"),
+    type: str = Query(..., description="Location type (WAREHOUSE, STORE, HUB, VIRTUAL)"),
+    session: Session = Depends(get_session),
+    _: User = Depends(get_current_user)
+):
+    """
+    Preview the auto-generated location code for a given name and type.
+    Does not create any records - just shows what the code would be.
+    """
+    code = preview_location_code(name, type, session)
+    return {"name": name, "type": type, "code": code}
+
 
 @router.get("", response_model=List[LocationBrief])
 def list_locations(
@@ -109,7 +218,10 @@ def create_location(
     session: Session = Depends(get_session),
     _: None = Depends(require_admin())
 ):
-    """Create a new location. Requires ADMIN or SUPER_ADMIN role."""
+    """
+    Create a new location. Requires ADMIN or SUPER_ADMIN role.
+    Location code is auto-generated in format TYPE-XXX-0001 if not provided.
+    """
     # Non-super-admins can only create locations for their own company
     if company_filter.company_id:
         if location_data.companyId != company_filter.company_id:
@@ -118,8 +230,25 @@ def create_location(
                 detail="Cannot create locations for other companies"
             )
 
+    # Get location data as dict
+    data = location_data.model_dump()
+
+    # Auto-generate code if not provided or empty
+    if not data.get('code'):
+        data['code'] = generate_location_code(data['name'], data['type'], session)
+    else:
+        # Check if provided code already exists
+        existing = session.exec(
+            select(Location).where(Location.code == data['code'])
+        ).first()
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Location code already exists"
+            )
+
     # Create location
-    location = Location(**location_data.model_dump())
+    location = Location(**data)
     session.add(location)
     session.commit()
     session.refresh(location)

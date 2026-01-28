@@ -389,7 +389,7 @@ class CompanyBrief(ResponseBase):
 
 # Location Schemas
 class LocationCreate(CreateBase):
-    code: str
+    code: Optional[str] = None  # Auto-generated if not provided
     name: str
     type: LocationType
     address: Optional[dict] = None

@@ -114,10 +114,71 @@ export default function LocationsPage() {
     contactEmail: "",
     gst: "",
   });
+  const [previewCode, setPreviewCode] = useState<string>("");
 
   const canManageLocations = ["SUPER_ADMIN", "ADMIN"].includes(
     session?.user?.role || ""
   );
+
+  // Location type prefixes for client-side preview
+  const LOCATION_TYPE_PREFIX: Record<string, string> = {
+    WAREHOUSE: "WH",
+    STORE: "ST",
+    HUB: "HB",
+    VIRTUAL: "VT",
+  };
+
+  // Generate location code preview from name and type (client-side)
+  function generateCodePreview(name: string, type: string): string {
+    if (!name || name.length < 2) return "";
+
+    const typePrefix = LOCATION_TYPE_PREFIX[type] || "LC";
+
+    // Common words to exclude
+    const stopWords = new Set(['the', 'and', 'of', 'for', 'in', 'a', 'an', 'main', 'central', 'primary']);
+
+    // Clean and split the name
+    const words = name.replace(/[^a-zA-Z\s]/g, '').toLowerCase().split(/\s+/).filter(w => w);
+    const meaningfulWords = words.filter(w => !stopWords.has(w));
+
+    // Use meaningful words, or original if none
+    const wordsToUse = meaningfulWords.length > 0 ? meaningfulWords : words;
+
+    let namePrefix: string;
+    if (wordsToUse.length >= 2) {
+      namePrefix = (wordsToUse[0][0] + wordsToUse[1][0] +
+        (wordsToUse.length > 2 ? wordsToUse[wordsToUse.length - 1][0] :
+          (wordsToUse[0].length > 1 ? wordsToUse[0][1] : 'X'))).toUpperCase();
+    } else if (wordsToUse.length === 1) {
+      namePrefix = wordsToUse[0].slice(0, 3).toUpperCase();
+    } else {
+      namePrefix = 'LOC';
+    }
+
+    // Ensure prefix is exactly 3 characters
+    namePrefix = namePrefix.slice(0, 3).padEnd(3, 'X');
+
+    // Show preview with placeholder sequence (actual number assigned on create)
+    return `${typePrefix}-${namePrefix}-0001`;
+  }
+
+  function handleNameChange(name: string) {
+    setFormData({ ...formData, name });
+    // Generate preview code when creating new location
+    if (!editingLocation) {
+      const code = generateCodePreview(name, formData.type);
+      setPreviewCode(code);
+    }
+  }
+
+  function handleTypeChange(type: string) {
+    setFormData({ ...formData, type });
+    // Regenerate preview code when type changes
+    if (!editingLocation && formData.name) {
+      const code = generateCodePreview(formData.name, type);
+      setPreviewCode(code);
+    }
+  }
 
   useEffect(() => {
     fetchLocations();
@@ -146,10 +207,16 @@ export default function LocationsPage() {
         : "/api/v1/locations";
       const method = editingLocation ? "PATCH" : "POST";
 
+      // When creating, don't send code - let backend auto-generate it
+      // Add companyId from session for new locations
+      const payload = editingLocation
+        ? formData
+        : { ...formData, code: undefined, companyId: session?.user?.companyId };
+
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -236,6 +303,7 @@ export default function LocationsPage() {
       contactEmail: "",
       gst: "",
     });
+    setPreviewCode("");
   }
 
   function openEditDialog(location: Location) {
@@ -420,28 +488,20 @@ export default function LocationsPage() {
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="code">Location Code</Label>
+                  <Label htmlFor="name">Location Name *</Label>
                   <Input
-                    id="code"
-                    value={formData.code}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        code: e.target.value.toUpperCase(),
-                      })
-                    }
-                    placeholder="e.g., WH-MUM-01"
-                    disabled={!!editingLocation}
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => handleNameChange(e.target.value)}
+                    placeholder="e.g., Mumbai Main Warehouse"
                     required
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="type">Location Type</Label>
+                  <Label htmlFor="type">Location Type *</Label>
                   <Select
                     value={formData.type}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, type: value })
-                    }
+                    onValueChange={handleTypeChange}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select type" />
@@ -458,16 +518,24 @@ export default function LocationsPage() {
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="name">Location Name</Label>
+                <Label htmlFor="code">Location Code {editingLocation && "*"}</Label>
                 <Input
-                  id="name"
-                  value={formData.name}
+                  id="code"
+                  value={editingLocation ? formData.code : (previewCode || "")}
                   onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
+                    setFormData({
+                      ...formData,
+                      code: e.target.value.toUpperCase(),
+                    })
                   }
-                  placeholder="e.g., Mumbai Main Warehouse"
-                  required
+                  placeholder={editingLocation ? "Location code" : "Enter name & type to generate"}
+                  readOnly={!editingLocation}
+                  className={!editingLocation ? "bg-muted font-mono text-blue-600 font-semibold" : "font-mono"}
+                  required={!!editingLocation}
                 />
+                {!editingLocation && previewCode && (
+                  <p className="text-xs text-green-600 font-medium">Auto-generated: {previewCode}</p>
+                )}
               </div>
 
               <div className="space-y-2">

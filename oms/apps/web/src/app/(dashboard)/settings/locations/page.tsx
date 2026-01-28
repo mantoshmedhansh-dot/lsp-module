@@ -73,12 +73,13 @@ interface Location {
   contactEmail: string | null;
   gst: string | null;
   isActive: boolean;
-  company: {
+  companyId?: string;
+  company?: {
     id: string;
     name: string;
     code: string;
-  };
-  _count: {
+  } | null;
+  _count?: {
     zones: number;
   };
 }
@@ -334,9 +335,11 @@ export default function LocationsPage() {
                         {getLocationIcon(location.type)}
                         {location.name}
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        {location.company.name}
-                      </p>
+                      {location.company?.name && (
+                        <p className="text-xs text-muted-foreground">
+                          {location.company.name}
+                        </p>
+                      )}
                     </TableCell>
                     <TableCell>{location.type}</TableCell>
                     <TableCell>
@@ -354,7 +357,7 @@ export default function LocationsPage() {
                         {location.isActive ? "Active" : "Inactive"}
                       </Badge>
                     </TableCell>
-                    <TableCell>{location._count.zones}</TableCell>
+                    <TableCell>{location._count?.zones ?? 0}</TableCell>
                     <TableCell className="text-right">
                       {canManageLocations && (
                         <DropdownMenu>

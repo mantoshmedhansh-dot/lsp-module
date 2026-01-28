@@ -513,14 +513,29 @@ def post_goods_receipt(
         target_bin_id = item.targetBinId
         if not target_bin_id:
             # Find default bin in saleable zone
+            # Try with enum first, then string value as fallback
             default_bin = session.exec(
                 select(Bin)
                 .join(Zone)
                 .where(Zone.locationId == gr.locationId)
                 .where(Zone.type == ZoneType.SALEABLE)
+                .where(Zone.isActive == True)
                 .where(Bin.isActive == True)
                 .limit(1)
             ).first()
+
+            # Fallback: try with string value in case enum comparison fails
+            if not default_bin:
+                default_bin = session.exec(
+                    select(Bin)
+                    .join(Zone)
+                    .where(Zone.locationId == gr.locationId)
+                    .where(Zone.type == "SALEABLE")
+                    .where(Zone.isActive == True)
+                    .where(Bin.isActive == True)
+                    .limit(1)
+                ).first()
+
             if default_bin:
                 target_bin_id = default_bin.id
 
@@ -535,27 +550,38 @@ def post_goods_receipt(
             ).all()
             zone_info = ", ".join([f"{z.code}({z.type})" for z in all_zones]) if all_zones else "No zones"
 
-            # Check for SALEABLE zones specifically
-            saleable_zones = session.exec(
+            # Check for SALEABLE zones specifically (both active and inactive)
+            all_saleable_zones = session.exec(
                 select(Zone)
                 .where(Zone.locationId == gr.locationId)
                 .where(Zone.type == ZoneType.SALEABLE)
             ).all()
 
-            # Check for bins in saleable zones
-            bins_info = "No SALEABLE zones"
-            if saleable_zones:
-                saleable_zone_ids = [z.id for z in saleable_zones]
-                bins = session.exec(
-                    select(Bin)
-                    .where(Bin.zoneId.in_(saleable_zone_ids))
-                    .where(Bin.isActive == True)
-                ).all()
-                bins_info = f"{len(bins)} active bins in SALEABLE zones" if bins else "No active bins in SALEABLE zones"
+            active_saleable_zones = [z for z in all_saleable_zones if z.isActive]
+
+            # Check for bins in active saleable zones
+            bins_info = "No SALEABLE zones found"
+            if all_saleable_zones:
+                inactive_count = len(all_saleable_zones) - len(active_saleable_zones)
+                if inactive_count > 0:
+                    bins_info = f"{len(all_saleable_zones)} SALEABLE zones ({inactive_count} inactive)"
+                else:
+                    bins_info = f"{len(all_saleable_zones)} active SALEABLE zones"
+
+                if active_saleable_zones:
+                    saleable_zone_ids = [z.id for z in active_saleable_zones]
+                    all_bins = session.exec(
+                        select(Bin).where(Bin.zoneId.in_(saleable_zone_ids))
+                    ).all()
+                    active_bins = [b for b in all_bins if b.isActive]
+                    inactive_bins = len(all_bins) - len(active_bins)
+                    bins_info += f". Bins: {len(active_bins)} active, {inactive_bins} inactive"
+                else:
+                    bins_info += ". All SALEABLE zones are inactive"
 
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"No bin available for SKU {sku_info}. Location zones: [{zone_info}]. {bins_info}. Please create an active bin in a SALEABLE zone."
+                detail=f"No bin available for SKU {sku_info}. Location zones: [{zone_info}]. {bins_info}. Please ensure you have an active bin in an active SALEABLE zone."
             )
 
         # Get next FIFO sequence

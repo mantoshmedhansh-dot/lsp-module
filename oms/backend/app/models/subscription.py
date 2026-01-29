@@ -86,7 +86,7 @@ class SubscriptionBase(SQLModel):
     cancelledAt: Optional[datetime] = None
     cancellationReason: Optional[str] = Field(default=None, max_length=500)
     notes: Optional[str] = Field(default=None, max_length=1000)
-    extraData: Optional[dict] = Field(default=None, sa_column=Column("metadata", JSON))
+    extraData: Optional[dict] = Field(default=None, sa_column=Column(JSON))
 
 
 class Subscription(SubscriptionBase, BaseModel, table=True):

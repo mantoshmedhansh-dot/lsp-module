@@ -56,7 +56,7 @@ class PreorderBase(SQLModel):
     convertedOrderId: Optional[UUID] = Field(default=None, foreign_key="Order.id")
     convertedAt: Optional[datetime] = None
     notes: Optional[str] = Field(default=None, max_length=1000)
-    extraData: Optional[dict] = Field(default=None, sa_column=Column("metadata", JSON))
+    extraData: Optional[dict] = Field(default=None, sa_column=Column(JSON))
 
 
 class Preorder(PreorderBase, BaseModel, table=True):

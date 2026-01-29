@@ -756,6 +756,459 @@ export const APIKeyUpdateSchema = {
     description: 'Schema for updating an API key'
 } as const;
 
+export const ASNItemCreateSchema = {
+    properties: {
+        skuId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Skuid'
+        },
+        externalSkuCode: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalskucode'
+        },
+        externalSkuName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalskuname'
+        },
+        externalPoItemId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalpoitemid'
+        },
+        expectedQty: {
+            type: 'integer',
+            title: 'Expectedqty'
+        },
+        batchNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Batchno'
+        },
+        lotNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Lotno'
+        },
+        expiryDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Expirydate'
+        },
+        mfgDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Mfgdate'
+        },
+        cartons: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Cartons'
+        },
+        unitsPerCarton: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Unitspercarton'
+        }
+    },
+    type: 'object',
+    required: ['expectedQty'],
+    title: 'ASNItemCreate',
+    description: 'Create schema for item (camelCase for API input)'
+} as const;
+
+export const ASNItemReadSchema = {
+    properties: {
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        asnId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Asnid'
+        },
+        skuId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Skuid'
+        },
+        externalSkuCode: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalskucode'
+        },
+        externalSkuName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalskuname'
+        },
+        externalPoItemId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalpoitemid'
+        },
+        expectedQty: {
+            type: 'integer',
+            title: 'Expectedqty'
+        },
+        receivedQty: {
+            type: 'integer',
+            title: 'Receivedqty'
+        },
+        pendingQty: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Pendingqty'
+        },
+        batchNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Batchno'
+        },
+        lotNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Lotno'
+        },
+        expiryDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Expirydate'
+        },
+        mfgDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Mfgdate'
+        },
+        cartons: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Cartons'
+        },
+        unitsPerCarton: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Unitspercarton'
+        },
+        status: {
+            type: 'string',
+            title: 'Status'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        skuCode: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Skucode'
+        },
+        skuName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Skuname'
+        }
+    },
+    type: 'object',
+    required: ['id', 'asnId', 'expectedQty', 'receivedQty', 'status', 'createdAt'],
+    title: 'ASNItemRead',
+    description: 'Read schema for item (camelCase for API output)'
+} as const;
+
+export const ASNItemUpdateSchema = {
+    properties: {
+        skuId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Skuid'
+        },
+        externalSkuCode: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalskucode'
+        },
+        externalSkuName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalskuname'
+        },
+        expectedQty: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Expectedqty'
+        },
+        receivedQty: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Receivedqty'
+        },
+        batchNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Batchno'
+        },
+        lotNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Lotno'
+        },
+        expiryDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Expirydate'
+        },
+        mfgDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Mfgdate'
+        },
+        cartons: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Cartons'
+        },
+        unitsPerCarton: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Unitspercarton'
+        },
+        status: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Status'
+        }
+    },
+    type: 'object',
+    title: 'ASNItemUpdate',
+    description: 'Update schema for item (camelCase for API input)'
+} as const;
+
 export const AWBCreateSchema = {
     properties: {
         awbNo: {
@@ -833,6 +1286,779 @@ export const AWBResponseSchema = {
     required: ['awbNo', 'transporterId', 'id', 'createdAt', 'updatedAt'],
     title: 'AWBResponse',
     description: 'AWB response schema'
+} as const;
+
+export const AdvanceShippingNoticeCreateSchema = {
+    properties: {
+        locationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Locationid'
+        },
+        externalAsnNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalasnno'
+        },
+        externalPoId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalpoid'
+        },
+        purchaseOrderId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Purchaseorderid'
+        },
+        vendorId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Vendorid'
+        },
+        externalVendorCode: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalvendorcode'
+        },
+        externalVendorName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalvendorname'
+        },
+        carrier: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Carrier'
+        },
+        trackingNumber: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Trackingnumber'
+        },
+        vehicleNumber: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Vehiclenumber'
+        },
+        driverName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Drivername'
+        },
+        driverPhone: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Driverphone'
+        },
+        shipDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Shipdate'
+        },
+        expectedArrival: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Expectedarrival'
+        },
+        totalCartons: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Totalcartons'
+        },
+        totalPallets: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Totalpallets'
+        },
+        totalWeightKg: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Totalweightkg'
+        },
+        remarks: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Remarks'
+        },
+        items: {
+            anyOf: [
+                {
+                    items: {
+                        '$ref': '#/components/schemas/ASNItemCreate'
+                    },
+                    type: 'array'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Items'
+        }
+    },
+    type: 'object',
+    required: ['locationId'],
+    title: 'AdvanceShippingNoticeCreate',
+    description: 'Create schema (camelCase for API input)'
+} as const;
+
+export const AdvanceShippingNoticeReadSchema = {
+    properties: {
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        locationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Locationid'
+        },
+        asnNo: {
+            type: 'string',
+            title: 'Asnno'
+        },
+        externalAsnNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalasnno'
+        },
+        externalPoId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalpoid'
+        },
+        purchaseOrderId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Purchaseorderid'
+        },
+        vendorId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Vendorid'
+        },
+        externalVendorCode: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalvendorcode'
+        },
+        externalVendorName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalvendorname'
+        },
+        status: {
+            type: 'string',
+            title: 'Status'
+        },
+        carrier: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Carrier'
+        },
+        trackingNumber: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Trackingnumber'
+        },
+        vehicleNumber: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Vehiclenumber'
+        },
+        driverName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Drivername'
+        },
+        driverPhone: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Driverphone'
+        },
+        shipDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Shipdate'
+        },
+        expectedArrival: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Expectedarrival'
+        },
+        actualArrival: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Actualarrival'
+        },
+        totalCartons: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Totalcartons'
+        },
+        totalPallets: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Totalpallets'
+        },
+        totalWeightKg: {
+            anyOf: [
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Totalweightkg'
+        },
+        source: {
+            type: 'string',
+            title: 'Source'
+        },
+        remarks: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Remarks'
+        },
+        totalLines: {
+            type: 'integer',
+            title: 'Totallines'
+        },
+        totalExpectedQty: {
+            type: 'integer',
+            title: 'Totalexpectedqty'
+        },
+        totalReceivedQty: {
+            type: 'integer',
+            title: 'Totalreceivedqty'
+        },
+        pendingQty: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Pendingqty'
+        },
+        goodsReceiptId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Goodsreceiptid'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        },
+        locationName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Locationname'
+        },
+        externalPoNumber: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalponumber'
+        },
+        items: {
+            anyOf: [
+                {
+                    items: {
+                        '$ref': '#/components/schemas/ASNItemRead'
+                    },
+                    type: 'array'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Items'
+        }
+    },
+    type: 'object',
+    required: ['id', 'companyId', 'locationId', 'asnNo', 'status', 'source', 'totalLines', 'totalExpectedQty', 'totalReceivedQty', 'createdAt', 'updatedAt'],
+    title: 'AdvanceShippingNoticeRead',
+    description: 'Read schema (camelCase for API output)'
+} as const;
+
+export const AdvanceShippingNoticeUpdateSchema = {
+    properties: {
+        externalAsnNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalasnno'
+        },
+        externalPoId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalpoid'
+        },
+        purchaseOrderId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Purchaseorderid'
+        },
+        vendorId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Vendorid'
+        },
+        externalVendorCode: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalvendorcode'
+        },
+        externalVendorName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalvendorname'
+        },
+        status: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Status'
+        },
+        carrier: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Carrier'
+        },
+        trackingNumber: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Trackingnumber'
+        },
+        vehicleNumber: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Vehiclenumber'
+        },
+        driverName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Drivername'
+        },
+        driverPhone: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Driverphone'
+        },
+        shipDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Shipdate'
+        },
+        expectedArrival: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Expectedarrival'
+        },
+        actualArrival: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Actualarrival'
+        },
+        totalCartons: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Totalcartons'
+        },
+        totalPallets: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Totalpallets'
+        },
+        totalWeightKg: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Totalweightkg'
+        },
+        remarks: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Remarks'
+        }
+    },
+    type: 'object',
+    title: 'AdvanceShippingNoticeUpdate',
+    description: 'Update schema (camelCase for API input)'
 } as const;
 
 export const AllocationAuditResponseSchema = {
@@ -1112,6 +2338,13 @@ export const AllocationResultSchema = {
     description: 'Result of allocation attempt'
 } as const;
 
+export const AllocationStatusSchema = {
+    type: 'string',
+    enum: ['ALLOCATED', 'PICKED', 'CANCELLED'],
+    title: 'AllocationStatus',
+    description: 'Inventory allocation status'
+} as const;
+
 export const AnalyticsSnapshotResponseSchema = {
     properties: {
         snapshotDate: {
@@ -1352,6 +2585,13 @@ export const AnalyticsSnapshotResponseSchema = {
     required: ['snapshotDate', 'snapshotType', 'companyId', 'id', 'createdAt'],
     title: 'AnalyticsSnapshotResponse',
     description: 'Analytics Snapshot response schema'
+} as const;
+
+export const AssignmentStatusSchema = {
+    type: 'string',
+    enum: ['PENDING', 'ACCEPTED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'],
+    title: 'AssignmentStatus',
+    description: 'Assignment status'
 } as const;
 
 export const AuditLogResponseSchema = {
@@ -2623,6 +3863,318 @@ export const BinCapacityResponseSchema = {
     description: 'Response for bin capacity information'
 } as const;
 
+export const BinCharacteristicsCreateSchema = {
+    properties: {
+        binId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Binid'
+        },
+        locationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Locationid'
+        },
+        zoneId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Zoneid'
+        },
+        pickZone: {
+            type: 'string',
+            title: 'Pickzone'
+        },
+        aisle: {
+            type: 'string',
+            title: 'Aisle'
+        },
+        level: {
+            type: 'integer',
+            title: 'Level',
+            default: 1
+        },
+        position: {
+            type: 'integer',
+            title: 'Position',
+            default: 1
+        },
+        heightCm: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Heightcm'
+        },
+        widthCm: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Widthcm'
+        },
+        depthCm: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Depthcm'
+        },
+        maxWeightKg: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Maxweightkg'
+        },
+        accessibilityScore: {
+            type: 'integer',
+            title: 'Accessibilityscore',
+            default: 5
+        },
+        ergonomicScore: {
+            type: 'integer',
+            title: 'Ergonomicscore',
+            default: 5
+        },
+        distanceFromDock: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Distancefromdock'
+        },
+        pickPathSequence: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Pickpathsequence'
+        }
+    },
+    type: 'object',
+    required: ['binId', 'locationId', 'zoneId', 'pickZone', 'aisle'],
+    title: 'BinCharacteristicsCreate',
+    description: 'Schema for characteristics creation'
+} as const;
+
+export const BinCharacteristicsResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        binId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Binid'
+        },
+        locationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Locationid'
+        },
+        zoneId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Zoneid'
+        },
+        pickZone: {
+            type: 'string',
+            maxLength: 50,
+            title: 'Pickzone'
+        },
+        aisle: {
+            type: 'string',
+            maxLength: 20,
+            title: 'Aisle'
+        },
+        level: {
+            type: 'integer',
+            title: 'Level',
+            default: 1
+        },
+        position: {
+            type: 'integer',
+            title: 'Position',
+            default: 1
+        },
+        heightCm: {
+            anyOf: [
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Heightcm'
+        },
+        widthCm: {
+            anyOf: [
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Widthcm'
+        },
+        depthCm: {
+            anyOf: [
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Depthcm'
+        },
+        volumeCubicCm: {
+            anyOf: [
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Volumecubiccm'
+        },
+        maxWeightKg: {
+            anyOf: [
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Maxweightkg'
+        },
+        currentWeightKg: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Currentweightkg',
+            default: '0'
+        },
+        utilizationPercent: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Utilizationpercent',
+            default: '0'
+        },
+        accessibilityScore: {
+            type: 'integer',
+            title: 'Accessibilityscore',
+            default: 5
+        },
+        ergonomicScore: {
+            type: 'integer',
+            title: 'Ergonomicscore',
+            default: 5
+        },
+        distanceFromDock: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Distancefromdock'
+        },
+        pickPathSequence: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Pickpathsequence'
+        },
+        isActive: {
+            type: 'boolean',
+            title: 'Isactive',
+            default: true
+        },
+        lastUpdatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Lastupdatedat'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'binId', 'locationId', 'zoneId', 'pickZone', 'aisle', 'id', 'createdAt', 'updatedAt'],
+    title: 'BinCharacteristicsResponse',
+    description: 'Response schema for characteristics'
+} as const;
+
 export const BinCreateSchema = {
     properties: {
         code: {
@@ -3431,6 +4983,89 @@ export const Body_bulk_import_shipments_api_v1_shipments_bulk_import_postSchema 
     title: 'Body_bulk_import_shipments_api_v1_shipments_bulk_import_post'
 } as const;
 
+export const Body_upload_asn_api_v1_upload_batches_process_asn_postSchema = {
+    properties: {
+        file: {
+            type: 'string',
+            format: 'binary',
+            title: 'File'
+        },
+        location_id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Location Id'
+        }
+    },
+    type: 'object',
+    required: ['file', 'location_id'],
+    title: 'Body_upload_asn_api_v1_upload_batches_process_asn_post'
+} as const;
+
+export const Body_upload_asns_api_v1_asns_upload_postSchema = {
+    properties: {
+        file: {
+            type: 'string',
+            format: 'binary',
+            title: 'File'
+        }
+    },
+    type: 'object',
+    required: ['file'],
+    title: 'Body_upload_asns_api_v1_asns_upload_post'
+} as const;
+
+export const Body_upload_external_po_api_v1_upload_batches_process_external_po_postSchema = {
+    properties: {
+        file: {
+            type: 'string',
+            format: 'binary',
+            title: 'File'
+        }
+    },
+    type: 'object',
+    required: ['file'],
+    title: 'Body_upload_external_po_api_v1_upload_batches_process_external_po_post'
+} as const;
+
+export const Body_upload_external_pos_api_v1_external_pos_upload_postSchema = {
+    properties: {
+        file: {
+            type: 'string',
+            format: 'binary',
+            title: 'File'
+        }
+    },
+    type: 'object',
+    required: ['file'],
+    title: 'Body_upload_external_pos_api_v1_external_pos_upload_post'
+} as const;
+
+export const Body_upload_opening_stock_api_v1_upload_batches_process_opening_stock_postSchema = {
+    properties: {
+        file: {
+            type: 'string',
+            format: 'binary',
+            title: 'File'
+        }
+    },
+    type: 'object',
+    required: ['file'],
+    title: 'Body_upload_opening_stock_api_v1_upload_batches_process_opening_stock_post'
+} as const;
+
+export const Body_upload_stock_transfer_api_v1_upload_batches_process_stock_transfer_postSchema = {
+    properties: {
+        file: {
+            type: 'string',
+            format: 'binary',
+            title: 'File'
+        }
+    },
+    type: 'object',
+    required: ['file'],
+    title: 'Body_upload_stock_transfer_api_v1_upload_batches_process_stock_transfer_post'
+} as const;
+
 export const BookingStatusSchema = {
     type: 'string',
     enum: ['PENDING', 'CONFIRMED', 'ASSIGNED', 'CANCELLED'],
@@ -3565,35 +5200,18 @@ export const BrandCreateSchema = {
                 }
             ],
             title: 'Address'
-        },
-        settings: {
-            anyOf: [
-                {
-                    additionalProperties: true,
-                    type: 'object'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Settings'
-        },
-        companyId: {
-            type: 'string',
-            format: 'uuid',
-            title: 'Companyid'
         }
     },
     type: 'object',
-    required: ['code', 'name', 'companyId'],
-    title: 'BrandCreate',
-    description: 'Schema for creating a new brand'
+    required: ['code', 'name'],
+    title: 'BrandCreate'
 } as const;
 
 export const BrandResponseSchema = {
     properties: {
         id: {
             type: 'string',
+            format: 'uuid',
             title: 'Id'
         },
         code: {
@@ -3670,18 +5288,54 @@ export const BrandResponseSchema = {
             ],
             title: 'Website'
         },
+        address: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Address'
+        },
+        settings: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Settings'
+        },
         isActive: {
             type: 'boolean',
             title: 'Isactive'
         },
         companyId: {
             type: 'string',
+            format: 'uuid',
             title: 'Companyid'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
         }
     },
     type: 'object',
-    required: ['id', 'code', 'name', 'isActive', 'companyId'],
-    title: 'BrandResponse'
+    required: ['id', 'code', 'name', 'isActive', 'companyId', 'createdAt', 'updatedAt'],
+    title: 'BrandResponse',
+    description: 'Schema for brand API responses'
 } as const;
 
 export const BrandUpdateSchema = {
@@ -6001,6 +7655,368 @@ export const ChannelInventoryUpdateSchema = {
     description: 'Schema for updating channel inventory'
 } as const;
 
+export const ChargebackCreateSchema = {
+    properties: {
+        orderId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Orderid'
+        },
+        orderNo: {
+            type: 'string',
+            title: 'Orderno'
+        },
+        channel: {
+            type: 'string',
+            title: 'Channel'
+        },
+        reason: {
+            '$ref': '#/components/schemas/ChargebackReason'
+        },
+        reasonDetail: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Reasondetail'
+        },
+        chargebackAmount: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
+            title: 'Chargebackamount'
+        },
+        originalAmount: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
+            title: 'Originalamount'
+        },
+        chargebackDate: {
+            type: 'string',
+            format: 'date',
+            title: 'Chargebackdate'
+        },
+        deadlineDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Deadlinedate'
+        },
+        paymentGatewayRef: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Paymentgatewayref'
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        }
+    },
+    type: 'object',
+    required: ['orderId', 'orderNo', 'channel', 'reason', 'chargebackAmount', 'originalAmount', 'chargebackDate'],
+    title: 'ChargebackCreate',
+    description: 'Schema for chargeback creation'
+} as const;
+
+export const ChargebackReasonSchema = {
+    type: 'string',
+    enum: ['FRAUD', 'NOT_RECEIVED', 'NOT_AS_DESCRIBED', 'DUPLICATE', 'CANCELLED', 'CREDIT_NOT_PROCESSED', 'OTHER'],
+    title: 'ChargebackReason',
+    description: 'Chargeback reason codes'
+} as const;
+
+export const ChargebackResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        chargebackNo: {
+            type: 'string',
+            maxLength: 50,
+            title: 'Chargebackno'
+        },
+        orderId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Orderid'
+        },
+        orderNo: {
+            type: 'string',
+            maxLength: 50,
+            title: 'Orderno'
+        },
+        channel: {
+            type: 'string',
+            maxLength: 50,
+            title: 'Channel'
+        },
+        status: {
+            '$ref': '#/components/schemas/ChargebackStatus',
+            default: 'RECEIVED'
+        },
+        reason: {
+            '$ref': '#/components/schemas/ChargebackReason'
+        },
+        reasonDetail: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Reasondetail'
+        },
+        chargebackAmount: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Chargebackamount'
+        },
+        originalAmount: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Originalamount'
+        },
+        currency: {
+            type: 'string',
+            maxLength: 10,
+            title: 'Currency',
+            default: 'INR'
+        },
+        chargebackDate: {
+            type: 'string',
+            format: 'date',
+            title: 'Chargebackdate'
+        },
+        deadlineDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Deadlinedate'
+        },
+        paymentGatewayRef: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 100
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Paymentgatewayref'
+        },
+        cardLast4: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 4
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Cardlast4'
+        },
+        evidenceSubmittedAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Evidencesubmittedat'
+        },
+        evidenceData: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Evidencedata'
+        },
+        resolvedAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Resolvedat'
+        },
+        resolvedById: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Resolvedbyid'
+        },
+        outcome: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 50
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Outcome'
+        },
+        outcomeAmount: {
+            anyOf: [
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Outcomeamount'
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'chargebackNo', 'orderId', 'orderNo', 'channel', 'reason', 'chargebackAmount', 'originalAmount', 'chargebackDate', 'id', 'createdAt', 'updatedAt'],
+    title: 'ChargebackResponse',
+    description: 'Response schema for chargeback'
+} as const;
+
+export const ChargebackStatusSchema = {
+    type: 'string',
+    enum: ['RECEIVED', 'UNDER_REVIEW', 'EVIDENCE_SUBMITTED', 'WON', 'LOST', 'ACCEPTED'],
+    title: 'ChargebackStatus',
+    description: 'Chargeback status'
+} as const;
+
+export const ChargebackUpdateSchema = {
+    properties: {
+        status: {
+            anyOf: [
+                {
+                    '$ref': '#/components/schemas/ChargebackStatus'
+                },
+                {
+                    type: 'null'
+                }
+            ]
+        },
+        evidenceData: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Evidencedata'
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        }
+    },
+    type: 'object',
+    title: 'ChargebackUpdate',
+    description: 'Schema for chargeback update'
+} as const;
+
 export const CommunicationTemplateCreateSchema = {
     properties: {
         name: {
@@ -6834,11 +8850,771 @@ export const CompanyValuationResponseSchema = {
     description: 'Response for company valuation settings'
 } as const;
 
+export const ConflictResolutionSchema = {
+    type: 'string',
+    enum: ['SERVER_WINS', 'CLIENT_WINS', 'MANUAL', 'MERGE'],
+    title: 'ConflictResolution',
+    description: 'Conflict resolution strategies'
+} as const;
+
+export const ConnectionStatusSchema = {
+    type: 'string',
+    enum: ['PENDING', 'CONNECTED', 'DISCONNECTED', 'ERROR', 'EXPIRED'],
+    title: 'ConnectionStatus',
+    description: 'Marketplace connection status'
+} as const;
+
 export const CreditStatusSchema = {
     type: 'string',
     enum: ['AVAILABLE', 'EXHAUSTED', 'ON_HOLD', 'OVERDUE'],
     title: 'CreditStatus',
     description: 'Credit status for B2B customers'
+} as const;
+
+export const CrossDockAllocationCreateSchema = {
+    properties: {
+        crossDockOrderId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Crossdockorderid'
+        },
+        orderId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Orderid'
+        },
+        orderItemId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Orderitemid'
+        },
+        skuId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Skuid'
+        },
+        inboundLineId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Inboundlineid'
+        },
+        allocatedQuantity: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
+            title: 'Allocatedquantity'
+        },
+        stagingLocation: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Staginglocation'
+        },
+        lotNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Lotno'
+        }
+    },
+    type: 'object',
+    required: ['crossDockOrderId', 'orderId', 'orderItemId', 'skuId', 'allocatedQuantity'],
+    title: 'CrossDockAllocationCreate',
+    description: 'Schema for allocation creation'
+} as const;
+
+export const CrossDockAllocationResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        crossDockOrderId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Crossdockorderid'
+        },
+        orderId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Orderid'
+        },
+        orderItemId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Orderitemid'
+        },
+        skuId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Skuid'
+        },
+        inboundLineId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Inboundlineid'
+        },
+        allocatedQuantity: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Allocatedquantity'
+        },
+        receivedQuantity: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Receivedquantity',
+            default: '0'
+        },
+        loadedQuantity: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Loadedquantity',
+            default: '0'
+        },
+        status: {
+            '$ref': '#/components/schemas/CrossDockStatus',
+            default: 'ALLOCATED'
+        },
+        stagingLocation: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 50
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Staginglocation'
+        },
+        lotNo: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 100
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Lotno'
+        },
+        serialNumbers: {
+            anyOf: [
+                {
+                    items: {
+                        type: 'string'
+                    },
+                    type: 'array'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Serialnumbers'
+        },
+        allocatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Allocatedat'
+        },
+        receivedAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Receivedat'
+        },
+        loadedAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Loadedat'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'crossDockOrderId', 'orderId', 'orderItemId', 'skuId', 'allocatedQuantity', 'id', 'createdAt', 'updatedAt'],
+    title: 'CrossDockAllocationResponse',
+    description: 'Response schema for allocation'
+} as const;
+
+export const CrossDockOrderResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        locationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Locationid'
+        },
+        orderId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Orderid'
+        },
+        orderNo: {
+            type: 'string',
+            maxLength: 50,
+            title: 'Orderno'
+        },
+        status: {
+            '$ref': '#/components/schemas/CrossDockStatus',
+            default: 'PENDING'
+        },
+        ruleId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Ruleid'
+        },
+        inboundAsnId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Inboundasnid'
+        },
+        inboundExpectedAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Inboundexpectedat'
+        },
+        inboundReceivedAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Inboundreceivedat'
+        },
+        stagingAreaId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Stagingareaid'
+        },
+        stagedAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Stagedat'
+        },
+        outboundManifestId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Outboundmanifestid'
+        },
+        shippedAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Shippedat'
+        },
+        totalItems: {
+            type: 'integer',
+            title: 'Totalitems',
+            default: 0
+        },
+        allocatedItems: {
+            type: 'integer',
+            title: 'Allocateditems',
+            default: 0
+        },
+        receivedItems: {
+            type: 'integer',
+            title: 'Receiveditems',
+            default: 0
+        },
+        loadedItems: {
+            type: 'integer',
+            title: 'Loadeditems',
+            default: 0
+        },
+        priority: {
+            type: 'integer',
+            title: 'Priority',
+            default: 0
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'locationId', 'orderId', 'orderNo', 'id', 'createdAt', 'updatedAt'],
+    title: 'CrossDockOrderResponse',
+    description: 'Response schema for order'
+} as const;
+
+export const CrossDockRuleCreateSchema = {
+    properties: {
+        locationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Locationid'
+        },
+        ruleName: {
+            type: 'string',
+            title: 'Rulename'
+        },
+        ruleType: {
+            '$ref': '#/components/schemas/CrossDockRuleType'
+        },
+        priority: {
+            type: 'integer',
+            title: 'Priority',
+            default: 0
+        },
+        description: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Description'
+        },
+        conditions: {
+            additionalProperties: true,
+            type: 'object',
+            title: 'Conditions',
+            default: {}
+        },
+        channels: {
+            anyOf: [
+                {
+                    items: {
+                        type: 'string'
+                    },
+                    type: 'array'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Channels'
+        },
+        customerIds: {
+            anyOf: [
+                {
+                    items: {
+                        type: 'string'
+                    },
+                    type: 'array'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Customerids'
+        },
+        skuCategories: {
+            anyOf: [
+                {
+                    items: {
+                        type: 'string'
+                    },
+                    type: 'array'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Skucategories'
+        },
+        minOrderValue: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Minordervalue'
+        },
+        maxOrderAge: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Maxorderage'
+        },
+        targetStagingArea: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Targetstagingarea'
+        },
+        autoAllocate: {
+            type: 'boolean',
+            title: 'Autoallocate',
+            default: true
+        },
+        effectiveFrom: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Effectivefrom'
+        },
+        effectiveTo: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Effectiveto'
+        }
+    },
+    type: 'object',
+    required: ['locationId', 'ruleName', 'ruleType'],
+    title: 'CrossDockRuleCreate',
+    description: 'Schema for rule creation'
+} as const;
+
+export const CrossDockRuleResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        locationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Locationid'
+        },
+        ruleName: {
+            type: 'string',
+            maxLength: 100,
+            title: 'Rulename'
+        },
+        ruleType: {
+            '$ref': '#/components/schemas/CrossDockRuleType'
+        },
+        isActive: {
+            type: 'boolean',
+            title: 'Isactive',
+            default: true
+        },
+        priority: {
+            type: 'integer',
+            title: 'Priority',
+            default: 0
+        },
+        description: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Description'
+        },
+        conditions: {
+            additionalProperties: true,
+            type: 'object',
+            title: 'Conditions',
+            default: {}
+        },
+        channels: {
+            anyOf: [
+                {
+                    items: {
+                        type: 'string'
+                    },
+                    type: 'array'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Channels'
+        },
+        customerIds: {
+            anyOf: [
+                {
+                    items: {
+                        type: 'string'
+                    },
+                    type: 'array'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Customerids'
+        },
+        skuCategories: {
+            anyOf: [
+                {
+                    items: {
+                        type: 'string'
+                    },
+                    type: 'array'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Skucategories'
+        },
+        minOrderValue: {
+            anyOf: [
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Minordervalue'
+        },
+        maxOrderAge: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Maxorderage'
+        },
+        targetStagingArea: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 50
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Targetstagingarea'
+        },
+        autoAllocate: {
+            type: 'boolean',
+            title: 'Autoallocate',
+            default: true
+        },
+        effectiveFrom: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Effectivefrom'
+        },
+        effectiveTo: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Effectiveto'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'locationId', 'ruleName', 'ruleType', 'id', 'createdAt', 'updatedAt'],
+    title: 'CrossDockRuleResponse',
+    description: 'Response schema for rule'
+} as const;
+
+export const CrossDockRuleTypeSchema = {
+    type: 'string',
+    enum: ['CHANNEL_BASED', 'CUSTOMER_BASED', 'SKU_BASED', 'ORDER_TYPE', 'TIME_BASED'],
+    title: 'CrossDockRuleType',
+    description: 'Cross-dock rule types'
+} as const;
+
+export const CrossDockStatusSchema = {
+    type: 'string',
+    enum: ['PENDING', 'ELIGIBLE', 'ALLOCATED', 'RECEIVING', 'STAGED', 'LOADING', 'SHIPPED', 'COMPLETED', 'CANCELLED'],
+    title: 'CrossDockStatus',
+    description: 'Cross-dock order/allocation status'
 } as const;
 
 export const CustomerBriefSchema = {
@@ -9678,6 +12454,271 @@ export const DetectionRuleUpdateSchema = {
     description: 'Schema for updating a detection rule'
 } as const;
 
+export const DeviceStatusSchema = {
+    type: 'string',
+    enum: ['PENDING', 'ACTIVE', 'SUSPENDED', 'DECOMMISSIONED'],
+    title: 'DeviceStatus',
+    description: 'Device registration status'
+} as const;
+
+export const DeviceTypeSchema = {
+    type: 'string',
+    enum: ['HANDHELD_SCANNER', 'SMARTPHONE', 'TABLET', 'FORKLIFT_TERMINAL', 'WEARABLE'],
+    title: 'DeviceType',
+    description: 'Mobile device types'
+} as const;
+
+export const DiscrepancyTypeSchema = {
+    type: 'string',
+    enum: ['AMOUNT_MISMATCH', 'MISSING_PAYMENT', 'DUPLICATE_PAYMENT', 'UNKNOWN_ORDER', 'TIMING_DIFFERENCE', 'FEE_MISMATCH', 'OTHER'],
+    title: 'DiscrepancyType',
+    description: 'Reconciliation discrepancy types'
+} as const;
+
+export const EscrowHoldCreateSchema = {
+    properties: {
+        channel: {
+            type: 'string',
+            title: 'Channel'
+        },
+        orderId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Orderid'
+        },
+        orderNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Orderno'
+        },
+        holdReason: {
+            type: 'string',
+            title: 'Holdreason'
+        },
+        holdAmount: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
+            title: 'Holdamount'
+        },
+        holdDate: {
+            type: 'string',
+            format: 'date',
+            title: 'Holddate'
+        },
+        expectedReleaseDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Expectedreleasedate'
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        }
+    },
+    type: 'object',
+    required: ['channel', 'holdReason', 'holdAmount', 'holdDate'],
+    title: 'EscrowHoldCreate',
+    description: 'Schema for escrow creation'
+} as const;
+
+export const EscrowHoldResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        escrowNo: {
+            type: 'string',
+            maxLength: 50,
+            title: 'Escrowno'
+        },
+        channel: {
+            type: 'string',
+            maxLength: 50,
+            title: 'Channel'
+        },
+        orderId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Orderid'
+        },
+        orderNo: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 50
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Orderno'
+        },
+        status: {
+            '$ref': '#/components/schemas/EscrowStatus',
+            default: 'HELD'
+        },
+        holdReason: {
+            type: 'string',
+            maxLength: 100,
+            title: 'Holdreason'
+        },
+        holdAmount: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Holdamount'
+        },
+        releasedAmount: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Releasedamount',
+            default: '0'
+        },
+        currency: {
+            type: 'string',
+            maxLength: 10,
+            title: 'Currency',
+            default: 'INR'
+        },
+        holdDate: {
+            type: 'string',
+            format: 'date',
+            title: 'Holddate'
+        },
+        expectedReleaseDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Expectedreleasedate'
+        },
+        actualReleaseDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Actualreleasedate'
+        },
+        releasedById: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Releasedbyid'
+        },
+        partialReleases: {
+            anyOf: [
+                {
+                    items: {
+                        additionalProperties: true,
+                        type: 'object'
+                    },
+                    type: 'array'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Partialreleases'
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 1000
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'escrowNo', 'channel', 'holdReason', 'holdAmount', 'holdDate', 'id', 'createdAt', 'updatedAt'],
+    title: 'EscrowHoldResponse',
+    description: 'Response schema for escrow'
+} as const;
+
+export const EscrowStatusSchema = {
+    type: 'string',
+    enum: ['HELD', 'PARTIAL_RELEASE', 'RELEASED', 'FORFEITED'],
+    title: 'EscrowStatus',
+    description: 'Escrow hold status'
+} as const;
+
 export const ExceptionCreateSchema = {
     properties: {
         type: {
@@ -10520,6 +13561,605 @@ export const ExternalOrderResponseSchema = {
     required: ['success', 'orderId', 'orderNo', 'externalOrderId', 'status', 'message', 'createdAt'],
     title: 'ExternalOrderResponse',
     description: 'Response after creating an external order'
+} as const;
+
+export const ExternalPOItemCreateSchema = {
+    properties: {
+        externalSkuCode: {
+            type: 'string',
+            title: 'Externalskucode'
+        },
+        externalSkuName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalskuname'
+        },
+        skuId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Skuid'
+        },
+        orderedQty: {
+            type: 'integer',
+            title: 'Orderedqty'
+        },
+        unitPrice: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Unitprice'
+        }
+    },
+    type: 'object',
+    required: ['externalSkuCode', 'orderedQty'],
+    title: 'ExternalPOItemCreate',
+    description: 'Create schema for item (camelCase for API input)'
+} as const;
+
+export const ExternalPOItemReadSchema = {
+    properties: {
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        externalPoId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Externalpoid'
+        },
+        externalSkuCode: {
+            type: 'string',
+            title: 'Externalskucode'
+        },
+        externalSkuName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalskuname'
+        },
+        skuId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Skuid'
+        },
+        orderedQty: {
+            type: 'integer',
+            title: 'Orderedqty'
+        },
+        receivedQty: {
+            type: 'integer',
+            title: 'Receivedqty'
+        },
+        unitPrice: {
+            anyOf: [
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Unitprice'
+        },
+        status: {
+            type: 'string',
+            title: 'Status'
+        },
+        pendingQty: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Pendingqty'
+        },
+        skuCode: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Skucode'
+        },
+        skuName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Skuname'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        }
+    },
+    type: 'object',
+    required: ['id', 'externalPoId', 'externalSkuCode', 'orderedQty', 'receivedQty', 'status', 'createdAt'],
+    title: 'ExternalPOItemRead',
+    description: 'Read schema for item (camelCase for API output)'
+} as const;
+
+export const ExternalPOItemUpdateSchema = {
+    properties: {
+        externalSkuName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalskuname'
+        },
+        skuId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Skuid'
+        },
+        orderedQty: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Orderedqty'
+        },
+        receivedQty: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Receivedqty'
+        },
+        unitPrice: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Unitprice'
+        },
+        status: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Status'
+        }
+    },
+    type: 'object',
+    title: 'ExternalPOItemUpdate',
+    description: 'Update schema for item (camelCase for API input)'
+} as const;
+
+export const ExternalPurchaseOrderCreateSchema = {
+    properties: {
+        externalPoNumber: {
+            type: 'string',
+            title: 'Externalponumber'
+        },
+        locationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Locationid'
+        },
+        externalVendorCode: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalvendorcode'
+        },
+        externalVendorName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalvendorname'
+        },
+        vendorId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Vendorid'
+        },
+        poDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Podate'
+        },
+        expectedDeliveryDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Expecteddeliverydate'
+        },
+        remarks: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Remarks'
+        },
+        items: {
+            anyOf: [
+                {
+                    items: {
+                        '$ref': '#/components/schemas/ExternalPOItemCreate'
+                    },
+                    type: 'array'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Items'
+        }
+    },
+    type: 'object',
+    required: ['externalPoNumber', 'locationId'],
+    title: 'ExternalPurchaseOrderCreate',
+    description: 'Create schema (camelCase for API input)'
+} as const;
+
+export const ExternalPurchaseOrderReadSchema = {
+    properties: {
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        locationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Locationid'
+        },
+        externalPoNumber: {
+            type: 'string',
+            title: 'Externalponumber'
+        },
+        externalVendorCode: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalvendorcode'
+        },
+        externalVendorName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalvendorname'
+        },
+        vendorId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Vendorid'
+        },
+        status: {
+            type: 'string',
+            title: 'Status'
+        },
+        poDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Podate'
+        },
+        expectedDeliveryDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Expecteddeliverydate'
+        },
+        source: {
+            type: 'string',
+            title: 'Source'
+        },
+        remarks: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Remarks'
+        },
+        totalLines: {
+            type: 'integer',
+            title: 'Totallines'
+        },
+        totalExpectedQty: {
+            type: 'integer',
+            title: 'Totalexpectedqty'
+        },
+        totalReceivedQty: {
+            type: 'integer',
+            title: 'Totalreceivedqty'
+        },
+        totalAmount: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Totalamount'
+        },
+        pendingQty: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Pendingqty'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        },
+        locationName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Locationname'
+        },
+        items: {
+            anyOf: [
+                {
+                    items: {
+                        '$ref': '#/components/schemas/ExternalPOItemRead'
+                    },
+                    type: 'array'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Items'
+        }
+    },
+    type: 'object',
+    required: ['id', 'companyId', 'locationId', 'externalPoNumber', 'status', 'source', 'totalLines', 'totalExpectedQty', 'totalReceivedQty', 'totalAmount', 'createdAt', 'updatedAt'],
+    title: 'ExternalPurchaseOrderRead',
+    description: 'Read schema (camelCase for API output)'
+} as const;
+
+export const ExternalPurchaseOrderUpdateSchema = {
+    properties: {
+        externalVendorCode: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalvendorcode'
+        },
+        externalVendorName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalvendorname'
+        },
+        vendorId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Vendorid'
+        },
+        status: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Status'
+        },
+        poDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Podate'
+        },
+        expectedDeliveryDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Expecteddeliverydate'
+        },
+        remarks: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Remarks'
+        }
+    },
+    type: 'object',
+    title: 'ExternalPurchaseOrderUpdate',
+    description: 'Update schema (camelCase for API input)'
 } as const;
 
 export const FTLLaneRateCreateSchema = {
@@ -12313,6 +15953,131 @@ export const GoodsReceiptCreateSchema = {
                 }
             ],
             title: 'Notes'
+        },
+        externalPoId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalpoid'
+        },
+        asnId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Asnid'
+        },
+        returnId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Returnid'
+        },
+        stockTransferId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Stocktransferid'
+        },
+        externalReferenceType: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalreferencetype'
+        },
+        externalReferenceNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalreferenceno'
+        },
+        inboundSource: {
+            type: 'string',
+            title: 'Inboundsource',
+            default: 'PURCHASE'
+        },
+        vehicleNumber: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Vehiclenumber'
+        },
+        driverName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Drivername'
+        },
+        gateEntryNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Gateentryno'
+        },
+        gateEntryTime: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Gateentrytime'
+        },
+        source: {
+            type: 'string',
+            title: 'Source',
+            default: 'MANUAL'
         }
     },
     type: 'object',
@@ -12954,6 +16719,141 @@ export const GoodsReceiptResponseSchema = {
             format: 'date-time',
             title: 'Updatedat'
         },
+        externalPoId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalpoid'
+        },
+        asnId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Asnid'
+        },
+        returnId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Returnid'
+        },
+        stockTransferId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Stocktransferid'
+        },
+        externalReferenceType: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalreferencetype'
+        },
+        externalReferenceNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalreferenceno'
+        },
+        inboundSource: {
+            type: 'string',
+            title: 'Inboundsource',
+            default: 'PURCHASE'
+        },
+        vehicleNumber: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Vehiclenumber'
+        },
+        driverName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Drivername'
+        },
+        gateEntryNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Gateentryno'
+        },
+        gateEntryTime: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Gateentrytime'
+        },
+        totalAcceptedQty: {
+            type: 'integer',
+            title: 'Totalacceptedqty',
+            default: 0
+        },
+        totalRejectedQty: {
+            type: 'integer',
+            title: 'Totalrejectedqty',
+            default: 0
+        },
+        source: {
+            type: 'string',
+            title: 'Source',
+            default: 'MANUAL'
+        },
         itemCount: {
             anyOf: [
                 {
@@ -12964,6 +16864,28 @@ export const GoodsReceiptResponseSchema = {
                 }
             ],
             title: 'Itemcount'
+        },
+        externalPoNumber: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalponumber'
+        },
+        asnNumber: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Asnnumber'
         }
     },
     type: 'object',
@@ -13005,6 +16927,73 @@ export const GoodsReceiptUpdateSchema = {
                 }
             ],
             title: 'Notes'
+        },
+        externalReferenceType: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalreferencetype'
+        },
+        externalReferenceNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalreferenceno'
+        },
+        vehicleNumber: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Vehiclenumber'
+        },
+        driverName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Drivername'
+        },
+        gateEntryNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Gateentryno'
+        },
+        gateEntryTime: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Gateentrytime'
         }
     },
     type: 'object',
@@ -13153,6 +17142,141 @@ export const GoodsReceiptWithItemsSchema = {
             format: 'date-time',
             title: 'Updatedat'
         },
+        externalPoId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalpoid'
+        },
+        asnId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Asnid'
+        },
+        returnId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Returnid'
+        },
+        stockTransferId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Stocktransferid'
+        },
+        externalReferenceType: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalreferencetype'
+        },
+        externalReferenceNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalreferenceno'
+        },
+        inboundSource: {
+            type: 'string',
+            title: 'Inboundsource',
+            default: 'PURCHASE'
+        },
+        vehicleNumber: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Vehiclenumber'
+        },
+        driverName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Drivername'
+        },
+        gateEntryNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Gateentryno'
+        },
+        gateEntryTime: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Gateentrytime'
+        },
+        totalAcceptedQty: {
+            type: 'integer',
+            title: 'Totalacceptedqty',
+            default: 0
+        },
+        totalRejectedQty: {
+            type: 'integer',
+            title: 'Totalrejectedqty',
+            default: 0
+        },
+        source: {
+            type: 'string',
+            title: 'Source',
+            default: 'MANUAL'
+        },
         itemCount: {
             anyOf: [
                 {
@@ -13163,6 +17287,28 @@ export const GoodsReceiptWithItemsSchema = {
                 }
             ],
             title: 'Itemcount'
+        },
+        externalPoNumber: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalponumber'
+        },
+        asnNumber: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Asnnumber'
         },
         items: {
             items: {
@@ -13860,15 +18006,22 @@ export const InventoryAdjustmentSchema = {
     properties: {
         skuId: {
             type: 'string',
+            format: 'uuid',
             title: 'Skuid'
         },
         binId: {
             type: 'string',
+            format: 'uuid',
             title: 'Binid'
         },
-        quantity: {
+        locationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Locationid'
+        },
+        adjustmentQty: {
             type: 'integer',
-            title: 'Quantity'
+            title: 'Adjustmentqty'
         },
         reason: {
             type: 'string',
@@ -13884,11 +18037,37 @@ export const InventoryAdjustmentSchema = {
                 }
             ],
             title: 'Batchno'
+        },
+        serialNumbers: {
+            anyOf: [
+                {
+                    items: {
+                        type: 'string'
+                    },
+                    type: 'array'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Serialnumbers'
+        },
+        remarks: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Remarks'
         }
     },
     type: 'object',
-    required: ['skuId', 'binId', 'quantity', 'reason'],
-    title: 'InventoryAdjustment'
+    required: ['skuId', 'binId', 'locationId', 'adjustmentQty', 'reason'],
+    title: 'InventoryAdjustment',
+    description: 'Schema for inventory adjustment'
 } as const;
 
 export const InventoryAllocationBriefSchema = {
@@ -14905,6 +19084,1190 @@ export const LRStatusSchema = {
     description: 'Lorry Receipt status'
 } as const;
 
+export const LaborAssignmentCreateSchema = {
+    properties: {
+        locationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Locationid'
+        },
+        userId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Userid'
+        },
+        shiftScheduleId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Shiftscheduleid'
+        },
+        taskType: {
+            type: 'string',
+            title: 'Tasktype'
+        },
+        zone: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Zone'
+        },
+        priority: {
+            type: 'integer',
+            title: 'Priority',
+            default: 0
+        },
+        targetQuantity: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Targetquantity'
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        }
+    },
+    type: 'object',
+    required: ['locationId', 'userId', 'taskType'],
+    title: 'LaborAssignmentCreate',
+    description: 'Schema for assignment creation'
+} as const;
+
+export const LaborAssignmentResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        locationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Locationid'
+        },
+        userId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Userid'
+        },
+        shiftScheduleId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Shiftscheduleid'
+        },
+        taskType: {
+            type: 'string',
+            maxLength: 50,
+            title: 'Tasktype'
+        },
+        zone: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 50
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Zone'
+        },
+        status: {
+            '$ref': '#/components/schemas/AssignmentStatus',
+            default: 'PENDING'
+        },
+        assignedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Assignedat'
+        },
+        startedAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Startedat'
+        },
+        completedAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Completedat'
+        },
+        priority: {
+            type: 'integer',
+            title: 'Priority',
+            default: 0
+        },
+        targetQuantity: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Targetquantity'
+        },
+        actualQuantity: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Actualquantity'
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'locationId', 'userId', 'taskType', 'id', 'createdAt', 'updatedAt'],
+    title: 'LaborAssignmentResponse',
+    description: 'Response schema for assignment'
+} as const;
+
+export const LaborDashboardSummarySchema = {
+    properties: {
+        totalWorkers: {
+            type: 'integer',
+            title: 'Totalworkers',
+            default: 0
+        },
+        activeWorkers: {
+            type: 'integer',
+            title: 'Activeworkers',
+            default: 0
+        },
+        onBreak: {
+            type: 'integer',
+            title: 'Onbreak',
+            default: 0
+        },
+        avgProductivity: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Avgproductivity',
+            default: '0'
+        },
+        tasksCompleted: {
+            type: 'integer',
+            title: 'Taskscompleted',
+            default: 0
+        },
+        tasksPending: {
+            type: 'integer',
+            title: 'Taskspending',
+            default: 0
+        },
+        topPerformers: {
+            items: {
+                additionalProperties: true,
+                type: 'object'
+            },
+            type: 'array',
+            title: 'Topperformers',
+            default: []
+        }
+    },
+    type: 'object',
+    title: 'LaborDashboardSummary',
+    description: 'Labor dashboard summary'
+} as const;
+
+export const LaborProductivityResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        userId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Userid'
+        },
+        locationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Locationid'
+        },
+        recordDate: {
+            type: 'string',
+            format: 'date',
+            title: 'Recorddate'
+        },
+        taskType: {
+            type: 'string',
+            maxLength: 50,
+            title: 'Tasktype'
+        },
+        totalTasks: {
+            type: 'integer',
+            title: 'Totaltasks',
+            default: 0
+        },
+        completedTasks: {
+            type: 'integer',
+            title: 'Completedtasks',
+            default: 0
+        },
+        totalUnits: {
+            type: 'integer',
+            title: 'Totalunits',
+            default: 0
+        },
+        processedUnits: {
+            type: 'integer',
+            title: 'Processedunits',
+            default: 0
+        },
+        totalMinutes: {
+            type: 'integer',
+            title: 'Totalminutes',
+            default: 0
+        },
+        unitsPerHour: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Unitsperhour',
+            default: '0'
+        },
+        accuracyRate: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Accuracyrate',
+            default: '100'
+        },
+        errorCount: {
+            type: 'integer',
+            title: 'Errorcount',
+            default: 0
+        },
+        performanceScore: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Performancescore',
+            default: '0'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'userId', 'locationId', 'recordDate', 'taskType', 'id', 'createdAt', 'updatedAt'],
+    title: 'LaborProductivityResponse',
+    description: 'Response schema for productivity'
+} as const;
+
+export const LaborShiftCreateSchema = {
+    properties: {
+        locationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Locationid'
+        },
+        shiftName: {
+            type: 'string',
+            title: 'Shiftname'
+        },
+        shiftType: {
+            '$ref': '#/components/schemas/ShiftType'
+        },
+        startTime: {
+            type: 'string',
+            format: 'time',
+            title: 'Starttime'
+        },
+        endTime: {
+            type: 'string',
+            format: 'time',
+            title: 'Endtime'
+        },
+        breakDuration: {
+            type: 'integer',
+            title: 'Breakduration',
+            default: 30
+        },
+        maxWorkers: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Maxworkers'
+        },
+        description: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Description'
+        }
+    },
+    type: 'object',
+    required: ['locationId', 'shiftName', 'shiftType', 'startTime', 'endTime'],
+    title: 'LaborShiftCreate',
+    description: 'Schema for shift creation'
+} as const;
+
+export const LaborShiftResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        locationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Locationid'
+        },
+        shiftName: {
+            type: 'string',
+            maxLength: 100,
+            title: 'Shiftname'
+        },
+        shiftType: {
+            '$ref': '#/components/schemas/ShiftType'
+        },
+        startTime: {
+            type: 'string',
+            format: 'time',
+            title: 'Starttime'
+        },
+        endTime: {
+            type: 'string',
+            format: 'time',
+            title: 'Endtime'
+        },
+        breakDuration: {
+            type: 'integer',
+            title: 'Breakduration',
+            default: 30
+        },
+        isActive: {
+            type: 'boolean',
+            title: 'Isactive',
+            default: true
+        },
+        maxWorkers: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Maxworkers'
+        },
+        description: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Description'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'locationId', 'shiftName', 'shiftType', 'startTime', 'endTime', 'id', 'createdAt', 'updatedAt'],
+    title: 'LaborShiftResponse',
+    description: 'Response schema for shift'
+} as const;
+
+export const LaborShiftScheduleCreateSchema = {
+    properties: {
+        shiftId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Shiftid'
+        },
+        userId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Userid'
+        },
+        scheduleDate: {
+            type: 'string',
+            format: 'date',
+            title: 'Scheduledate'
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        }
+    },
+    type: 'object',
+    required: ['shiftId', 'userId', 'scheduleDate'],
+    title: 'LaborShiftScheduleCreate',
+    description: 'Schema for schedule creation'
+} as const;
+
+export const LaborShiftScheduleResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        shiftId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Shiftid'
+        },
+        userId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Userid'
+        },
+        scheduleDate: {
+            type: 'string',
+            format: 'date',
+            title: 'Scheduledate'
+        },
+        status: {
+            '$ref': '#/components/schemas/ShiftStatus',
+            default: 'SCHEDULED'
+        },
+        actualStartTime: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Actualstarttime'
+        },
+        actualEndTime: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Actualendtime'
+        },
+        totalWorkMinutes: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Totalworkminutes'
+        },
+        totalBreakMinutes: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Totalbreakminutes'
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'shiftId', 'userId', 'scheduleDate', 'id', 'createdAt', 'updatedAt'],
+    title: 'LaborShiftScheduleResponse',
+    description: 'Response schema for schedule'
+} as const;
+
+export const LaborSkillCreateSchema = {
+    properties: {
+        userId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Userid'
+        },
+        skillName: {
+            type: 'string',
+            title: 'Skillname'
+        },
+        skillCategory: {
+            type: 'string',
+            title: 'Skillcategory'
+        },
+        level: {
+            '$ref': '#/components/schemas/SkillLevel',
+            default: 'BEGINNER'
+        },
+        trainingHours: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Traininghours'
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        }
+    },
+    type: 'object',
+    required: ['userId', 'skillName', 'skillCategory'],
+    title: 'LaborSkillCreate',
+    description: 'Schema for skill creation'
+} as const;
+
+export const LaborSkillResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        userId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Userid'
+        },
+        skillName: {
+            type: 'string',
+            maxLength: 100,
+            title: 'Skillname'
+        },
+        skillCategory: {
+            type: 'string',
+            maxLength: 50,
+            title: 'Skillcategory'
+        },
+        level: {
+            '$ref': '#/components/schemas/SkillLevel',
+            default: 'BEGINNER'
+        },
+        certifiedAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Certifiedat'
+        },
+        certifiedById: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Certifiedbyid'
+        },
+        expiresAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Expiresat'
+        },
+        isActive: {
+            type: 'boolean',
+            title: 'Isactive',
+            default: true
+        },
+        trainingHours: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Traininghours'
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'userId', 'skillName', 'skillCategory', 'id', 'createdAt', 'updatedAt'],
+    title: 'LaborSkillResponse',
+    description: 'Response schema for skill'
+} as const;
+
+export const LaborStandardCreateSchema = {
+    properties: {
+        locationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Locationid'
+        },
+        taskType: {
+            type: 'string',
+            title: 'Tasktype'
+        },
+        standardName: {
+            type: 'string',
+            title: 'Standardname'
+        },
+        expectedUnitsPerHour: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
+            title: 'Expectedunitsperhour'
+        },
+        minimumUnitsPerHour: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
+            title: 'Minimumunitsperhour'
+        },
+        targetUnitsPerHour: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
+            title: 'Targetunitsperhour'
+        },
+        unitOfMeasure: {
+            type: 'string',
+            title: 'Unitofmeasure',
+            default: 'units'
+        },
+        effectiveFrom: {
+            type: 'string',
+            format: 'date',
+            title: 'Effectivefrom'
+        },
+        effectiveTo: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Effectiveto'
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        }
+    },
+    type: 'object',
+    required: ['locationId', 'taskType', 'standardName', 'expectedUnitsPerHour', 'minimumUnitsPerHour', 'targetUnitsPerHour', 'effectiveFrom'],
+    title: 'LaborStandardCreate',
+    description: 'Schema for standard creation'
+} as const;
+
+export const LaborStandardResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        locationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Locationid'
+        },
+        taskType: {
+            type: 'string',
+            maxLength: 50,
+            title: 'Tasktype'
+        },
+        standardName: {
+            type: 'string',
+            maxLength: 100,
+            title: 'Standardname'
+        },
+        expectedUnitsPerHour: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Expectedunitsperhour'
+        },
+        minimumUnitsPerHour: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Minimumunitsperhour'
+        },
+        targetUnitsPerHour: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Targetunitsperhour'
+        },
+        unitOfMeasure: {
+            type: 'string',
+            maxLength: 20,
+            title: 'Unitofmeasure',
+            default: 'units'
+        },
+        isActive: {
+            type: 'boolean',
+            title: 'Isactive',
+            default: true
+        },
+        effectiveFrom: {
+            type: 'string',
+            format: 'date',
+            title: 'Effectivefrom'
+        },
+        effectiveTo: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Effectiveto'
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'locationId', 'taskType', 'standardName', 'expectedUnitsPerHour', 'minimumUnitsPerHour', 'targetUnitsPerHour', 'effectiveFrom', 'id', 'createdAt', 'updatedAt'],
+    title: 'LaborStandardResponse',
+    description: 'Response schema for standard'
+} as const;
+
+export const LaborTimeEntryCreateSchema = {
+    properties: {
+        entryType: {
+            '$ref': '#/components/schemas/TimeEntryType'
+        },
+        location: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Location'
+        },
+        deviceId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Deviceid'
+        },
+        latitude: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Latitude'
+        },
+        longitude: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Longitude'
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        }
+    },
+    type: 'object',
+    required: ['entryType'],
+    title: 'LaborTimeEntryCreate',
+    description: 'Schema for time entry creation'
+} as const;
+
+export const LaborTimeEntryResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        userId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Userid'
+        },
+        shiftScheduleId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Shiftscheduleid'
+        },
+        entryType: {
+            '$ref': '#/components/schemas/TimeEntryType'
+        },
+        timestamp: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Timestamp'
+        },
+        location: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 100
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Location'
+        },
+        deviceId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Deviceid'
+        },
+        latitude: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Latitude'
+        },
+        longitude: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Longitude'
+        },
+        isManual: {
+            type: 'boolean',
+            title: 'Ismanual',
+            default: false
+        },
+        approvedById: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Approvedbyid'
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'userId', 'entryType', 'id', 'createdAt'],
+    title: 'LaborTimeEntryResponse',
+    description: 'Response schema for time entry'
+} as const;
+
 export const LanePerformanceResponseSchema = {
     properties: {
         id: {
@@ -15131,6 +20494,13 @@ export const LegacyInventoryResponseSchema = {
     required: ['id', 'quantity', 'reservedQty', 'availableQty', 'skuId', 'binId', 'locationId'],
     title: 'LegacyInventoryResponse',
     description: 'Legacy response model - use InventoryResponse from app.models.inventory instead'
+} as const;
+
+export const ListingStatusSchema = {
+    type: 'string',
+    enum: ['DRAFT', 'PENDING', 'ACTIVE', 'INACTIVE', 'SUPPRESSED', 'DELETED'],
+    title: 'ListingStatus',
+    description: 'Marketplace listing status'
 } as const;
 
 export const LocationBriefSchema = {
@@ -16737,6 +22107,2003 @@ export const ManifestUpdateSchema = {
     description: 'Schema for updating manifest'
 } as const;
 
+export const MarketplaceConnectionCreateSchema = {
+    properties: {
+        marketplace: {
+            '$ref': '#/components/schemas/MarketplaceType'
+        },
+        connectionName: {
+            type: 'string',
+            title: 'Connectionname'
+        },
+        sellerId: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Sellerid'
+        },
+        sellerName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Sellername'
+        },
+        region: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Region'
+        },
+        apiEndpoint: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Apiendpoint'
+        },
+        syncSettings: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Syncsettings'
+        }
+    },
+    type: 'object',
+    required: ['marketplace', 'connectionName'],
+    title: 'MarketplaceConnectionCreate',
+    description: 'Schema for connection creation'
+} as const;
+
+export const MarketplaceConnectionResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        marketplace: {
+            '$ref': '#/components/schemas/MarketplaceType'
+        },
+        connectionName: {
+            type: 'string',
+            maxLength: 100,
+            title: 'Connectionname'
+        },
+        status: {
+            '$ref': '#/components/schemas/ConnectionStatus',
+            default: 'PENDING'
+        },
+        sellerId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 100
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Sellerid'
+        },
+        sellerName: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 255
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Sellername'
+        },
+        region: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 50
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Region'
+        },
+        apiEndpoint: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Apiendpoint'
+        },
+        credentials: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Credentials'
+        },
+        accessToken: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 2000
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Accesstoken'
+        },
+        refreshToken: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 2000
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Refreshtoken'
+        },
+        tokenExpiresAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Tokenexpiresat'
+        },
+        lastSyncAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Lastsyncat'
+        },
+        syncSettings: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Syncsettings'
+        },
+        webhookUrl: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Webhookurl'
+        },
+        webhookSecret: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 255
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Webhooksecret'
+        },
+        isActive: {
+            type: 'boolean',
+            title: 'Isactive',
+            default: true
+        },
+        errorMessage: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 1000
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Errormessage'
+        },
+        errorAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Errorat'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'marketplace', 'connectionName', 'id', 'createdAt', 'updatedAt'],
+    title: 'MarketplaceConnectionResponse',
+    description: 'Response schema for connection'
+} as const;
+
+export const MarketplaceConnectionUpdateSchema = {
+    properties: {
+        connectionName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Connectionname'
+        },
+        status: {
+            anyOf: [
+                {
+                    '$ref': '#/components/schemas/ConnectionStatus'
+                },
+                {
+                    type: 'null'
+                }
+            ]
+        },
+        sellerId: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Sellerid'
+        },
+        sellerName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Sellername'
+        },
+        syncSettings: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Syncsettings'
+        },
+        isActive: {
+            anyOf: [
+                {
+                    type: 'boolean'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Isactive'
+        }
+    },
+    type: 'object',
+    title: 'MarketplaceConnectionUpdate',
+    description: 'Schema for connection update'
+} as const;
+
+export const MarketplaceInventorySyncResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        connectionId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Connectionid'
+        },
+        listingId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Listingid'
+        },
+        skuId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Skuid'
+        },
+        marketplace: {
+            '$ref': '#/components/schemas/MarketplaceType'
+        },
+        previousQuantity: {
+            type: 'integer',
+            title: 'Previousquantity',
+            default: 0
+        },
+        newQuantity: {
+            type: 'integer',
+            title: 'Newquantity',
+            default: 0
+        },
+        syncStatus: {
+            '$ref': '#/components/schemas/ImportStatus',
+            default: 'PENDING'
+        },
+        syncedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Syncedat'
+        },
+        acknowledgedAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Acknowledgedat'
+        },
+        errorMessage: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Errormessage'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'connectionId', 'listingId', 'skuId', 'marketplace', 'id', 'createdAt'],
+    title: 'MarketplaceInventorySyncResponse',
+    description: 'Response schema for inventory sync'
+} as const;
+
+export const MarketplaceListingCreateSchema = {
+    properties: {
+        connectionId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Connectionid'
+        },
+        skuId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Skuid'
+        },
+        marketplace: {
+            '$ref': '#/components/schemas/MarketplaceType'
+        },
+        listingId: {
+            type: 'string',
+            title: 'Listingid'
+        },
+        asin: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Asin'
+        },
+        fsn: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Fsn'
+        },
+        title: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Title'
+        },
+        price: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
+            title: 'Price'
+        },
+        mrp: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
+            title: 'Mrp'
+        },
+        stockQuantity: {
+            type: 'integer',
+            title: 'Stockquantity',
+            default: 0
+        },
+        category: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Category'
+        },
+        brand: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Brand'
+        }
+    },
+    type: 'object',
+    required: ['connectionId', 'skuId', 'marketplace', 'listingId', 'price', 'mrp'],
+    title: 'MarketplaceListingCreate',
+    description: 'Schema for listing creation'
+} as const;
+
+export const MarketplaceListingResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        connectionId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Connectionid'
+        },
+        skuId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Skuid'
+        },
+        marketplace: {
+            '$ref': '#/components/schemas/MarketplaceType'
+        },
+        listingId: {
+            type: 'string',
+            maxLength: 255,
+            title: 'Listingid'
+        },
+        asin: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 50
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Asin'
+        },
+        fsn: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 50
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Fsn'
+        },
+        styleId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 50
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Styleid'
+        },
+        status: {
+            '$ref': '#/components/schemas/ListingStatus',
+            default: 'DRAFT'
+        },
+        title: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Title'
+        },
+        description: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Description'
+        },
+        price: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Price',
+            default: '0'
+        },
+        mrp: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Mrp',
+            default: '0'
+        },
+        currency: {
+            type: 'string',
+            maxLength: 10,
+            title: 'Currency',
+            default: 'INR'
+        },
+        stockQuantity: {
+            type: 'integer',
+            title: 'Stockquantity',
+            default: 0
+        },
+        isInStock: {
+            type: 'boolean',
+            title: 'Isinstock',
+            default: true
+        },
+        fulfillmentType: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 50
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Fulfillmenttype'
+        },
+        category: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 255
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Category'
+        },
+        brand: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 100
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Brand'
+        },
+        imageUrls: {
+            anyOf: [
+                {
+                    items: {
+                        type: 'string'
+                    },
+                    type: 'array'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Imageurls'
+        },
+        attributes: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Attributes'
+        },
+        lastSyncedAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Lastsyncedat'
+        },
+        suppressedReason: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Suppressedreason'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'connectionId', 'skuId', 'marketplace', 'listingId', 'id', 'createdAt', 'updatedAt'],
+    title: 'MarketplaceListingResponse',
+    description: 'Response schema for listing'
+} as const;
+
+export const MarketplaceOrderSyncResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        connectionId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Connectionid'
+        },
+        marketplace: {
+            '$ref': '#/components/schemas/MarketplaceType'
+        },
+        marketplaceOrderId: {
+            type: 'string',
+            maxLength: 100,
+            title: 'Marketplaceorderid'
+        },
+        orderId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Orderid'
+        },
+        orderNo: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 50
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Orderno'
+        },
+        syncStatus: {
+            '$ref': '#/components/schemas/ImportStatus',
+            default: 'PENDING'
+        },
+        syncDirection: {
+            type: 'string',
+            maxLength: 20,
+            title: 'Syncdirection',
+            default: 'INBOUND'
+        },
+        orderData: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Orderdata'
+        },
+        syncedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Syncedat'
+        },
+        errorMessage: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 1000
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Errormessage'
+        },
+        retryCount: {
+            type: 'integer',
+            title: 'Retrycount',
+            default: 0
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'connectionId', 'marketplace', 'marketplaceOrderId', 'id', 'createdAt'],
+    title: 'MarketplaceOrderSyncResponse',
+    description: 'Response schema for order sync'
+} as const;
+
+export const MarketplaceReturnResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        connectionId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Connectionid'
+        },
+        marketplace: {
+            '$ref': '#/components/schemas/MarketplaceType'
+        },
+        marketplaceReturnId: {
+            type: 'string',
+            maxLength: 100,
+            title: 'Marketplacereturnid'
+        },
+        marketplaceOrderId: {
+            type: 'string',
+            maxLength: 100,
+            title: 'Marketplaceorderid'
+        },
+        orderId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Orderid'
+        },
+        returnId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Returnid'
+        },
+        status: {
+            '$ref': '#/components/schemas/MarketplaceReturnStatus',
+            default: 'INITIATED'
+        },
+        returnReason: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 255
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Returnreason'
+        },
+        returnSubReason: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 255
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Returnsubreason'
+        },
+        customerComments: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 1000
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Customercomments'
+        },
+        returnQuantity: {
+            type: 'integer',
+            title: 'Returnquantity',
+            default: 1
+        },
+        refundAmount: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Refundamount',
+            default: '0'
+        },
+        refundStatus: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 50
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Refundstatus'
+        },
+        refundedAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Refundedat'
+        },
+        pickupScheduledAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Pickupscheduledat'
+        },
+        pickedUpAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Pickedupat'
+        },
+        receivedAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Receivedat'
+        },
+        returnData: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Returndata'
+        },
+        lastSyncedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Lastsyncedat'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'connectionId', 'marketplace', 'marketplaceReturnId', 'marketplaceOrderId', 'id', 'createdAt', 'updatedAt'],
+    title: 'MarketplaceReturnResponse',
+    description: 'Response schema for return'
+} as const;
+
+export const MarketplaceReturnStatusSchema = {
+    type: 'string',
+    enum: ['INITIATED', 'APPROVED', 'PICKED_UP', 'RECEIVED', 'REFUNDED', 'REJECTED', 'CLOSED'],
+    title: 'MarketplaceReturnStatus',
+    description: 'Marketplace return status'
+} as const;
+
+export const MarketplaceSettlementResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        connectionId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Connectionid'
+        },
+        marketplace: {
+            '$ref': '#/components/schemas/MarketplaceType'
+        },
+        settlementId: {
+            type: 'string',
+            maxLength: 100,
+            title: 'Settlementid'
+        },
+        settlementDate: {
+            type: 'string',
+            format: 'date',
+            title: 'Settlementdate'
+        },
+        periodFrom: {
+            type: 'string',
+            format: 'date',
+            title: 'Periodfrom'
+        },
+        periodTo: {
+            type: 'string',
+            format: 'date',
+            title: 'Periodto'
+        },
+        totalOrders: {
+            type: 'integer',
+            title: 'Totalorders',
+            default: 0
+        },
+        grossSales: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Grosssales',
+            default: '0'
+        },
+        marketplaceFee: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Marketplacefee',
+            default: '0'
+        },
+        shippingFee: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Shippingfee',
+            default: '0'
+        },
+        taxCollected: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Taxcollected',
+            default: '0'
+        },
+        taxRemitted: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Taxremitted',
+            default: '0'
+        },
+        promotions: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Promotions',
+            default: '0'
+        },
+        refunds: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Refunds',
+            default: '0'
+        },
+        chargebacks: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Chargebacks',
+            default: '0'
+        },
+        adjustments: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Adjustments',
+            default: '0'
+        },
+        netAmount: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Netamount',
+            default: '0'
+        },
+        currency: {
+            type: 'string',
+            maxLength: 10,
+            title: 'Currency',
+            default: 'INR'
+        },
+        paymentReference: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 100
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Paymentreference'
+        },
+        paymentDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Paymentdate'
+        },
+        isReconciled: {
+            type: 'boolean',
+            title: 'Isreconciled',
+            default: false
+        },
+        reconciledAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Reconciledat'
+        },
+        fileUrl: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Fileurl'
+        },
+        rawData: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Rawdata'
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 1000
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'connectionId', 'marketplace', 'settlementId', 'settlementDate', 'periodFrom', 'periodTo', 'id', 'createdAt', 'updatedAt'],
+    title: 'MarketplaceSettlementResponse',
+    description: 'Response schema for settlement'
+} as const;
+
+export const MarketplaceTypeSchema = {
+    type: 'string',
+    enum: ['AMAZON', 'FLIPKART', 'MYNTRA', 'AJIO', 'NYKAA', 'MEESHO', 'SHOPIFY', 'WOOCOMMERCE', 'MAGENTO', 'TATA_CLIQ', 'JIOMART'],
+    title: 'MarketplaceType',
+    description: 'Marketplace types'
+} as const;
+
+export const MatchPaymentRequestSchema = {
+    properties: {
+        settlementId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Settlementid'
+        },
+        autoMatch: {
+            type: 'boolean',
+            title: 'Automatch',
+            default: true
+        }
+    },
+    type: 'object',
+    required: ['settlementId'],
+    title: 'MatchPaymentRequest',
+    description: 'Request for matching payments'
+} as const;
+
+export const MatchPaymentResponseSchema = {
+    properties: {
+        settlementId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Settlementid'
+        },
+        totalOrders: {
+            type: 'integer',
+            title: 'Totalorders'
+        },
+        matchedOrders: {
+            type: 'integer',
+            title: 'Matchedorders'
+        },
+        unmatchedOrders: {
+            type: 'integer',
+            title: 'Unmatchedorders'
+        },
+        discrepanciesFound: {
+            type: 'integer',
+            title: 'Discrepanciesfound'
+        }
+    },
+    type: 'object',
+    required: ['settlementId', 'totalOrders', 'matchedOrders', 'unmatchedOrders', 'discrepanciesFound'],
+    title: 'MatchPaymentResponse',
+    description: 'Response for match payment'
+} as const;
+
+export const MobileDeviceRegisterSchema = {
+    properties: {
+        deviceId: {
+            type: 'string',
+            title: 'Deviceid'
+        },
+        deviceName: {
+            type: 'string',
+            title: 'Devicename'
+        },
+        deviceType: {
+            '$ref': '#/components/schemas/DeviceType',
+            default: 'HANDHELD_SCANNER'
+        },
+        manufacturer: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Manufacturer'
+        },
+        model: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Model'
+        },
+        osVersion: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Osversion'
+        },
+        appVersion: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Appversion'
+        },
+        assignedLocationId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Assignedlocationid'
+        },
+        capabilities: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Capabilities'
+        }
+    },
+    type: 'object',
+    required: ['deviceId', 'deviceName'],
+    title: 'MobileDeviceRegister',
+    description: 'Schema for device registration'
+} as const;
+
+export const MobileDeviceResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        deviceId: {
+            type: 'string',
+            maxLength: 255,
+            title: 'Deviceid'
+        },
+        deviceName: {
+            type: 'string',
+            maxLength: 255,
+            title: 'Devicename'
+        },
+        deviceType: {
+            '$ref': '#/components/schemas/DeviceType',
+            default: 'HANDHELD_SCANNER'
+        },
+        manufacturer: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 100
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Manufacturer'
+        },
+        model: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 100
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Model'
+        },
+        osVersion: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 50
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Osversion'
+        },
+        appVersion: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 50
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Appversion'
+        },
+        status: {
+            '$ref': '#/components/schemas/DeviceStatus',
+            default: 'PENDING'
+        },
+        assignedLocationId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Assignedlocationid'
+        },
+        assignedUserId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Assigneduserid'
+        },
+        lastActiveAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Lastactiveat'
+        },
+        registeredAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Registeredat'
+        },
+        registeredById: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Registeredbyid'
+        },
+        authToken: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Authtoken'
+        },
+        tokenExpiresAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Tokenexpiresat'
+        },
+        pushToken: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Pushtoken'
+        },
+        capabilities: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Capabilities'
+        },
+        settings: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Settings'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'deviceId', 'deviceName', 'id', 'createdAt', 'updatedAt'],
+    title: 'MobileDeviceResponse',
+    description: 'Response schema for device'
+} as const;
+
+export const MobileTaskCreateSchema = {
+    properties: {
+        taskType: {
+            '$ref': '#/components/schemas/TaskType'
+        },
+        priority: {
+            '$ref': '#/components/schemas/TaskPriority',
+            default: 'NORMAL'
+        },
+        locationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Locationid'
+        },
+        assignedUserId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Assigneduserid'
+        },
+        sourceEntityType: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Sourceentitytype'
+        },
+        sourceEntityId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Sourceentityid'
+        },
+        sourceZone: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Sourcezone'
+        },
+        sourceBin: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Sourcebin'
+        },
+        targetZone: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Targetzone'
+        },
+        targetBin: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Targetbin'
+        },
+        instructions: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Instructions'
+        }
+    },
+    type: 'object',
+    required: ['taskType', 'locationId'],
+    title: 'MobileTaskCreate',
+    description: 'Schema for task creation'
+} as const;
+
+export const MobileTaskResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        sessionId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Sessionid'
+        },
+        taskNo: {
+            type: 'string',
+            maxLength: 50,
+            title: 'Taskno'
+        },
+        taskType: {
+            '$ref': '#/components/schemas/TaskType'
+        },
+        status: {
+            '$ref': '#/components/schemas/TaskStatus',
+            default: 'PENDING'
+        },
+        priority: {
+            '$ref': '#/components/schemas/TaskPriority',
+            default: 'NORMAL'
+        },
+        locationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Locationid'
+        },
+        assignedUserId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Assigneduserid'
+        },
+        sourceEntityType: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 50
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Sourceentitytype'
+        },
+        sourceEntityId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Sourceentityid'
+        },
+        sourceZone: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 50
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Sourcezone'
+        },
+        sourceBin: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 50
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Sourcebin'
+        },
+        targetZone: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 50
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Targetzone'
+        },
+        targetBin: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 50
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Targetbin'
+        },
+        totalLines: {
+            type: 'integer',
+            title: 'Totallines',
+            default: 0
+        },
+        completedLines: {
+            type: 'integer',
+            title: 'Completedlines',
+            default: 0
+        },
+        totalQuantity: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Totalquantity',
+            default: '0'
+        },
+        completedQuantity: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Completedquantity',
+            default: '0'
+        },
+        startedAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Startedat'
+        },
+        completedAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Completedat'
+        },
+        estimatedDuration: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Estimatedduration'
+        },
+        actualDuration: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Actualduration'
+        },
+        instructions: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 1000
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Instructions'
+        },
+        taskData: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Taskdata'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'taskNo', 'taskType', 'locationId', 'id', 'createdAt', 'updatedAt'],
+    title: 'MobileTaskResponse',
+    description: 'Response schema for task'
+} as const;
+
 export const NDRCreateSchema = {
     properties: {
         ndrCode: {
@@ -17689,21 +25056,6 @@ export const OrderBriefSchema = {
 
 export const OrderCreateSchema = {
     properties: {
-        orderNo: {
-            type: 'string',
-            title: 'Orderno'
-        },
-        externalOrderNo: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Externalorderno'
-        },
         channel: {
             '$ref': '#/components/schemas/Channel'
         },
@@ -17750,122 +25102,27 @@ export const OrderCreateSchema = {
             ],
             title: 'Billingaddress'
         },
-        subtotal: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                }
-            ],
-            title: 'Subtotal'
-        },
-        taxAmount: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                }
-            ],
-            title: 'Taxamount'
-        },
-        shippingCharges: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                }
-            ],
-            title: 'Shippingcharges',
-            default: '0'
-        },
-        discount: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                }
-            ],
-            title: 'Discount',
-            default: '0'
-        },
-        codCharges: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                }
-            ],
-            title: 'Codcharges',
-            default: '0'
-        },
-        totalAmount: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                }
-            ],
-            title: 'Totalamount'
-        },
-        orderDate: {
-            type: 'string',
-            format: 'date-time',
-            title: 'Orderdate'
-        },
-        shipByDate: {
-            anyOf: [
-                {
-                    type: 'string',
-                    format: 'date-time'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Shipbydate'
-        },
-        promisedDate: {
-            anyOf: [
-                {
-                    type: 'string',
-                    format: 'date-time'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Promiseddate'
-        },
-        priority: {
-            type: 'integer',
-            title: 'Priority',
-            default: 0
-        },
-        tags: {
+        items: {
             items: {
-                type: 'string'
+                '$ref': '#/components/schemas/app__api__routes__orders__OrderItemCreate'
             },
             type: 'array',
-            title: 'Tags',
-            default: []
+            title: 'Items'
+        },
+        locationId: {
+            type: 'string',
+            title: 'Locationid'
+        },
+        externalOrderNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalorderno'
         },
         remarks: {
             anyOf: [
@@ -17877,61 +25134,11 @@ export const OrderCreateSchema = {
                 }
             ],
             title: 'Remarks'
-        },
-        locationId: {
-            type: 'string',
-            format: 'uuid',
-            title: 'Locationid'
-        },
-        customerId: {
-            anyOf: [
-                {
-                    type: 'string',
-                    format: 'uuid'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Customerid'
-        },
-        paymentTermType: {
-            anyOf: [
-                {
-                    '$ref': '#/components/schemas/PaymentTermType'
-                },
-                {
-                    type: 'null'
-                }
-            ]
-        },
-        paymentTermDays: {
-            anyOf: [
-                {
-                    type: 'integer'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Paymenttermdays'
-        },
-        poNumber: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Ponumber'
         }
     },
     type: 'object',
-    required: ['orderNo', 'channel', 'paymentMode', 'customerName', 'customerPhone', 'shippingAddress', 'subtotal', 'taxAmount', 'totalAmount', 'orderDate', 'locationId'],
-    title: 'OrderCreate',
-    description: 'Schema for creating an order'
+    required: ['channel', 'paymentMode', 'customerName', 'customerPhone', 'shippingAddress', 'items', 'locationId'],
+    title: 'OrderCreate'
 } as const;
 
 export const OrderImportCreateSchema = {
@@ -18237,32 +25444,104 @@ export const OrderImportUpdateSchema = {
 
 export const OrderItemCreateSchema = {
     properties: {
+        orderId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Orderid'
+        },
         skuId: {
             type: 'string',
+            format: 'uuid',
             title: 'Skuid'
+        },
+        externalItemId: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalitemid'
         },
         quantity: {
             type: 'integer',
             title: 'Quantity'
         },
         unitPrice: {
-            type: 'number',
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
             title: 'Unitprice'
         },
         taxAmount: {
-            type: 'number',
-            title: 'Taxamount',
-            default: 0
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
+            title: 'Taxamount'
         },
         discount: {
-            type: 'number',
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
             title: 'Discount',
-            default: 0
+            default: '0'
+        },
+        totalPrice: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
+            title: 'Totalprice'
+        },
+        serialNumbers: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Serialnumbers',
+            default: []
+        },
+        batchNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Batchno'
         }
     },
     type: 'object',
-    required: ['skuId', 'quantity', 'unitPrice'],
-    title: 'OrderItemCreate'
+    required: ['orderId', 'skuId', 'quantity', 'unitPrice', 'taxAmount', 'totalPrice'],
+    title: 'OrderItemCreate',
+    description: 'Schema for creating order item'
 } as const;
 
 export const OrderItemResponseSchema = {
@@ -18452,7 +25731,6 @@ export const OrderResponseSchema = {
     properties: {
         id: {
             type: 'string',
-            format: 'uuid',
             title: 'Id'
         },
         orderNo: {
@@ -18471,16 +25749,20 @@ export const OrderResponseSchema = {
             title: 'Externalorderno'
         },
         channel: {
-            '$ref': '#/components/schemas/Channel'
+            type: 'string',
+            title: 'Channel'
         },
         orderType: {
-            '$ref': '#/components/schemas/OrderType'
+            type: 'string',
+            title: 'Ordertype'
         },
         paymentMode: {
-            '$ref': '#/components/schemas/PaymentMode'
+            type: 'string',
+            title: 'Paymentmode'
         },
         status: {
-            '$ref': '#/components/schemas/OrderStatus'
+            type: 'string',
+            title: 'Status'
         },
         customerName: {
             type: 'string',
@@ -18501,51 +25783,24 @@ export const OrderResponseSchema = {
             ],
             title: 'Customeremail'
         },
-        shippingAddress: {
-            additionalProperties: true,
-            type: 'object',
-            title: 'Shippingaddress'
-        },
-        billingAddress: {
-            anyOf: [
-                {
-                    additionalProperties: true,
-                    type: 'object'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Billingaddress'
-        },
         subtotal: {
-            type: 'string',
-            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            type: 'number',
             title: 'Subtotal'
         },
         taxAmount: {
-            type: 'string',
-            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            type: 'number',
             title: 'Taxamount'
         },
         shippingCharges: {
-            type: 'string',
-            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            type: 'number',
             title: 'Shippingcharges'
         },
         discount: {
-            type: 'string',
-            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            type: 'number',
             title: 'Discount'
         },
-        codCharges: {
-            type: 'string',
-            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
-            title: 'Codcharges'
-        },
         totalAmount: {
-            type: 'string',
-            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            type: 'number',
             title: 'Totalamount'
         },
         orderDate: {
@@ -18553,180 +25808,19 @@ export const OrderResponseSchema = {
             format: 'date-time',
             title: 'Orderdate'
         },
-        shipByDate: {
-            anyOf: [
-                {
-                    type: 'string',
-                    format: 'date-time'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Shipbydate'
-        },
-        promisedDate: {
-            anyOf: [
-                {
-                    type: 'string',
-                    format: 'date-time'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Promiseddate'
-        },
-        priority: {
-            type: 'integer',
-            title: 'Priority',
-            default: 0
-        },
-        tags: {
-            items: {
-                type: 'string'
-            },
-            type: 'array',
-            title: 'Tags',
-            default: []
-        },
-        remarks: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Remarks'
-        },
         locationId: {
             type: 'string',
-            format: 'uuid',
             title: 'Locationid'
-        },
-        companyId: {
-            type: 'string',
-            format: 'uuid',
-            title: 'Companyid'
-        },
-        customerId: {
-            anyOf: [
-                {
-                    type: 'string',
-                    format: 'uuid'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Customerid'
-        },
-        paymentTermType: {
-            anyOf: [
-                {
-                    '$ref': '#/components/schemas/PaymentTermType'
-                },
-                {
-                    type: 'null'
-                }
-            ]
-        },
-        paymentTermDays: {
-            anyOf: [
-                {
-                    type: 'integer'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Paymenttermdays'
-        },
-        creditDueDate: {
-            anyOf: [
-                {
-                    type: 'string',
-                    format: 'date-time'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Creditduedate'
-        },
-        poNumber: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Ponumber'
-        },
-        gstInvoiceNo: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Gstinvoiceno'
-        },
-        gstInvoiceDate: {
-            anyOf: [
-                {
-                    type: 'string',
-                    format: 'date-time'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Gstinvoicedate'
-        },
-        eWayBillNo: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Ewaybillno'
-        },
-        irnNo: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Irnno'
         },
         createdAt: {
             type: 'string',
             format: 'date-time',
             title: 'Createdat'
-        },
-        updatedAt: {
-            type: 'string',
-            format: 'date-time',
-            title: 'Updatedat'
         }
     },
     type: 'object',
-    required: ['id', 'orderNo', 'channel', 'orderType', 'paymentMode', 'status', 'customerName', 'customerPhone', 'shippingAddress', 'subtotal', 'taxAmount', 'shippingCharges', 'discount', 'codCharges', 'totalAmount', 'orderDate', 'locationId', 'companyId', 'createdAt', 'updatedAt'],
-    title: 'OrderResponse',
-    description: 'Schema for order API responses'
+    required: ['id', 'orderNo', 'channel', 'orderType', 'paymentMode', 'status', 'customerName', 'customerPhone', 'subtotal', 'taxAmount', 'shippingCharges', 'discount', 'totalAmount', 'orderDate', 'locationId', 'createdAt'],
+    title: 'OrderResponse'
 } as const;
 
 export const OrderStatusSchema = {
@@ -20330,6 +27424,360 @@ export const PaymentModeSchema = {
     description: 'Payment modes'
 } as const;
 
+export const PaymentSettlementCreateSchema = {
+    properties: {
+        channel: {
+            type: 'string',
+            title: 'Channel'
+        },
+        transporterId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Transporterid'
+        },
+        settlementDate: {
+            type: 'string',
+            format: 'date',
+            title: 'Settlementdate'
+        },
+        periodFrom: {
+            type: 'string',
+            format: 'date',
+            title: 'Periodfrom'
+        },
+        periodTo: {
+            type: 'string',
+            format: 'date',
+            title: 'Periodto'
+        },
+        grossAmount: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
+            title: 'Grossamount'
+        },
+        commissionAmount: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
+            title: 'Commissionamount',
+            default: '0'
+        },
+        tdsAmount: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
+            title: 'Tdsamount',
+            default: '0'
+        },
+        shippingDeduction: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
+            title: 'Shippingdeduction',
+            default: '0'
+        },
+        otherDeductions: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
+            title: 'Otherdeductions',
+            default: '0'
+        },
+        bankReference: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Bankreference'
+        },
+        fileUrl: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Fileurl'
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        }
+    },
+    type: 'object',
+    required: ['channel', 'settlementDate', 'periodFrom', 'periodTo', 'grossAmount'],
+    title: 'PaymentSettlementCreate',
+    description: 'Schema for settlement creation'
+} as const;
+
+export const PaymentSettlementResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        settlementNo: {
+            type: 'string',
+            maxLength: 50,
+            title: 'Settlementno'
+        },
+        channel: {
+            type: 'string',
+            maxLength: 50,
+            title: 'Channel'
+        },
+        transporterId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Transporterid'
+        },
+        status: {
+            '$ref': '#/components/schemas/SettlementStatus',
+            default: 'PENDING'
+        },
+        settlementDate: {
+            type: 'string',
+            format: 'date',
+            title: 'Settlementdate'
+        },
+        periodFrom: {
+            type: 'string',
+            format: 'date',
+            title: 'Periodfrom'
+        },
+        periodTo: {
+            type: 'string',
+            format: 'date',
+            title: 'Periodto'
+        },
+        grossAmount: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Grossamount',
+            default: '0'
+        },
+        commissionAmount: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Commissionamount',
+            default: '0'
+        },
+        tdsAmount: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Tdsamount',
+            default: '0'
+        },
+        shippingDeduction: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Shippingdeduction',
+            default: '0'
+        },
+        otherDeductions: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Otherdeductions',
+            default: '0'
+        },
+        netAmount: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Netamount',
+            default: '0'
+        },
+        totalOrders: {
+            type: 'integer',
+            title: 'Totalorders',
+            default: 0
+        },
+        matchedOrders: {
+            type: 'integer',
+            title: 'Matchedorders',
+            default: 0
+        },
+        unmatchedOrders: {
+            type: 'integer',
+            title: 'Unmatchedorders',
+            default: 0
+        },
+        bankReference: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 100
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Bankreference'
+        },
+        bankAccountNo: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 50
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Bankaccountno'
+        },
+        receivedAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Receivedat'
+        },
+        reconciledAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Reconciledat'
+        },
+        reconciledById: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Reconciledbyid'
+        },
+        fileUrl: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Fileurl'
+        },
+        rawData: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Rawdata'
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 1000
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'settlementNo', 'channel', 'settlementDate', 'periodFrom', 'periodTo', 'id', 'createdAt', 'updatedAt'],
+    title: 'PaymentSettlementResponse',
+    description: 'Response schema for settlement'
+} as const;
+
 export const PaymentTermTypeSchema = {
     type: 'string',
     enum: ['IMMEDIATE', 'NET_7', 'NET_15', 'NET_30', 'NET_45', 'NET_60', 'CUSTOM'],
@@ -20866,6 +28314,817 @@ export const PincodePerformanceResponseSchema = {
     required: ['id', 'pincode', 'periodStart', 'periodEnd', 'totalShipments', 'deliveredShipments', 'rtoShipments', 'transporterId', 'companyId', 'createdAt', 'updatedAt'],
     title: 'PincodePerformanceResponse',
     description: 'Pincode performance response schema'
+} as const;
+
+export const PreorderCreateSchema = {
+    properties: {
+        customerId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Customerid'
+        },
+        customerName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Customername'
+        },
+        customerEmail: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Customeremail'
+        },
+        customerPhone: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Customerphone'
+        },
+        channel: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Channel'
+        },
+        externalOrderId: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalorderid'
+        },
+        locationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Locationid'
+        },
+        expectedAvailableDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Expectedavailabledate'
+        },
+        expiryDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Expirydate'
+        },
+        depositAmount: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
+            title: 'Depositamount',
+            default: '0'
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        }
+    },
+    type: 'object',
+    required: ['locationId'],
+    title: 'PreorderCreate',
+    description: 'Schema for pre-order creation'
+} as const;
+
+export const PreorderInventoryResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        preorderId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Preorderid'
+        },
+        preorderLineId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Preorderlineid'
+        },
+        skuId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Skuid'
+        },
+        locationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Locationid'
+        },
+        reservedQuantity: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Reservedquantity'
+        },
+        fulfilledQuantity: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Fulfilledquantity',
+            default: '0'
+        },
+        reservedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Reservedat'
+        },
+        expectedArrivalDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Expectedarrivaldate'
+        },
+        sourceType: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 50
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Sourcetype'
+        },
+        sourceId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Sourceid'
+        },
+        expiresAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Expiresat'
+        },
+        isActive: {
+            type: 'boolean',
+            title: 'Isactive',
+            default: true
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'preorderId', 'preorderLineId', 'skuId', 'locationId', 'reservedQuantity', 'id', 'createdAt', 'updatedAt'],
+    title: 'PreorderInventoryResponse',
+    description: 'Response schema for inventory'
+} as const;
+
+export const PreorderLineCreateSchema = {
+    properties: {
+        skuId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Skuid'
+        },
+        skuCode: {
+            type: 'string',
+            title: 'Skucode'
+        },
+        skuName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Skuname'
+        },
+        quantity: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
+            title: 'Quantity'
+        },
+        unitPrice: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
+            title: 'Unitprice'
+        },
+        taxRate: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
+            title: 'Taxrate',
+            default: '0'
+        },
+        discountAmount: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
+            title: 'Discountamount',
+            default: '0'
+        },
+        expectedAvailableDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Expectedavailabledate'
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        }
+    },
+    type: 'object',
+    required: ['skuId', 'skuCode', 'quantity', 'unitPrice'],
+    title: 'PreorderLineCreate',
+    description: 'Schema for line creation'
+} as const;
+
+export const PreorderLineResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        preorderId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Preorderid'
+        },
+        lineNo: {
+            type: 'integer',
+            title: 'Lineno',
+            default: 1
+        },
+        skuId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Skuid'
+        },
+        skuCode: {
+            type: 'string',
+            maxLength: 100,
+            title: 'Skucode'
+        },
+        skuName: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 255
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Skuname'
+        },
+        quantity: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Quantity'
+        },
+        allocatedQuantity: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Allocatedquantity',
+            default: '0'
+        },
+        unitPrice: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Unitprice'
+        },
+        taxRate: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Taxrate',
+            default: '0'
+        },
+        taxAmount: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Taxamount',
+            default: '0'
+        },
+        discountAmount: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Discountamount',
+            default: '0'
+        },
+        lineTotal: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Linetotal'
+        },
+        expectedAvailableDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Expectedavailabledate'
+        },
+        isAllocated: {
+            type: 'boolean',
+            title: 'Isallocated',
+            default: false
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'preorderId', 'skuId', 'skuCode', 'quantity', 'unitPrice', 'lineTotal', 'id', 'createdAt', 'updatedAt'],
+    title: 'PreorderLineResponse',
+    description: 'Response schema for line'
+} as const;
+
+export const PreorderResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        preorderNo: {
+            type: 'string',
+            maxLength: 50,
+            title: 'Preorderno'
+        },
+        customerId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Customerid'
+        },
+        customerName: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 255
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Customername'
+        },
+        customerEmail: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 255
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Customeremail'
+        },
+        customerPhone: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 20
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Customerphone'
+        },
+        channel: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 50
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Channel'
+        },
+        externalOrderId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 100
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalorderid'
+        },
+        status: {
+            '$ref': '#/components/schemas/PreorderStatus',
+            default: 'DRAFT'
+        },
+        locationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Locationid'
+        },
+        expectedAvailableDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Expectedavailabledate'
+        },
+        expiryDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Expirydate'
+        },
+        totalItems: {
+            type: 'integer',
+            title: 'Totalitems',
+            default: 0
+        },
+        subtotal: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Subtotal',
+            default: '0'
+        },
+        taxAmount: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Taxamount',
+            default: '0'
+        },
+        discountAmount: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Discountamount',
+            default: '0'
+        },
+        totalAmount: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Totalamount',
+            default: '0'
+        },
+        depositAmount: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Depositamount',
+            default: '0'
+        },
+        depositPaidAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Depositpaidat'
+        },
+        convertedOrderId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Convertedorderid'
+        },
+        convertedAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Convertedat'
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 1000
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        },
+        extraData: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Extradata'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'preorderNo', 'locationId', 'id', 'createdAt', 'updatedAt'],
+    title: 'PreorderResponse',
+    description: 'Response schema for pre-order'
+} as const;
+
+export const PreorderStatusSchema = {
+    type: 'string',
+    enum: ['DRAFT', 'CONFIRMED', 'PARTIALLY_ALLOCATED', 'FULLY_ALLOCATED', 'CONVERTED', 'CANCELLED', 'EXPIRED'],
+    title: 'PreorderStatus',
+    description: 'Pre-order status'
+} as const;
+
+export const PreorderUpdateSchema = {
+    properties: {
+        status: {
+            anyOf: [
+                {
+                    '$ref': '#/components/schemas/PreorderStatus'
+                },
+                {
+                    type: 'null'
+                }
+            ]
+        },
+        expectedAvailableDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Expectedavailabledate'
+        },
+        expiryDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Expirydate'
+        },
+        depositAmount: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Depositamount'
+        },
+        depositPaidAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Depositpaidat'
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        }
+    },
+    type: 'object',
+    title: 'PreorderUpdate',
+    description: 'Schema for pre-order update'
 } as const;
 
 export const PriceListCreateSchema = {
@@ -25647,6 +33906,366 @@ export const RateCardUpdateSchema = {
     description: 'Rate Card update schema'
 } as const;
 
+export const RecommendationStatusSchema = {
+    type: 'string',
+    enum: ['PENDING', 'APPROVED', 'REJECTED', 'IN_PROGRESS', 'COMPLETED', 'EXPIRED'],
+    title: 'RecommendationStatus',
+    description: 'Recommendation status'
+} as const;
+
+export const RecommendationTypeSchema = {
+    type: 'string',
+    enum: ['RELOCATE', 'CONSOLIDATE', 'SPLIT', 'UPGRADE_BIN', 'DOWNGRADE_BIN'],
+    title: 'RecommendationType',
+    description: 'Slotting recommendation types'
+} as const;
+
+export const ReconciliationDiscrepancyCreateSchema = {
+    properties: {
+        settlementId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Settlementid'
+        },
+        orderId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Orderid'
+        },
+        orderNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Orderno'
+        },
+        discrepancyType: {
+            '$ref': '#/components/schemas/DiscrepancyType'
+        },
+        channel: {
+            type: 'string',
+            title: 'Channel'
+        },
+        expectedAmount: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
+            title: 'Expectedamount'
+        },
+        actualAmount: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
+            title: 'Actualamount'
+        },
+        systemData: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Systemdata'
+        },
+        settlementData: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Settlementdata'
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        }
+    },
+    type: 'object',
+    required: ['discrepancyType', 'channel', 'expectedAmount', 'actualAmount'],
+    title: 'ReconciliationDiscrepancyCreate',
+    description: 'Schema for discrepancy creation'
+} as const;
+
+export const ReconciliationDiscrepancyResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        settlementId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Settlementid'
+        },
+        orderId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Orderid'
+        },
+        orderNo: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 50
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Orderno'
+        },
+        discrepancyType: {
+            '$ref': '#/components/schemas/DiscrepancyType'
+        },
+        channel: {
+            type: 'string',
+            maxLength: 50,
+            title: 'Channel'
+        },
+        expectedAmount: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Expectedamount'
+        },
+        actualAmount: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Actualamount'
+        },
+        differenceAmount: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Differenceamount'
+        },
+        currency: {
+            type: 'string',
+            maxLength: 10,
+            title: 'Currency',
+            default: 'INR'
+        },
+        detectedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Detectedat'
+        },
+        isResolved: {
+            type: 'boolean',
+            title: 'Isresolved',
+            default: false
+        },
+        resolvedAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Resolvedat'
+        },
+        resolvedById: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Resolvedbyid'
+        },
+        resolution: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Resolution'
+        },
+        systemData: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Systemdata'
+        },
+        settlementData: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Settlementdata'
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 1000
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'discrepancyType', 'channel', 'expectedAmount', 'actualAmount', 'differenceAmount', 'id', 'createdAt', 'updatedAt'],
+    title: 'ReconciliationDiscrepancyResponse',
+    description: 'Response schema for discrepancy'
+} as const;
+
+export const ReconciliationReportResponseSchema = {
+    properties: {
+        periodFrom: {
+            type: 'string',
+            format: 'date',
+            title: 'Periodfrom'
+        },
+        periodTo: {
+            type: 'string',
+            format: 'date',
+            title: 'Periodto'
+        },
+        totalSettlements: {
+            type: 'integer',
+            title: 'Totalsettlements'
+        },
+        totalGrossAmount: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Totalgrossamount'
+        },
+        totalNetAmount: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Totalnetamount'
+        },
+        totalDiscrepancies: {
+            type: 'integer',
+            title: 'Totaldiscrepancies'
+        },
+        unresolvedDiscrepancies: {
+            type: 'integer',
+            title: 'Unresolveddiscrepancies'
+        },
+        discrepancyAmount: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Discrepancyamount'
+        },
+        chargebackCount: {
+            type: 'integer',
+            title: 'Chargebackcount'
+        },
+        chargebackAmount: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Chargebackamount'
+        },
+        escrowHeld: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Escrowheld'
+        }
+    },
+    type: 'object',
+    required: ['periodFrom', 'periodTo', 'totalSettlements', 'totalGrossAmount', 'totalNetAmount', 'totalDiscrepancies', 'unresolvedDiscrepancies', 'discrepancyAmount', 'chargebackCount', 'chargebackAmount', 'escrowHeld'],
+    title: 'ReconciliationReportResponse',
+    description: 'Response for reconciliation report'
+} as const;
+
 export const ReportExecutionResponseSchema = {
     properties: {
         scheduledReportId: {
@@ -25751,6 +34370,45 @@ export const ResolutionTypeSchema = {
     description: 'NDR resolution types'
 } as const;
 
+export const ResolveDiscrepancyRequestSchema = {
+    properties: {
+        resolution: {
+            type: 'string',
+            title: 'Resolution'
+        },
+        adjustmentAmount: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Adjustmentamount'
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        }
+    },
+    type: 'object',
+    required: ['resolution'],
+    title: 'ResolveDiscrepancyRequest',
+    description: 'Request to resolve discrepancy'
+} as const;
+
 export const ReturnBriefSchema = {
     properties: {
         id: {
@@ -25805,6 +34463,18 @@ export const ReturnCreateSchema = {
                 }
             ],
             title: 'Orderid'
+        },
+        locationId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Locationid'
         },
         awbNo: {
             anyOf: [
@@ -25867,6 +34537,113 @@ export const ReturnItemCreateSchema = {
     required: ['returnId', 'skuId', 'quantity'],
     title: 'ReturnItemCreate',
     description: 'Schema for creating return item'
+} as const;
+
+export const ReturnItemQCSchema = {
+    properties: {
+        itemId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Itemid'
+        },
+        qcStatus: {
+            type: 'string',
+            title: 'Qcstatus'
+        },
+        qcGrade: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Qcgrade'
+        },
+        action: {
+            type: 'string',
+            title: 'Action'
+        },
+        remarks: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Remarks'
+        }
+    },
+    type: 'object',
+    required: ['itemId', 'qcStatus', 'action'],
+    title: 'ReturnItemQC',
+    description: 'QC details for a return item'
+} as const;
+
+export const ReturnItemReceiveSchema = {
+    properties: {
+        itemId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Itemid'
+        },
+        receivedQty: {
+            type: 'integer',
+            title: 'Receivedqty'
+        },
+        destinationBinId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Destinationbinid'
+        },
+        batchNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Batchno'
+        },
+        lotNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Lotno'
+        },
+        remarks: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Remarks'
+        }
+    },
+    type: 'object',
+    required: ['itemId', 'receivedQty'],
+    title: 'ReturnItemReceive',
+    description: 'Item receive details for return'
 } as const;
 
 export const ReturnItemResponseSchema = {
@@ -25946,6 +34723,131 @@ export const ReturnItemResponseSchema = {
             ],
             title: 'Action'
         },
+        destinationBinId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Destinationbinid'
+        },
+        restockedBinId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Restockedbinid'
+        },
+        disposedBinId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Disposedbinid'
+        },
+        restockedInventoryId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Restockedinventoryid'
+        },
+        batchNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Batchno'
+        },
+        lotNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Lotno'
+        },
+        skuCode: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Skucode'
+        },
+        skuName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Skuname'
+        },
+        destinationBinCode: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Destinationbincode'
+        },
+        restockedBinCode: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Restockedbincode'
+        },
+        pendingQty: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Pendingqty'
+        },
         createdAt: {
             type: 'string',
             format: 'date-time',
@@ -25961,6 +34863,51 @@ export const ReturnItemResponseSchema = {
     required: ['id', 'returnId', 'skuId', 'quantity', 'receivedQty', 'restockedQty', 'disposedQty', 'createdAt', 'updatedAt'],
     title: 'ReturnItemResponse',
     description: 'Schema for return item API responses'
+} as const;
+
+export const ReturnItemRestockSchema = {
+    properties: {
+        itemId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Itemid'
+        },
+        restockQty: {
+            type: 'integer',
+            title: 'Restockqty'
+        },
+        destinationBinId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Destinationbinid'
+        },
+        batchNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Batchno'
+        },
+        lotNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Lotno'
+        }
+    },
+    type: 'object',
+    required: ['itemId', 'restockQty', 'destinationBinId'],
+    title: 'ReturnItemRestock',
+    description: 'Restock details for a return item'
 } as const;
 
 export const ReturnItemUpdateSchema = {
@@ -26041,11 +34988,173 @@ export const ReturnItemUpdateSchema = {
                 }
             ],
             title: 'Disposedqty'
+        },
+        destinationBinId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Destinationbinid'
+        },
+        restockedBinId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Restockedbinid'
+        },
+        disposedBinId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Disposedbinid'
+        },
+        batchNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Batchno'
+        },
+        lotNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Lotno'
         }
     },
     type: 'object',
     title: 'ReturnItemUpdate',
     description: 'Schema for updating return item'
+} as const;
+
+export const ReturnQCRequestSchema = {
+    properties: {
+        items: {
+            items: {
+                '$ref': '#/components/schemas/ReturnItemQC'
+            },
+            type: 'array',
+            title: 'Items'
+        },
+        remarks: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Remarks'
+        }
+    },
+    type: 'object',
+    required: ['items'],
+    title: 'ReturnQCRequest',
+    description: 'Request to perform QC on return items'
+} as const;
+
+export const ReturnReceiveRequestSchema = {
+    properties: {
+        locationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Locationid'
+        },
+        vehicleNumber: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Vehiclenumber'
+        },
+        driverName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Drivername'
+        },
+        driverPhone: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Driverphone'
+        },
+        createGrn: {
+            type: 'boolean',
+            title: 'Creategrn',
+            default: true
+        },
+        remarks: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Remarks'
+        },
+        items: {
+            anyOf: [
+                {
+                    items: {
+                        '$ref': '#/components/schemas/ReturnItemReceive'
+                    },
+                    type: 'array'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Items'
+        }
+    },
+    type: 'object',
+    required: ['locationId'],
+    title: 'ReturnReceiveRequest',
+    description: 'Request to receive a return at warehouse'
 } as const;
 
 export const ReturnResponseSchema = {
@@ -26219,6 +35328,109 @@ export const ReturnResponseSchema = {
             ],
             title: 'Refundstatus'
         },
+        locationId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Locationid'
+        },
+        goodsReceiptId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Goodsreceiptid'
+        },
+        destinationZoneId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Destinationzoneid'
+        },
+        vehicleNumber: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Vehiclenumber'
+        },
+        driverName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Drivername'
+        },
+        driverPhone: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Driverphone'
+        },
+        receivedBy: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Receivedby'
+        },
+        locationName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Locationname'
+        },
+        destinationZoneName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Destinationzonename'
+        },
         createdAt: {
             type: 'string',
             format: 'date-time',
@@ -26234,6 +35446,33 @@ export const ReturnResponseSchema = {
     required: ['id', 'returnNo', 'type', 'status', 'initiatedAt', 'createdAt', 'updatedAt'],
     title: 'ReturnResponse',
     description: 'Schema for return API responses'
+} as const;
+
+export const ReturnRestockRequestSchema = {
+    properties: {
+        items: {
+            items: {
+                '$ref': '#/components/schemas/ReturnItemRestock'
+            },
+            type: 'array',
+            title: 'Items'
+        },
+        remarks: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Remarks'
+        }
+    },
+    type: 'object',
+    required: ['items'],
+    title: 'ReturnRestockRequest',
+    description: 'Request to restock QC-passed return items'
 } as const;
 
 export const ReturnStatusSchema = {
@@ -26389,11 +35628,182 @@ export const ReturnUpdateSchema = {
                 }
             ],
             title: 'Refundstatus'
+        },
+        locationId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Locationid'
+        },
+        destinationZoneId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Destinationzoneid'
+        },
+        vehicleNumber: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Vehiclenumber'
+        },
+        driverName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Drivername'
+        },
+        driverPhone: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Driverphone'
         }
     },
     type: 'object',
     title: 'ReturnUpdate',
     description: 'Schema for updating return'
+} as const;
+
+export const ReturnZoneRoutingCreateSchema = {
+    properties: {
+        locationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Locationid'
+        },
+        qcGrade: {
+            type: 'string',
+            title: 'Qcgrade'
+        },
+        destinationZoneId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Destinationzoneid'
+        },
+        action: {
+            type: 'string',
+            title: 'Action',
+            default: 'RESTOCK'
+        },
+        priority: {
+            type: 'integer',
+            title: 'Priority',
+            default: 100
+        }
+    },
+    type: 'object',
+    required: ['locationId', 'qcGrade'],
+    title: 'ReturnZoneRoutingCreate',
+    description: 'Create zone routing rule'
+} as const;
+
+export const ReturnZoneRoutingResponseSchema = {
+    properties: {
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        locationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Locationid'
+        },
+        qcGrade: {
+            type: 'string',
+            title: 'Qcgrade'
+        },
+        destinationZoneId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Destinationzoneid'
+        },
+        action: {
+            type: 'string',
+            title: 'Action'
+        },
+        priority: {
+            type: 'integer',
+            title: 'Priority'
+        },
+        isActive: {
+            type: 'boolean',
+            title: 'Isactive'
+        },
+        locationName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Locationname'
+        },
+        destinationZoneName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Destinationzonename'
+        }
+    },
+    type: 'object',
+    required: ['id', 'companyId', 'locationId', 'qcGrade', 'action', 'priority', 'isActive'],
+    title: 'ReturnZoneRoutingResponse',
+    description: 'Zone routing rule response'
 } as const;
 
 export const SKUBriefSchema = {
@@ -26528,6 +35938,10 @@ export const SKUCreateSchema = {
                     type: 'number'
                 },
                 {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
                     type: 'null'
                 }
             ],
@@ -26537,6 +35951,10 @@ export const SKUCreateSchema = {
             anyOf: [
                 {
                     type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
                 },
                 {
                     type: 'null'
@@ -26550,6 +35968,10 @@ export const SKUCreateSchema = {
                     type: 'number'
                 },
                 {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
                     type: 'null'
                 }
             ],
@@ -26559,6 +35981,10 @@ export const SKUCreateSchema = {
             anyOf: [
                 {
                     type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
                 },
                 {
                     type: 'null'
@@ -26572,6 +35998,10 @@ export const SKUCreateSchema = {
                     type: 'number'
                 },
                 {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
                     type: 'null'
                 }
             ],
@@ -26581,6 +36011,10 @@ export const SKUCreateSchema = {
             anyOf: [
                 {
                     type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
                 },
                 {
                     type: 'null'
@@ -26594,6 +36028,10 @@ export const SKUCreateSchema = {
                     type: 'number'
                 },
                 {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
                     type: 'null'
                 }
             ],
@@ -26605,10 +36043,46 @@ export const SKUCreateSchema = {
                     type: 'number'
                 },
                 {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
                     type: 'null'
                 }
             ],
             title: 'Taxrate'
+        },
+        isSerialised: {
+            type: 'boolean',
+            title: 'Isserialised',
+            default: false
+        },
+        isBatchTracked: {
+            type: 'boolean',
+            title: 'Isbatchtracked',
+            default: false
+        },
+        reorderLevel: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Reorderlevel'
+        },
+        reorderQty: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Reorderqty'
         },
         barcodes: {
             items: {
@@ -26625,17 +36099,47 @@ export const SKUCreateSchema = {
             type: 'array',
             title: 'Images',
             default: []
+        },
+        attributes: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Attributes'
+        },
+        valuationMethod: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Valuationmethod'
+        },
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
         }
     },
     type: 'object',
-    required: ['code', 'name'],
-    title: 'SKUCreate'
+    required: ['code', 'name', 'companyId'],
+    title: 'SKUCreate',
+    description: 'Schema for creating a new SKU'
 } as const;
 
 export const SKUResponseSchema = {
     properties: {
         id: {
             type: 'string',
+            format: 'uuid',
             title: 'Id'
         },
         code: {
@@ -26701,10 +36205,59 @@ export const SKUResponseSchema = {
             ],
             title: 'Hsn'
         },
+        weight: {
+            anyOf: [
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Weight'
+        },
+        length: {
+            anyOf: [
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Length'
+        },
+        width: {
+            anyOf: [
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Width'
+        },
+        height: {
+            anyOf: [
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Height'
+        },
         mrp: {
             anyOf: [
                 {
-                    type: 'number'
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
                 },
                 {
                     type: 'null'
@@ -26715,7 +36268,8 @@ export const SKUResponseSchema = {
         costPrice: {
             anyOf: [
                 {
-                    type: 'number'
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
                 },
                 {
                     type: 'null'
@@ -26726,7 +36280,8 @@ export const SKUResponseSchema = {
         sellingPrice: {
             anyOf: [
                 {
-                    type: 'number'
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
                 },
                 {
                     type: 'null'
@@ -26734,11 +36289,81 @@ export const SKUResponseSchema = {
             ],
             title: 'Sellingprice'
         },
+        taxRate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Taxrate'
+        },
+        isSerialised: {
+            type: 'boolean',
+            title: 'Isserialised'
+        },
+        isBatchTracked: {
+            type: 'boolean',
+            title: 'Isbatchtracked'
+        },
+        reorderLevel: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Reorderlevel'
+        },
+        reorderQty: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Reorderqty'
+        },
+        barcodes: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Barcodes',
+            default: []
+        },
+        images: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Images',
+            default: []
+        },
+        attributes: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Attributes'
+        },
         isActive: {
             type: 'boolean',
             title: 'Isactive'
         },
-        companyId: {
+        valuationMethod: {
             anyOf: [
                 {
                     type: 'string'
@@ -26747,12 +36372,36 @@ export const SKUResponseSchema = {
                     type: 'null'
                 }
             ],
+            title: 'Valuationmethod'
+        },
+        isVariantParent: {
+            type: 'boolean',
+            title: 'Isvariantparent'
+        },
+        isVariant: {
+            type: 'boolean',
+            title: 'Isvariant'
+        },
+        companyId: {
+            type: 'string',
+            format: 'uuid',
             title: 'Companyid'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
         }
     },
     type: 'object',
-    required: ['id', 'code', 'name', 'isActive'],
-    title: 'SKUResponse'
+    required: ['id', 'code', 'name', 'isSerialised', 'isBatchTracked', 'isActive', 'isVariantParent', 'isVariant', 'companyId', 'createdAt', 'updatedAt'],
+    title: 'SKUResponse',
+    description: 'Schema for SKU API responses'
 } as const;
 
 export const SKUUpdateSchema = {
@@ -27123,6 +36772,557 @@ export const SKUValuationResponseSchema = {
     required: ['skuId', 'skuCode', 'skuName', 'valuationMethod', 'effectiveMethod'],
     title: 'SKUValuationResponse',
     description: 'Response for SKU valuation settings'
+} as const;
+
+export const STOApproveRequestSchema = {
+    properties: {
+        remarks: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Remarks'
+        }
+    },
+    type: 'object',
+    title: 'STOApproveRequest',
+    description: 'Request to approve an STO'
+} as const;
+
+export const STOItemCreateSchema = {
+    properties: {
+        skuId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Skuid'
+        },
+        requestedQty: {
+            type: 'integer',
+            title: 'Requestedqty'
+        },
+        sourceBinId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Sourcebinid'
+        },
+        batchNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Batchno'
+        },
+        lotNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Lotno'
+        },
+        remarks: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Remarks'
+        }
+    },
+    type: 'object',
+    required: ['skuId', 'requestedQty'],
+    title: 'STOItemCreate',
+    description: 'Create schema for item (camelCase for API input)'
+} as const;
+
+export const STOItemReadSchema = {
+    properties: {
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        stockTransferOrderId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Stocktransferorderid'
+        },
+        skuId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Skuid'
+        },
+        sourceBinId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Sourcebinid'
+        },
+        destinationBinId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Destinationbinid'
+        },
+        sourceInventoryId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Sourceinventoryid'
+        },
+        fifoSequence: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Fifosequence'
+        },
+        requestedQty: {
+            type: 'integer',
+            title: 'Requestedqty'
+        },
+        shippedQty: {
+            type: 'integer',
+            title: 'Shippedqty'
+        },
+        receivedQty: {
+            type: 'integer',
+            title: 'Receivedqty'
+        },
+        damagedQty: {
+            type: 'integer',
+            title: 'Damagedqty'
+        },
+        pendingQty: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Pendingqty'
+        },
+        batchNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Batchno'
+        },
+        lotNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Lotno'
+        },
+        status: {
+            type: 'string',
+            title: 'Status'
+        },
+        remarks: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Remarks'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        skuCode: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Skucode'
+        },
+        skuName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Skuname'
+        },
+        sourceBinCode: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Sourcebincode'
+        },
+        destinationBinCode: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Destinationbincode'
+        }
+    },
+    type: 'object',
+    required: ['id', 'stockTransferOrderId', 'skuId', 'requestedQty', 'shippedQty', 'receivedQty', 'damagedQty', 'status', 'createdAt'],
+    title: 'STOItemRead',
+    description: 'Read schema for item (camelCase for API output)'
+} as const;
+
+export const STOItemReceiveSchema = {
+    properties: {
+        itemId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Itemid'
+        },
+        receivedQty: {
+            type: 'integer',
+            title: 'Receivedqty'
+        },
+        damagedQty: {
+            type: 'integer',
+            title: 'Damagedqty',
+            default: 0
+        },
+        destinationBinId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Destinationbinid'
+        },
+        remarks: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Remarks'
+        }
+    },
+    type: 'object',
+    required: ['itemId', 'receivedQty'],
+    title: 'STOItemReceive',
+    description: 'Item receive details'
+} as const;
+
+export const STOItemUpdateSchema = {
+    properties: {
+        requestedQty: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Requestedqty'
+        },
+        shippedQty: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Shippedqty'
+        },
+        receivedQty: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Receivedqty'
+        },
+        damagedQty: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Damagedqty'
+        },
+        sourceBinId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Sourcebinid'
+        },
+        destinationBinId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Destinationbinid'
+        },
+        batchNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Batchno'
+        },
+        lotNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Lotno'
+        },
+        status: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Status'
+        },
+        remarks: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Remarks'
+        }
+    },
+    type: 'object',
+    title: 'STOItemUpdate',
+    description: 'Update schema for item (camelCase for API input)'
+} as const;
+
+export const STOReceiveRequestSchema = {
+    properties: {
+        items: {
+            items: {
+                '$ref': '#/components/schemas/STOItemReceive'
+            },
+            type: 'array',
+            title: 'Items'
+        },
+        vehicleNumber: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Vehiclenumber'
+        },
+        remarks: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Remarks'
+        }
+    },
+    type: 'object',
+    required: ['items'],
+    title: 'STOReceiveRequest',
+    description: 'Request to receive STO at destination'
+} as const;
+
+export const STOShipRequestSchema = {
+    properties: {
+        carrier: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Carrier'
+        },
+        trackingNumber: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Trackingnumber'
+        },
+        vehicleNumber: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Vehiclenumber'
+        },
+        driverName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Drivername'
+        },
+        driverPhone: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Driverphone'
+        },
+        remarks: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Remarks'
+        }
+    },
+    type: 'object',
+    title: 'STOShipRequest',
+    description: 'Request to mark STO as shipped'
+} as const;
+
+export const ScheduleStatusSchema = {
+    type: 'string',
+    enum: ['SCHEDULED', 'GENERATING', 'GENERATED', 'SKIPPED', 'FAILED'],
+    title: 'ScheduleStatus',
+    description: 'Schedule status'
 } as const;
 
 export const ScheduledReportCreateSchema = {
@@ -27892,6 +38092,54 @@ export const ServicePincodeUpdateSchema = {
     type: 'object',
     title: 'ServicePincodeUpdate',
     description: 'Service Pincode update schema'
+} as const;
+
+export const SettlementImportRequestSchema = {
+    properties: {
+        channel: {
+            type: 'string',
+            title: 'Channel'
+        },
+        fileUrl: {
+            type: 'string',
+            title: 'Fileurl'
+        },
+        periodFrom: {
+            type: 'string',
+            format: 'date',
+            title: 'Periodfrom'
+        },
+        periodTo: {
+            type: 'string',
+            format: 'date',
+            title: 'Periodto'
+        }
+    },
+    type: 'object',
+    required: ['channel', 'fileUrl', 'periodFrom', 'periodTo'],
+    title: 'SettlementImportRequest',
+    description: 'Request for importing settlement file'
+} as const;
+
+export const SettlementStatusSchema = {
+    type: 'string',
+    enum: ['PENDING', 'PROCESSING', 'MATCHED', 'PARTIALLY_MATCHED', 'UNMATCHED', 'DISPUTED', 'COMPLETED'],
+    title: 'SettlementStatus',
+    description: 'Payment settlement status'
+} as const;
+
+export const ShiftStatusSchema = {
+    type: 'string',
+    enum: ['SCHEDULED', 'ACTIVE', 'COMPLETED', 'CANCELLED'],
+    title: 'ShiftStatus',
+    description: 'Shift status'
+} as const;
+
+export const ShiftTypeSchema = {
+    type: 'string',
+    enum: ['MORNING', 'AFTERNOON', 'NIGHT', 'ROTATING', 'FLEXIBLE'],
+    title: 'ShiftType',
+    description: 'Shift types'
 } as const;
 
 export const ShipmentBriefSchema = {
@@ -29722,6 +39970,853 @@ export const ShippingRuleUpdateSchema = {
     description: 'Shipping Rule update schema'
 } as const;
 
+export const SkillLevelSchema = {
+    type: 'string',
+    enum: ['TRAINEE', 'BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT'],
+    title: 'SkillLevel',
+    description: 'Skill proficiency levels'
+} as const;
+
+export const SkuVelocityResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        skuId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Skuid'
+        },
+        locationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Locationid'
+        },
+        analysisDate: {
+            type: 'string',
+            format: 'date',
+            title: 'Analysisdate'
+        },
+        periodDays: {
+            type: 'integer',
+            title: 'Perioddays',
+            default: 30
+        },
+        totalPicks: {
+            type: 'integer',
+            title: 'Totalpicks',
+            default: 0
+        },
+        totalUnits: {
+            type: 'integer',
+            title: 'Totalunits',
+            default: 0
+        },
+        avgDailyPicks: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Avgdailypicks',
+            default: '0'
+        },
+        avgDailyUnits: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Avgdailyunits',
+            default: '0'
+        },
+        pickFrequency: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Pickfrequency',
+            default: '0'
+        },
+        velocityClass: {
+            '$ref': '#/components/schemas/VelocityClass',
+            default: 'C'
+        },
+        demandVariability: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Demandvariability',
+            default: '0'
+        },
+        avgOrderQuantity: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Avgorderquantity',
+            default: '0'
+        },
+        peakDayPicks: {
+            type: 'integer',
+            title: 'Peakdaypicks',
+            default: 0
+        },
+        lastPickDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Lastpickdate'
+        },
+        daysSinceLastPick: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Dayssincelastpick'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'skuId', 'locationId', 'analysisDate', 'id', 'createdAt', 'updatedAt'],
+    title: 'SkuVelocityResponse',
+    description: 'Response schema for velocity'
+} as const;
+
+export const SlottingRecommendationResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        locationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Locationid'
+        },
+        skuId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Skuid'
+        },
+        recommendationType: {
+            '$ref': '#/components/schemas/RecommendationType'
+        },
+        status: {
+            '$ref': '#/components/schemas/RecommendationStatus',
+            default: 'PENDING'
+        },
+        currentBinId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Currentbinid'
+        },
+        suggestedBinId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Suggestedbinid'
+        },
+        currentZone: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 50
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Currentzone'
+        },
+        suggestedZone: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 50
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Suggestedzone'
+        },
+        reason: {
+            type: 'string',
+            maxLength: 500,
+            title: 'Reason'
+        },
+        expectedBenefit: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Expectedbenefit'
+        },
+        priorityScore: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Priorityscore',
+            default: '0'
+        },
+        estimatedPickReduction: {
+            anyOf: [
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Estimatedpickreduction'
+        },
+        estimatedTravelReduction: {
+            anyOf: [
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Estimatedtravelreduction'
+        },
+        ruleId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Ruleid'
+        },
+        generatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Generatedat'
+        },
+        expiresAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Expiresat'
+        },
+        approvedById: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Approvedbyid'
+        },
+        approvedAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Approvedat'
+        },
+        completedAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Completedat'
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'locationId', 'skuId', 'recommendationType', 'reason', 'id', 'createdAt', 'updatedAt'],
+    title: 'SlottingRecommendationResponse',
+    description: 'Response schema for recommendation'
+} as const;
+
+export const SlottingRuleCreateSchema = {
+    properties: {
+        locationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Locationid'
+        },
+        ruleName: {
+            type: 'string',
+            title: 'Rulename'
+        },
+        ruleDescription: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Ruledescription'
+        },
+        priority: {
+            type: 'integer',
+            title: 'Priority',
+            default: 0
+        },
+        velocityClasses: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Velocityclasses',
+            default: []
+        },
+        targetZones: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Targetzones',
+            default: []
+        },
+        binLevelMin: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Binlevelmin'
+        },
+        binLevelMax: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Binlevelmax'
+        },
+        minAccessibilityScore: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Minaccessibilityscore'
+        },
+        maxDistanceFromDock: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Maxdistancefromdock'
+        },
+        categoryFilters: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Categoryfilters'
+        },
+        attributeFilters: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Attributefilters'
+        },
+        effectiveFrom: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Effectivefrom'
+        },
+        effectiveTo: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Effectiveto'
+        }
+    },
+    type: 'object',
+    required: ['locationId', 'ruleName'],
+    title: 'SlottingRuleCreate',
+    description: 'Schema for rule creation'
+} as const;
+
+export const SlottingRuleResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        locationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Locationid'
+        },
+        ruleName: {
+            type: 'string',
+            maxLength: 100,
+            title: 'Rulename'
+        },
+        ruleDescription: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Ruledescription'
+        },
+        priority: {
+            type: 'integer',
+            title: 'Priority',
+            default: 0
+        },
+        isActive: {
+            type: 'boolean',
+            title: 'Isactive',
+            default: true
+        },
+        velocityClasses: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Velocityclasses',
+            default: []
+        },
+        targetZones: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Targetzones',
+            default: []
+        },
+        binLevelMin: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Binlevelmin'
+        },
+        binLevelMax: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Binlevelmax'
+        },
+        minAccessibilityScore: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Minaccessibilityscore'
+        },
+        maxDistanceFromDock: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Maxdistancefromdock'
+        },
+        categoryFilters: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Categoryfilters'
+        },
+        attributeFilters: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Attributefilters'
+        },
+        effectiveFrom: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Effectivefrom'
+        },
+        effectiveTo: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Effectiveto'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'locationId', 'ruleName', 'id', 'createdAt', 'updatedAt'],
+    title: 'SlottingRuleResponse',
+    description: 'Response schema for rule'
+} as const;
+
+export const StagingAreaCreateSchema = {
+    properties: {
+        locationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Locationid'
+        },
+        areaCode: {
+            type: 'string',
+            title: 'Areacode'
+        },
+        areaName: {
+            type: 'string',
+            title: 'Areaname'
+        },
+        areaType: {
+            type: 'string',
+            title: 'Areatype',
+            default: 'CROSS_DOCK'
+        },
+        capacity: {
+            type: 'integer',
+            title: 'Capacity',
+            default: 100
+        },
+        dockDoor: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Dockdoor'
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        }
+    },
+    type: 'object',
+    required: ['locationId', 'areaCode', 'areaName'],
+    title: 'StagingAreaCreate',
+    description: 'Schema for staging area creation'
+} as const;
+
+export const StagingAreaResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        locationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Locationid'
+        },
+        areaCode: {
+            type: 'string',
+            maxLength: 50,
+            title: 'Areacode'
+        },
+        areaName: {
+            type: 'string',
+            maxLength: 100,
+            title: 'Areaname'
+        },
+        areaType: {
+            type: 'string',
+            maxLength: 50,
+            title: 'Areatype',
+            default: 'CROSS_DOCK'
+        },
+        status: {
+            '$ref': '#/components/schemas/StagingAreaStatus',
+            default: 'AVAILABLE'
+        },
+        capacity: {
+            type: 'integer',
+            title: 'Capacity',
+            default: 100
+        },
+        currentCount: {
+            type: 'integer',
+            title: 'Currentcount',
+            default: 0
+        },
+        dockDoor: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 20
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Dockdoor'
+        },
+        assignedTransporterId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Assignedtransporterid'
+        },
+        assignedRoute: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 100
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Assignedroute'
+        },
+        reservedUntil: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Reserveduntil'
+        },
+        isActive: {
+            type: 'boolean',
+            title: 'Isactive',
+            default: true
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'locationId', 'areaCode', 'areaName', 'id', 'createdAt', 'updatedAt'],
+    title: 'StagingAreaResponse',
+    description: 'Response schema for staging area'
+} as const;
+
+export const StagingAreaStatusSchema = {
+    type: 'string',
+    enum: ['AVAILABLE', 'RESERVED', 'IN_USE', 'MAINTENANCE'],
+    title: 'StagingAreaStatus',
+    description: 'Staging area status'
+} as const;
+
 export const StockAdjustmentCreateSchema = {
     properties: {
         locationId: {
@@ -30045,11 +41140,1722 @@ export const StockAdjustmentResponseSchema = {
     description: 'Stock Adjustment response schema'
 } as const;
 
+export const StockTransferOrderCreateSchema = {
+    properties: {
+        sourceLocationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Sourcelocationid'
+        },
+        destinationLocationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Destinationlocationid'
+        },
+        requiredByDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Requiredbydate'
+        },
+        priority: {
+            type: 'string',
+            title: 'Priority',
+            default: 'NORMAL'
+        },
+        remarks: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Remarks'
+        },
+        items: {
+            anyOf: [
+                {
+                    items: {
+                        '$ref': '#/components/schemas/STOItemCreate'
+                    },
+                    type: 'array'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Items'
+        }
+    },
+    type: 'object',
+    required: ['sourceLocationId', 'destinationLocationId'],
+    title: 'StockTransferOrderCreate',
+    description: 'Create schema (camelCase for API input)'
+} as const;
+
+export const StockTransferOrderReadSchema = {
+    properties: {
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        stoNo: {
+            type: 'string',
+            title: 'Stono'
+        },
+        sourceLocationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Sourcelocationid'
+        },
+        destinationLocationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Destinationlocationid'
+        },
+        status: {
+            type: 'string',
+            title: 'Status'
+        },
+        requiredByDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Requiredbydate'
+        },
+        shippedDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Shippeddate'
+        },
+        receivedDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Receiveddate'
+        },
+        carrier: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Carrier'
+        },
+        trackingNumber: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Trackingnumber'
+        },
+        vehicleNumber: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Vehiclenumber'
+        },
+        driverName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Drivername'
+        },
+        driverPhone: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Driverphone'
+        },
+        priority: {
+            type: 'string',
+            title: 'Priority'
+        },
+        remarks: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Remarks'
+        },
+        totalItems: {
+            type: 'integer',
+            title: 'Totalitems'
+        },
+        totalRequestedQty: {
+            type: 'integer',
+            title: 'Totalrequestedqty'
+        },
+        totalShippedQty: {
+            type: 'integer',
+            title: 'Totalshippedqty'
+        },
+        totalReceivedQty: {
+            type: 'integer',
+            title: 'Totalreceivedqty'
+        },
+        pendingQty: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Pendingqty'
+        },
+        sourceGatePassId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Sourcegatepassid'
+        },
+        destinationGrnId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Destinationgrnid'
+        },
+        requestedBy: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Requestedby'
+        },
+        approvedBy: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Approvedby'
+        },
+        approvedAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Approvedat'
+        },
+        source: {
+            type: 'string',
+            title: 'Source'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        },
+        sourceLocationName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Sourcelocationname'
+        },
+        destinationLocationName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Destinationlocationname'
+        },
+        requestedByName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Requestedbyname'
+        },
+        approvedByName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Approvedbyname'
+        },
+        items: {
+            anyOf: [
+                {
+                    items: {
+                        '$ref': '#/components/schemas/STOItemRead'
+                    },
+                    type: 'array'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Items'
+        }
+    },
+    type: 'object',
+    required: ['id', 'companyId', 'stoNo', 'sourceLocationId', 'destinationLocationId', 'status', 'priority', 'totalItems', 'totalRequestedQty', 'totalShippedQty', 'totalReceivedQty', 'source', 'createdAt', 'updatedAt'],
+    title: 'StockTransferOrderRead',
+    description: 'Read schema (camelCase for API output)'
+} as const;
+
+export const StockTransferOrderUpdateSchema = {
+    properties: {
+        status: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Status'
+        },
+        requiredByDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Requiredbydate'
+        },
+        carrier: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Carrier'
+        },
+        trackingNumber: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Trackingnumber'
+        },
+        vehicleNumber: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Vehiclenumber'
+        },
+        driverName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Drivername'
+        },
+        driverPhone: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Driverphone'
+        },
+        priority: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Priority'
+        },
+        remarks: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Remarks'
+        }
+    },
+    type: 'object',
+    title: 'StockTransferOrderUpdate',
+    description: 'Update schema (camelCase for API input)'
+} as const;
+
+export const SubscriptionCreateSchema = {
+    properties: {
+        customerId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Customerid'
+        },
+        customerName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Customername'
+        },
+        customerEmail: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Customeremail'
+        },
+        customerPhone: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Customerphone'
+        },
+        frequency: {
+            '$ref': '#/components/schemas/SubscriptionFrequency'
+        },
+        customIntervalDays: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Customintervaldays'
+        },
+        locationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Locationid'
+        },
+        shippingAddressId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Shippingaddressid'
+        },
+        billingAddressId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Billingaddressid'
+        },
+        startDate: {
+            type: 'string',
+            format: 'date',
+            title: 'Startdate'
+        },
+        endDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Enddate'
+        },
+        maxDeliveries: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Maxdeliveries'
+        },
+        paymentMethod: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Paymentmethod'
+        },
+        autoRenew: {
+            type: 'boolean',
+            title: 'Autorenew',
+            default: true
+        },
+        reminderDays: {
+            type: 'integer',
+            title: 'Reminderdays',
+            default: 3
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        }
+    },
+    type: 'object',
+    required: ['customerId', 'frequency', 'locationId', 'startDate'],
+    title: 'SubscriptionCreate',
+    description: 'Schema for subscription creation'
+} as const;
+
+export const SubscriptionFrequencySchema = {
+    type: 'string',
+    enum: ['DAILY', 'WEEKLY', 'BIWEEKLY', 'MONTHLY', 'QUARTERLY', 'YEARLY', 'CUSTOM'],
+    title: 'SubscriptionFrequency',
+    description: 'Subscription frequency'
+} as const;
+
+export const SubscriptionHistoryResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        subscriptionId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Subscriptionid'
+        },
+        actionType: {
+            type: 'string',
+            maxLength: 50,
+            title: 'Actiontype'
+        },
+        actionDate: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Actiondate'
+        },
+        userId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Userid'
+        },
+        previousStatus: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 50
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Previousstatus'
+        },
+        newStatus: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 50
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Newstatus'
+        },
+        changes: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Changes'
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'subscriptionId', 'actionType', 'id', 'createdAt'],
+    title: 'SubscriptionHistoryResponse',
+    description: 'Response schema for history'
+} as const;
+
+export const SubscriptionLineCreateSchema = {
+    properties: {
+        skuId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Skuid'
+        },
+        skuCode: {
+            type: 'string',
+            title: 'Skucode'
+        },
+        skuName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Skuname'
+        },
+        quantity: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
+            title: 'Quantity'
+        },
+        unitPrice: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
+            title: 'Unitprice'
+        },
+        taxRate: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
+            title: 'Taxrate',
+            default: '0'
+        },
+        discountAmount: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
+            title: 'Discountamount',
+            default: '0'
+        },
+        startDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Startdate'
+        },
+        endDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Enddate'
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        }
+    },
+    type: 'object',
+    required: ['skuId', 'skuCode', 'quantity', 'unitPrice'],
+    title: 'SubscriptionLineCreate',
+    description: 'Schema for line creation'
+} as const;
+
+export const SubscriptionLineResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        subscriptionId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Subscriptionid'
+        },
+        lineNo: {
+            type: 'integer',
+            title: 'Lineno',
+            default: 1
+        },
+        skuId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Skuid'
+        },
+        skuCode: {
+            type: 'string',
+            maxLength: 100,
+            title: 'Skucode'
+        },
+        skuName: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 255
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Skuname'
+        },
+        quantity: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Quantity'
+        },
+        unitPrice: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Unitprice'
+        },
+        taxRate: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Taxrate',
+            default: '0'
+        },
+        taxAmount: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Taxamount',
+            default: '0'
+        },
+        discountAmount: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Discountamount',
+            default: '0'
+        },
+        lineTotal: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Linetotal'
+        },
+        isActive: {
+            type: 'boolean',
+            title: 'Isactive',
+            default: true
+        },
+        startDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Startdate'
+        },
+        endDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Enddate'
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'subscriptionId', 'skuId', 'skuCode', 'quantity', 'unitPrice', 'lineTotal', 'id', 'createdAt', 'updatedAt'],
+    title: 'SubscriptionLineResponse',
+    description: 'Response schema for line'
+} as const;
+
+export const SubscriptionResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        subscriptionNo: {
+            type: 'string',
+            maxLength: 50,
+            title: 'Subscriptionno'
+        },
+        customerId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Customerid'
+        },
+        customerName: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 255
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Customername'
+        },
+        customerEmail: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 255
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Customeremail'
+        },
+        customerPhone: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 20
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Customerphone'
+        },
+        status: {
+            '$ref': '#/components/schemas/SubscriptionStatus',
+            default: 'DRAFT'
+        },
+        frequency: {
+            '$ref': '#/components/schemas/SubscriptionFrequency'
+        },
+        customIntervalDays: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Customintervaldays'
+        },
+        locationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Locationid'
+        },
+        shippingAddressId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Shippingaddressid'
+        },
+        billingAddressId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Billingaddressid'
+        },
+        startDate: {
+            type: 'string',
+            format: 'date',
+            title: 'Startdate'
+        },
+        endDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Enddate'
+        },
+        nextDeliveryDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Nextdeliverydate'
+        },
+        lastDeliveryDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Lastdeliverydate'
+        },
+        totalDeliveries: {
+            type: 'integer',
+            title: 'Totaldeliveries',
+            default: 0
+        },
+        completedDeliveries: {
+            type: 'integer',
+            title: 'Completeddeliveries',
+            default: 0
+        },
+        maxDeliveries: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Maxdeliveries'
+        },
+        subtotal: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Subtotal',
+            default: '0'
+        },
+        taxAmount: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Taxamount',
+            default: '0'
+        },
+        discountAmount: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Discountamount',
+            default: '0'
+        },
+        shippingAmount: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Shippingamount',
+            default: '0'
+        },
+        totalAmount: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Totalamount',
+            default: '0'
+        },
+        paymentMethod: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 50
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Paymentmethod'
+        },
+        paymentTokenId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 255
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Paymenttokenid'
+        },
+        autoRenew: {
+            type: 'boolean',
+            title: 'Autorenew',
+            default: true
+        },
+        reminderDays: {
+            type: 'integer',
+            title: 'Reminderdays',
+            default: 3
+        },
+        pausedAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Pausedat'
+        },
+        pausedUntil: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Pauseduntil'
+        },
+        cancelledAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Cancelledat'
+        },
+        cancellationReason: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Cancellationreason'
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 1000
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        },
+        extraData: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Extradata'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'subscriptionNo', 'customerId', 'frequency', 'locationId', 'startDate', 'id', 'createdAt', 'updatedAt'],
+    title: 'SubscriptionResponse',
+    description: 'Response schema for subscription'
+} as const;
+
+export const SubscriptionScheduleResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        subscriptionId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Subscriptionid'
+        },
+        sequenceNo: {
+            type: 'integer',
+            title: 'Sequenceno'
+        },
+        scheduledDate: {
+            type: 'string',
+            format: 'date',
+            title: 'Scheduleddate'
+        },
+        status: {
+            '$ref': '#/components/schemas/ScheduleStatus',
+            default: 'SCHEDULED'
+        },
+        orderId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Orderid'
+        },
+        orderNo: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 50
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Orderno'
+        },
+        generatedAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Generatedat'
+        },
+        processedAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Processedat'
+        },
+        errorMessage: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Errormessage'
+        },
+        skipReason: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Skipreason'
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 500
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'subscriptionId', 'sequenceNo', 'scheduledDate', 'id', 'createdAt', 'updatedAt'],
+    title: 'SubscriptionScheduleResponse',
+    description: 'Response schema for schedule'
+} as const;
+
+export const SubscriptionStatusSchema = {
+    type: 'string',
+    enum: ['DRAFT', 'ACTIVE', 'PAUSED', 'CANCELLED', 'EXPIRED', 'SUSPENDED'],
+    title: 'SubscriptionStatus',
+    description: 'Subscription status'
+} as const;
+
+export const SubscriptionUpdateSchema = {
+    properties: {
+        status: {
+            anyOf: [
+                {
+                    '$ref': '#/components/schemas/SubscriptionStatus'
+                },
+                {
+                    type: 'null'
+                }
+            ]
+        },
+        frequency: {
+            anyOf: [
+                {
+                    '$ref': '#/components/schemas/SubscriptionFrequency'
+                },
+                {
+                    type: 'null'
+                }
+            ]
+        },
+        customIntervalDays: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Customintervaldays'
+        },
+        shippingAddressId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Shippingaddressid'
+        },
+        billingAddressId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Billingaddressid'
+        },
+        endDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Enddate'
+        },
+        nextDeliveryDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Nextdeliverydate'
+        },
+        maxDeliveries: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Maxdeliveries'
+        },
+        autoRenew: {
+            anyOf: [
+                {
+                    type: 'boolean'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Autorenew'
+        },
+        reminderDays: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Reminderdays'
+        },
+        notes: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Notes'
+        }
+    },
+    type: 'object',
+    title: 'SubscriptionUpdate',
+    description: 'Schema for subscription update'
+} as const;
+
+export const SyncConflictResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        syncQueueId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Syncqueueid'
+        },
+        entityType: {
+            '$ref': '#/components/schemas/SyncEntityType'
+        },
+        entityId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Entityid'
+        },
+        clientData: {
+            additionalProperties: true,
+            type: 'object',
+            title: 'Clientdata'
+        },
+        serverData: {
+            additionalProperties: true,
+            type: 'object',
+            title: 'Serverdata'
+        },
+        conflictFields: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Conflictfields',
+            default: []
+        },
+        resolution: {
+            anyOf: [
+                {
+                    '$ref': '#/components/schemas/ConflictResolution'
+                },
+                {
+                    type: 'null'
+                }
+            ]
+        },
+        resolvedData: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Resolveddata'
+        },
+        resolvedAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Resolvedat'
+        },
+        resolvedById: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Resolvedbyid'
+        },
+        isResolved: {
+            type: 'boolean',
+            title: 'Isresolved',
+            default: false
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'syncQueueId', 'entityType', 'entityId', 'clientData', 'serverData', 'id', 'createdAt', 'updatedAt'],
+    title: 'SyncConflictResponse',
+    description: 'Response schema for conflict'
+} as const;
+
+export const SyncEntityTypeSchema = {
+    type: 'string',
+    enum: ['TASK', 'TASK_LINE', 'INVENTORY', 'SCAN_LOG', 'LOCATION_LOG', 'CYCLE_COUNT', 'PUTAWAY', 'PICKING'],
+    title: 'SyncEntityType',
+    description: 'Entities that can be synced'
+} as const;
+
 export const SyncFrequencySchema = {
     type: 'string',
     enum: ['REALTIME', 'EVERY_5_MINS', 'EVERY_15_MINS', 'EVERY_30_MINS', 'HOURLY', 'DAILY', 'MANUAL'],
     title: 'SyncFrequency',
     description: 'Channel sync frequency'
+} as const;
+
+export const TaskPrioritySchema = {
+    type: 'string',
+    enum: ['LOW', 'NORMAL', 'HIGH', 'URGENT'],
+    title: 'TaskPriority',
+    description: 'Task priority levels'
+} as const;
+
+export const TaskStatusSchema = {
+    type: 'string',
+    enum: ['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'PAUSED', 'COMPLETED', 'CANCELLED'],
+    title: 'TaskStatus',
+    description: 'Mobile task status'
+} as const;
+
+export const TaskTypeSchema = {
+    type: 'string',
+    enum: ['RECEIVING', 'PUTAWAY', 'PICKING', 'PACKING', 'COUNTING', 'REPLENISHMENT', 'TRANSFER', 'LOADING', 'QC'],
+    title: 'TaskType',
+    description: 'Mobile task types'
+} as const;
+
+export const TimeEntryTypeSchema = {
+    type: 'string',
+    enum: ['CLOCK_IN', 'CLOCK_OUT', 'BREAK_START', 'BREAK_END', 'TASK_START', 'TASK_END'],
+    title: 'TimeEntryType',
+    description: 'Time entry types'
 } as const;
 
 export const TransporterBriefSchema = {
@@ -30462,6 +43268,215 @@ export const TransporterUpdateSchema = {
     description: 'Schema for updating transporter'
 } as const;
 
+export const UploadBatchReadSchema = {
+    properties: {
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        batchNo: {
+            type: 'string',
+            title: 'Batchno'
+        },
+        uploadType: {
+            type: 'string',
+            title: 'Uploadtype'
+        },
+        fileName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Filename'
+        },
+        fileSize: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Filesize'
+        },
+        totalRows: {
+            type: 'integer',
+            title: 'Totalrows'
+        },
+        successRows: {
+            type: 'integer',
+            title: 'Successrows'
+        },
+        errorRows: {
+            type: 'integer',
+            title: 'Errorrows'
+        },
+        status: {
+            type: 'string',
+            title: 'Status'
+        },
+        errorLog: {
+            items: {
+                additionalProperties: true,
+                type: 'object'
+            },
+            type: 'array',
+            title: 'Errorlog'
+        },
+        uploadedBy: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Uploadedby'
+        },
+        processedAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Processedat'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        },
+        uploadedByName: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Uploadedbyname'
+        }
+    },
+    type: 'object',
+    required: ['id', 'companyId', 'batchNo', 'uploadType', 'totalRows', 'successRows', 'errorRows', 'status', 'errorLog', 'createdAt', 'updatedAt'],
+    title: 'UploadBatchRead',
+    description: 'Read schema (camelCase for API output)'
+} as const;
+
+export const UploadErrorSchema = {
+    properties: {
+        row: {
+            type: 'integer',
+            title: 'Row'
+        },
+        field: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Field'
+        },
+        value: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Value'
+        },
+        error: {
+            type: 'string',
+            title: 'Error'
+        }
+    },
+    type: 'object',
+    required: ['row', 'error'],
+    title: 'UploadError',
+    description: 'Schema for individual upload error (camelCase for API)'
+} as const;
+
+export const UploadResultSchema = {
+    properties: {
+        batchId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Batchid'
+        },
+        batchNo: {
+            type: 'string',
+            title: 'Batchno'
+        },
+        status: {
+            type: 'string',
+            title: 'Status'
+        },
+        totalRows: {
+            type: 'integer',
+            title: 'Totalrows'
+        },
+        successRows: {
+            type: 'integer',
+            title: 'Successrows'
+        },
+        errorRows: {
+            type: 'integer',
+            title: 'Errorrows'
+        },
+        errors: {
+            items: {
+                '$ref': '#/components/schemas/UploadError'
+            },
+            type: 'array',
+            title: 'Errors',
+            default: []
+        },
+        createdRecords: {
+            type: 'integer',
+            title: 'Createdrecords',
+            default: 0
+        },
+        updatedRecords: {
+            type: 'integer',
+            title: 'Updatedrecords',
+            default: 0
+        }
+    },
+    type: 'object',
+    required: ['batchId', 'batchNo', 'status', 'totalRows', 'successRows', 'errorRows'],
+    title: 'UploadResult',
+    description: 'Result of an upload operation (camelCase for API output)'
+} as const;
+
 export const UserBriefSchema = {
     properties: {
         id: {
@@ -30502,6 +43517,7 @@ export const UserCreateSchema = {
     properties: {
         email: {
             type: 'string',
+            format: 'email',
             title: 'Email'
         },
         password: {
@@ -30523,17 +43539,6 @@ export const UserCreateSchema = {
             ],
             title: 'Phone'
         },
-        avatar: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Avatar'
-        },
         role: {
             '$ref': '#/components/schemas/UserRole',
             default: 'OPERATOR'
@@ -30541,8 +43546,7 @@ export const UserCreateSchema = {
         companyId: {
             anyOf: [
                 {
-                    type: 'string',
-                    format: 'uuid'
+                    type: 'string'
                 },
                 {
                     type: 'null'
@@ -30552,8 +43556,7 @@ export const UserCreateSchema = {
         },
         locationAccess: {
             items: {
-                type: 'string',
-                format: 'uuid'
+                type: 'string'
             },
             type: 'array',
             title: 'Locationaccess',
@@ -30562,8 +43565,7 @@ export const UserCreateSchema = {
     },
     type: 'object',
     required: ['email', 'password', 'name'],
-    title: 'UserCreate',
-    description: 'Schema for creating a new user'
+    title: 'UserCreate'
 } as const;
 
 export const UserLoginSchema = {
@@ -30818,6 +43820,13 @@ export const VehicleTypeSchema = {
     enum: ['TRUCK', 'CONTAINER', 'TRAILER', 'TEMPO', 'PICKUP', 'MINI_TRUCK'],
     title: 'VehicleType',
     description: 'Vehicle types'
+} as const;
+
+export const VelocityClassSchema = {
+    type: 'string',
+    enum: ['A', 'B', 'C', 'X', 'Y', 'Z'],
+    title: 'VelocityClass',
+    description: 'SKU velocity classification'
 } as const;
 
 export const VendorBriefSchema = {
@@ -31556,6 +44565,436 @@ export const VirtualInventoryUpdateSchema = {
     type: 'object',
     title: 'VirtualInventoryUpdate',
     description: 'Virtual Inventory update schema'
+} as const;
+
+export const VoiceCommandCreateSchema = {
+    properties: {
+        commandType: {
+            '$ref': '#/components/schemas/VoiceCommandType'
+        },
+        language: {
+            '$ref': '#/components/schemas/VoiceLanguage'
+        },
+        spokenPhrases: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Spokenphrases'
+        },
+        responseTemplate: {
+            type: 'string',
+            title: 'Responsetemplate'
+        },
+        confirmationRequired: {
+            type: 'boolean',
+            title: 'Confirmationrequired',
+            default: false
+        },
+        parameters: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Parameters'
+        }
+    },
+    type: 'object',
+    required: ['commandType', 'language', 'spokenPhrases', 'responseTemplate'],
+    title: 'VoiceCommandCreate',
+    description: 'Schema for command creation'
+} as const;
+
+export const VoiceCommandResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        commandType: {
+            '$ref': '#/components/schemas/VoiceCommandType'
+        },
+        language: {
+            '$ref': '#/components/schemas/VoiceLanguage'
+        },
+        spokenPhrases: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Spokenphrases',
+            default: []
+        },
+        responseTemplate: {
+            type: 'string',
+            title: 'Responsetemplate'
+        },
+        confirmationRequired: {
+            type: 'boolean',
+            title: 'Confirmationrequired',
+            default: false
+        },
+        parameters: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Parameters'
+        },
+        isActive: {
+            type: 'boolean',
+            title: 'Isactive',
+            default: true
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'commandType', 'language', 'responseTemplate', 'id', 'createdAt', 'updatedAt'],
+    title: 'VoiceCommandResponse',
+    description: 'Response schema for command'
+} as const;
+
+export const VoiceCommandTypeSchema = {
+    type: 'string',
+    enum: ['CONFIRM', 'QUANTITY', 'LOCATION', 'SKU', 'REPEAT', 'SKIP', 'SHORT', 'DAMAGE', 'HELP', 'CANCEL', 'NEXT', 'PREVIOUS'],
+    title: 'VoiceCommandType',
+    description: 'Voice command types'
+} as const;
+
+export const VoiceLanguageSchema = {
+    type: 'string',
+    enum: ['EN_US', 'EN_IN', 'HI_IN', 'TA_IN', 'TE_IN', 'KN_IN', 'MR_IN', 'BN_IN'],
+    title: 'VoiceLanguage',
+    description: 'Supported voice languages'
+} as const;
+
+export const VoiceProfileCreateSchema = {
+    properties: {
+        userId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Userid'
+        },
+        language: {
+            '$ref': '#/components/schemas/VoiceLanguage',
+            default: 'EN_US'
+        },
+        speechRate: {
+            type: 'integer',
+            title: 'Speechrate',
+            default: 100
+        },
+        volume: {
+            type: 'integer',
+            title: 'Volume',
+            default: 80
+        },
+        confirmationMode: {
+            type: 'string',
+            title: 'Confirmationmode',
+            default: 'digit'
+        }
+    },
+    type: 'object',
+    required: ['userId'],
+    title: 'VoiceProfileCreate',
+    description: 'Schema for profile creation'
+} as const;
+
+export const VoiceProfileResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        userId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Userid'
+        },
+        language: {
+            '$ref': '#/components/schemas/VoiceLanguage',
+            default: 'EN_US'
+        },
+        speechRate: {
+            type: 'integer',
+            title: 'Speechrate',
+            default: 100
+        },
+        volume: {
+            type: 'integer',
+            title: 'Volume',
+            default: 80
+        },
+        confirmationMode: {
+            type: 'string',
+            maxLength: 20,
+            title: 'Confirmationmode',
+            default: 'digit'
+        },
+        repeatCount: {
+            type: 'integer',
+            title: 'Repeatcount',
+            default: 2
+        },
+        timeoutSeconds: {
+            type: 'integer',
+            title: 'Timeoutseconds',
+            default: 10
+        },
+        isTrainingComplete: {
+            type: 'boolean',
+            title: 'Istrainingcomplete',
+            default: false
+        },
+        trainingCompletedAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Trainingcompletedat'
+        },
+        voiceModelData: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Voicemodeldata'
+        },
+        customVocabulary: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Customvocabulary'
+        },
+        preferences: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Preferences'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'userId', 'id', 'createdAt', 'updatedAt'],
+    title: 'VoiceProfileResponse',
+    description: 'Response schema for profile'
+} as const;
+
+export const VoiceSessionResponseSchema = {
+    properties: {
+        companyId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Companyid'
+        },
+        userId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Userid'
+        },
+        deviceId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Deviceid'
+        },
+        locationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Locationid'
+        },
+        sessionToken: {
+            type: 'string',
+            maxLength: 500,
+            title: 'Sessiontoken'
+        },
+        status: {
+            '$ref': '#/components/schemas/VoiceSessionStatus',
+            default: 'ACTIVE'
+        },
+        taskId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Taskid'
+        },
+        picklistId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Picklistid'
+        },
+        language: {
+            '$ref': '#/components/schemas/VoiceLanguage',
+            default: 'EN_US'
+        },
+        startedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Startedat'
+        },
+        endedAt: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Endedat'
+        },
+        totalCommands: {
+            type: 'integer',
+            title: 'Totalcommands',
+            default: 0
+        },
+        successfulCommands: {
+            type: 'integer',
+            title: 'Successfulcommands',
+            default: 0
+        },
+        errorCommands: {
+            type: 'integer',
+            title: 'Errorcommands',
+            default: 0
+        },
+        totalPicks: {
+            type: 'integer',
+            title: 'Totalpicks',
+            default: 0
+        },
+        completedPicks: {
+            type: 'integer',
+            title: 'Completedpicks',
+            default: 0
+        },
+        avgResponseTime: {
+            anyOf: [
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Avgresponsetime'
+        },
+        sessionData: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Sessiondata'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Createdat'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updatedat'
+        }
+    },
+    type: 'object',
+    required: ['companyId', 'userId', 'deviceId', 'locationId', 'sessionToken', 'id', 'createdAt', 'updatedAt'],
+    title: 'VoiceSessionResponse',
+    description: 'Response schema for session'
+} as const;
+
+export const VoiceSessionStatusSchema = {
+    type: 'string',
+    enum: ['ACTIVE', 'PAUSED', 'COMPLETED', 'CANCELLED'],
+    title: 'VoiceSessionStatus',
+    description: 'Voice session status'
 } as const;
 
 export const WaveBriefSchema = {
@@ -32848,8 +46287,12 @@ export const ZoneUpdateSchema = {
     title: 'ZoneUpdate'
 } as const;
 
-export const app__api__routes__brands__BrandCreateSchema = {
+export const app__api__routes__brands__BrandResponseSchema = {
     properties: {
+        id: {
+            type: 'string',
+            title: 'Id'
+        },
         code: {
             type: 'string',
             title: 'Code'
@@ -32924,22 +46367,53 @@ export const app__api__routes__brands__BrandCreateSchema = {
             ],
             title: 'Website'
         },
-        address: {
+        isActive: {
+            type: 'boolean',
+            title: 'Isactive'
+        },
+        companyId: {
+            type: 'string',
+            title: 'Companyid'
+        }
+    },
+    type: 'object',
+    required: ['id', 'code', 'name', 'isActive', 'companyId'],
+    title: 'BrandResponse'
+} as const;
+
+export const app__api__routes__inventory__InventoryAdjustmentSchema = {
+    properties: {
+        skuId: {
+            type: 'string',
+            title: 'Skuid'
+        },
+        binId: {
+            type: 'string',
+            title: 'Binid'
+        },
+        quantity: {
+            type: 'integer',
+            title: 'Quantity'
+        },
+        reason: {
+            type: 'string',
+            title: 'Reason'
+        },
+        batchNo: {
             anyOf: [
                 {
-                    additionalProperties: true,
-                    type: 'object'
+                    type: 'string'
                 },
                 {
                     type: 'null'
                 }
             ],
-            title: 'Address'
+            title: 'Batchno'
         }
     },
     type: 'object',
-    required: ['code', 'name'],
-    title: 'BrandCreate'
+    required: ['skuId', 'binId', 'quantity', 'reason'],
+    title: 'InventoryAdjustment'
 } as const;
 
 export const app__api__routes__locations__LocationCreateSchema = {
@@ -33172,104 +46646,226 @@ export const app__api__routes__locations__LocationUpdateSchema = {
     title: 'LocationUpdate'
 } as const;
 
-export const app__api__routes__orders__OrderCreateSchema = {
+export const app__api__routes__orders__OrderItemCreateSchema = {
     properties: {
-        channel: {
-            '$ref': '#/components/schemas/Channel'
-        },
-        orderType: {
-            '$ref': '#/components/schemas/OrderType',
-            default: 'B2C'
-        },
-        paymentMode: {
-            '$ref': '#/components/schemas/PaymentMode'
-        },
-        customerName: {
+        skuId: {
             type: 'string',
-            title: 'Customername'
+            title: 'Skuid'
         },
-        customerPhone: {
-            type: 'string',
-            title: 'Customerphone'
+        quantity: {
+            type: 'integer',
+            title: 'Quantity'
         },
-        customerEmail: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Customeremail'
+        unitPrice: {
+            type: 'number',
+            title: 'Unitprice'
         },
-        shippingAddress: {
-            additionalProperties: true,
-            type: 'object',
-            title: 'Shippingaddress'
+        taxAmount: {
+            type: 'number',
+            title: 'Taxamount',
+            default: 0
         },
-        billingAddress: {
-            anyOf: [
-                {
-                    additionalProperties: true,
-                    type: 'object'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Billingaddress'
-        },
-        items: {
-            items: {
-                '$ref': '#/components/schemas/OrderItemCreate'
-            },
-            type: 'array',
-            title: 'Items'
-        },
-        locationId: {
-            type: 'string',
-            title: 'Locationid'
-        },
-        externalOrderNo: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Externalorderno'
-        },
-        remarks: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Remarks'
+        discount: {
+            type: 'number',
+            title: 'Discount',
+            default: 0
         }
     },
     type: 'object',
-    required: ['channel', 'paymentMode', 'customerName', 'customerPhone', 'shippingAddress', 'items', 'locationId'],
-    title: 'OrderCreate'
+    required: ['skuId', 'quantity', 'unitPrice'],
+    title: 'OrderItemCreate'
 } as const;
 
-export const app__api__routes__orders__OrderResponseSchema = {
+export const app__api__routes__skus__SKUCreateSchema = {
+    properties: {
+        code: {
+            type: 'string',
+            title: 'Code'
+        },
+        name: {
+            type: 'string',
+            title: 'Name'
+        },
+        description: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Description'
+        },
+        category: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Category'
+        },
+        subCategory: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Subcategory'
+        },
+        brand: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Brand'
+        },
+        hsn: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Hsn'
+        },
+        weight: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Weight'
+        },
+        length: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Length'
+        },
+        width: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Width'
+        },
+        height: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Height'
+        },
+        mrp: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Mrp'
+        },
+        costPrice: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Costprice'
+        },
+        sellingPrice: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Sellingprice'
+        },
+        taxRate: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Taxrate'
+        },
+        barcodes: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Barcodes',
+            default: []
+        },
+        images: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Images',
+            default: []
+        }
+    },
+    type: 'object',
+    required: ['code', 'name'],
+    title: 'SKUCreate'
+} as const;
+
+export const app__api__routes__skus__SKUResponseSchema = {
     properties: {
         id: {
             type: 'string',
             title: 'Id'
         },
-        orderNo: {
+        code: {
             type: 'string',
-            title: 'Orderno'
+            title: 'Code'
         },
-        externalOrderNo: {
+        name: {
+            type: 'string',
+            title: 'Name'
+        },
+        description: {
             anyOf: [
                 {
                     type: 'string'
@@ -33278,33 +46874,9 @@ export const app__api__routes__orders__OrderResponseSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Externalorderno'
+            title: 'Description'
         },
-        channel: {
-            type: 'string',
-            title: 'Channel'
-        },
-        orderType: {
-            type: 'string',
-            title: 'Ordertype'
-        },
-        paymentMode: {
-            type: 'string',
-            title: 'Paymentmode'
-        },
-        status: {
-            type: 'string',
-            title: 'Status'
-        },
-        customerName: {
-            type: 'string',
-            title: 'Customername'
-        },
-        customerPhone: {
-            type: 'string',
-            title: 'Customerphone'
-        },
-        customerEmail: {
+        category: {
             anyOf: [
                 {
                     type: 'string'
@@ -33313,46 +46885,93 @@ export const app__api__routes__orders__OrderResponseSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Customeremail'
+            title: 'Category'
         },
-        subtotal: {
-            type: 'number',
-            title: 'Subtotal'
+        subCategory: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Subcategory'
         },
-        taxAmount: {
-            type: 'number',
-            title: 'Taxamount'
+        brand: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Brand'
         },
-        shippingCharges: {
-            type: 'number',
-            title: 'Shippingcharges'
+        hsn: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Hsn'
         },
-        discount: {
-            type: 'number',
-            title: 'Discount'
+        mrp: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Mrp'
         },
-        totalAmount: {
-            type: 'number',
-            title: 'Totalamount'
+        costPrice: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Costprice'
         },
-        orderDate: {
-            type: 'string',
-            format: 'date-time',
-            title: 'Orderdate'
+        sellingPrice: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Sellingprice'
         },
-        locationId: {
-            type: 'string',
-            title: 'Locationid'
+        isActive: {
+            type: 'boolean',
+            title: 'Isactive'
         },
-        createdAt: {
-            type: 'string',
-            format: 'date-time',
-            title: 'Createdat'
+        companyId: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Companyid'
         }
     },
     type: 'object',
-    required: ['id', 'orderNo', 'channel', 'orderType', 'paymentMode', 'status', 'customerName', 'customerPhone', 'subtotal', 'taxAmount', 'shippingCharges', 'discount', 'totalAmount', 'orderDate', 'locationId', 'createdAt'],
-    title: 'OrderResponse'
+    required: ['id', 'code', 'name', 'isActive'],
+    title: 'SKUResponse'
 } as const;
 
 export const app__api__routes__skus__SKUUpdateSchema = {
@@ -33450,61 +47069,6 @@ export const app__api__routes__skus__SKUUpdateSchema = {
     title: 'SKUUpdate'
 } as const;
 
-export const app__api__routes__users__UserCreateSchema = {
-    properties: {
-        email: {
-            type: 'string',
-            format: 'email',
-            title: 'Email'
-        },
-        password: {
-            type: 'string',
-            title: 'Password'
-        },
-        name: {
-            type: 'string',
-            title: 'Name'
-        },
-        phone: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Phone'
-        },
-        role: {
-            '$ref': '#/components/schemas/UserRole',
-            default: 'OPERATOR'
-        },
-        companyId: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Companyid'
-        },
-        locationAccess: {
-            items: {
-                type: 'string'
-            },
-            type: 'array',
-            title: 'Locationaccess',
-            default: []
-        }
-    },
-    type: 'object',
-    required: ['email', 'password', 'name'],
-    title: 'UserCreate'
-} as const;
-
 export const app__api__routes__users__UserResponseSchema = {
     properties: {
         id: {
@@ -33566,13 +47130,8 @@ export const app__api__routes__users__UserResponseSchema = {
     title: 'UserResponse'
 } as const;
 
-export const app__models__brand__BrandResponseSchema = {
+export const app__models__brand__BrandCreateSchema = {
     properties: {
-        id: {
-            type: 'string',
-            format: 'uuid',
-            title: 'Id'
-        },
         code: {
             type: 'string',
             title: 'Code'
@@ -33671,30 +47230,16 @@ export const app__models__brand__BrandResponseSchema = {
             ],
             title: 'Settings'
         },
-        isActive: {
-            type: 'boolean',
-            title: 'Isactive'
-        },
         companyId: {
             type: 'string',
             format: 'uuid',
             title: 'Companyid'
-        },
-        createdAt: {
-            type: 'string',
-            format: 'date-time',
-            title: 'Createdat'
-        },
-        updatedAt: {
-            type: 'string',
-            format: 'date-time',
-            title: 'Updatedat'
         }
     },
     type: 'object',
-    required: ['id', 'code', 'name', 'isActive', 'companyId', 'createdAt', 'updatedAt'],
-    title: 'BrandResponse',
-    description: 'Schema for brand API responses'
+    required: ['code', 'name', 'companyId'],
+    title: 'BrandCreate',
+    description: 'Schema for creating a new brand'
 } as const;
 
 export const app__models__brand__BrandUpdateSchema = {
@@ -33828,32 +47373,13 @@ export const app__models__brand__BrandUpdateSchema = {
     description: 'Schema for updating a brand'
 } as const;
 
-export const app__models__inventory__InventoryAdjustmentSchema = {
+export const app__models__order__OrderCreateSchema = {
     properties: {
-        skuId: {
+        orderNo: {
             type: 'string',
-            format: 'uuid',
-            title: 'Skuid'
+            title: 'Orderno'
         },
-        binId: {
-            type: 'string',
-            format: 'uuid',
-            title: 'Binid'
-        },
-        locationId: {
-            type: 'string',
-            format: 'uuid',
-            title: 'Locationid'
-        },
-        adjustmentQty: {
-            type: 'integer',
-            title: 'Adjustmentqty'
-        },
-        reason: {
-            type: 'string',
-            title: 'Reason'
-        },
-        batchNo: {
+        externalOrderNo: {
             anyOf: [
                 {
                     type: 'string'
@@ -33862,23 +47388,27 @@ export const app__models__inventory__InventoryAdjustmentSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Batchno'
+            title: 'Externalorderno'
         },
-        serialNumbers: {
-            anyOf: [
-                {
-                    items: {
-                        type: 'string'
-                    },
-                    type: 'array'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Serialnumbers'
+        channel: {
+            '$ref': '#/components/schemas/Channel'
         },
-        remarks: {
+        orderType: {
+            '$ref': '#/components/schemas/OrderType',
+            default: 'B2C'
+        },
+        paymentMode: {
+            '$ref': '#/components/schemas/PaymentMode'
+        },
+        customerName: {
+            type: 'string',
+            title: 'Customername'
+        },
+        customerPhone: {
+            type: 'string',
+            title: 'Customerphone'
+        },
+        customerEmail: {
             anyOf: [
                 {
                     type: 'string'
@@ -33887,43 +47417,26 @@ export const app__models__inventory__InventoryAdjustmentSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Remarks'
-        }
-    },
-    type: 'object',
-    required: ['skuId', 'binId', 'locationId', 'adjustmentQty', 'reason'],
-    title: 'InventoryAdjustment',
-    description: 'Schema for inventory adjustment'
-} as const;
-
-export const app__models__order__OrderItemCreateSchema = {
-    properties: {
-        orderId: {
-            type: 'string',
-            format: 'uuid',
-            title: 'Orderid'
+            title: 'Customeremail'
         },
-        skuId: {
-            type: 'string',
-            format: 'uuid',
-            title: 'Skuid'
+        shippingAddress: {
+            additionalProperties: true,
+            type: 'object',
+            title: 'Shippingaddress'
         },
-        externalItemId: {
+        billingAddress: {
             anyOf: [
                 {
-                    type: 'string'
+                    additionalProperties: true,
+                    type: 'object'
                 },
                 {
                     type: 'null'
                 }
             ],
-            title: 'Externalitemid'
+            title: 'Billingaddress'
         },
-        quantity: {
-            type: 'integer',
-            title: 'Quantity'
-        },
-        unitPrice: {
+        subtotal: {
             anyOf: [
                 {
                     type: 'number'
@@ -33933,7 +47446,7 @@ export const app__models__order__OrderItemCreateSchema = {
                     pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
                 }
             ],
-            title: 'Unitprice'
+            title: 'Subtotal'
         },
         taxAmount: {
             anyOf: [
@@ -33946,6 +47459,19 @@ export const app__models__order__OrderItemCreateSchema = {
                 }
             ],
             title: 'Taxamount'
+        },
+        shippingCharges: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
+            title: 'Shippingcharges',
+            default: '0'
         },
         discount: {
             anyOf: [
@@ -33960,7 +47486,7 @@ export const app__models__order__OrderItemCreateSchema = {
             title: 'Discount',
             default: '0'
         },
-        totalPrice: {
+        codCharges: {
             anyOf: [
                 {
                     type: 'number'
@@ -33970,280 +47496,64 @@ export const app__models__order__OrderItemCreateSchema = {
                     pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
                 }
             ],
-            title: 'Totalprice'
+            title: 'Codcharges',
+            default: '0'
         },
-        serialNumbers: {
-            items: {
-                type: 'string'
-            },
-            type: 'array',
-            title: 'Serialnumbers',
-            default: []
-        },
-        batchNo: {
+        totalAmount: {
             anyOf: [
                 {
-                    type: 'string'
+                    type: 'number'
                 },
                 {
-                    type: 'null'
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
                 }
             ],
-            title: 'Batchno'
-        }
-    },
-    type: 'object',
-    required: ['orderId', 'skuId', 'quantity', 'unitPrice', 'taxAmount', 'totalPrice'],
-    title: 'OrderItemCreate',
-    description: 'Schema for creating order item'
-} as const;
-
-export const app__models__sku__SKUCreateSchema = {
-    properties: {
-        code: {
+            title: 'Totalamount'
+        },
+        orderDate: {
             type: 'string',
-            title: 'Code'
+            format: 'date-time',
+            title: 'Orderdate'
         },
-        name: {
-            type: 'string',
-            title: 'Name'
-        },
-        description: {
+        shipByDate: {
             anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Description'
-        },
-        category: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Category'
-        },
-        subCategory: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Subcategory'
-        },
-        brand: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Brand'
-        },
-        hsn: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Hsn'
-        },
-        weight: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
                 {
                     type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                    format: 'date-time'
                 },
                 {
                     type: 'null'
                 }
             ],
-            title: 'Weight'
+            title: 'Shipbydate'
         },
-        length: {
+        promisedDate: {
             anyOf: [
-                {
-                    type: 'number'
-                },
                 {
                     type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                    format: 'date-time'
                 },
                 {
                     type: 'null'
                 }
             ],
-            title: 'Length'
+            title: 'Promiseddate'
         },
-        width: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Width'
+        priority: {
+            type: 'integer',
+            title: 'Priority',
+            default: 0
         },
-        height: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Height'
-        },
-        mrp: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Mrp'
-        },
-        costPrice: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Costprice'
-        },
-        sellingPrice: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Sellingprice'
-        },
-        taxRate: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Taxrate'
-        },
-        isSerialised: {
-            type: 'boolean',
-            title: 'Isserialised',
-            default: false
-        },
-        isBatchTracked: {
-            type: 'boolean',
-            title: 'Isbatchtracked',
-            default: false
-        },
-        reorderLevel: {
-            anyOf: [
-                {
-                    type: 'integer'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Reorderlevel'
-        },
-        reorderQty: {
-            anyOf: [
-                {
-                    type: 'integer'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Reorderqty'
-        },
-        barcodes: {
+        tags: {
             items: {
                 type: 'string'
             },
             type: 'array',
-            title: 'Barcodes',
+            title: 'Tags',
             default: []
         },
-        images: {
-            items: {
-                type: 'string'
-            },
-            type: 'array',
-            title: 'Images',
-            default: []
-        },
-        attributes: {
-            anyOf: [
-                {
-                    additionalProperties: true,
-                    type: 'object'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Attributes'
-        },
-        valuationMethod: {
+        remarks: {
             anyOf: [
                 {
                     type: 'string'
@@ -34252,36 +47562,107 @@ export const app__models__sku__SKUCreateSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Valuationmethod'
+            title: 'Remarks'
         },
-        companyId: {
+        locationId: {
             type: 'string',
             format: 'uuid',
-            title: 'Companyid'
+            title: 'Locationid'
+        },
+        customerId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Customerid'
+        },
+        paymentTermType: {
+            anyOf: [
+                {
+                    '$ref': '#/components/schemas/PaymentTermType'
+                },
+                {
+                    type: 'null'
+                }
+            ]
+        },
+        paymentTermDays: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Paymenttermdays'
+        },
+        poNumber: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Ponumber'
         }
     },
     type: 'object',
-    required: ['code', 'name', 'companyId'],
-    title: 'SKUCreate',
-    description: 'Schema for creating a new SKU'
+    required: ['orderNo', 'channel', 'paymentMode', 'customerName', 'customerPhone', 'shippingAddress', 'subtotal', 'taxAmount', 'totalAmount', 'orderDate', 'locationId'],
+    title: 'OrderCreate',
+    description: 'Schema for creating an order'
 } as const;
 
-export const app__models__sku__SKUResponseSchema = {
+export const app__models__order__OrderResponseSchema = {
     properties: {
         id: {
             type: 'string',
             format: 'uuid',
             title: 'Id'
         },
-        code: {
+        orderNo: {
             type: 'string',
-            title: 'Code'
+            title: 'Orderno'
         },
-        name: {
+        externalOrderNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Externalorderno'
+        },
+        channel: {
+            '$ref': '#/components/schemas/Channel'
+        },
+        orderType: {
+            '$ref': '#/components/schemas/OrderType'
+        },
+        paymentMode: {
+            '$ref': '#/components/schemas/PaymentMode'
+        },
+        status: {
+            '$ref': '#/components/schemas/OrderStatus'
+        },
+        customerName: {
             type: 'string',
-            title: 'Name'
+            title: 'Customername'
         },
-        description: {
+        customerPhone: {
+            type: 'string',
+            title: 'Customerphone'
+        },
+        customerEmail: {
             anyOf: [
                 {
                     type: 'string'
@@ -34290,195 +47671,14 @@ export const app__models__sku__SKUResponseSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Description'
+            title: 'Customeremail'
         },
-        category: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Category'
+        shippingAddress: {
+            additionalProperties: true,
+            type: 'object',
+            title: 'Shippingaddress'
         },
-        subCategory: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Subcategory'
-        },
-        brand: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Brand'
-        },
-        hsn: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Hsn'
-        },
-        weight: {
-            anyOf: [
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Weight'
-        },
-        length: {
-            anyOf: [
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Length'
-        },
-        width: {
-            anyOf: [
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Width'
-        },
-        height: {
-            anyOf: [
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Height'
-        },
-        mrp: {
-            anyOf: [
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Mrp'
-        },
-        costPrice: {
-            anyOf: [
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Costprice'
-        },
-        sellingPrice: {
-            anyOf: [
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Sellingprice'
-        },
-        taxRate: {
-            anyOf: [
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Taxrate'
-        },
-        isSerialised: {
-            type: 'boolean',
-            title: 'Isserialised'
-        },
-        isBatchTracked: {
-            type: 'boolean',
-            title: 'Isbatchtracked'
-        },
-        reorderLevel: {
-            anyOf: [
-                {
-                    type: 'integer'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Reorderlevel'
-        },
-        reorderQty: {
-            anyOf: [
-                {
-                    type: 'integer'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Reorderqty'
-        },
-        barcodes: {
-            items: {
-                type: 'string'
-            },
-            type: 'array',
-            title: 'Barcodes',
-            default: []
-        },
-        images: {
-            items: {
-                type: 'string'
-            },
-            type: 'array',
-            title: 'Images',
-            default: []
-        },
-        attributes: {
+        billingAddress: {
             anyOf: [
                 {
                     additionalProperties: true,
@@ -34488,13 +47688,81 @@ export const app__models__sku__SKUResponseSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Attributes'
+            title: 'Billingaddress'
         },
-        isActive: {
-            type: 'boolean',
-            title: 'Isactive'
+        subtotal: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Subtotal'
         },
-        valuationMethod: {
+        taxAmount: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Taxamount'
+        },
+        shippingCharges: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Shippingcharges'
+        },
+        discount: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Discount'
+        },
+        codCharges: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Codcharges'
+        },
+        totalAmount: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Totalamount'
+        },
+        orderDate: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Orderdate'
+        },
+        shipByDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Shipbydate'
+        },
+        promisedDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Promiseddate'
+        },
+        priority: {
+            type: 'integer',
+            title: 'Priority',
+            default: 0
+        },
+        tags: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Tags',
+            default: []
+        },
+        remarks: {
             anyOf: [
                 {
                     type: 'string'
@@ -34503,20 +47771,118 @@ export const app__models__sku__SKUResponseSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Valuationmethod'
+            title: 'Remarks'
         },
-        isVariantParent: {
-            type: 'boolean',
-            title: 'Isvariantparent'
-        },
-        isVariant: {
-            type: 'boolean',
-            title: 'Isvariant'
+        locationId: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Locationid'
         },
         companyId: {
             type: 'string',
             format: 'uuid',
             title: 'Companyid'
+        },
+        customerId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Customerid'
+        },
+        paymentTermType: {
+            anyOf: [
+                {
+                    '$ref': '#/components/schemas/PaymentTermType'
+                },
+                {
+                    type: 'null'
+                }
+            ]
+        },
+        paymentTermDays: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Paymenttermdays'
+        },
+        creditDueDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Creditduedate'
+        },
+        poNumber: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Ponumber'
+        },
+        gstInvoiceNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Gstinvoiceno'
+        },
+        gstInvoiceDate: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Gstinvoicedate'
+        },
+        eWayBillNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Ewaybillno'
+        },
+        irnNo: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Irnno'
         },
         createdAt: {
             type: 'string',
@@ -34530,9 +47896,77 @@ export const app__models__sku__SKUResponseSchema = {
         }
     },
     type: 'object',
-    required: ['id', 'code', 'name', 'isSerialised', 'isBatchTracked', 'isActive', 'isVariantParent', 'isVariant', 'companyId', 'createdAt', 'updatedAt'],
-    title: 'SKUResponse',
-    description: 'Schema for SKU API responses'
+    required: ['id', 'orderNo', 'channel', 'orderType', 'paymentMode', 'status', 'customerName', 'customerPhone', 'shippingAddress', 'subtotal', 'taxAmount', 'shippingCharges', 'discount', 'codCharges', 'totalAmount', 'orderDate', 'locationId', 'companyId', 'createdAt', 'updatedAt'],
+    title: 'OrderResponse',
+    description: 'Schema for order API responses'
+} as const;
+
+export const app__models__user__UserCreateSchema = {
+    properties: {
+        email: {
+            type: 'string',
+            title: 'Email'
+        },
+        password: {
+            type: 'string',
+            title: 'Password'
+        },
+        name: {
+            type: 'string',
+            title: 'Name'
+        },
+        phone: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Phone'
+        },
+        avatar: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Avatar'
+        },
+        role: {
+            '$ref': '#/components/schemas/UserRole',
+            default: 'OPERATOR'
+        },
+        companyId: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Companyid'
+        },
+        locationAccess: {
+            items: {
+                type: 'string',
+                format: 'uuid'
+            },
+            type: 'array',
+            title: 'Locationaccess',
+            default: []
+        }
+    },
+    type: 'object',
+    required: ['email', 'password', 'name'],
+    title: 'UserCreate',
+    description: 'Schema for creating a new user'
 } as const;
 
 export const app__models__user__UserResponseSchema = {

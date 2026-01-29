@@ -167,6 +167,66 @@ export type APIKeyUpdate = {
 };
 
 /**
+ * Create schema for item (camelCase for API input)
+ */
+export type ASNItemCreate = {
+    skuId?: (string | null);
+    externalSkuCode?: (string | null);
+    externalSkuName?: (string | null);
+    externalPoItemId?: (string | null);
+    expectedQty: number;
+    batchNo?: (string | null);
+    lotNo?: (string | null);
+    expiryDate?: (string | null);
+    mfgDate?: (string | null);
+    cartons?: (number | null);
+    unitsPerCarton?: (number | null);
+};
+
+/**
+ * Read schema for item (camelCase for API output)
+ */
+export type ASNItemRead = {
+    id: string;
+    asnId: string;
+    skuId?: (string | null);
+    externalSkuCode?: (string | null);
+    externalSkuName?: (string | null);
+    externalPoItemId?: (string | null);
+    expectedQty: number;
+    receivedQty: number;
+    pendingQty?: (number | null);
+    batchNo?: (string | null);
+    lotNo?: (string | null);
+    expiryDate?: (string | null);
+    mfgDate?: (string | null);
+    cartons?: (number | null);
+    unitsPerCarton?: (number | null);
+    status: string;
+    createdAt: string;
+    skuCode?: (string | null);
+    skuName?: (string | null);
+};
+
+/**
+ * Update schema for item (camelCase for API input)
+ */
+export type ASNItemUpdate = {
+    skuId?: (string | null);
+    externalSkuCode?: (string | null);
+    externalSkuName?: (string | null);
+    expectedQty?: (number | null);
+    receivedQty?: (number | null);
+    batchNo?: (string | null);
+    lotNo?: (string | null);
+    expiryDate?: (string | null);
+    mfgDate?: (string | null);
+    cartons?: (number | null);
+    unitsPerCarton?: (number | null);
+    status?: (string | null);
+};
+
+/**
  * AWB creation schema
  */
 export type AWBCreate = {
@@ -186,6 +246,96 @@ export type AWBResponse = {
     id: string;
     createdAt: string;
     updatedAt: string;
+};
+
+/**
+ * Create schema (camelCase for API input)
+ */
+export type AdvanceShippingNoticeCreate = {
+    locationId: string;
+    externalAsnNo?: (string | null);
+    externalPoId?: (string | null);
+    purchaseOrderId?: (string | null);
+    vendorId?: (string | null);
+    externalVendorCode?: (string | null);
+    externalVendorName?: (string | null);
+    carrier?: (string | null);
+    trackingNumber?: (string | null);
+    vehicleNumber?: (string | null);
+    driverName?: (string | null);
+    driverPhone?: (string | null);
+    shipDate?: (string | null);
+    expectedArrival?: (string | null);
+    totalCartons?: (number | null);
+    totalPallets?: (number | null);
+    totalWeightKg?: (number | string | null);
+    remarks?: (string | null);
+    items?: (Array<ASNItemCreate> | null);
+};
+
+/**
+ * Read schema (camelCase for API output)
+ */
+export type AdvanceShippingNoticeRead = {
+    id: string;
+    companyId: string;
+    locationId: string;
+    asnNo: string;
+    externalAsnNo?: (string | null);
+    externalPoId?: (string | null);
+    purchaseOrderId?: (string | null);
+    vendorId?: (string | null);
+    externalVendorCode?: (string | null);
+    externalVendorName?: (string | null);
+    status: string;
+    carrier?: (string | null);
+    trackingNumber?: (string | null);
+    vehicleNumber?: (string | null);
+    driverName?: (string | null);
+    driverPhone?: (string | null);
+    shipDate?: (string | null);
+    expectedArrival?: (string | null);
+    actualArrival?: (string | null);
+    totalCartons?: (number | null);
+    totalPallets?: (number | null);
+    totalWeightKg?: (string | null);
+    source: string;
+    remarks?: (string | null);
+    totalLines: number;
+    totalExpectedQty: number;
+    totalReceivedQty: number;
+    pendingQty?: (number | null);
+    goodsReceiptId?: (string | null);
+    createdAt: string;
+    updatedAt: string;
+    locationName?: (string | null);
+    externalPoNumber?: (string | null);
+    items?: (Array<ASNItemRead> | null);
+};
+
+/**
+ * Update schema (camelCase for API input)
+ */
+export type AdvanceShippingNoticeUpdate = {
+    externalAsnNo?: (string | null);
+    externalPoId?: (string | null);
+    purchaseOrderId?: (string | null);
+    vendorId?: (string | null);
+    externalVendorCode?: (string | null);
+    externalVendorName?: (string | null);
+    status?: (string | null);
+    carrier?: (string | null);
+    trackingNumber?: (string | null);
+    vehicleNumber?: (string | null);
+    driverName?: (string | null);
+    driverPhone?: (string | null);
+    shipDate?: (string | null);
+    expectedArrival?: (string | null);
+    actualArrival?: (string | null);
+    totalCartons?: (number | null);
+    totalPallets?: (number | null);
+    totalWeightKg?: (number | string | null);
+    remarks?: (string | null);
 };
 
 /**
@@ -270,6 +420,20 @@ export type AllocationResult = {
 };
 
 /**
+ * Inventory allocation status
+ */
+export type AllocationStatus = 'ALLOCATED' | 'PICKED' | 'CANCELLED';
+
+/**
+ * Inventory allocation status
+ */
+export const AllocationStatus = {
+    ALLOCATED: 'ALLOCATED',
+    PICKED: 'PICKED',
+    CANCELLED: 'CANCELLED'
+} as const;
+
+/**
  * Analytics Snapshot response schema
  */
 export type AnalyticsSnapshotResponse = {
@@ -312,6 +476,22 @@ export type AnalyticsSnapshotResponse = {
     id: string;
     createdAt: string;
 };
+
+/**
+ * Assignment status
+ */
+export type AssignmentStatus = 'PENDING' | 'ACCEPTED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+
+/**
+ * Assignment status
+ */
+export const AssignmentStatus = {
+    PENDING: 'PENDING',
+    ACCEPTED: 'ACCEPTED',
+    IN_PROGRESS: 'IN_PROGRESS',
+    COMPLETED: 'COMPLETED',
+    CANCELLED: 'CANCELLED'
+} as const;
 
 /**
  * Audit Log response schema
@@ -531,6 +711,57 @@ export type BinCapacityResponse = {
     utilizationPercent?: (string | null);
 };
 
+/**
+ * Schema for characteristics creation
+ */
+export type BinCharacteristicsCreate = {
+    binId: string;
+    locationId: string;
+    zoneId: string;
+    pickZone: string;
+    aisle: string;
+    level?: number;
+    position?: number;
+    heightCm?: (number | string | null);
+    widthCm?: (number | string | null);
+    depthCm?: (number | string | null);
+    maxWeightKg?: (number | string | null);
+    accessibilityScore?: number;
+    ergonomicScore?: number;
+    distanceFromDock?: (number | null);
+    pickPathSequence?: (number | null);
+};
+
+/**
+ * Response schema for characteristics
+ */
+export type BinCharacteristicsResponse = {
+    companyId: string;
+    binId: string;
+    locationId: string;
+    zoneId: string;
+    pickZone: string;
+    aisle: string;
+    level?: number;
+    position?: number;
+    heightCm?: (string | null);
+    widthCm?: (string | null);
+    depthCm?: (string | null);
+    volumeCubicCm?: (string | null);
+    maxWeightKg?: (string | null);
+    currentWeightKg?: string;
+    utilizationPercent?: string;
+    accessibilityScore?: number;
+    ergonomicScore?: number;
+    distanceFromDock?: (number | null);
+    pickPathSequence?: (number | null);
+    isActive?: boolean;
+    lastUpdatedAt?: string;
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
 export type BinCreate = {
     code: string;
     name?: (string | null);
@@ -644,6 +875,31 @@ export type Body_bulk_import_shipments_api_v1_shipments_bulk_import_post = {
     file: (Blob | File);
 };
 
+export type Body_upload_asn_api_v1_upload_batches_process_asn_post = {
+    file: (Blob | File);
+    location_id: string;
+};
+
+export type Body_upload_asns_api_v1_asns_upload_post = {
+    file: (Blob | File);
+};
+
+export type Body_upload_external_po_api_v1_upload_batches_process_external_po_post = {
+    file: (Blob | File);
+};
+
+export type Body_upload_external_pos_api_v1_external_pos_upload_post = {
+    file: (Blob | File);
+};
+
+export type Body_upload_opening_stock_api_v1_upload_batches_process_opening_stock_post = {
+    file: (Blob | File);
+};
+
+export type Body_upload_stock_transfer_api_v1_upload_batches_process_stock_transfer_post = {
+    file: (Blob | File);
+};
+
 /**
  * Booking status
  */
@@ -682,10 +938,25 @@ export type BrandBrief = {
     logo?: (string | null);
 };
 
-/**
- * Schema for creating a new brand
- */
 export type BrandCreate = {
+    code: string;
+    name: string;
+    logo?: (string | null);
+    description?: (string | null);
+    contactPerson?: (string | null);
+    contactEmail?: (string | null);
+    contactPhone?: (string | null);
+    website?: (string | null);
+    address?: ({
+    [key: string]: unknown;
+} | null);
+};
+
+/**
+ * Schema for brand API responses
+ */
+export type BrandResponse = {
+    id: string;
     code: string;
     name: string;
     logo?: (string | null);
@@ -700,21 +971,10 @@ export type BrandCreate = {
     settings?: ({
     [key: string]: unknown;
 } | null);
-    companyId: string;
-};
-
-export type BrandResponse = {
-    id: string;
-    code: string;
-    name: string;
-    logo?: (string | null);
-    description?: (string | null);
-    contactPerson?: (string | null);
-    contactEmail?: (string | null);
-    contactPhone?: (string | null);
-    website?: (string | null);
     isActive: boolean;
     companyId: string;
+    createdAt: string;
+    updatedAt: string;
 };
 
 export type BrandUpdate = {
@@ -1186,6 +1446,102 @@ export type ChannelInventoryUpdate = {
 };
 
 /**
+ * Schema for chargeback creation
+ */
+export type ChargebackCreate = {
+    orderId: string;
+    orderNo: string;
+    channel: string;
+    reason: ChargebackReason;
+    reasonDetail?: (string | null);
+    chargebackAmount: (number | string);
+    originalAmount: (number | string);
+    chargebackDate: string;
+    deadlineDate?: (string | null);
+    paymentGatewayRef?: (string | null);
+    notes?: (string | null);
+};
+
+/**
+ * Chargeback reason codes
+ */
+export type ChargebackReason = 'FRAUD' | 'NOT_RECEIVED' | 'NOT_AS_DESCRIBED' | 'DUPLICATE' | 'CANCELLED' | 'CREDIT_NOT_PROCESSED' | 'OTHER';
+
+/**
+ * Chargeback reason codes
+ */
+export const ChargebackReason = {
+    FRAUD: 'FRAUD',
+    NOT_RECEIVED: 'NOT_RECEIVED',
+    NOT_AS_DESCRIBED: 'NOT_AS_DESCRIBED',
+    DUPLICATE: 'DUPLICATE',
+    CANCELLED: 'CANCELLED',
+    CREDIT_NOT_PROCESSED: 'CREDIT_NOT_PROCESSED',
+    OTHER: 'OTHER'
+} as const;
+
+/**
+ * Response schema for chargeback
+ */
+export type ChargebackResponse = {
+    companyId: string;
+    chargebackNo: string;
+    orderId: string;
+    orderNo: string;
+    channel: string;
+    status?: ChargebackStatus;
+    reason: ChargebackReason;
+    reasonDetail?: (string | null);
+    chargebackAmount: string;
+    originalAmount: string;
+    currency?: string;
+    chargebackDate: string;
+    deadlineDate?: (string | null);
+    paymentGatewayRef?: (string | null);
+    cardLast4?: (string | null);
+    evidenceSubmittedAt?: (string | null);
+    evidenceData?: ({
+    [key: string]: unknown;
+} | null);
+    resolvedAt?: (string | null);
+    resolvedById?: (string | null);
+    outcome?: (string | null);
+    outcomeAmount?: (string | null);
+    notes?: (string | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Chargeback status
+ */
+export type ChargebackStatus = 'RECEIVED' | 'UNDER_REVIEW' | 'EVIDENCE_SUBMITTED' | 'WON' | 'LOST' | 'ACCEPTED';
+
+/**
+ * Chargeback status
+ */
+export const ChargebackStatus = {
+    RECEIVED: 'RECEIVED',
+    UNDER_REVIEW: 'UNDER_REVIEW',
+    EVIDENCE_SUBMITTED: 'EVIDENCE_SUBMITTED',
+    WON: 'WON',
+    LOST: 'LOST',
+    ACCEPTED: 'ACCEPTED'
+} as const;
+
+/**
+ * Schema for chargeback update
+ */
+export type ChargebackUpdate = {
+    status?: (ChargebackStatus | null);
+    evidenceData?: ({
+    [key: string]: unknown;
+} | null);
+    notes?: (string | null);
+};
+
+/**
  * Communication Template creation schema
  */
 export type CommunicationTemplateCreate = {
@@ -1339,6 +1695,37 @@ export type CompanyValuationResponse = {
 };
 
 /**
+ * Conflict resolution strategies
+ */
+export type ConflictResolution = 'SERVER_WINS' | 'CLIENT_WINS' | 'MANUAL' | 'MERGE';
+
+/**
+ * Conflict resolution strategies
+ */
+export const ConflictResolution = {
+    SERVER_WINS: 'SERVER_WINS',
+    CLIENT_WINS: 'CLIENT_WINS',
+    MANUAL: 'MANUAL',
+    MERGE: 'MERGE'
+} as const;
+
+/**
+ * Marketplace connection status
+ */
+export type ConnectionStatus = 'PENDING' | 'CONNECTED' | 'DISCONNECTED' | 'ERROR' | 'EXPIRED';
+
+/**
+ * Marketplace connection status
+ */
+export const ConnectionStatus = {
+    PENDING: 'PENDING',
+    CONNECTED: 'CONNECTED',
+    DISCONNECTED: 'DISCONNECTED',
+    ERROR: 'ERROR',
+    EXPIRED: 'EXPIRED'
+} as const;
+
+/**
  * Credit status for B2B customers
  */
 export type CreditStatus = 'AVAILABLE' | 'EXHAUSTED' | 'ON_HOLD' | 'OVERDUE';
@@ -1351,6 +1738,160 @@ export const CreditStatus = {
     EXHAUSTED: 'EXHAUSTED',
     ON_HOLD: 'ON_HOLD',
     OVERDUE: 'OVERDUE'
+} as const;
+
+/**
+ * Schema for allocation creation
+ */
+export type CrossDockAllocationCreate = {
+    crossDockOrderId: string;
+    orderId: string;
+    orderItemId: string;
+    skuId: string;
+    inboundLineId?: (string | null);
+    allocatedQuantity: (number | string);
+    stagingLocation?: (string | null);
+    lotNo?: (string | null);
+};
+
+/**
+ * Response schema for allocation
+ */
+export type CrossDockAllocationResponse = {
+    companyId: string;
+    crossDockOrderId: string;
+    orderId: string;
+    orderItemId: string;
+    skuId: string;
+    inboundLineId?: (string | null);
+    allocatedQuantity: string;
+    receivedQuantity?: string;
+    loadedQuantity?: string;
+    status?: CrossDockStatus;
+    stagingLocation?: (string | null);
+    lotNo?: (string | null);
+    serialNumbers?: (Array<(string)> | null);
+    allocatedAt?: string;
+    receivedAt?: (string | null);
+    loadedAt?: (string | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Response schema for order
+ */
+export type CrossDockOrderResponse = {
+    companyId: string;
+    locationId: string;
+    orderId: string;
+    orderNo: string;
+    status?: CrossDockStatus;
+    ruleId?: (string | null);
+    inboundAsnId?: (string | null);
+    inboundExpectedAt?: (string | null);
+    inboundReceivedAt?: (string | null);
+    stagingAreaId?: (string | null);
+    stagedAt?: (string | null);
+    outboundManifestId?: (string | null);
+    shippedAt?: (string | null);
+    totalItems?: number;
+    allocatedItems?: number;
+    receivedItems?: number;
+    loadedItems?: number;
+    priority?: number;
+    notes?: (string | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Schema for rule creation
+ */
+export type CrossDockRuleCreate = {
+    locationId: string;
+    ruleName: string;
+    ruleType: CrossDockRuleType;
+    priority?: number;
+    description?: (string | null);
+    conditions?: {
+        [key: string]: unknown;
+    };
+    channels?: (Array<(string)> | null);
+    customerIds?: (Array<(string)> | null);
+    skuCategories?: (Array<(string)> | null);
+    minOrderValue?: (number | string | null);
+    maxOrderAge?: (number | null);
+    targetStagingArea?: (string | null);
+    autoAllocate?: boolean;
+    effectiveFrom?: (string | null);
+    effectiveTo?: (string | null);
+};
+
+/**
+ * Response schema for rule
+ */
+export type CrossDockRuleResponse = {
+    companyId: string;
+    locationId: string;
+    ruleName: string;
+    ruleType: CrossDockRuleType;
+    isActive?: boolean;
+    priority?: number;
+    description?: (string | null);
+    conditions?: {
+        [key: string]: unknown;
+    };
+    channels?: (Array<(string)> | null);
+    customerIds?: (Array<(string)> | null);
+    skuCategories?: (Array<(string)> | null);
+    minOrderValue?: (string | null);
+    maxOrderAge?: (number | null);
+    targetStagingArea?: (string | null);
+    autoAllocate?: boolean;
+    effectiveFrom?: (string | null);
+    effectiveTo?: (string | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Cross-dock rule types
+ */
+export type CrossDockRuleType = 'CHANNEL_BASED' | 'CUSTOMER_BASED' | 'SKU_BASED' | 'ORDER_TYPE' | 'TIME_BASED';
+
+/**
+ * Cross-dock rule types
+ */
+export const CrossDockRuleType = {
+    CHANNEL_BASED: 'CHANNEL_BASED',
+    CUSTOMER_BASED: 'CUSTOMER_BASED',
+    SKU_BASED: 'SKU_BASED',
+    ORDER_TYPE: 'ORDER_TYPE',
+    TIME_BASED: 'TIME_BASED'
+} as const;
+
+/**
+ * Cross-dock order/allocation status
+ */
+export type CrossDockStatus = 'PENDING' | 'ELIGIBLE' | 'ALLOCATED' | 'RECEIVING' | 'STAGED' | 'LOADING' | 'SHIPPED' | 'COMPLETED' | 'CANCELLED';
+
+/**
+ * Cross-dock order/allocation status
+ */
+export const CrossDockStatus = {
+    PENDING: 'PENDING',
+    ELIGIBLE: 'ELIGIBLE',
+    ALLOCATED: 'ALLOCATED',
+    RECEIVING: 'RECEIVING',
+    STAGED: 'STAGED',
+    LOADING: 'LOADING',
+    SHIPPED: 'SHIPPED',
+    COMPLETED: 'COMPLETED',
+    CANCELLED: 'CANCELLED'
 } as const;
 
 /**
@@ -1884,6 +2425,111 @@ export type DetectionRuleUpdate = {
 };
 
 /**
+ * Device registration status
+ */
+export type DeviceStatus = 'PENDING' | 'ACTIVE' | 'SUSPENDED' | 'DECOMMISSIONED';
+
+/**
+ * Device registration status
+ */
+export const DeviceStatus = {
+    PENDING: 'PENDING',
+    ACTIVE: 'ACTIVE',
+    SUSPENDED: 'SUSPENDED',
+    DECOMMISSIONED: 'DECOMMISSIONED'
+} as const;
+
+/**
+ * Mobile device types
+ */
+export type DeviceType = 'HANDHELD_SCANNER' | 'SMARTPHONE' | 'TABLET' | 'FORKLIFT_TERMINAL' | 'WEARABLE';
+
+/**
+ * Mobile device types
+ */
+export const DeviceType = {
+    HANDHELD_SCANNER: 'HANDHELD_SCANNER',
+    SMARTPHONE: 'SMARTPHONE',
+    TABLET: 'TABLET',
+    FORKLIFT_TERMINAL: 'FORKLIFT_TERMINAL',
+    WEARABLE: 'WEARABLE'
+} as const;
+
+/**
+ * Reconciliation discrepancy types
+ */
+export type DiscrepancyType = 'AMOUNT_MISMATCH' | 'MISSING_PAYMENT' | 'DUPLICATE_PAYMENT' | 'UNKNOWN_ORDER' | 'TIMING_DIFFERENCE' | 'FEE_MISMATCH' | 'OTHER';
+
+/**
+ * Reconciliation discrepancy types
+ */
+export const DiscrepancyType = {
+    AMOUNT_MISMATCH: 'AMOUNT_MISMATCH',
+    MISSING_PAYMENT: 'MISSING_PAYMENT',
+    DUPLICATE_PAYMENT: 'DUPLICATE_PAYMENT',
+    UNKNOWN_ORDER: 'UNKNOWN_ORDER',
+    TIMING_DIFFERENCE: 'TIMING_DIFFERENCE',
+    FEE_MISMATCH: 'FEE_MISMATCH',
+    OTHER: 'OTHER'
+} as const;
+
+/**
+ * Schema for escrow creation
+ */
+export type EscrowHoldCreate = {
+    channel: string;
+    orderId?: (string | null);
+    orderNo?: (string | null);
+    holdReason: string;
+    holdAmount: (number | string);
+    holdDate: string;
+    expectedReleaseDate?: (string | null);
+    notes?: (string | null);
+};
+
+/**
+ * Response schema for escrow
+ */
+export type EscrowHoldResponse = {
+    companyId: string;
+    escrowNo: string;
+    channel: string;
+    orderId?: (string | null);
+    orderNo?: (string | null);
+    status?: EscrowStatus;
+    holdReason: string;
+    holdAmount: string;
+    releasedAmount?: string;
+    currency?: string;
+    holdDate: string;
+    expectedReleaseDate?: (string | null);
+    actualReleaseDate?: (string | null);
+    releasedById?: (string | null);
+    partialReleases?: (Array<{
+    [key: string]: unknown;
+}> | null);
+    notes?: (string | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Escrow hold status
+ */
+export type EscrowStatus = 'HELD' | 'PARTIAL_RELEASE' | 'RELEASED' | 'FORFEITED';
+
+/**
+ * Escrow hold status
+ */
+export const EscrowStatus = {
+    HELD: 'HELD',
+    PARTIAL_RELEASE: 'PARTIAL_RELEASE',
+    RELEASED: 'RELEASED',
+    FORFEITED: 'FORFEITED'
+} as const;
+
+/**
  * Exception creation schema
  */
 export type ExceptionCreate = {
@@ -2045,6 +2691,103 @@ export type ExternalOrderResponse = {
     status: string;
     message: string;
     createdAt: string;
+};
+
+/**
+ * Create schema for item (camelCase for API input)
+ */
+export type ExternalPOItemCreate = {
+    externalSkuCode: string;
+    externalSkuName?: (string | null);
+    skuId?: (string | null);
+    orderedQty: number;
+    unitPrice?: (number | string | null);
+};
+
+/**
+ * Read schema for item (camelCase for API output)
+ */
+export type ExternalPOItemRead = {
+    id: string;
+    externalPoId: string;
+    externalSkuCode: string;
+    externalSkuName?: (string | null);
+    skuId?: (string | null);
+    orderedQty: number;
+    receivedQty: number;
+    unitPrice?: (string | null);
+    status: string;
+    pendingQty?: (number | null);
+    skuCode?: (string | null);
+    skuName?: (string | null);
+    createdAt: string;
+};
+
+/**
+ * Update schema for item (camelCase for API input)
+ */
+export type ExternalPOItemUpdate = {
+    externalSkuName?: (string | null);
+    skuId?: (string | null);
+    orderedQty?: (number | null);
+    receivedQty?: (number | null);
+    unitPrice?: (number | string | null);
+    status?: (string | null);
+};
+
+/**
+ * Create schema (camelCase for API input)
+ */
+export type ExternalPurchaseOrderCreate = {
+    externalPoNumber: string;
+    locationId: string;
+    externalVendorCode?: (string | null);
+    externalVendorName?: (string | null);
+    vendorId?: (string | null);
+    poDate?: (string | null);
+    expectedDeliveryDate?: (string | null);
+    remarks?: (string | null);
+    items?: (Array<ExternalPOItemCreate> | null);
+};
+
+/**
+ * Read schema (camelCase for API output)
+ */
+export type ExternalPurchaseOrderRead = {
+    id: string;
+    companyId: string;
+    locationId: string;
+    externalPoNumber: string;
+    externalVendorCode?: (string | null);
+    externalVendorName?: (string | null);
+    vendorId?: (string | null);
+    status: string;
+    poDate?: (string | null);
+    expectedDeliveryDate?: (string | null);
+    source: string;
+    remarks?: (string | null);
+    totalLines: number;
+    totalExpectedQty: number;
+    totalReceivedQty: number;
+    totalAmount: string;
+    pendingQty?: (number | null);
+    createdAt: string;
+    updatedAt: string;
+    locationName?: (string | null);
+    items?: (Array<ExternalPOItemRead> | null);
+};
+
+/**
+ * Update schema (camelCase for API input)
+ */
+export type ExternalPurchaseOrderUpdate = {
+    externalVendorCode?: (string | null);
+    externalVendorName?: (string | null);
+    vendorId?: (string | null);
+    status?: (string | null);
+    poDate?: (string | null);
+    expectedDeliveryDate?: (string | null);
+    remarks?: (string | null);
 };
 
 /**
@@ -2346,6 +3089,18 @@ export type GoodsReceiptCreate = {
     locationId: string;
     companyId: string;
     notes?: (string | null);
+    externalPoId?: (string | null);
+    asnId?: (string | null);
+    returnId?: (string | null);
+    stockTransferId?: (string | null);
+    externalReferenceType?: (string | null);
+    externalReferenceNo?: (string | null);
+    inboundSource?: string;
+    vehicleNumber?: (string | null);
+    driverName?: (string | null);
+    gateEntryNo?: (string | null);
+    gateEntryTime?: (string | null);
+    source?: string;
 };
 
 export type GoodsReceiptItemCreate = {
@@ -2425,13 +3180,35 @@ export type GoodsReceiptResponse = {
     notes?: (string | null);
     createdAt: string;
     updatedAt: string;
+    externalPoId?: (string | null);
+    asnId?: (string | null);
+    returnId?: (string | null);
+    stockTransferId?: (string | null);
+    externalReferenceType?: (string | null);
+    externalReferenceNo?: (string | null);
+    inboundSource?: string;
+    vehicleNumber?: (string | null);
+    driverName?: (string | null);
+    gateEntryNo?: (string | null);
+    gateEntryTime?: (string | null);
+    totalAcceptedQty?: number;
+    totalRejectedQty?: number;
+    source?: string;
     itemCount?: (number | null);
+    externalPoNumber?: (string | null);
+    asnNumber?: (string | null);
 };
 
 export type GoodsReceiptUpdate = {
     asnNo?: (string | null);
     status?: (string | null);
     notes?: (string | null);
+    externalReferenceType?: (string | null);
+    externalReferenceNo?: (string | null);
+    vehicleNumber?: (string | null);
+    driverName?: (string | null);
+    gateEntryNo?: (string | null);
+    gateEntryTime?: (string | null);
 };
 
 export type GoodsReceiptWithItems = {
@@ -2453,7 +3230,23 @@ export type GoodsReceiptWithItems = {
     notes?: (string | null);
     createdAt: string;
     updatedAt: string;
+    externalPoId?: (string | null);
+    asnId?: (string | null);
+    returnId?: (string | null);
+    stockTransferId?: (string | null);
+    externalReferenceType?: (string | null);
+    externalReferenceNo?: (string | null);
+    inboundSource?: string;
+    vehicleNumber?: (string | null);
+    driverName?: (string | null);
+    gateEntryNo?: (string | null);
+    gateEntryTime?: (string | null);
+    totalAcceptedQty?: number;
+    totalRejectedQty?: number;
+    source?: string;
     itemCount?: (number | null);
+    externalPoNumber?: (string | null);
+    asnNumber?: (string | null);
     items?: Array<GoodsReceiptItemResponse>;
 };
 
@@ -2621,12 +3414,18 @@ export type InboundUpdate = {
     completedAt?: (string | null);
 };
 
+/**
+ * Schema for inventory adjustment
+ */
 export type InventoryAdjustment = {
     skuId: string;
     binId: string;
-    quantity: number;
+    locationId: string;
+    adjustmentQty: number;
     reason: string;
     batchNo?: (string | null);
+    serialNumbers?: (Array<(string)> | null);
+    remarks?: (string | null);
 };
 
 /**
@@ -2850,6 +3649,244 @@ export const LRStatus = {
 } as const;
 
 /**
+ * Schema for assignment creation
+ */
+export type LaborAssignmentCreate = {
+    locationId: string;
+    userId: string;
+    shiftScheduleId?: (string | null);
+    taskType: string;
+    zone?: (string | null);
+    priority?: number;
+    targetQuantity?: (number | null);
+    notes?: (string | null);
+};
+
+/**
+ * Response schema for assignment
+ */
+export type LaborAssignmentResponse = {
+    companyId: string;
+    locationId: string;
+    userId: string;
+    shiftScheduleId?: (string | null);
+    taskType: string;
+    zone?: (string | null);
+    status?: AssignmentStatus;
+    assignedAt?: string;
+    startedAt?: (string | null);
+    completedAt?: (string | null);
+    priority?: number;
+    targetQuantity?: (number | null);
+    actualQuantity?: (number | null);
+    notes?: (string | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Labor dashboard summary
+ */
+export type LaborDashboardSummary = {
+    totalWorkers?: number;
+    activeWorkers?: number;
+    onBreak?: number;
+    avgProductivity?: string;
+    tasksCompleted?: number;
+    tasksPending?: number;
+    topPerformers?: Array<{
+        [key: string]: unknown;
+    }>;
+};
+
+/**
+ * Response schema for productivity
+ */
+export type LaborProductivityResponse = {
+    companyId: string;
+    userId: string;
+    locationId: string;
+    recordDate: string;
+    taskType: string;
+    totalTasks?: number;
+    completedTasks?: number;
+    totalUnits?: number;
+    processedUnits?: number;
+    totalMinutes?: number;
+    unitsPerHour?: string;
+    accuracyRate?: string;
+    errorCount?: number;
+    performanceScore?: string;
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Schema for shift creation
+ */
+export type LaborShiftCreate = {
+    locationId: string;
+    shiftName: string;
+    shiftType: ShiftType;
+    startTime: string;
+    endTime: string;
+    breakDuration?: number;
+    maxWorkers?: (number | null);
+    description?: (string | null);
+};
+
+/**
+ * Response schema for shift
+ */
+export type LaborShiftResponse = {
+    companyId: string;
+    locationId: string;
+    shiftName: string;
+    shiftType: ShiftType;
+    startTime: string;
+    endTime: string;
+    breakDuration?: number;
+    isActive?: boolean;
+    maxWorkers?: (number | null);
+    description?: (string | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Schema for schedule creation
+ */
+export type LaborShiftScheduleCreate = {
+    shiftId: string;
+    userId: string;
+    scheduleDate: string;
+    notes?: (string | null);
+};
+
+/**
+ * Response schema for schedule
+ */
+export type LaborShiftScheduleResponse = {
+    companyId: string;
+    shiftId: string;
+    userId: string;
+    scheduleDate: string;
+    status?: ShiftStatus;
+    actualStartTime?: (string | null);
+    actualEndTime?: (string | null);
+    totalWorkMinutes?: (number | null);
+    totalBreakMinutes?: (number | null);
+    notes?: (string | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Schema for skill creation
+ */
+export type LaborSkillCreate = {
+    userId: string;
+    skillName: string;
+    skillCategory: string;
+    level?: SkillLevel;
+    trainingHours?: (number | null);
+    notes?: (string | null);
+};
+
+/**
+ * Response schema for skill
+ */
+export type LaborSkillResponse = {
+    companyId: string;
+    userId: string;
+    skillName: string;
+    skillCategory: string;
+    level?: SkillLevel;
+    certifiedAt?: (string | null);
+    certifiedById?: (string | null);
+    expiresAt?: (string | null);
+    isActive?: boolean;
+    trainingHours?: (number | null);
+    notes?: (string | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Schema for standard creation
+ */
+export type LaborStandardCreate = {
+    locationId: string;
+    taskType: string;
+    standardName: string;
+    expectedUnitsPerHour: (number | string);
+    minimumUnitsPerHour: (number | string);
+    targetUnitsPerHour: (number | string);
+    unitOfMeasure?: string;
+    effectiveFrom: string;
+    effectiveTo?: (string | null);
+    notes?: (string | null);
+};
+
+/**
+ * Response schema for standard
+ */
+export type LaborStandardResponse = {
+    companyId: string;
+    locationId: string;
+    taskType: string;
+    standardName: string;
+    expectedUnitsPerHour: string;
+    minimumUnitsPerHour: string;
+    targetUnitsPerHour: string;
+    unitOfMeasure?: string;
+    isActive?: boolean;
+    effectiveFrom: string;
+    effectiveTo?: (string | null);
+    notes?: (string | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Schema for time entry creation
+ */
+export type LaborTimeEntryCreate = {
+    entryType: TimeEntryType;
+    location?: (string | null);
+    deviceId?: (string | null);
+    latitude?: (number | null);
+    longitude?: (number | null);
+    notes?: (string | null);
+};
+
+/**
+ * Response schema for time entry
+ */
+export type LaborTimeEntryResponse = {
+    companyId: string;
+    userId: string;
+    shiftScheduleId?: (string | null);
+    entryType: TimeEntryType;
+    timestamp?: string;
+    location?: (string | null);
+    deviceId?: (string | null);
+    latitude?: (number | null);
+    longitude?: (number | null);
+    isManual?: boolean;
+    approvedById?: (string | null);
+    notes?: (string | null);
+    id: string;
+    createdAt: string;
+};
+
+/**
  * Lane performance response schema
  */
 export type LanePerformanceResponse = {
@@ -2890,6 +3927,23 @@ export type LegacyInventoryResponse = {
     binId: string;
     locationId: string;
 };
+
+/**
+ * Marketplace listing status
+ */
+export type ListingStatus = 'DRAFT' | 'PENDING' | 'ACTIVE' | 'INACTIVE' | 'SUPPRESSED' | 'DELETED';
+
+/**
+ * Marketplace listing status
+ */
+export const ListingStatus = {
+    DRAFT: 'DRAFT',
+    PENDING: 'PENDING',
+    ACTIVE: 'ACTIVE',
+    INACTIVE: 'INACTIVE',
+    SUPPRESSED: 'SUPPRESSED',
+    DELETED: 'DELETED'
+} as const;
 
 export type LocationBrief = {
     id: string;
@@ -3179,6 +4233,388 @@ export type ManifestUpdate = {
 };
 
 /**
+ * Schema for connection creation
+ */
+export type MarketplaceConnectionCreate = {
+    marketplace: MarketplaceType;
+    connectionName: string;
+    sellerId?: (string | null);
+    sellerName?: (string | null);
+    region?: (string | null);
+    apiEndpoint?: (string | null);
+    syncSettings?: ({
+    [key: string]: unknown;
+} | null);
+};
+
+/**
+ * Response schema for connection
+ */
+export type MarketplaceConnectionResponse = {
+    companyId: string;
+    marketplace: MarketplaceType;
+    connectionName: string;
+    status?: ConnectionStatus;
+    sellerId?: (string | null);
+    sellerName?: (string | null);
+    region?: (string | null);
+    apiEndpoint?: (string | null);
+    credentials?: ({
+    [key: string]: unknown;
+} | null);
+    accessToken?: (string | null);
+    refreshToken?: (string | null);
+    tokenExpiresAt?: (string | null);
+    lastSyncAt?: (string | null);
+    syncSettings?: ({
+    [key: string]: unknown;
+} | null);
+    webhookUrl?: (string | null);
+    webhookSecret?: (string | null);
+    isActive?: boolean;
+    errorMessage?: (string | null);
+    errorAt?: (string | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Schema for connection update
+ */
+export type MarketplaceConnectionUpdate = {
+    connectionName?: (string | null);
+    status?: (ConnectionStatus | null);
+    sellerId?: (string | null);
+    sellerName?: (string | null);
+    syncSettings?: ({
+    [key: string]: unknown;
+} | null);
+    isActive?: (boolean | null);
+};
+
+/**
+ * Response schema for inventory sync
+ */
+export type MarketplaceInventorySyncResponse = {
+    companyId: string;
+    connectionId: string;
+    listingId: string;
+    skuId: string;
+    marketplace: MarketplaceType;
+    previousQuantity?: number;
+    newQuantity?: number;
+    syncStatus?: ImportStatus;
+    syncedAt?: string;
+    acknowledgedAt?: (string | null);
+    errorMessage?: (string | null);
+    id: string;
+    createdAt: string;
+};
+
+/**
+ * Schema for listing creation
+ */
+export type MarketplaceListingCreate = {
+    connectionId: string;
+    skuId: string;
+    marketplace: MarketplaceType;
+    listingId: string;
+    asin?: (string | null);
+    fsn?: (string | null);
+    title?: (string | null);
+    price: (number | string);
+    mrp: (number | string);
+    stockQuantity?: number;
+    category?: (string | null);
+    brand?: (string | null);
+};
+
+/**
+ * Response schema for listing
+ */
+export type MarketplaceListingResponse = {
+    companyId: string;
+    connectionId: string;
+    skuId: string;
+    marketplace: MarketplaceType;
+    listingId: string;
+    asin?: (string | null);
+    fsn?: (string | null);
+    styleId?: (string | null);
+    status?: ListingStatus;
+    title?: (string | null);
+    description?: (string | null);
+    price?: string;
+    mrp?: string;
+    currency?: string;
+    stockQuantity?: number;
+    isInStock?: boolean;
+    fulfillmentType?: (string | null);
+    category?: (string | null);
+    brand?: (string | null);
+    imageUrls?: (Array<(string)> | null);
+    attributes?: ({
+    [key: string]: unknown;
+} | null);
+    lastSyncedAt?: (string | null);
+    suppressedReason?: (string | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Response schema for order sync
+ */
+export type MarketplaceOrderSyncResponse = {
+    companyId: string;
+    connectionId: string;
+    marketplace: MarketplaceType;
+    marketplaceOrderId: string;
+    orderId?: (string | null);
+    orderNo?: (string | null);
+    syncStatus?: ImportStatus;
+    syncDirection?: string;
+    orderData?: ({
+    [key: string]: unknown;
+} | null);
+    syncedAt?: string;
+    errorMessage?: (string | null);
+    retryCount?: number;
+    id: string;
+    createdAt: string;
+};
+
+/**
+ * Response schema for return
+ */
+export type MarketplaceReturnResponse = {
+    companyId: string;
+    connectionId: string;
+    marketplace: MarketplaceType;
+    marketplaceReturnId: string;
+    marketplaceOrderId: string;
+    orderId?: (string | null);
+    returnId?: (string | null);
+    status?: MarketplaceReturnStatus;
+    returnReason?: (string | null);
+    returnSubReason?: (string | null);
+    customerComments?: (string | null);
+    returnQuantity?: number;
+    refundAmount?: string;
+    refundStatus?: (string | null);
+    refundedAt?: (string | null);
+    pickupScheduledAt?: (string | null);
+    pickedUpAt?: (string | null);
+    receivedAt?: (string | null);
+    returnData?: ({
+    [key: string]: unknown;
+} | null);
+    lastSyncedAt?: string;
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Marketplace return status
+ */
+export type MarketplaceReturnStatus = 'INITIATED' | 'APPROVED' | 'PICKED_UP' | 'RECEIVED' | 'REFUNDED' | 'REJECTED' | 'CLOSED';
+
+/**
+ * Marketplace return status
+ */
+export const MarketplaceReturnStatus = {
+    INITIATED: 'INITIATED',
+    APPROVED: 'APPROVED',
+    PICKED_UP: 'PICKED_UP',
+    RECEIVED: 'RECEIVED',
+    REFUNDED: 'REFUNDED',
+    REJECTED: 'REJECTED',
+    CLOSED: 'CLOSED'
+} as const;
+
+/**
+ * Response schema for settlement
+ */
+export type MarketplaceSettlementResponse = {
+    companyId: string;
+    connectionId: string;
+    marketplace: MarketplaceType;
+    settlementId: string;
+    settlementDate: string;
+    periodFrom: string;
+    periodTo: string;
+    totalOrders?: number;
+    grossSales?: string;
+    marketplaceFee?: string;
+    shippingFee?: string;
+    taxCollected?: string;
+    taxRemitted?: string;
+    promotions?: string;
+    refunds?: string;
+    chargebacks?: string;
+    adjustments?: string;
+    netAmount?: string;
+    currency?: string;
+    paymentReference?: (string | null);
+    paymentDate?: (string | null);
+    isReconciled?: boolean;
+    reconciledAt?: (string | null);
+    fileUrl?: (string | null);
+    rawData?: ({
+    [key: string]: unknown;
+} | null);
+    notes?: (string | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Marketplace types
+ */
+export type MarketplaceType = 'AMAZON' | 'FLIPKART' | 'MYNTRA' | 'AJIO' | 'NYKAA' | 'MEESHO' | 'SHOPIFY' | 'WOOCOMMERCE' | 'MAGENTO' | 'TATA_CLIQ' | 'JIOMART';
+
+/**
+ * Marketplace types
+ */
+export const MarketplaceType = {
+    AMAZON: 'AMAZON',
+    FLIPKART: 'FLIPKART',
+    MYNTRA: 'MYNTRA',
+    AJIO: 'AJIO',
+    NYKAA: 'NYKAA',
+    MEESHO: 'MEESHO',
+    SHOPIFY: 'SHOPIFY',
+    WOOCOMMERCE: 'WOOCOMMERCE',
+    MAGENTO: 'MAGENTO',
+    TATA_CLIQ: 'TATA_CLIQ',
+    JIOMART: 'JIOMART'
+} as const;
+
+/**
+ * Request for matching payments
+ */
+export type MatchPaymentRequest = {
+    settlementId: string;
+    autoMatch?: boolean;
+};
+
+/**
+ * Response for match payment
+ */
+export type MatchPaymentResponse = {
+    settlementId: string;
+    totalOrders: number;
+    matchedOrders: number;
+    unmatchedOrders: number;
+    discrepanciesFound: number;
+};
+
+/**
+ * Schema for device registration
+ */
+export type MobileDeviceRegister = {
+    deviceId: string;
+    deviceName: string;
+    deviceType?: DeviceType;
+    manufacturer?: (string | null);
+    model?: (string | null);
+    osVersion?: (string | null);
+    appVersion?: (string | null);
+    assignedLocationId?: (string | null);
+    capabilities?: ({
+    [key: string]: unknown;
+} | null);
+};
+
+/**
+ * Response schema for device
+ */
+export type MobileDeviceResponse = {
+    companyId: string;
+    deviceId: string;
+    deviceName: string;
+    deviceType?: DeviceType;
+    manufacturer?: (string | null);
+    model?: (string | null);
+    osVersion?: (string | null);
+    appVersion?: (string | null);
+    status?: DeviceStatus;
+    assignedLocationId?: (string | null);
+    assignedUserId?: (string | null);
+    lastActiveAt?: (string | null);
+    registeredAt?: string;
+    registeredById?: (string | null);
+    authToken?: (string | null);
+    tokenExpiresAt?: (string | null);
+    pushToken?: (string | null);
+    capabilities?: ({
+    [key: string]: unknown;
+} | null);
+    settings?: ({
+    [key: string]: unknown;
+} | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Schema for task creation
+ */
+export type MobileTaskCreate = {
+    taskType: TaskType;
+    priority?: TaskPriority;
+    locationId: string;
+    assignedUserId?: (string | null);
+    sourceEntityType?: (string | null);
+    sourceEntityId?: (string | null);
+    sourceZone?: (string | null);
+    sourceBin?: (string | null);
+    targetZone?: (string | null);
+    targetBin?: (string | null);
+    instructions?: (string | null);
+};
+
+/**
+ * Response schema for task
+ */
+export type MobileTaskResponse = {
+    companyId: string;
+    sessionId?: (string | null);
+    taskNo: string;
+    taskType: TaskType;
+    status?: TaskStatus;
+    priority?: TaskPriority;
+    locationId: string;
+    assignedUserId?: (string | null);
+    sourceEntityType?: (string | null);
+    sourceEntityId?: (string | null);
+    sourceZone?: (string | null);
+    sourceBin?: (string | null);
+    targetZone?: (string | null);
+    targetBin?: (string | null);
+    totalLines?: number;
+    completedLines?: number;
+    totalQuantity?: string;
+    completedQuantity?: string;
+    startedAt?: (string | null);
+    completedAt?: (string | null);
+    estimatedDuration?: (number | null);
+    actualDuration?: (number | null);
+    instructions?: (string | null);
+    taskData?: ({
+    [key: string]: unknown;
+} | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
  * Schema for creating NDR
  */
 export type NDRCreate = {
@@ -3380,12 +4816,7 @@ export type OrderBrief = {
     orderDate: string;
 };
 
-/**
- * Schema for creating an order
- */
 export type OrderCreate = {
-    orderNo: string;
-    externalOrderNo?: (string | null);
     channel: Channel;
     orderType?: OrderType;
     paymentMode: PaymentMode;
@@ -3398,23 +4829,10 @@ export type OrderCreate = {
     billingAddress?: ({
     [key: string]: unknown;
 } | null);
-    subtotal: (number | string);
-    taxAmount: (number | string);
-    shippingCharges?: (number | string);
-    discount?: (number | string);
-    codCharges?: (number | string);
-    totalAmount: (number | string);
-    orderDate: string;
-    shipByDate?: (string | null);
-    promisedDate?: (string | null);
-    priority?: number;
-    tags?: Array<(string)>;
-    remarks?: (string | null);
+    items: Array<app__api__routes__orders__OrderItemCreate>;
     locationId: string;
-    customerId?: (string | null);
-    paymentTermType?: (PaymentTermType | null);
-    paymentTermDays?: (number | null);
-    poNumber?: (string | null);
+    externalOrderNo?: (string | null);
+    remarks?: (string | null);
 };
 
 /**
@@ -3478,12 +4896,20 @@ export type OrderImportUpdate = {
 } | null);
 };
 
+/**
+ * Schema for creating order item
+ */
 export type OrderItemCreate = {
+    orderId: string;
     skuId: string;
+    externalItemId?: (string | null);
     quantity: number;
-    unitPrice: number;
-    taxAmount?: number;
-    discount?: number;
+    unitPrice: (number | string);
+    taxAmount: (number | string);
+    discount?: (number | string);
+    totalPrice: (number | string);
+    serialNumbers?: Array<(string)>;
+    batchNo?: (string | null);
 };
 
 /**
@@ -3522,51 +4948,25 @@ export type OrderItemUpdate = {
     serialNumbers?: (Array<(string)> | null);
 };
 
-/**
- * Schema for order API responses
- */
 export type OrderResponse = {
     id: string;
     orderNo: string;
     externalOrderNo?: (string | null);
-    channel: Channel;
-    orderType: OrderType;
-    paymentMode: PaymentMode;
-    status: OrderStatus;
+    channel: string;
+    orderType: string;
+    paymentMode: string;
+    status: string;
     customerName: string;
     customerPhone: string;
     customerEmail?: (string | null);
-    shippingAddress: {
-        [key: string]: unknown;
-    };
-    billingAddress?: ({
-    [key: string]: unknown;
-} | null);
-    subtotal: string;
-    taxAmount: string;
-    shippingCharges: string;
-    discount: string;
-    codCharges: string;
-    totalAmount: string;
+    subtotal: number;
+    taxAmount: number;
+    shippingCharges: number;
+    discount: number;
+    totalAmount: number;
     orderDate: string;
-    shipByDate?: (string | null);
-    promisedDate?: (string | null);
-    priority?: number;
-    tags?: Array<(string)>;
-    remarks?: (string | null);
     locationId: string;
-    companyId: string;
-    customerId?: (string | null);
-    paymentTermType?: (PaymentTermType | null);
-    paymentTermDays?: (number | null);
-    creditDueDate?: (string | null);
-    poNumber?: (string | null);
-    gstInvoiceNo?: (string | null);
-    gstInvoiceDate?: (string | null);
-    eWayBillNo?: (string | null);
-    irnNo?: (string | null);
     createdAt: string;
-    updatedAt: string;
 };
 
 /**
@@ -3926,6 +5326,61 @@ export const PaymentMode = {
 } as const;
 
 /**
+ * Schema for settlement creation
+ */
+export type PaymentSettlementCreate = {
+    channel: string;
+    transporterId?: (string | null);
+    settlementDate: string;
+    periodFrom: string;
+    periodTo: string;
+    grossAmount: (number | string);
+    commissionAmount?: (number | string);
+    tdsAmount?: (number | string);
+    shippingDeduction?: (number | string);
+    otherDeductions?: (number | string);
+    bankReference?: (string | null);
+    fileUrl?: (string | null);
+    notes?: (string | null);
+};
+
+/**
+ * Response schema for settlement
+ */
+export type PaymentSettlementResponse = {
+    companyId: string;
+    settlementNo: string;
+    channel: string;
+    transporterId?: (string | null);
+    status?: SettlementStatus;
+    settlementDate: string;
+    periodFrom: string;
+    periodTo: string;
+    grossAmount?: string;
+    commissionAmount?: string;
+    tdsAmount?: string;
+    shippingDeduction?: string;
+    otherDeductions?: string;
+    netAmount?: string;
+    totalOrders?: number;
+    matchedOrders?: number;
+    unmatchedOrders?: number;
+    bankReference?: (string | null);
+    bankAccountNo?: (string | null);
+    receivedAt?: (string | null);
+    reconciledAt?: (string | null);
+    reconciledById?: (string | null);
+    fileUrl?: (string | null);
+    rawData?: ({
+    [key: string]: unknown;
+} | null);
+    notes?: (string | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
  * Payment term types
  */
 export type PaymentTermType = 'IMMEDIATE' | 'NET_7' | 'NET_15' | 'NET_30' | 'NET_45' | 'NET_60' | 'CUSTOM';
@@ -4058,6 +5513,150 @@ export type PincodePerformanceResponse = {
     transporterName?: (string | null);
     zone?: (string | null);
     riskLevel?: (string | null);
+};
+
+/**
+ * Schema for pre-order creation
+ */
+export type PreorderCreate = {
+    customerId?: (string | null);
+    customerName?: (string | null);
+    customerEmail?: (string | null);
+    customerPhone?: (string | null);
+    channel?: (string | null);
+    externalOrderId?: (string | null);
+    locationId: string;
+    expectedAvailableDate?: (string | null);
+    expiryDate?: (string | null);
+    depositAmount?: (number | string);
+    notes?: (string | null);
+};
+
+/**
+ * Response schema for inventory
+ */
+export type PreorderInventoryResponse = {
+    companyId: string;
+    preorderId: string;
+    preorderLineId: string;
+    skuId: string;
+    locationId: string;
+    reservedQuantity: string;
+    fulfilledQuantity?: string;
+    reservedAt?: string;
+    expectedArrivalDate?: (string | null);
+    sourceType?: (string | null);
+    sourceId?: (string | null);
+    expiresAt?: (string | null);
+    isActive?: boolean;
+    notes?: (string | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Schema for line creation
+ */
+export type PreorderLineCreate = {
+    skuId: string;
+    skuCode: string;
+    skuName?: (string | null);
+    quantity: (number | string);
+    unitPrice: (number | string);
+    taxRate?: (number | string);
+    discountAmount?: (number | string);
+    expectedAvailableDate?: (string | null);
+    notes?: (string | null);
+};
+
+/**
+ * Response schema for line
+ */
+export type PreorderLineResponse = {
+    companyId: string;
+    preorderId: string;
+    lineNo?: number;
+    skuId: string;
+    skuCode: string;
+    skuName?: (string | null);
+    quantity: string;
+    allocatedQuantity?: string;
+    unitPrice: string;
+    taxRate?: string;
+    taxAmount?: string;
+    discountAmount?: string;
+    lineTotal: string;
+    expectedAvailableDate?: (string | null);
+    isAllocated?: boolean;
+    notes?: (string | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Response schema for pre-order
+ */
+export type PreorderResponse = {
+    companyId: string;
+    preorderNo: string;
+    customerId?: (string | null);
+    customerName?: (string | null);
+    customerEmail?: (string | null);
+    customerPhone?: (string | null);
+    channel?: (string | null);
+    externalOrderId?: (string | null);
+    status?: PreorderStatus;
+    locationId: string;
+    expectedAvailableDate?: (string | null);
+    expiryDate?: (string | null);
+    totalItems?: number;
+    subtotal?: string;
+    taxAmount?: string;
+    discountAmount?: string;
+    totalAmount?: string;
+    depositAmount?: string;
+    depositPaidAt?: (string | null);
+    convertedOrderId?: (string | null);
+    convertedAt?: (string | null);
+    notes?: (string | null);
+    extraData?: ({
+    [key: string]: unknown;
+} | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Pre-order status
+ */
+export type PreorderStatus = 'DRAFT' | 'CONFIRMED' | 'PARTIALLY_ALLOCATED' | 'FULLY_ALLOCATED' | 'CONVERTED' | 'CANCELLED' | 'EXPIRED';
+
+/**
+ * Pre-order status
+ */
+export const PreorderStatus = {
+    DRAFT: 'DRAFT',
+    CONFIRMED: 'CONFIRMED',
+    PARTIALLY_ALLOCATED: 'PARTIALLY_ALLOCATED',
+    FULLY_ALLOCATED: 'FULLY_ALLOCATED',
+    CONVERTED: 'CONVERTED',
+    CANCELLED: 'CANCELLED',
+    EXPIRED: 'EXPIRED'
+} as const;
+
+/**
+ * Schema for pre-order update
+ */
+export type PreorderUpdate = {
+    status?: (PreorderStatus | null);
+    expectedAvailableDate?: (string | null);
+    expiryDate?: (string | null);
+    depositAmount?: (number | string | null);
+    depositPaidAt?: (string | null);
+    notes?: (string | null);
 };
 
 /**
@@ -4887,6 +6486,107 @@ export type RateCardUpdate = {
 };
 
 /**
+ * Recommendation status
+ */
+export type RecommendationStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'IN_PROGRESS' | 'COMPLETED' | 'EXPIRED';
+
+/**
+ * Recommendation status
+ */
+export const RecommendationStatus = {
+    PENDING: 'PENDING',
+    APPROVED: 'APPROVED',
+    REJECTED: 'REJECTED',
+    IN_PROGRESS: 'IN_PROGRESS',
+    COMPLETED: 'COMPLETED',
+    EXPIRED: 'EXPIRED'
+} as const;
+
+/**
+ * Slotting recommendation types
+ */
+export type RecommendationType = 'RELOCATE' | 'CONSOLIDATE' | 'SPLIT' | 'UPGRADE_BIN' | 'DOWNGRADE_BIN';
+
+/**
+ * Slotting recommendation types
+ */
+export const RecommendationType = {
+    RELOCATE: 'RELOCATE',
+    CONSOLIDATE: 'CONSOLIDATE',
+    SPLIT: 'SPLIT',
+    UPGRADE_BIN: 'UPGRADE_BIN',
+    DOWNGRADE_BIN: 'DOWNGRADE_BIN'
+} as const;
+
+/**
+ * Schema for discrepancy creation
+ */
+export type ReconciliationDiscrepancyCreate = {
+    settlementId?: (string | null);
+    orderId?: (string | null);
+    orderNo?: (string | null);
+    discrepancyType: DiscrepancyType;
+    channel: string;
+    expectedAmount: (number | string);
+    actualAmount: (number | string);
+    systemData?: ({
+    [key: string]: unknown;
+} | null);
+    settlementData?: ({
+    [key: string]: unknown;
+} | null);
+    notes?: (string | null);
+};
+
+/**
+ * Response schema for discrepancy
+ */
+export type ReconciliationDiscrepancyResponse = {
+    companyId: string;
+    settlementId?: (string | null);
+    orderId?: (string | null);
+    orderNo?: (string | null);
+    discrepancyType: DiscrepancyType;
+    channel: string;
+    expectedAmount: string;
+    actualAmount: string;
+    differenceAmount: string;
+    currency?: string;
+    detectedAt?: string;
+    isResolved?: boolean;
+    resolvedAt?: (string | null);
+    resolvedById?: (string | null);
+    resolution?: (string | null);
+    systemData?: ({
+    [key: string]: unknown;
+} | null);
+    settlementData?: ({
+    [key: string]: unknown;
+} | null);
+    notes?: (string | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Response for reconciliation report
+ */
+export type ReconciliationReportResponse = {
+    periodFrom: string;
+    periodTo: string;
+    totalSettlements: number;
+    totalGrossAmount: string;
+    totalNetAmount: string;
+    totalDiscrepancies: number;
+    unresolvedDiscrepancies: number;
+    discrepancyAmount: string;
+    chargebackCount: number;
+    chargebackAmount: string;
+    escrowHeld: string;
+};
+
+/**
  * Report Execution response schema
  */
 export type ReportExecutionResponse = {
@@ -4920,6 +6620,15 @@ export const ResolutionType = {
 } as const;
 
 /**
+ * Request to resolve discrepancy
+ */
+export type ResolveDiscrepancyRequest = {
+    resolution: string;
+    adjustmentAmount?: (number | string | null);
+    notes?: (string | null);
+};
+
+/**
  * Brief return info for lists
  */
 export type ReturnBrief = {
@@ -4938,6 +6647,7 @@ export type ReturnCreate = {
     type: ReturnType;
     companyId: string;
     orderId?: (string | null);
+    locationId?: (string | null);
     awbNo?: (string | null);
     reason?: (string | null);
     remarks?: (string | null);
@@ -4950,6 +6660,29 @@ export type ReturnItemCreate = {
     returnId: string;
     skuId: string;
     quantity: number;
+};
+
+/**
+ * QC details for a return item
+ */
+export type ReturnItemQC = {
+    itemId: string;
+    qcStatus: string;
+    qcGrade?: (string | null);
+    action: string;
+    remarks?: (string | null);
+};
+
+/**
+ * Item receive details for return
+ */
+export type ReturnItemReceive = {
+    itemId: string;
+    receivedQty: number;
+    destinationBinId?: (string | null);
+    batchNo?: (string | null);
+    lotNo?: (string | null);
+    remarks?: (string | null);
 };
 
 /**
@@ -4967,8 +6700,30 @@ export type ReturnItemResponse = {
     qcGrade?: (string | null);
     qcRemarks?: (string | null);
     action?: (string | null);
+    destinationBinId?: (string | null);
+    restockedBinId?: (string | null);
+    disposedBinId?: (string | null);
+    restockedInventoryId?: (string | null);
+    batchNo?: (string | null);
+    lotNo?: (string | null);
+    skuCode?: (string | null);
+    skuName?: (string | null);
+    destinationBinCode?: (string | null);
+    restockedBinCode?: (string | null);
+    pendingQty?: (number | null);
     createdAt: string;
     updatedAt: string;
+};
+
+/**
+ * Restock details for a return item
+ */
+export type ReturnItemRestock = {
+    itemId: string;
+    restockQty: number;
+    destinationBinId: string;
+    batchNo?: (string | null);
+    lotNo?: (string | null);
 };
 
 /**
@@ -4982,6 +6737,32 @@ export type ReturnItemUpdate = {
     action?: (string | null);
     restockedQty?: (number | null);
     disposedQty?: (number | null);
+    destinationBinId?: (string | null);
+    restockedBinId?: (string | null);
+    disposedBinId?: (string | null);
+    batchNo?: (string | null);
+    lotNo?: (string | null);
+};
+
+/**
+ * Request to perform QC on return items
+ */
+export type ReturnQCRequest = {
+    items: Array<ReturnItemQC>;
+    remarks?: (string | null);
+};
+
+/**
+ * Request to receive a return at warehouse
+ */
+export type ReturnReceiveRequest = {
+    locationId: string;
+    vehicleNumber?: (string | null);
+    driverName?: (string | null);
+    driverPhone?: (string | null);
+    createGrn?: boolean;
+    remarks?: (string | null);
+    items?: (Array<ReturnItemReceive> | null);
 };
 
 /**
@@ -5006,8 +6787,25 @@ export type ReturnResponse = {
     processedAt?: (string | null);
     refundAmount?: (string | null);
     refundStatus?: (string | null);
+    locationId?: (string | null);
+    goodsReceiptId?: (string | null);
+    destinationZoneId?: (string | null);
+    vehicleNumber?: (string | null);
+    driverName?: (string | null);
+    driverPhone?: (string | null);
+    receivedBy?: (string | null);
+    locationName?: (string | null);
+    destinationZoneName?: (string | null);
     createdAt: string;
     updatedAt: string;
+};
+
+/**
+ * Request to restock QC-passed return items
+ */
+export type ReturnRestockRequest = {
+    items: Array<ReturnItemRestock>;
+    remarks?: (string | null);
 };
 
 /**
@@ -5063,6 +6861,38 @@ export type ReturnUpdate = {
     processedAt?: (string | null);
     refundAmount?: (number | string | null);
     refundStatus?: (string | null);
+    locationId?: (string | null);
+    destinationZoneId?: (string | null);
+    vehicleNumber?: (string | null);
+    driverName?: (string | null);
+    driverPhone?: (string | null);
+};
+
+/**
+ * Create zone routing rule
+ */
+export type ReturnZoneRoutingCreate = {
+    locationId: string;
+    qcGrade: string;
+    destinationZoneId?: (string | null);
+    action?: string;
+    priority?: number;
+};
+
+/**
+ * Zone routing rule response
+ */
+export type ReturnZoneRoutingResponse = {
+    id: string;
+    companyId: string;
+    locationId: string;
+    qcGrade: string;
+    destinationZoneId?: (string | null);
+    action: string;
+    priority: number;
+    isActive: boolean;
+    locationName?: (string | null);
+    destinationZoneName?: (string | null);
 };
 
 /**
@@ -5078,6 +6908,9 @@ export type SKUBrief = {
     isActive: boolean;
 };
 
+/**
+ * Schema for creating a new SKU
+ */
 export type SKUCreate = {
     code: string;
     name: string;
@@ -5086,18 +6919,30 @@ export type SKUCreate = {
     subCategory?: (string | null);
     brand?: (string | null);
     hsn?: (string | null);
-    weight?: (number | null);
-    length?: (number | null);
-    width?: (number | null);
-    height?: (number | null);
-    mrp?: (number | null);
-    costPrice?: (number | null);
-    sellingPrice?: (number | null);
-    taxRate?: (number | null);
+    weight?: (number | string | null);
+    length?: (number | string | null);
+    width?: (number | string | null);
+    height?: (number | string | null);
+    mrp?: (number | string | null);
+    costPrice?: (number | string | null);
+    sellingPrice?: (number | string | null);
+    taxRate?: (number | string | null);
+    isSerialised?: boolean;
+    isBatchTracked?: boolean;
+    reorderLevel?: (number | null);
+    reorderQty?: (number | null);
     barcodes?: Array<(string)>;
     images?: Array<(string)>;
+    attributes?: ({
+    [key: string]: unknown;
+} | null);
+    valuationMethod?: (string | null);
+    companyId: string;
 };
 
+/**
+ * Schema for SKU API responses
+ */
 export type SKUResponse = {
     id: string;
     code: string;
@@ -5107,11 +6952,30 @@ export type SKUResponse = {
     subCategory?: (string | null);
     brand?: (string | null);
     hsn?: (string | null);
-    mrp?: (number | null);
-    costPrice?: (number | null);
-    sellingPrice?: (number | null);
+    weight?: (string | null);
+    length?: (string | null);
+    width?: (string | null);
+    height?: (string | null);
+    mrp?: (string | null);
+    costPrice?: (string | null);
+    sellingPrice?: (string | null);
+    taxRate?: (string | null);
+    isSerialised: boolean;
+    isBatchTracked: boolean;
+    reorderLevel?: (number | null);
+    reorderQty?: (number | null);
+    barcodes?: Array<(string)>;
+    images?: Array<(string)>;
+    attributes?: ({
+    [key: string]: unknown;
+} | null);
     isActive: boolean;
-    companyId?: (string | null);
+    valuationMethod?: (string | null);
+    isVariantParent: boolean;
+    isVariant: boolean;
+    companyId: string;
+    createdAt: string;
+    updatedAt: string;
 };
 
 /**
@@ -5158,6 +7022,116 @@ export type SKUValuationResponse = {
     valuationMethod: (string | null);
     effectiveMethod: string;
 };
+
+/**
+ * Request to approve an STO
+ */
+export type STOApproveRequest = {
+    remarks?: (string | null);
+};
+
+/**
+ * Create schema for item (camelCase for API input)
+ */
+export type STOItemCreate = {
+    skuId: string;
+    requestedQty: number;
+    sourceBinId?: (string | null);
+    batchNo?: (string | null);
+    lotNo?: (string | null);
+    remarks?: (string | null);
+};
+
+/**
+ * Read schema for item (camelCase for API output)
+ */
+export type STOItemRead = {
+    id: string;
+    stockTransferOrderId: string;
+    skuId: string;
+    sourceBinId?: (string | null);
+    destinationBinId?: (string | null);
+    sourceInventoryId?: (string | null);
+    fifoSequence?: (number | null);
+    requestedQty: number;
+    shippedQty: number;
+    receivedQty: number;
+    damagedQty: number;
+    pendingQty?: (number | null);
+    batchNo?: (string | null);
+    lotNo?: (string | null);
+    status: string;
+    remarks?: (string | null);
+    createdAt: string;
+    skuCode?: (string | null);
+    skuName?: (string | null);
+    sourceBinCode?: (string | null);
+    destinationBinCode?: (string | null);
+};
+
+/**
+ * Item receive details
+ */
+export type STOItemReceive = {
+    itemId: string;
+    receivedQty: number;
+    damagedQty?: number;
+    destinationBinId?: (string | null);
+    remarks?: (string | null);
+};
+
+/**
+ * Update schema for item (camelCase for API input)
+ */
+export type STOItemUpdate = {
+    requestedQty?: (number | null);
+    shippedQty?: (number | null);
+    receivedQty?: (number | null);
+    damagedQty?: (number | null);
+    sourceBinId?: (string | null);
+    destinationBinId?: (string | null);
+    batchNo?: (string | null);
+    lotNo?: (string | null);
+    status?: (string | null);
+    remarks?: (string | null);
+};
+
+/**
+ * Request to receive STO at destination
+ */
+export type STOReceiveRequest = {
+    items: Array<STOItemReceive>;
+    vehicleNumber?: (string | null);
+    remarks?: (string | null);
+};
+
+/**
+ * Request to mark STO as shipped
+ */
+export type STOShipRequest = {
+    carrier?: (string | null);
+    trackingNumber?: (string | null);
+    vehicleNumber?: (string | null);
+    driverName?: (string | null);
+    driverPhone?: (string | null);
+    remarks?: (string | null);
+};
+
+/**
+ * Schedule status
+ */
+export type ScheduleStatus = 'SCHEDULED' | 'GENERATING' | 'GENERATED' | 'SKIPPED' | 'FAILED';
+
+/**
+ * Schedule status
+ */
+export const ScheduleStatus = {
+    SCHEDULED: 'SCHEDULED',
+    GENERATING: 'GENERATING',
+    GENERATED: 'GENERATED',
+    SKIPPED: 'SKIPPED',
+    FAILED: 'FAILED'
+} as const;
 
 /**
  * Scheduled Report creation schema
@@ -5294,6 +7268,65 @@ export type ServicePincodeUpdate = {
     reverseAvailable?: (boolean | null);
     estimatedDays?: (number | null);
 };
+
+/**
+ * Request for importing settlement file
+ */
+export type SettlementImportRequest = {
+    channel: string;
+    fileUrl: string;
+    periodFrom: string;
+    periodTo: string;
+};
+
+/**
+ * Payment settlement status
+ */
+export type SettlementStatus = 'PENDING' | 'PROCESSING' | 'MATCHED' | 'PARTIALLY_MATCHED' | 'UNMATCHED' | 'DISPUTED' | 'COMPLETED';
+
+/**
+ * Payment settlement status
+ */
+export const SettlementStatus = {
+    PENDING: 'PENDING',
+    PROCESSING: 'PROCESSING',
+    MATCHED: 'MATCHED',
+    PARTIALLY_MATCHED: 'PARTIALLY_MATCHED',
+    UNMATCHED: 'UNMATCHED',
+    DISPUTED: 'DISPUTED',
+    COMPLETED: 'COMPLETED'
+} as const;
+
+/**
+ * Shift status
+ */
+export type ShiftStatus = 'SCHEDULED' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
+
+/**
+ * Shift status
+ */
+export const ShiftStatus = {
+    SCHEDULED: 'SCHEDULED',
+    ACTIVE: 'ACTIVE',
+    COMPLETED: 'COMPLETED',
+    CANCELLED: 'CANCELLED'
+} as const;
+
+/**
+ * Shift types
+ */
+export type ShiftType = 'MORNING' | 'AFTERNOON' | 'NIGHT' | 'ROTATING' | 'FLEXIBLE';
+
+/**
+ * Shift types
+ */
+export const ShiftType = {
+    MORNING: 'MORNING',
+    AFTERNOON: 'AFTERNOON',
+    NIGHT: 'NIGHT',
+    ROTATING: 'ROTATING',
+    FLEXIBLE: 'FLEXIBLE'
+} as const;
 
 /**
  * Brief shipment info for lists
@@ -5573,6 +7606,181 @@ export type ShippingRuleUpdate = {
 };
 
 /**
+ * Skill proficiency levels
+ */
+export type SkillLevel = 'TRAINEE' | 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'EXPERT';
+
+/**
+ * Skill proficiency levels
+ */
+export const SkillLevel = {
+    TRAINEE: 'TRAINEE',
+    BEGINNER: 'BEGINNER',
+    INTERMEDIATE: 'INTERMEDIATE',
+    ADVANCED: 'ADVANCED',
+    EXPERT: 'EXPERT'
+} as const;
+
+/**
+ * Response schema for velocity
+ */
+export type SkuVelocityResponse = {
+    companyId: string;
+    skuId: string;
+    locationId: string;
+    analysisDate: string;
+    periodDays?: number;
+    totalPicks?: number;
+    totalUnits?: number;
+    avgDailyPicks?: string;
+    avgDailyUnits?: string;
+    pickFrequency?: string;
+    velocityClass?: VelocityClass;
+    demandVariability?: string;
+    avgOrderQuantity?: string;
+    peakDayPicks?: number;
+    lastPickDate?: (string | null);
+    daysSinceLastPick?: (number | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Response schema for recommendation
+ */
+export type SlottingRecommendationResponse = {
+    companyId: string;
+    locationId: string;
+    skuId: string;
+    recommendationType: RecommendationType;
+    status?: RecommendationStatus;
+    currentBinId?: (string | null);
+    suggestedBinId?: (string | null);
+    currentZone?: (string | null);
+    suggestedZone?: (string | null);
+    reason: string;
+    expectedBenefit?: (string | null);
+    priorityScore?: string;
+    estimatedPickReduction?: (string | null);
+    estimatedTravelReduction?: (string | null);
+    ruleId?: (string | null);
+    generatedAt?: string;
+    expiresAt?: (string | null);
+    approvedById?: (string | null);
+    approvedAt?: (string | null);
+    completedAt?: (string | null);
+    notes?: (string | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Schema for rule creation
+ */
+export type SlottingRuleCreate = {
+    locationId: string;
+    ruleName: string;
+    ruleDescription?: (string | null);
+    priority?: number;
+    velocityClasses?: Array<(string)>;
+    targetZones?: Array<(string)>;
+    binLevelMin?: (number | null);
+    binLevelMax?: (number | null);
+    minAccessibilityScore?: (number | null);
+    maxDistanceFromDock?: (number | null);
+    categoryFilters?: ({
+    [key: string]: unknown;
+} | null);
+    attributeFilters?: ({
+    [key: string]: unknown;
+} | null);
+    effectiveFrom?: (string | null);
+    effectiveTo?: (string | null);
+};
+
+/**
+ * Response schema for rule
+ */
+export type SlottingRuleResponse = {
+    companyId: string;
+    locationId: string;
+    ruleName: string;
+    ruleDescription?: (string | null);
+    priority?: number;
+    isActive?: boolean;
+    velocityClasses?: Array<(string)>;
+    targetZones?: Array<(string)>;
+    binLevelMin?: (number | null);
+    binLevelMax?: (number | null);
+    minAccessibilityScore?: (number | null);
+    maxDistanceFromDock?: (number | null);
+    categoryFilters?: ({
+    [key: string]: unknown;
+} | null);
+    attributeFilters?: ({
+    [key: string]: unknown;
+} | null);
+    effectiveFrom?: (string | null);
+    effectiveTo?: (string | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Schema for staging area creation
+ */
+export type StagingAreaCreate = {
+    locationId: string;
+    areaCode: string;
+    areaName: string;
+    areaType?: string;
+    capacity?: number;
+    dockDoor?: (string | null);
+    notes?: (string | null);
+};
+
+/**
+ * Response schema for staging area
+ */
+export type StagingAreaResponse = {
+    companyId: string;
+    locationId: string;
+    areaCode: string;
+    areaName: string;
+    areaType?: string;
+    status?: StagingAreaStatus;
+    capacity?: number;
+    currentCount?: number;
+    dockDoor?: (string | null);
+    assignedTransporterId?: (string | null);
+    assignedRoute?: (string | null);
+    reservedUntil?: (string | null);
+    isActive?: boolean;
+    notes?: (string | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Staging area status
+ */
+export type StagingAreaStatus = 'AVAILABLE' | 'RESERVED' | 'IN_USE' | 'MAINTENANCE';
+
+/**
+ * Staging area status
+ */
+export const StagingAreaStatus = {
+    AVAILABLE: 'AVAILABLE',
+    RESERVED: 'RESERVED',
+    IN_USE: 'IN_USE',
+    MAINTENANCE: 'MAINTENANCE'
+} as const;
+
+/**
  * Stock Adjustment creation schema
  */
 export type StockAdjustmentCreate = {
@@ -5633,6 +7841,319 @@ export type StockAdjustmentResponse = {
 };
 
 /**
+ * Create schema (camelCase for API input)
+ */
+export type StockTransferOrderCreate = {
+    sourceLocationId: string;
+    destinationLocationId: string;
+    requiredByDate?: (string | null);
+    priority?: string;
+    remarks?: (string | null);
+    items?: (Array<STOItemCreate> | null);
+};
+
+/**
+ * Read schema (camelCase for API output)
+ */
+export type StockTransferOrderRead = {
+    id: string;
+    companyId: string;
+    stoNo: string;
+    sourceLocationId: string;
+    destinationLocationId: string;
+    status: string;
+    requiredByDate?: (string | null);
+    shippedDate?: (string | null);
+    receivedDate?: (string | null);
+    carrier?: (string | null);
+    trackingNumber?: (string | null);
+    vehicleNumber?: (string | null);
+    driverName?: (string | null);
+    driverPhone?: (string | null);
+    priority: string;
+    remarks?: (string | null);
+    totalItems: number;
+    totalRequestedQty: number;
+    totalShippedQty: number;
+    totalReceivedQty: number;
+    pendingQty?: (number | null);
+    sourceGatePassId?: (string | null);
+    destinationGrnId?: (string | null);
+    requestedBy?: (string | null);
+    approvedBy?: (string | null);
+    approvedAt?: (string | null);
+    source: string;
+    createdAt: string;
+    updatedAt: string;
+    sourceLocationName?: (string | null);
+    destinationLocationName?: (string | null);
+    requestedByName?: (string | null);
+    approvedByName?: (string | null);
+    items?: (Array<STOItemRead> | null);
+};
+
+/**
+ * Update schema (camelCase for API input)
+ */
+export type StockTransferOrderUpdate = {
+    status?: (string | null);
+    requiredByDate?: (string | null);
+    carrier?: (string | null);
+    trackingNumber?: (string | null);
+    vehicleNumber?: (string | null);
+    driverName?: (string | null);
+    driverPhone?: (string | null);
+    priority?: (string | null);
+    remarks?: (string | null);
+};
+
+/**
+ * Schema for subscription creation
+ */
+export type SubscriptionCreate = {
+    customerId: string;
+    customerName?: (string | null);
+    customerEmail?: (string | null);
+    customerPhone?: (string | null);
+    frequency: SubscriptionFrequency;
+    customIntervalDays?: (number | null);
+    locationId: string;
+    shippingAddressId?: (string | null);
+    billingAddressId?: (string | null);
+    startDate: string;
+    endDate?: (string | null);
+    maxDeliveries?: (number | null);
+    paymentMethod?: (string | null);
+    autoRenew?: boolean;
+    reminderDays?: number;
+    notes?: (string | null);
+};
+
+/**
+ * Subscription frequency
+ */
+export type SubscriptionFrequency = 'DAILY' | 'WEEKLY' | 'BIWEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'YEARLY' | 'CUSTOM';
+
+/**
+ * Subscription frequency
+ */
+export const SubscriptionFrequency = {
+    DAILY: 'DAILY',
+    WEEKLY: 'WEEKLY',
+    BIWEEKLY: 'BIWEEKLY',
+    MONTHLY: 'MONTHLY',
+    QUARTERLY: 'QUARTERLY',
+    YEARLY: 'YEARLY',
+    CUSTOM: 'CUSTOM'
+} as const;
+
+/**
+ * Response schema for history
+ */
+export type SubscriptionHistoryResponse = {
+    companyId: string;
+    subscriptionId: string;
+    actionType: string;
+    actionDate?: string;
+    userId?: (string | null);
+    previousStatus?: (string | null);
+    newStatus?: (string | null);
+    changes?: ({
+    [key: string]: unknown;
+} | null);
+    notes?: (string | null);
+    id: string;
+    createdAt: string;
+};
+
+/**
+ * Schema for line creation
+ */
+export type SubscriptionLineCreate = {
+    skuId: string;
+    skuCode: string;
+    skuName?: (string | null);
+    quantity: (number | string);
+    unitPrice: (number | string);
+    taxRate?: (number | string);
+    discountAmount?: (number | string);
+    startDate?: (string | null);
+    endDate?: (string | null);
+    notes?: (string | null);
+};
+
+/**
+ * Response schema for line
+ */
+export type SubscriptionLineResponse = {
+    companyId: string;
+    subscriptionId: string;
+    lineNo?: number;
+    skuId: string;
+    skuCode: string;
+    skuName?: (string | null);
+    quantity: string;
+    unitPrice: string;
+    taxRate?: string;
+    taxAmount?: string;
+    discountAmount?: string;
+    lineTotal: string;
+    isActive?: boolean;
+    startDate?: (string | null);
+    endDate?: (string | null);
+    notes?: (string | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Response schema for subscription
+ */
+export type SubscriptionResponse = {
+    companyId: string;
+    subscriptionNo: string;
+    customerId: string;
+    customerName?: (string | null);
+    customerEmail?: (string | null);
+    customerPhone?: (string | null);
+    status?: SubscriptionStatus;
+    frequency: SubscriptionFrequency;
+    customIntervalDays?: (number | null);
+    locationId: string;
+    shippingAddressId?: (string | null);
+    billingAddressId?: (string | null);
+    startDate: string;
+    endDate?: (string | null);
+    nextDeliveryDate?: (string | null);
+    lastDeliveryDate?: (string | null);
+    totalDeliveries?: number;
+    completedDeliveries?: number;
+    maxDeliveries?: (number | null);
+    subtotal?: string;
+    taxAmount?: string;
+    discountAmount?: string;
+    shippingAmount?: string;
+    totalAmount?: string;
+    paymentMethod?: (string | null);
+    paymentTokenId?: (string | null);
+    autoRenew?: boolean;
+    reminderDays?: number;
+    pausedAt?: (string | null);
+    pausedUntil?: (string | null);
+    cancelledAt?: (string | null);
+    cancellationReason?: (string | null);
+    notes?: (string | null);
+    extraData?: ({
+    [key: string]: unknown;
+} | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Response schema for schedule
+ */
+export type SubscriptionScheduleResponse = {
+    companyId: string;
+    subscriptionId: string;
+    sequenceNo: number;
+    scheduledDate: string;
+    status?: ScheduleStatus;
+    orderId?: (string | null);
+    orderNo?: (string | null);
+    generatedAt?: (string | null);
+    processedAt?: (string | null);
+    errorMessage?: (string | null);
+    skipReason?: (string | null);
+    notes?: (string | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Subscription status
+ */
+export type SubscriptionStatus = 'DRAFT' | 'ACTIVE' | 'PAUSED' | 'CANCELLED' | 'EXPIRED' | 'SUSPENDED';
+
+/**
+ * Subscription status
+ */
+export const SubscriptionStatus = {
+    DRAFT: 'DRAFT',
+    ACTIVE: 'ACTIVE',
+    PAUSED: 'PAUSED',
+    CANCELLED: 'CANCELLED',
+    EXPIRED: 'EXPIRED',
+    SUSPENDED: 'SUSPENDED'
+} as const;
+
+/**
+ * Schema for subscription update
+ */
+export type SubscriptionUpdate = {
+    status?: (SubscriptionStatus | null);
+    frequency?: (SubscriptionFrequency | null);
+    customIntervalDays?: (number | null);
+    shippingAddressId?: (string | null);
+    billingAddressId?: (string | null);
+    endDate?: (string | null);
+    nextDeliveryDate?: (string | null);
+    maxDeliveries?: (number | null);
+    autoRenew?: (boolean | null);
+    reminderDays?: (number | null);
+    notes?: (string | null);
+};
+
+/**
+ * Response schema for conflict
+ */
+export type SyncConflictResponse = {
+    companyId: string;
+    syncQueueId: string;
+    entityType: SyncEntityType;
+    entityId: string;
+    clientData: {
+        [key: string]: unknown;
+    };
+    serverData: {
+        [key: string]: unknown;
+    };
+    conflictFields?: Array<(string)>;
+    resolution?: (ConflictResolution | null);
+    resolvedData?: ({
+    [key: string]: unknown;
+} | null);
+    resolvedAt?: (string | null);
+    resolvedById?: (string | null);
+    isResolved?: boolean;
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Entities that can be synced
+ */
+export type SyncEntityType = 'TASK' | 'TASK_LINE' | 'INVENTORY' | 'SCAN_LOG' | 'LOCATION_LOG' | 'CYCLE_COUNT' | 'PUTAWAY' | 'PICKING';
+
+/**
+ * Entities that can be synced
+ */
+export const SyncEntityType = {
+    TASK: 'TASK',
+    TASK_LINE: 'TASK_LINE',
+    INVENTORY: 'INVENTORY',
+    SCAN_LOG: 'SCAN_LOG',
+    LOCATION_LOG: 'LOCATION_LOG',
+    CYCLE_COUNT: 'CYCLE_COUNT',
+    PUTAWAY: 'PUTAWAY',
+    PICKING: 'PICKING'
+} as const;
+
+/**
  * Channel sync frequency
  */
 export type SyncFrequency = 'REALTIME' | 'EVERY_5_MINS' | 'EVERY_15_MINS' | 'EVERY_30_MINS' | 'HOURLY' | 'DAILY' | 'MANUAL';
@@ -5648,6 +8169,75 @@ export const SyncFrequency = {
     HOURLY: 'HOURLY',
     DAILY: 'DAILY',
     MANUAL: 'MANUAL'
+} as const;
+
+/**
+ * Task priority levels
+ */
+export type TaskPriority = 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
+
+/**
+ * Task priority levels
+ */
+export const TaskPriority = {
+    LOW: 'LOW',
+    NORMAL: 'NORMAL',
+    HIGH: 'HIGH',
+    URGENT: 'URGENT'
+} as const;
+
+/**
+ * Mobile task status
+ */
+export type TaskStatus = 'PENDING' | 'ASSIGNED' | 'IN_PROGRESS' | 'PAUSED' | 'COMPLETED' | 'CANCELLED';
+
+/**
+ * Mobile task status
+ */
+export const TaskStatus = {
+    PENDING: 'PENDING',
+    ASSIGNED: 'ASSIGNED',
+    IN_PROGRESS: 'IN_PROGRESS',
+    PAUSED: 'PAUSED',
+    COMPLETED: 'COMPLETED',
+    CANCELLED: 'CANCELLED'
+} as const;
+
+/**
+ * Mobile task types
+ */
+export type TaskType = 'RECEIVING' | 'PUTAWAY' | 'PICKING' | 'PACKING' | 'COUNTING' | 'REPLENISHMENT' | 'TRANSFER' | 'LOADING' | 'QC';
+
+/**
+ * Mobile task types
+ */
+export const TaskType = {
+    RECEIVING: 'RECEIVING',
+    PUTAWAY: 'PUTAWAY',
+    PICKING: 'PICKING',
+    PACKING: 'PACKING',
+    COUNTING: 'COUNTING',
+    REPLENISHMENT: 'REPLENISHMENT',
+    TRANSFER: 'TRANSFER',
+    LOADING: 'LOADING',
+    QC: 'QC'
+} as const;
+
+/**
+ * Time entry types
+ */
+export type TimeEntryType = 'CLOCK_IN' | 'CLOCK_OUT' | 'BREAK_START' | 'BREAK_END' | 'TASK_START' | 'TASK_END';
+
+/**
+ * Time entry types
+ */
+export const TimeEntryType = {
+    CLOCK_IN: 'CLOCK_IN',
+    CLOCK_OUT: 'CLOCK_OUT',
+    BREAK_START: 'BREAK_START',
+    BREAK_END: 'BREAK_END',
+    TASK_START: 'TASK_START',
+    TASK_END: 'TASK_END'
 } as const;
 
 /**
@@ -5764,6 +8354,55 @@ export type TransporterUpdate = {
 };
 
 /**
+ * Read schema (camelCase for API output)
+ */
+export type UploadBatchRead = {
+    id: string;
+    companyId: string;
+    batchNo: string;
+    uploadType: string;
+    fileName?: (string | null);
+    fileSize?: (number | null);
+    totalRows: number;
+    successRows: number;
+    errorRows: number;
+    status: string;
+    errorLog: Array<{
+        [key: string]: unknown;
+    }>;
+    uploadedBy?: (string | null);
+    processedAt?: (string | null);
+    createdAt: string;
+    updatedAt: string;
+    uploadedByName?: (string | null);
+};
+
+/**
+ * Schema for individual upload error (camelCase for API)
+ */
+export type UploadError = {
+    row: number;
+    field?: (string | null);
+    value?: (string | null);
+    error: string;
+};
+
+/**
+ * Result of an upload operation (camelCase for API output)
+ */
+export type UploadResult = {
+    batchId: string;
+    batchNo: string;
+    status: string;
+    totalRows: number;
+    successRows: number;
+    errorRows: number;
+    errors?: Array<UploadError>;
+    createdRecords?: number;
+    updatedRecords?: number;
+};
+
+/**
  * Brief user info for lists and references
  */
 export type UserBrief = {
@@ -5774,15 +8413,11 @@ export type UserBrief = {
     avatar?: (string | null);
 };
 
-/**
- * Schema for creating a new user
- */
 export type UserCreate = {
     email: string;
     password: string;
     name: string;
     phone?: (string | null);
-    avatar?: (string | null);
     role?: UserRole;
     companyId?: (string | null);
     locationAccess?: Array<(string)>;
@@ -5903,6 +8538,23 @@ export const VehicleType = {
     TEMPO: 'TEMPO',
     PICKUP: 'PICKUP',
     MINI_TRUCK: 'MINI_TRUCK'
+} as const;
+
+/**
+ * SKU velocity classification
+ */
+export type VelocityClass = 'A' | 'B' | 'C' | 'X' | 'Y' | 'Z';
+
+/**
+ * SKU velocity classification
+ */
+export const VelocityClass = {
+    A: 'A',
+    B: 'B',
+    C: 'C',
+    X: 'X',
+    Y: 'Y',
+    Z: 'Z'
 } as const;
 
 /**
@@ -6035,6 +8687,164 @@ export type VirtualInventoryUpdate = {
     isActive?: (boolean | null);
     remarks?: (string | null);
 };
+
+/**
+ * Schema for command creation
+ */
+export type VoiceCommandCreate = {
+    commandType: VoiceCommandType;
+    language: VoiceLanguage;
+    spokenPhrases: Array<(string)>;
+    responseTemplate: string;
+    confirmationRequired?: boolean;
+    parameters?: ({
+    [key: string]: unknown;
+} | null);
+};
+
+/**
+ * Response schema for command
+ */
+export type VoiceCommandResponse = {
+    companyId: string;
+    commandType: VoiceCommandType;
+    language: VoiceLanguage;
+    spokenPhrases?: Array<(string)>;
+    responseTemplate: string;
+    confirmationRequired?: boolean;
+    parameters?: ({
+    [key: string]: unknown;
+} | null);
+    isActive?: boolean;
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Voice command types
+ */
+export type VoiceCommandType = 'CONFIRM' | 'QUANTITY' | 'LOCATION' | 'SKU' | 'REPEAT' | 'SKIP' | 'SHORT' | 'DAMAGE' | 'HELP' | 'CANCEL' | 'NEXT' | 'PREVIOUS';
+
+/**
+ * Voice command types
+ */
+export const VoiceCommandType = {
+    CONFIRM: 'CONFIRM',
+    QUANTITY: 'QUANTITY',
+    LOCATION: 'LOCATION',
+    SKU: 'SKU',
+    REPEAT: 'REPEAT',
+    SKIP: 'SKIP',
+    SHORT: 'SHORT',
+    DAMAGE: 'DAMAGE',
+    HELP: 'HELP',
+    CANCEL: 'CANCEL',
+    NEXT: 'NEXT',
+    PREVIOUS: 'PREVIOUS'
+} as const;
+
+/**
+ * Supported voice languages
+ */
+export type VoiceLanguage = 'EN_US' | 'EN_IN' | 'HI_IN' | 'TA_IN' | 'TE_IN' | 'KN_IN' | 'MR_IN' | 'BN_IN';
+
+/**
+ * Supported voice languages
+ */
+export const VoiceLanguage = {
+    EN_US: 'EN_US',
+    EN_IN: 'EN_IN',
+    HI_IN: 'HI_IN',
+    TA_IN: 'TA_IN',
+    TE_IN: 'TE_IN',
+    KN_IN: 'KN_IN',
+    MR_IN: 'MR_IN',
+    BN_IN: 'BN_IN'
+} as const;
+
+/**
+ * Schema for profile creation
+ */
+export type VoiceProfileCreate = {
+    userId: string;
+    language?: VoiceLanguage;
+    speechRate?: number;
+    volume?: number;
+    confirmationMode?: string;
+};
+
+/**
+ * Response schema for profile
+ */
+export type VoiceProfileResponse = {
+    companyId: string;
+    userId: string;
+    language?: VoiceLanguage;
+    speechRate?: number;
+    volume?: number;
+    confirmationMode?: string;
+    repeatCount?: number;
+    timeoutSeconds?: number;
+    isTrainingComplete?: boolean;
+    trainingCompletedAt?: (string | null);
+    voiceModelData?: ({
+    [key: string]: unknown;
+} | null);
+    customVocabulary?: ({
+    [key: string]: unknown;
+} | null);
+    preferences?: ({
+    [key: string]: unknown;
+} | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Response schema for session
+ */
+export type VoiceSessionResponse = {
+    companyId: string;
+    userId: string;
+    deviceId: string;
+    locationId: string;
+    sessionToken: string;
+    status?: VoiceSessionStatus;
+    taskId?: (string | null);
+    picklistId?: (string | null);
+    language?: VoiceLanguage;
+    startedAt?: string;
+    endedAt?: (string | null);
+    totalCommands?: number;
+    successfulCommands?: number;
+    errorCommands?: number;
+    totalPicks?: number;
+    completedPicks?: number;
+    avgResponseTime?: (string | null);
+    sessionData?: ({
+    [key: string]: unknown;
+} | null);
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+/**
+ * Voice session status
+ */
+export type VoiceSessionStatus = 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'CANCELLED';
+
+/**
+ * Voice session status
+ */
+export const VoiceSessionStatus = {
+    ACTIVE: 'ACTIVE',
+    PAUSED: 'PAUSED',
+    COMPLETED: 'COMPLETED',
+    CANCELLED: 'CANCELLED'
+} as const;
 
 /**
  * Brief wave info for lists
@@ -6299,7 +9109,8 @@ export type ZoneUpdate = {
     isActive?: (boolean | null);
 };
 
-export type app__api__routes__brands__BrandCreate = {
+export type app__api__routes__brands__BrandResponse = {
+    id: string;
     code: string;
     name: string;
     logo?: (string | null);
@@ -6308,9 +9119,16 @@ export type app__api__routes__brands__BrandCreate = {
     contactEmail?: (string | null);
     contactPhone?: (string | null);
     website?: (string | null);
-    address?: ({
-    [key: string]: unknown;
-} | null);
+    isActive: boolean;
+    companyId: string;
+};
+
+export type app__api__routes__inventory__InventoryAdjustment = {
+    skuId: string;
+    binId: string;
+    quantity: number;
+    reason: string;
+    batchNo?: (string | null);
 };
 
 export type app__api__routes__locations__LocationCreate = {
@@ -6353,44 +9171,48 @@ export type app__api__routes__locations__LocationUpdate = {
     isActive?: (boolean | null);
 };
 
-export type app__api__routes__orders__OrderCreate = {
-    channel: Channel;
-    orderType?: OrderType;
-    paymentMode: PaymentMode;
-    customerName: string;
-    customerPhone: string;
-    customerEmail?: (string | null);
-    shippingAddress: {
-        [key: string]: unknown;
-    };
-    billingAddress?: ({
-    [key: string]: unknown;
-} | null);
-    items: Array<OrderItemCreate>;
-    locationId: string;
-    externalOrderNo?: (string | null);
-    remarks?: (string | null);
+export type app__api__routes__orders__OrderItemCreate = {
+    skuId: string;
+    quantity: number;
+    unitPrice: number;
+    taxAmount?: number;
+    discount?: number;
 };
 
-export type app__api__routes__orders__OrderResponse = {
+export type app__api__routes__skus__SKUCreate = {
+    code: string;
+    name: string;
+    description?: (string | null);
+    category?: (string | null);
+    subCategory?: (string | null);
+    brand?: (string | null);
+    hsn?: (string | null);
+    weight?: (number | null);
+    length?: (number | null);
+    width?: (number | null);
+    height?: (number | null);
+    mrp?: (number | null);
+    costPrice?: (number | null);
+    sellingPrice?: (number | null);
+    taxRate?: (number | null);
+    barcodes?: Array<(string)>;
+    images?: Array<(string)>;
+};
+
+export type app__api__routes__skus__SKUResponse = {
     id: string;
-    orderNo: string;
-    externalOrderNo?: (string | null);
-    channel: string;
-    orderType: string;
-    paymentMode: string;
-    status: string;
-    customerName: string;
-    customerPhone: string;
-    customerEmail?: (string | null);
-    subtotal: number;
-    taxAmount: number;
-    shippingCharges: number;
-    discount: number;
-    totalAmount: number;
-    orderDate: string;
-    locationId: string;
-    createdAt: string;
+    code: string;
+    name: string;
+    description?: (string | null);
+    category?: (string | null);
+    subCategory?: (string | null);
+    brand?: (string | null);
+    hsn?: (string | null);
+    mrp?: (number | null);
+    costPrice?: (number | null);
+    sellingPrice?: (number | null);
+    isActive: boolean;
+    companyId?: (string | null);
 };
 
 export type app__api__routes__skus__SKUUpdate = {
@@ -6402,16 +9224,6 @@ export type app__api__routes__skus__SKUUpdate = {
     costPrice?: (number | null);
     sellingPrice?: (number | null);
     isActive?: (boolean | null);
-};
-
-export type app__api__routes__users__UserCreate = {
-    email: string;
-    password: string;
-    name: string;
-    phone?: (string | null);
-    role?: UserRole;
-    companyId?: (string | null);
-    locationAccess?: Array<(string)>;
 };
 
 export type app__api__routes__users__UserResponse = {
@@ -6426,10 +9238,9 @@ export type app__api__routes__users__UserResponse = {
 };
 
 /**
- * Schema for brand API responses
+ * Schema for creating a new brand
  */
-export type app__models__brand__BrandResponse = {
-    id: string;
+export type app__models__brand__BrandCreate = {
     code: string;
     name: string;
     logo?: (string | null);
@@ -6444,10 +9255,7 @@ export type app__models__brand__BrandResponse = {
     settings?: ({
     [key: string]: unknown;
 } | null);
-    isActive: boolean;
     companyId: string;
-    createdAt: string;
-    updatedAt: string;
 };
 
 /**
@@ -6472,103 +9280,101 @@ export type app__models__brand__BrandUpdate = {
 };
 
 /**
- * Schema for inventory adjustment
+ * Schema for creating an order
  */
-export type app__models__inventory__InventoryAdjustment = {
-    skuId: string;
-    binId: string;
-    locationId: string;
-    adjustmentQty: number;
-    reason: string;
-    batchNo?: (string | null);
-    serialNumbers?: (Array<(string)> | null);
-    remarks?: (string | null);
-};
-
-/**
- * Schema for creating order item
- */
-export type app__models__order__OrderItemCreate = {
-    orderId: string;
-    skuId: string;
-    externalItemId?: (string | null);
-    quantity: number;
-    unitPrice: (number | string);
+export type app__models__order__OrderCreate = {
+    orderNo: string;
+    externalOrderNo?: (string | null);
+    channel: Channel;
+    orderType?: OrderType;
+    paymentMode: PaymentMode;
+    customerName: string;
+    customerPhone: string;
+    customerEmail?: (string | null);
+    shippingAddress: {
+        [key: string]: unknown;
+    };
+    billingAddress?: ({
+    [key: string]: unknown;
+} | null);
+    subtotal: (number | string);
     taxAmount: (number | string);
+    shippingCharges?: (number | string);
     discount?: (number | string);
-    totalPrice: (number | string);
-    serialNumbers?: Array<(string)>;
-    batchNo?: (string | null);
+    codCharges?: (number | string);
+    totalAmount: (number | string);
+    orderDate: string;
+    shipByDate?: (string | null);
+    promisedDate?: (string | null);
+    priority?: number;
+    tags?: Array<(string)>;
+    remarks?: (string | null);
+    locationId: string;
+    customerId?: (string | null);
+    paymentTermType?: (PaymentTermType | null);
+    paymentTermDays?: (number | null);
+    poNumber?: (string | null);
 };
 
 /**
- * Schema for creating a new SKU
+ * Schema for order API responses
  */
-export type app__models__sku__SKUCreate = {
-    code: string;
-    name: string;
-    description?: (string | null);
-    category?: (string | null);
-    subCategory?: (string | null);
-    brand?: (string | null);
-    hsn?: (string | null);
-    weight?: (number | string | null);
-    length?: (number | string | null);
-    width?: (number | string | null);
-    height?: (number | string | null);
-    mrp?: (number | string | null);
-    costPrice?: (number | string | null);
-    sellingPrice?: (number | string | null);
-    taxRate?: (number | string | null);
-    isSerialised?: boolean;
-    isBatchTracked?: boolean;
-    reorderLevel?: (number | null);
-    reorderQty?: (number | null);
-    barcodes?: Array<(string)>;
-    images?: Array<(string)>;
-    attributes?: ({
-    [key: string]: unknown;
-} | null);
-    valuationMethod?: (string | null);
-    companyId: string;
-};
-
-/**
- * Schema for SKU API responses
- */
-export type app__models__sku__SKUResponse = {
+export type app__models__order__OrderResponse = {
     id: string;
-    code: string;
-    name: string;
-    description?: (string | null);
-    category?: (string | null);
-    subCategory?: (string | null);
-    brand?: (string | null);
-    hsn?: (string | null);
-    weight?: (string | null);
-    length?: (string | null);
-    width?: (string | null);
-    height?: (string | null);
-    mrp?: (string | null);
-    costPrice?: (string | null);
-    sellingPrice?: (string | null);
-    taxRate?: (string | null);
-    isSerialised: boolean;
-    isBatchTracked: boolean;
-    reorderLevel?: (number | null);
-    reorderQty?: (number | null);
-    barcodes?: Array<(string)>;
-    images?: Array<(string)>;
-    attributes?: ({
+    orderNo: string;
+    externalOrderNo?: (string | null);
+    channel: Channel;
+    orderType: OrderType;
+    paymentMode: PaymentMode;
+    status: OrderStatus;
+    customerName: string;
+    customerPhone: string;
+    customerEmail?: (string | null);
+    shippingAddress: {
+        [key: string]: unknown;
+    };
+    billingAddress?: ({
     [key: string]: unknown;
 } | null);
-    isActive: boolean;
-    valuationMethod?: (string | null);
-    isVariantParent: boolean;
-    isVariant: boolean;
+    subtotal: string;
+    taxAmount: string;
+    shippingCharges: string;
+    discount: string;
+    codCharges: string;
+    totalAmount: string;
+    orderDate: string;
+    shipByDate?: (string | null);
+    promisedDate?: (string | null);
+    priority?: number;
+    tags?: Array<(string)>;
+    remarks?: (string | null);
+    locationId: string;
     companyId: string;
+    customerId?: (string | null);
+    paymentTermType?: (PaymentTermType | null);
+    paymentTermDays?: (number | null);
+    creditDueDate?: (string | null);
+    poNumber?: (string | null);
+    gstInvoiceNo?: (string | null);
+    gstInvoiceDate?: (string | null);
+    eWayBillNo?: (string | null);
+    irnNo?: (string | null);
     createdAt: string;
     updatedAt: string;
+};
+
+/**
+ * Schema for creating a new user
+ */
+export type app__models__user__UserCreate = {
+    email: string;
+    password: string;
+    name: string;
+    phone?: (string | null);
+    avatar?: (string | null);
+    role?: UserRole;
+    companyId?: (string | null);
+    locationAccess?: Array<(string)>;
 };
 
 /**
@@ -6633,7 +9439,7 @@ export type ListUsersApiV1UsersGetData = {
 export type ListUsersApiV1UsersGetResponse = (Array<UserBrief>);
 
 export type CreateUserApiV1UsersPostData = {
-    requestBody: UserCreate;
+    requestBody: app__models__user__UserCreate;
 };
 
 export type CreateUserApiV1UsersPostResponse = (app__models__user__UserResponse);
@@ -6732,10 +9538,10 @@ export type ListBrandsApiV1BrandsGetData = {
 export type ListBrandsApiV1BrandsGetResponse = (Array<BrandBrief>);
 
 export type CreateBrandApiV1BrandsPostData = {
-    requestBody: BrandCreate;
+    requestBody: app__models__brand__BrandCreate;
 };
 
-export type CreateBrandApiV1BrandsPostResponse = (app__models__brand__BrandResponse);
+export type CreateBrandApiV1BrandsPostResponse = (BrandResponse);
 
 export type CountBrandsApiV1BrandsCountGetData = {
     isActive?: (boolean | null);
@@ -6747,14 +9553,14 @@ export type GetBrandApiV1BrandsBrandIdGetData = {
     brandId: string;
 };
 
-export type GetBrandApiV1BrandsBrandIdGetResponse = (app__models__brand__BrandResponse);
+export type GetBrandApiV1BrandsBrandIdGetResponse = (BrandResponse);
 
 export type UpdateBrandApiV1BrandsBrandIdPatchData = {
     brandId: string;
     requestBody: app__models__brand__BrandUpdate;
 };
 
-export type UpdateBrandApiV1BrandsBrandIdPatchResponse = (app__models__brand__BrandResponse);
+export type UpdateBrandApiV1BrandsBrandIdPatchResponse = (BrandResponse);
 
 export type DeleteBrandApiV1BrandsBrandIdDeleteData = {
     brandId: string;
@@ -7044,10 +9850,10 @@ export type ListSkusApiV1SkusGetData = {
 export type ListSkusApiV1SkusGetResponse = (Array<SKUBrief>);
 
 export type CreateSkuApiV1SkusPostData = {
-    requestBody: app__models__sku__SKUCreate;
+    requestBody: SKUCreate;
 };
 
-export type CreateSkuApiV1SkusPostResponse = (app__models__sku__SKUResponse);
+export type CreateSkuApiV1SkusPostResponse = (SKUResponse);
 
 export type CountSkusApiV1SkusCountGetData = {
     brand?: (string | null);
@@ -7065,14 +9871,14 @@ export type GetSkuApiV1SkusSkuIdGetData = {
     skuId: string;
 };
 
-export type GetSkuApiV1SkusSkuIdGetResponse = (app__models__sku__SKUResponse);
+export type GetSkuApiV1SkusSkuIdGetResponse = (SKUResponse);
 
 export type UpdateSkuApiV1SkusSkuIdPatchData = {
     requestBody: SKUUpdate;
     skuId: string;
 };
 
-export type UpdateSkuApiV1SkusSkuIdPatchResponse = (app__models__sku__SKUResponse);
+export type UpdateSkuApiV1SkusSkuIdPatchResponse = (SKUResponse);
 
 export type DeleteSkuApiV1SkusSkuIdDeleteData = {
     skuId: string;
@@ -7084,7 +9890,7 @@ export type GetSkuByCodeApiV1SkusCodeCodeGetData = {
     code: string;
 };
 
-export type GetSkuByCodeApiV1SkusCodeCodeGetResponse = (app__models__sku__SKUResponse);
+export type GetSkuByCodeApiV1SkusCodeCodeGetResponse = (SKUResponse);
 
 export type ListInventoryApiV1InventoryGetData = {
     batchNo?: (string | null);
@@ -7136,7 +9942,7 @@ export type DeleteInventoryApiV1InventoryInventoryIdDeleteData = {
 export type DeleteInventoryApiV1InventoryInventoryIdDeleteResponse = (void);
 
 export type AdjustInventoryApiV1InventoryAdjustPostData = {
-    requestBody: app__models__inventory__InventoryAdjustment;
+    requestBody: InventoryAdjustment;
 };
 
 export type AdjustInventoryApiV1InventoryAdjustPostResponse = (InventoryResponse);
@@ -7165,10 +9971,10 @@ export type ListOrdersApiV1OrdersGetData = {
 export type ListOrdersApiV1OrdersGetResponse = (Array<OrderBrief>);
 
 export type CreateOrderApiV1OrdersPostData = {
-    requestBody: OrderCreate;
+    requestBody: app__models__order__OrderCreate;
 };
 
-export type CreateOrderApiV1OrdersPostResponse = (OrderResponse);
+export type CreateOrderApiV1OrdersPostResponse = (app__models__order__OrderResponse);
 
 export type CountOrdersApiV1OrdersCountGetData = {
     channel?: (Channel | null);
@@ -7193,26 +9999,26 @@ export type GetOrderApiV1OrdersOrderIdGetData = {
     orderId: string;
 };
 
-export type GetOrderApiV1OrdersOrderIdGetResponse = (OrderResponse);
+export type GetOrderApiV1OrdersOrderIdGetResponse = (app__models__order__OrderResponse);
 
 export type UpdateOrderApiV1OrdersOrderIdPatchData = {
     orderId: string;
     requestBody: OrderUpdate;
 };
 
-export type UpdateOrderApiV1OrdersOrderIdPatchResponse = (OrderResponse);
+export type UpdateOrderApiV1OrdersOrderIdPatchResponse = (app__models__order__OrderResponse);
 
 export type GetOrderByNumberApiV1OrdersNumberOrderNoGetData = {
     orderNo: string;
 };
 
-export type GetOrderByNumberApiV1OrdersNumberOrderNoGetResponse = (OrderResponse);
+export type GetOrderByNumberApiV1OrdersNumberOrderNoGetResponse = (app__models__order__OrderResponse);
 
 export type CancelOrderApiV1OrdersOrderIdCancelPostData = {
     orderId: string;
 };
 
-export type CancelOrderApiV1OrdersOrderIdCancelPostResponse = (OrderResponse);
+export type CancelOrderApiV1OrdersOrderIdCancelPostResponse = (app__models__order__OrderResponse);
 
 export type ListOrderItemsApiV1OrdersOrderIdItemsGetData = {
     orderId: string;
@@ -7222,7 +10028,7 @@ export type ListOrderItemsApiV1OrdersOrderIdItemsGetResponse = (Array<OrderItemR
 
 export type CreateOrderItemApiV1OrdersOrderIdItemsPostData = {
     orderId: string;
-    requestBody: app__models__order__OrderItemCreate;
+    requestBody: OrderItemCreate;
 };
 
 export type CreateOrderItemApiV1OrdersOrderIdItemsPostResponse = (OrderItemResponse);
@@ -7782,6 +10588,34 @@ export type CancelGoodsReceiptApiV1GoodsReceiptsGrIdCancelPostData = {
 
 export type CancelGoodsReceiptApiV1GoodsReceiptsGrIdCancelPostResponse = (GoodsReceiptResponse);
 
+export type CreateGrFromExternalPoApiV1GoodsReceiptsFromExternalPoExternalPoIdPostData = {
+    driverName?: (string | null);
+    externalPoId: string;
+    gateEntryNo?: (string | null);
+    notes?: (string | null);
+    vehicleNumber?: (string | null);
+};
+
+export type CreateGrFromExternalPoApiV1GoodsReceiptsFromExternalPoExternalPoIdPostResponse = (GoodsReceiptResponse);
+
+export type CreateGrFromAsnApiV1GoodsReceiptsFromAsnAsnIdPostData = {
+    asnId: string;
+    driverName?: (string | null);
+    gateEntryNo?: (string | null);
+    notes?: (string | null);
+    vehicleNumber?: (string | null);
+};
+
+export type CreateGrFromAsnApiV1GoodsReceiptsFromAsnAsnIdPostResponse = (GoodsReceiptResponse);
+
+export type CreateGrFromReturnApiV1GoodsReceiptsFromReturnReturnIdPostData = {
+    locationId: string;
+    notes?: (string | null);
+    returnId: string;
+};
+
+export type CreateGrFromReturnApiV1GoodsReceiptsFromReturnReturnIdPostResponse = (GoodsReceiptResponse);
+
 export type ListAllocationsApiV1AllocationGetData = {
     limit?: number;
     locationId?: (string | null);
@@ -8062,6 +10896,45 @@ export type UpdateReturnItemApiV1ReturnsItemsItemIdPatchData = {
 };
 
 export type UpdateReturnItemApiV1ReturnsItemsItemIdPatchResponse = (ReturnItemResponse);
+
+export type ReceiveReturnAtWarehouseApiV1ReturnsReturnIdReceiveAtWarehousePostData = {
+    requestBody: ReturnReceiveRequest;
+    returnId: string;
+};
+
+export type ReceiveReturnAtWarehouseApiV1ReturnsReturnIdReceiveAtWarehousePostResponse = (ReturnResponse);
+
+export type CompleteReturnQcApiV1ReturnsReturnIdCompleteQcPostData = {
+    requestBody: ReturnQCRequest;
+    returnId: string;
+};
+
+export type CompleteReturnQcApiV1ReturnsReturnIdCompleteQcPostResponse = (ReturnResponse);
+
+export type RestockReturnItemsApiV1ReturnsReturnIdRestockPostData = {
+    requestBody: ReturnRestockRequest;
+    returnId: string;
+};
+
+export type RestockReturnItemsApiV1ReturnsReturnIdRestockPostResponse = (ReturnResponse);
+
+export type ListZoneRoutingApiV1ReturnsZoneRoutingGetData = {
+    locationId?: (string | null);
+};
+
+export type ListZoneRoutingApiV1ReturnsZoneRoutingGetResponse = (Array<ReturnZoneRoutingResponse>);
+
+export type CreateZoneRoutingApiV1ReturnsZoneRoutingPostData = {
+    requestBody: ReturnZoneRoutingCreate;
+};
+
+export type CreateZoneRoutingApiV1ReturnsZoneRoutingPostResponse = (ReturnZoneRoutingResponse);
+
+export type DeleteZoneRoutingApiV1ReturnsZoneRoutingRuleIdDeleteData = {
+    ruleId: string;
+};
+
+export type DeleteZoneRoutingApiV1ReturnsZoneRoutingRuleIdDeleteResponse = (void);
 
 export type ListTemplatesApiV1QcTemplatesGetData = {
     isActive?: (boolean | null);
@@ -10275,6 +13148,1394 @@ export type GetAllocationAuditApiV1AllocationConfigAuditAuditIdGetData = {
 
 export type GetAllocationAuditApiV1AllocationConfigAuditAuditIdGetResponse = (AllocationAuditResponse);
 
+export type ListExternalPosApiV1ExternalPosGetData = {
+    limit?: number;
+    locationId?: (string | null);
+    search?: (string | null);
+    skip?: number;
+    status?: (string | null);
+};
+
+export type ListExternalPosApiV1ExternalPosGetResponse = (Array<ExternalPurchaseOrderRead>);
+
+export type CreateExternalPoApiV1ExternalPosPostData = {
+    requestBody: ExternalPurchaseOrderCreate;
+};
+
+export type CreateExternalPoApiV1ExternalPosPostResponse = (ExternalPurchaseOrderRead);
+
+export type CountExternalPosApiV1ExternalPosCountGetData = {
+    locationId?: (string | null);
+    status?: (string | null);
+};
+
+export type CountExternalPosApiV1ExternalPosCountGetResponse = (unknown);
+
+export type GetExternalPoApiV1ExternalPosPoIdGetData = {
+    poId: string;
+};
+
+export type GetExternalPoApiV1ExternalPosPoIdGetResponse = (ExternalPurchaseOrderRead);
+
+export type UpdateExternalPoApiV1ExternalPosPoIdPatchData = {
+    poId: string;
+    requestBody: ExternalPurchaseOrderUpdate;
+};
+
+export type UpdateExternalPoApiV1ExternalPosPoIdPatchResponse = (ExternalPurchaseOrderRead);
+
+export type DeleteExternalPoApiV1ExternalPosPoIdDeleteData = {
+    poId: string;
+};
+
+export type DeleteExternalPoApiV1ExternalPosPoIdDeleteResponse = (void);
+
+export type AddPoItemApiV1ExternalPosPoIdItemsPostData = {
+    poId: string;
+    requestBody: ExternalPOItemCreate;
+};
+
+export type AddPoItemApiV1ExternalPosPoIdItemsPostResponse = (ExternalPOItemRead);
+
+export type UpdatePoItemApiV1ExternalPosPoIdItemsItemIdPatchData = {
+    itemId: string;
+    poId: string;
+    requestBody: ExternalPOItemUpdate;
+};
+
+export type UpdatePoItemApiV1ExternalPosPoIdItemsItemIdPatchResponse = (ExternalPOItemRead);
+
+export type DeletePoItemApiV1ExternalPosPoIdItemsItemIdDeleteData = {
+    itemId: string;
+    poId: string;
+};
+
+export type DeletePoItemApiV1ExternalPosPoIdItemsItemIdDeleteResponse = (void);
+
+export type UploadExternalPosApiV1ExternalPosUploadPostData = {
+    formData: Body_upload_external_pos_api_v1_external_pos_upload_post;
+    locationId: string;
+};
+
+export type UploadExternalPosApiV1ExternalPosUploadPostResponse = (UploadResult);
+
+export type ListAsnsApiV1AsnsGetData = {
+    externalPoId?: (string | null);
+    limit?: number;
+    locationId?: (string | null);
+    search?: (string | null);
+    skip?: number;
+    status?: (string | null);
+};
+
+export type ListAsnsApiV1AsnsGetResponse = (Array<AdvanceShippingNoticeRead>);
+
+export type CreateAsnApiV1AsnsPostData = {
+    requestBody: AdvanceShippingNoticeCreate;
+};
+
+export type CreateAsnApiV1AsnsPostResponse = (AdvanceShippingNoticeRead);
+
+export type CountAsnsApiV1AsnsCountGetData = {
+    locationId?: (string | null);
+    status?: (string | null);
+};
+
+export type CountAsnsApiV1AsnsCountGetResponse = (unknown);
+
+export type GetPendingAsnsApiV1AsnsPendingGetData = {
+    locationId?: (string | null);
+};
+
+export type GetPendingAsnsApiV1AsnsPendingGetResponse = (unknown);
+
+export type GetAsnApiV1AsnsAsnIdGetData = {
+    asnId: string;
+};
+
+export type GetAsnApiV1AsnsAsnIdGetResponse = (AdvanceShippingNoticeRead);
+
+export type UpdateAsnApiV1AsnsAsnIdPatchData = {
+    asnId: string;
+    requestBody: AdvanceShippingNoticeUpdate;
+};
+
+export type UpdateAsnApiV1AsnsAsnIdPatchResponse = (AdvanceShippingNoticeRead);
+
+export type DeleteAsnApiV1AsnsAsnIdDeleteData = {
+    asnId: string;
+};
+
+export type DeleteAsnApiV1AsnsAsnIdDeleteResponse = (void);
+
+export type MarkInTransitApiV1AsnsAsnIdMarkInTransitPostData = {
+    asnId: string;
+};
+
+export type MarkInTransitApiV1AsnsAsnIdMarkInTransitPostResponse = (AdvanceShippingNoticeRead);
+
+export type MarkArrivedApiV1AsnsAsnIdMarkArrivedPostData = {
+    asnId: string;
+};
+
+export type MarkArrivedApiV1AsnsAsnIdMarkArrivedPostResponse = (AdvanceShippingNoticeRead);
+
+export type CancelAsnApiV1AsnsAsnIdCancelPostData = {
+    asnId: string;
+};
+
+export type CancelAsnApiV1AsnsAsnIdCancelPostResponse = (AdvanceShippingNoticeRead);
+
+export type AddAsnItemApiV1AsnsAsnIdItemsPostData = {
+    asnId: string;
+    requestBody: ASNItemCreate;
+};
+
+export type AddAsnItemApiV1AsnsAsnIdItemsPostResponse = (ASNItemRead);
+
+export type UpdateAsnItemApiV1AsnsAsnIdItemsItemIdPatchData = {
+    asnId: string;
+    itemId: string;
+    requestBody: ASNItemUpdate;
+};
+
+export type UpdateAsnItemApiV1AsnsAsnIdItemsItemIdPatchResponse = (ASNItemRead);
+
+export type UploadAsnsApiV1AsnsUploadPostData = {
+    formData: Body_upload_asns_api_v1_asns_upload_post;
+    locationId: string;
+};
+
+export type UploadAsnsApiV1AsnsUploadPostResponse = (UploadResult);
+
+export type ListUploadBatchesApiV1UploadBatchesGetData = {
+    limit?: number;
+    skip?: number;
+    status?: (string | null);
+    uploadType?: (string | null);
+};
+
+export type ListUploadBatchesApiV1UploadBatchesGetResponse = (Array<UploadBatchRead>);
+
+export type CountUploadBatchesApiV1UploadBatchesCountGetData = {
+    status?: (string | null);
+    uploadType?: (string | null);
+};
+
+export type CountUploadBatchesApiV1UploadBatchesCountGetResponse = (unknown);
+
+export type GetUploadSummaryApiV1UploadBatchesSummaryGetResponse = (unknown);
+
+export type GetUploadBatchApiV1UploadBatchesBatchIdGetData = {
+    batchId: string;
+};
+
+export type GetUploadBatchApiV1UploadBatchesBatchIdGetResponse = (UploadBatchRead);
+
+export type DeleteUploadBatchApiV1UploadBatchesBatchIdDeleteData = {
+    batchId: string;
+};
+
+export type DeleteUploadBatchApiV1UploadBatchesBatchIdDeleteResponse = (void);
+
+export type GetBatchErrorsApiV1UploadBatchesBatchIdErrorsGetData = {
+    batchId: string;
+    limit?: number;
+    skip?: number;
+};
+
+export type GetBatchErrorsApiV1UploadBatchesBatchIdErrorsGetResponse = (unknown);
+
+export type UploadExternalPoApiV1UploadBatchesProcessExternalPoPostData = {
+    formData: Body_upload_external_po_api_v1_upload_batches_process_external_po_post;
+};
+
+export type UploadExternalPoApiV1UploadBatchesProcessExternalPoPostResponse = (UploadResult);
+
+export type UploadAsnApiV1UploadBatchesProcessAsnPostData = {
+    formData: Body_upload_asn_api_v1_upload_batches_process_asn_post;
+};
+
+export type UploadAsnApiV1UploadBatchesProcessAsnPostResponse = (UploadResult);
+
+export type UploadOpeningStockApiV1UploadBatchesProcessOpeningStockPostData = {
+    formData: Body_upload_opening_stock_api_v1_upload_batches_process_opening_stock_post;
+};
+
+export type UploadOpeningStockApiV1UploadBatchesProcessOpeningStockPostResponse = (UploadResult);
+
+export type UploadStockTransferApiV1UploadBatchesProcessStockTransferPostData = {
+    formData: Body_upload_stock_transfer_api_v1_upload_batches_process_stock_transfer_post;
+};
+
+export type UploadStockTransferApiV1UploadBatchesProcessStockTransferPostResponse = (UploadResult);
+
+export type DownloadExternalPoTemplateApiV1UploadBatchesTemplatesExternalPoGetResponse = (unknown);
+
+export type DownloadAsnTemplateApiV1UploadBatchesTemplatesAsnGetResponse = (unknown);
+
+export type DownloadOpeningStockTemplateApiV1UploadBatchesTemplatesOpeningStockGetResponse = (unknown);
+
+export type DownloadStoTemplateApiV1UploadBatchesTemplatesStockTransferGetResponse = (unknown);
+
+export type ListStockTransfersApiV1StockTransfersGetData = {
+    destinationLocationId?: (string | null);
+    limit?: number;
+    priority?: (string | null);
+    search?: (string | null);
+    skip?: number;
+    sourceLocationId?: (string | null);
+    status?: (string | null);
+};
+
+export type ListStockTransfersApiV1StockTransfersGetResponse = (Array<StockTransferOrderRead>);
+
+export type CreateStockTransferApiV1StockTransfersPostData = {
+    requestBody: StockTransferOrderCreate;
+};
+
+export type CreateStockTransferApiV1StockTransfersPostResponse = (StockTransferOrderRead);
+
+export type CountStockTransfersApiV1StockTransfersCountGetData = {
+    destinationLocationId?: (string | null);
+    sourceLocationId?: (string | null);
+    status?: (string | null);
+};
+
+export type CountStockTransfersApiV1StockTransfersCountGetResponse = (unknown);
+
+export type GetPendingStosApiV1StockTransfersPendingGetData = {
+    destinationLocationId?: (string | null);
+    sourceLocationId?: (string | null);
+};
+
+export type GetPendingStosApiV1StockTransfersPendingGetResponse = (unknown);
+
+export type GetIntransitStosApiV1StockTransfersInTransitGetData = {
+    destinationLocationId?: (string | null);
+};
+
+export type GetIntransitStosApiV1StockTransfersInTransitGetResponse = (unknown);
+
+export type GetStockTransferApiV1StockTransfersStoIdGetData = {
+    stoId: string;
+};
+
+export type GetStockTransferApiV1StockTransfersStoIdGetResponse = (StockTransferOrderRead);
+
+export type UpdateStockTransferApiV1StockTransfersStoIdPatchData = {
+    requestBody: StockTransferOrderUpdate;
+    stoId: string;
+};
+
+export type UpdateStockTransferApiV1StockTransfersStoIdPatchResponse = (StockTransferOrderRead);
+
+export type DeleteStockTransferApiV1StockTransfersStoIdDeleteData = {
+    stoId: string;
+};
+
+export type DeleteStockTransferApiV1StockTransfersStoIdDeleteResponse = (void);
+
+export type AddStoItemApiV1StockTransfersStoIdItemsPostData = {
+    requestBody: STOItemCreate;
+    stoId: string;
+};
+
+export type AddStoItemApiV1StockTransfersStoIdItemsPostResponse = (STOItemRead);
+
+export type UpdateStoItemApiV1StockTransfersStoIdItemsItemIdPatchData = {
+    itemId: string;
+    requestBody: STOItemUpdate;
+    stoId: string;
+};
+
+export type UpdateStoItemApiV1StockTransfersStoIdItemsItemIdPatchResponse = (STOItemRead);
+
+export type ApproveStockTransferApiV1StockTransfersStoIdApprovePostData = {
+    requestBody?: STOApproveRequest;
+    stoId: string;
+};
+
+export type ApproveStockTransferApiV1StockTransfersStoIdApprovePostResponse = (StockTransferOrderRead);
+
+export type StartPickingApiV1StockTransfersStoIdStartPickingPostData = {
+    stoId: string;
+};
+
+export type StartPickingApiV1StockTransfersStoIdStartPickingPostResponse = (StockTransferOrderRead);
+
+export type CompletePickingApiV1StockTransfersStoIdCompletePickingPostData = {
+    stoId: string;
+};
+
+export type CompletePickingApiV1StockTransfersStoIdCompletePickingPostResponse = (StockTransferOrderRead);
+
+export type ShipStockTransferApiV1StockTransfersStoIdShipPostData = {
+    requestBody: STOShipRequest;
+    stoId: string;
+};
+
+export type ShipStockTransferApiV1StockTransfersStoIdShipPostResponse = (StockTransferOrderRead);
+
+export type ReceiveStockTransferApiV1StockTransfersStoIdReceivePostData = {
+    requestBody: STOReceiveRequest;
+    stoId: string;
+};
+
+export type ReceiveStockTransferApiV1StockTransfersStoIdReceivePostResponse = (StockTransferOrderRead);
+
+export type CancelStockTransferApiV1StockTransfersStoIdCancelPostData = {
+    stoId: string;
+};
+
+export type CancelStockTransferApiV1StockTransfersStoIdCancelPostResponse = (StockTransferOrderRead);
+
+export type GetDashboardSummaryApiV1WmsDashboardSummaryGetData = {
+    days?: number;
+    locationId?: (string | null);
+};
+
+export type GetDashboardSummaryApiV1WmsDashboardSummaryGetResponse = (unknown);
+
+export type GetPendingActionsApiV1WmsDashboardPendingActionsGetData = {
+    limit?: number;
+    locationId?: (string | null);
+};
+
+export type GetPendingActionsApiV1WmsDashboardPendingActionsGetResponse = (unknown);
+
+export type GetInboundTrendApiV1WmsDashboardInboundTrendGetData = {
+    days?: number;
+    locationId?: (string | null);
+};
+
+export type GetInboundTrendApiV1WmsDashboardInboundTrendGetResponse = (unknown);
+
+export type GetInboundBySourceApiV1WmsDashboardInboundBySourceGetData = {
+    days?: number;
+    locationId?: (string | null);
+};
+
+export type GetInboundBySourceApiV1WmsDashboardInboundBySourceGetResponse = (unknown);
+
+export type GetRecentActivityApiV1WmsDashboardRecentActivityGetData = {
+    limit?: number;
+    locationId?: (string | null);
+};
+
+export type GetRecentActivityApiV1WmsDashboardRecentActivityGetResponse = (unknown);
+
+export type GetUploadSummaryApiV1WmsDashboardUploadSummaryGetData = {
+    days?: number;
+};
+
+export type GetUploadSummaryApiV1WmsDashboardUploadSummaryGetResponse = (unknown);
+
+export type GetInboundReportApiV1WmsDashboardReportInboundGetData = {
+    dateFrom?: (string | null);
+    dateTo?: (string | null);
+    inboundSource?: (string | null);
+    locationId?: (string | null);
+};
+
+export type GetInboundReportApiV1WmsDashboardReportInboundGetResponse = (unknown);
+
+export type ListShiftsApiV1LaborShiftsGetData = {
+    isActive?: (boolean | null);
+    locationId?: (string | null);
+};
+
+export type ListShiftsApiV1LaborShiftsGetResponse = (Array<LaborShiftResponse>);
+
+export type CreateShiftApiV1LaborShiftsPostData = {
+    requestBody: LaborShiftCreate;
+};
+
+export type CreateShiftApiV1LaborShiftsPostResponse = (LaborShiftResponse);
+
+export type GetShiftApiV1LaborShiftsShiftIdGetData = {
+    shiftId: string;
+};
+
+export type GetShiftApiV1LaborShiftsShiftIdGetResponse = (LaborShiftResponse);
+
+export type DeleteShiftApiV1LaborShiftsShiftIdDeleteData = {
+    shiftId: string;
+};
+
+export type DeleteShiftApiV1LaborShiftsShiftIdDeleteResponse = (void);
+
+export type ListSchedulesApiV1LaborSchedulesGetData = {
+    scheduleDate?: (string | null);
+    shiftId?: (string | null);
+    userId?: (string | null);
+};
+
+export type ListSchedulesApiV1LaborSchedulesGetResponse = (Array<LaborShiftScheduleResponse>);
+
+export type CreateScheduleApiV1LaborSchedulesPostData = {
+    requestBody: LaborShiftScheduleCreate;
+};
+
+export type CreateScheduleApiV1LaborSchedulesPostResponse = (LaborShiftScheduleResponse);
+
+export type ListAssignmentsApiV1LaborAssignmentsGetData = {
+    locationId?: (string | null);
+    status?: (AssignmentStatus | null);
+    taskType?: (string | null);
+    userId?: (string | null);
+};
+
+export type ListAssignmentsApiV1LaborAssignmentsGetResponse = (Array<LaborAssignmentResponse>);
+
+export type CreateAssignmentApiV1LaborAssignmentsPostData = {
+    requestBody: LaborAssignmentCreate;
+};
+
+export type CreateAssignmentApiV1LaborAssignmentsPostResponse = (LaborAssignmentResponse);
+
+export type StartAssignmentApiV1LaborAssignmentsAssignmentIdStartPostData = {
+    assignmentId: string;
+};
+
+export type StartAssignmentApiV1LaborAssignmentsAssignmentIdStartPostResponse = (LaborAssignmentResponse);
+
+export type CompleteAssignmentApiV1LaborAssignmentsAssignmentIdCompletePostData = {
+    actualQuantity?: (number | null);
+    assignmentId: string;
+};
+
+export type CompleteAssignmentApiV1LaborAssignmentsAssignmentIdCompletePostResponse = (LaborAssignmentResponse);
+
+export type ClockInApiV1LaborClockInPostData = {
+    requestBody: LaborTimeEntryCreate;
+};
+
+export type ClockInApiV1LaborClockInPostResponse = (LaborTimeEntryResponse);
+
+export type ClockOutApiV1LaborClockOutPostData = {
+    requestBody: LaborTimeEntryCreate;
+};
+
+export type ClockOutApiV1LaborClockOutPostResponse = (LaborTimeEntryResponse);
+
+export type ListTimeEntriesApiV1LaborTimeEntriesGetData = {
+    fromDate?: (string | null);
+    toDate?: (string | null);
+    userId?: (string | null);
+};
+
+export type ListTimeEntriesApiV1LaborTimeEntriesGetResponse = (Array<LaborTimeEntryResponse>);
+
+export type GetUserProductivityApiV1LaborProductivityUserIdGetData = {
+    fromDate?: (string | null);
+    taskType?: (string | null);
+    toDate?: (string | null);
+    userId: string;
+};
+
+export type GetUserProductivityApiV1LaborProductivityUserIdGetResponse = (Array<LaborProductivityResponse>);
+
+export type GetTeamAnalyticsApiV1LaborAnalyticsTeamGetData = {
+    fromDate?: (string | null);
+    locationId?: (string | null);
+    toDate?: (string | null);
+};
+
+export type GetTeamAnalyticsApiV1LaborAnalyticsTeamGetResponse = (unknown);
+
+export type GetLeaderboardApiV1LaborLeaderboardGetData = {
+    limit?: number;
+    locationId?: (string | null);
+    taskType?: (string | null);
+};
+
+export type GetLeaderboardApiV1LaborLeaderboardGetResponse = (unknown);
+
+export type ListStandardsApiV1LaborStandardsGetData = {
+    isActive?: boolean;
+    locationId?: (string | null);
+    taskType?: (string | null);
+};
+
+export type ListStandardsApiV1LaborStandardsGetResponse = (Array<LaborStandardResponse>);
+
+export type CreateStandardApiV1LaborStandardsPostData = {
+    requestBody: LaborStandardCreate;
+};
+
+export type CreateStandardApiV1LaborStandardsPostResponse = (LaborStandardResponse);
+
+export type ListSkillsApiV1LaborSkillsGetData = {
+    skillCategory?: (string | null);
+    userId?: (string | null);
+};
+
+export type ListSkillsApiV1LaborSkillsGetResponse = (Array<LaborSkillResponse>);
+
+export type CreateSkillApiV1LaborSkillsPostData = {
+    requestBody: LaborSkillCreate;
+};
+
+export type CreateSkillApiV1LaborSkillsPostResponse = (LaborSkillResponse);
+
+export type GetLaborDashboardApiV1LaborDashboardGetData = {
+    locationId?: (string | null);
+};
+
+export type GetLaborDashboardApiV1LaborDashboardGetResponse = (LaborDashboardSummary);
+
+export type GetVelocityAnalysisApiV1SlottingAnalysisGetData = {
+    limit?: number;
+    locationId?: (string | null);
+    velocityClass?: (VelocityClass | null);
+};
+
+export type GetVelocityAnalysisApiV1SlottingAnalysisGetResponse = (Array<SkuVelocityResponse>);
+
+export type CalculateVelocityApiV1SlottingAnalysisCalculatePostData = {
+    days?: number;
+    locationId: string;
+};
+
+export type CalculateVelocityApiV1SlottingAnalysisCalculatePostResponse = (unknown);
+
+export type ListBinCharacteristicsApiV1SlottingBinsGetData = {
+    isPickFace?: (boolean | null);
+    locationId?: (string | null);
+    zone?: (string | null);
+};
+
+export type ListBinCharacteristicsApiV1SlottingBinsGetResponse = (Array<BinCharacteristicsResponse>);
+
+export type CreateBinCharacteristicsApiV1SlottingBinsPostData = {
+    requestBody: BinCharacteristicsCreate;
+};
+
+export type CreateBinCharacteristicsApiV1SlottingBinsPostResponse = (BinCharacteristicsResponse);
+
+export type ListSlottingRulesApiV1SlottingRulesGetData = {
+    isActive?: boolean;
+    locationId?: (string | null);
+};
+
+export type ListSlottingRulesApiV1SlottingRulesGetResponse = (Array<SlottingRuleResponse>);
+
+export type CreateSlottingRuleApiV1SlottingRulesPostData = {
+    requestBody: SlottingRuleCreate;
+};
+
+export type CreateSlottingRuleApiV1SlottingRulesPostResponse = (SlottingRuleResponse);
+
+export type DeleteSlottingRuleApiV1SlottingRulesRuleIdDeleteData = {
+    ruleId: string;
+};
+
+export type DeleteSlottingRuleApiV1SlottingRulesRuleIdDeleteResponse = (void);
+
+export type ListRecommendationsApiV1SlottingRecommendationsGetData = {
+    limit?: number;
+    locationId?: (string | null);
+    status?: (RecommendationStatus | null);
+};
+
+export type ListRecommendationsApiV1SlottingRecommendationsGetResponse = (Array<SlottingRecommendationResponse>);
+
+export type GenerateRecommendationsApiV1SlottingOptimizePostData = {
+    locationId: string;
+};
+
+export type GenerateRecommendationsApiV1SlottingOptimizePostResponse = (unknown);
+
+export type ApplyRecommendationApiV1SlottingApplyRecommendationIdPostData = {
+    recommendationId: string;
+};
+
+export type ApplyRecommendationApiV1SlottingApplyRecommendationIdPostResponse = (unknown);
+
+export type RejectRecommendationApiV1SlottingRejectRecommendationIdPostData = {
+    reason?: (string | null);
+    recommendationId: string;
+};
+
+export type RejectRecommendationApiV1SlottingRejectRecommendationIdPostResponse = (unknown);
+
+export type GetSlottingMetricsApiV1SlottingMetricsGetData = {
+    locationId?: (string | null);
+};
+
+export type GetSlottingMetricsApiV1SlottingMetricsGetResponse = (unknown);
+
+export type ListProfilesApiV1VoiceProfilesGetResponse = (Array<VoiceProfileResponse>);
+
+export type CreateProfileApiV1VoiceProfilesPostData = {
+    requestBody: VoiceProfileCreate;
+};
+
+export type CreateProfileApiV1VoiceProfilesPostResponse = (VoiceProfileResponse);
+
+export type GetMyProfileApiV1VoiceProfilesMeGetResponse = (VoiceProfileResponse);
+
+export type UpdateProfileApiV1VoiceProfilesProfileIdPatchData = {
+    language?: (string | null);
+    profileId: string;
+    speechRate?: (number | null);
+    volume?: (number | null);
+};
+
+export type UpdateProfileApiV1VoiceProfilesProfileIdPatchResponse = (VoiceProfileResponse);
+
+export type ListCommandsApiV1VoiceCommandsGetData = {
+    category?: (string | null);
+    isActive?: boolean;
+};
+
+export type ListCommandsApiV1VoiceCommandsGetResponse = (Array<VoiceCommandResponse>);
+
+export type CreateCommandApiV1VoiceCommandsPostData = {
+    requestBody: VoiceCommandCreate;
+};
+
+export type CreateCommandApiV1VoiceCommandsPostResponse = (VoiceCommandResponse);
+
+export type StartVoiceSessionApiV1VoiceSessionStartPostData = {
+    deviceId?: (string | null);
+    taskType?: string;
+};
+
+export type StartVoiceSessionApiV1VoiceSessionStartPostResponse = (VoiceSessionResponse);
+
+export type EndVoiceSessionApiV1VoiceSessionEndPostResponse = (VoiceSessionResponse);
+
+export type GetCurrentSessionApiV1VoiceSessionCurrentGetResponse = (VoiceSessionResponse);
+
+export type ListSessionsApiV1VoiceSessionsGetData = {
+    limit?: number;
+    status?: (VoiceSessionStatus | null);
+    userId?: (string | null);
+};
+
+export type ListSessionsApiV1VoiceSessionsGetResponse = (Array<VoiceSessionResponse>);
+
+export type ProcessVoiceCommandApiV1VoiceCommandPostData = {
+    commandText: string;
+    sessionId?: (string | null);
+};
+
+export type ProcessVoiceCommandApiV1VoiceCommandPostResponse = (unknown);
+
+export type GetNextInstructionApiV1VoiceNextInstructionGetData = {
+    sessionId?: (string | null);
+};
+
+export type GetNextInstructionApiV1VoiceNextInstructionGetResponse = (unknown);
+
+export type ConfirmPickApiV1VoiceConfirmPostData = {
+    checkDigit: string;
+    quantity: number;
+    sessionId?: (string | null);
+};
+
+export type ConfirmPickApiV1VoiceConfirmPostResponse = (unknown);
+
+export type GetSessionStatsApiV1VoiceSessionSessionIdStatsGetData = {
+    sessionId: string;
+};
+
+export type GetSessionStatsApiV1VoiceSessionSessionIdStatsGetResponse = (unknown);
+
+export type ListRulesApiV1CrossDockRulesGetData = {
+    isActive?: boolean;
+    locationId?: (string | null);
+};
+
+export type ListRulesApiV1CrossDockRulesGetResponse = (Array<CrossDockRuleResponse>);
+
+export type CreateRuleApiV1CrossDockRulesPostData = {
+    requestBody: CrossDockRuleCreate;
+};
+
+export type CreateRuleApiV1CrossDockRulesPostResponse = (CrossDockRuleResponse);
+
+export type GetRuleApiV1CrossDockRulesRuleIdGetData = {
+    ruleId: string;
+};
+
+export type GetRuleApiV1CrossDockRulesRuleIdGetResponse = (CrossDockRuleResponse);
+
+export type UpdateRuleApiV1CrossDockRulesRuleIdPatchData = {
+    isActive?: (boolean | null);
+    priority?: (number | null);
+    ruleId: string;
+};
+
+export type UpdateRuleApiV1CrossDockRulesRuleIdPatchResponse = (CrossDockRuleResponse);
+
+export type DeleteRuleApiV1CrossDockRulesRuleIdDeleteData = {
+    ruleId: string;
+};
+
+export type DeleteRuleApiV1CrossDockRulesRuleIdDeleteResponse = (void);
+
+export type ListEligibleOrdersApiV1CrossDockEligibleGetData = {
+    limit?: number;
+    locationId?: (string | null);
+    status?: (CrossDockStatus | null);
+};
+
+export type ListEligibleOrdersApiV1CrossDockEligibleGetResponse = (Array<CrossDockOrderResponse>);
+
+export type MarkOrderEligibleApiV1CrossDockEligibleOrderIdPostData = {
+    locationId: string;
+    orderId: string;
+    priority?: number;
+};
+
+export type MarkOrderEligibleApiV1CrossDockEligibleOrderIdPostResponse = (unknown);
+
+export type ListAllocationsApiV1CrossDockAllocationsGetData = {
+    limit?: number;
+    locationId?: (string | null);
+    status?: (AllocationStatus | null);
+};
+
+export type ListAllocationsApiV1CrossDockAllocationsGetResponse = (Array<CrossDockAllocationResponse>);
+
+export type CreateAllocationApiV1CrossDockAllocatePostData = {
+    requestBody: CrossDockAllocationCreate;
+};
+
+export type CreateAllocationApiV1CrossDockAllocatePostResponse = (CrossDockAllocationResponse);
+
+export type ConfirmAllocationApiV1CrossDockAllocationsAllocationIdConfirmPostData = {
+    allocationId: string;
+};
+
+export type ConfirmAllocationApiV1CrossDockAllocationsAllocationIdConfirmPostResponse = (unknown);
+
+export type CompleteAllocationApiV1CrossDockAllocationsAllocationIdCompletePostData = {
+    actualQuantity?: (number | null);
+    allocationId: string;
+};
+
+export type CompleteAllocationApiV1CrossDockAllocationsAllocationIdCompletePostResponse = (unknown);
+
+export type CancelAllocationApiV1CrossDockAllocationsAllocationIdCancelPostData = {
+    allocationId: string;
+    reason?: (string | null);
+};
+
+export type CancelAllocationApiV1CrossDockAllocationsAllocationIdCancelPostResponse = (unknown);
+
+export type ListStagingAreasApiV1CrossDockStagingGetData = {
+    locationId?: (string | null);
+    status?: (StagingAreaStatus | null);
+};
+
+export type ListStagingAreasApiV1CrossDockStagingGetResponse = (Array<StagingAreaResponse>);
+
+export type CreateStagingAreaApiV1CrossDockStagingPostData = {
+    requestBody: StagingAreaCreate;
+};
+
+export type CreateStagingAreaApiV1CrossDockStagingPostResponse = (StagingAreaResponse);
+
+export type UpdateStagingAreaStatusApiV1CrossDockStagingAreaIdStatusPatchData = {
+    areaId: string;
+    status: StagingAreaStatus;
+};
+
+export type UpdateStagingAreaStatusApiV1CrossDockStagingAreaIdStatusPatchResponse = (unknown);
+
+export type GetCrossDockDashboardApiV1CrossDockDashboardGetData = {
+    locationId?: (string | null);
+};
+
+export type GetCrossDockDashboardApiV1CrossDockDashboardGetResponse = (unknown);
+
+export type ListPreordersApiV1PreordersGetData = {
+    channel?: (string | null);
+    customerId?: (string | null);
+    limit?: number;
+    skip?: number;
+    status?: (PreorderStatus | null);
+};
+
+export type ListPreordersApiV1PreordersGetResponse = (Array<PreorderResponse>);
+
+export type CreatePreorderApiV1PreordersPostData = {
+    requestBody: PreorderCreate;
+};
+
+export type CreatePreorderApiV1PreordersPostResponse = (PreorderResponse);
+
+export type GetPreorderApiV1PreordersPreorderIdGetData = {
+    preorderId: string;
+};
+
+export type GetPreorderApiV1PreordersPreorderIdGetResponse = (PreorderResponse);
+
+export type UpdatePreorderApiV1PreordersPreorderIdPatchData = {
+    preorderId: string;
+    requestBody: PreorderUpdate;
+};
+
+export type UpdatePreorderApiV1PreordersPreorderIdPatchResponse = (PreorderResponse);
+
+export type CancelPreorderApiV1PreordersPreorderIdDeleteData = {
+    preorderId: string;
+    reason?: (string | null);
+};
+
+export type CancelPreorderApiV1PreordersPreorderIdDeleteResponse = (void);
+
+export type ListPreorderLinesApiV1PreordersPreorderIdLinesGetData = {
+    preorderId: string;
+};
+
+export type ListPreorderLinesApiV1PreordersPreorderIdLinesGetResponse = (Array<PreorderLineResponse>);
+
+export type AddPreorderLineApiV1PreordersPreorderIdLinesPostData = {
+    preorderId: string;
+    requestBody: PreorderLineCreate;
+};
+
+export type AddPreorderLineApiV1PreordersPreorderIdLinesPostResponse = (PreorderLineResponse);
+
+export type ConvertToOrderApiV1PreordersPreorderIdConvertPostData = {
+    preorderId: string;
+};
+
+export type ConvertToOrderApiV1PreordersPreorderIdConvertPostResponse = (unknown);
+
+export type GetPreorderInventoryStatusApiV1PreordersInventoryStatusGetData = {
+    isActive?: (boolean | null);
+    locationId?: (string | null);
+    skuId?: (string | null);
+};
+
+export type GetPreorderInventoryStatusApiV1PreordersInventoryStatusGetResponse = (Array<PreorderInventoryResponse>);
+
+export type ReserveInventoryApiV1PreordersPreorderIdReserveInventoryPostData = {
+    locationId: string;
+    preorderId: string;
+};
+
+export type ReserveInventoryApiV1PreordersPreorderIdReserveInventoryPostResponse = (unknown);
+
+export type ConfirmPreorderApiV1PreordersPreorderIdConfirmPostData = {
+    preorderId: string;
+};
+
+export type ConfirmPreorderApiV1PreordersPreorderIdConfirmPostResponse = (PreorderResponse);
+
+export type GetPreorderStatsApiV1PreordersSummaryStatsGetResponse = (unknown);
+
+export type ListSubscriptionsApiV1SubscriptionsGetData = {
+    customerId?: (string | null);
+    frequency?: (SubscriptionFrequency | null);
+    limit?: number;
+    skip?: number;
+    status?: (SubscriptionStatus | null);
+};
+
+export type ListSubscriptionsApiV1SubscriptionsGetResponse = (Array<SubscriptionResponse>);
+
+export type CreateSubscriptionApiV1SubscriptionsPostData = {
+    requestBody: SubscriptionCreate;
+};
+
+export type CreateSubscriptionApiV1SubscriptionsPostResponse = (SubscriptionResponse);
+
+export type GetSubscriptionApiV1SubscriptionsSubscriptionIdGetData = {
+    subscriptionId: string;
+};
+
+export type GetSubscriptionApiV1SubscriptionsSubscriptionIdGetResponse = (SubscriptionResponse);
+
+export type UpdateSubscriptionApiV1SubscriptionsSubscriptionIdPatchData = {
+    requestBody: SubscriptionUpdate;
+    subscriptionId: string;
+};
+
+export type UpdateSubscriptionApiV1SubscriptionsSubscriptionIdPatchResponse = (SubscriptionResponse);
+
+export type CancelSubscriptionApiV1SubscriptionsSubscriptionIdDeleteData = {
+    reason?: (string | null);
+    subscriptionId: string;
+};
+
+export type CancelSubscriptionApiV1SubscriptionsSubscriptionIdDeleteResponse = (void);
+
+export type ListSubscriptionLinesApiV1SubscriptionsSubscriptionIdLinesGetData = {
+    subscriptionId: string;
+};
+
+export type ListSubscriptionLinesApiV1SubscriptionsSubscriptionIdLinesGetResponse = (Array<SubscriptionLineResponse>);
+
+export type AddSubscriptionLineApiV1SubscriptionsSubscriptionIdLinesPostData = {
+    requestBody: SubscriptionLineCreate;
+    subscriptionId: string;
+};
+
+export type AddSubscriptionLineApiV1SubscriptionsSubscriptionIdLinesPostResponse = (SubscriptionLineResponse);
+
+export type RemoveSubscriptionLineApiV1SubscriptionsSubscriptionIdLinesLineIdDeleteData = {
+    lineId: string;
+    subscriptionId: string;
+};
+
+export type RemoveSubscriptionLineApiV1SubscriptionsSubscriptionIdLinesLineIdDeleteResponse = (void);
+
+export type PauseSubscriptionApiV1SubscriptionsSubscriptionIdPausePostData = {
+    reason?: (string | null);
+    resumeDate?: (string | null);
+    subscriptionId: string;
+};
+
+export type PauseSubscriptionApiV1SubscriptionsSubscriptionIdPausePostResponse = (SubscriptionResponse);
+
+export type ResumeSubscriptionApiV1SubscriptionsSubscriptionIdResumePostData = {
+    subscriptionId: string;
+};
+
+export type ResumeSubscriptionApiV1SubscriptionsSubscriptionIdResumePostResponse = (SubscriptionResponse);
+
+export type ActivateSubscriptionApiV1SubscriptionsSubscriptionIdActivatePostData = {
+    subscriptionId: string;
+};
+
+export type ActivateSubscriptionApiV1SubscriptionsSubscriptionIdActivatePostResponse = (SubscriptionResponse);
+
+export type GenerateSubscriptionOrdersApiV1SubscriptionsGenerateOrdersPostData = {
+    targetDate?: (string | null);
+};
+
+export type GenerateSubscriptionOrdersApiV1SubscriptionsGenerateOrdersPostResponse = (unknown);
+
+export type GetUpcomingDeliveriesApiV1SubscriptionsUpcomingGetData = {
+    customerId?: (string | null);
+    days?: number;
+};
+
+export type GetUpcomingDeliveriesApiV1SubscriptionsUpcomingGetResponse = (Array<SubscriptionScheduleResponse>);
+
+export type GetSubscriptionHistoryApiV1SubscriptionsSubscriptionIdHistoryGetData = {
+    limit?: number;
+    subscriptionId: string;
+};
+
+export type GetSubscriptionHistoryApiV1SubscriptionsSubscriptionIdHistoryGetResponse = (Array<SubscriptionHistoryResponse>);
+
+export type GetSubscriptionStatsApiV1SubscriptionsSummaryStatsGetResponse = (unknown);
+
+export type RegisterDeviceApiV1MobileRegisterPostData = {
+    requestBody: MobileDeviceRegister;
+};
+
+export type RegisterDeviceApiV1MobileRegisterPostResponse = (MobileDeviceResponse);
+
+export type ListDevicesApiV1MobileDevicesGetData = {
+    locationId?: (string | null);
+    status?: (DeviceStatus | null);
+};
+
+export type ListDevicesApiV1MobileDevicesGetResponse = (Array<MobileDeviceResponse>);
+
+export type AssignDeviceToLocationApiV1MobileDevicesDeviceIdAssignPatchData = {
+    deviceId: string;
+    locationId: string;
+};
+
+export type AssignDeviceToLocationApiV1MobileDevicesDeviceIdAssignPatchResponse = (unknown);
+
+export type AuthenticateDeviceApiV1MobileAuthPostData = {
+    deviceId: string;
+};
+
+export type AuthenticateDeviceApiV1MobileAuthPostResponse = (unknown);
+
+export type ProcessBarcodeScanApiV1MobileScanPostData = {
+    barcode: string;
+    deviceId?: (string | null);
+    scanType?: string;
+};
+
+export type ProcessBarcodeScanApiV1MobileScanPostResponse = (unknown);
+
+export type ListMobileTasksApiV1MobileTasksGetData = {
+    assignedToMe?: boolean;
+    limit?: number;
+    status?: (TaskStatus | null);
+    taskType?: (string | null);
+};
+
+export type ListMobileTasksApiV1MobileTasksGetResponse = (Array<MobileTaskResponse>);
+
+export type CreateMobileTaskApiV1MobileTasksPostData = {
+    requestBody: MobileTaskCreate;
+};
+
+export type CreateMobileTaskApiV1MobileTasksPostResponse = (MobileTaskResponse);
+
+export type StartTaskApiV1MobileTasksTaskIdStartPostData = {
+    taskId: string;
+};
+
+export type StartTaskApiV1MobileTasksTaskIdStartPostResponse = (MobileTaskResponse);
+
+export type CompleteTaskApiV1MobileTasksTaskIdCompletePostData = {
+    notes?: (string | null);
+    taskId: string;
+};
+
+export type CompleteTaskApiV1MobileTasksTaskIdCompletePostResponse = (MobileTaskResponse);
+
+export type LookupInventoryApiV1MobileInventoryLookupGetData = {
+    barcode?: (string | null);
+    binId?: (string | null);
+    locationId?: (string | null);
+    skuId?: (string | null);
+};
+
+export type LookupInventoryApiV1MobileInventoryLookupGetResponse = (unknown);
+
+export type MobilePutawayApiV1MobilePutawayPostData = {
+    binId: string;
+    deviceId?: (string | null);
+    lotNo?: (string | null);
+    quantity: number;
+    skuId: string;
+};
+
+export type MobilePutawayApiV1MobilePutawayPostResponse = (unknown);
+
+export type MobilePickApiV1MobilePickPostData = {
+    binId: string;
+    deviceId?: (string | null);
+    orderId?: (string | null);
+    quantity: number;
+    skuId: string;
+};
+
+export type MobilePickApiV1MobilePickPostResponse = (unknown);
+
+export type MobileCycleCountApiV1MobileCycleCountPostData = {
+    binId: string;
+    countedQty: number;
+    deviceId?: (string | null);
+    skuId: string;
+};
+
+export type MobileCycleCountApiV1MobileCycleCountPostResponse = (unknown);
+
+export type PullSyncDataApiV1MobileSyncPullPostData = {
+    deviceId: string;
+    lastSyncAt?: (string | null);
+};
+
+export type PullSyncDataApiV1MobileSyncPullPostResponse = (unknown);
+
+export type PushSyncDataApiV1MobileSyncPushPostData = {
+    deviceId: string;
+    requestBody: Array<{
+        [key: string]: unknown;
+    }>;
+};
+
+export type PushSyncDataApiV1MobileSyncPushPostResponse = (unknown);
+
+export type GetSyncConflictsApiV1MobileSyncConflictsGetData = {
+    deviceId?: (string | null);
+    isResolved?: boolean;
+};
+
+export type GetSyncConflictsApiV1MobileSyncConflictsGetResponse = (Array<SyncConflictResponse>);
+
+export type ResolveSyncConflictApiV1MobileSyncConflictsConflictIdResolvePostData = {
+    conflictId: string;
+    resolution: string;
+};
+
+export type ResolveSyncConflictApiV1MobileSyncConflictsConflictIdResolvePostResponse = (unknown);
+
+export type ListSettlementsApiV1ReconciliationSettlementsGetData = {
+    channel?: (string | null);
+    fromDate?: (string | null);
+    limit?: number;
+    skip?: number;
+    status?: (SettlementStatus | null);
+    toDate?: (string | null);
+};
+
+export type ListSettlementsApiV1ReconciliationSettlementsGetResponse = (Array<PaymentSettlementResponse>);
+
+export type CreateSettlementApiV1ReconciliationSettlementsPostData = {
+    requestBody: PaymentSettlementCreate;
+};
+
+export type CreateSettlementApiV1ReconciliationSettlementsPostResponse = (PaymentSettlementResponse);
+
+export type GetSettlementApiV1ReconciliationSettlementsSettlementIdGetData = {
+    settlementId: string;
+};
+
+export type GetSettlementApiV1ReconciliationSettlementsSettlementIdGetResponse = (PaymentSettlementResponse);
+
+export type ImportSettlementFileApiV1ReconciliationImportPostData = {
+    requestBody: SettlementImportRequest;
+};
+
+export type ImportSettlementFileApiV1ReconciliationImportPostResponse = (unknown);
+
+export type MatchPaymentsApiV1ReconciliationMatchPostData = {
+    requestBody: MatchPaymentRequest;
+};
+
+export type MatchPaymentsApiV1ReconciliationMatchPostResponse = (MatchPaymentResponse);
+
+export type ListCodRemittancesApiV1ReconciliationCodGetData = {
+    carrier?: (string | null);
+    fromDate?: (string | null);
+    limit?: number;
+    skip?: number;
+    status?: (CODReconciliationStatus | null);
+    toDate?: (string | null);
+};
+
+export type ListCodRemittancesApiV1ReconciliationCodGetResponse = (unknown);
+
+export type GetCodSummaryApiV1ReconciliationCodSummaryGetData = {
+    fromDate?: (string | null);
+    toDate?: (string | null);
+};
+
+export type GetCodSummaryApiV1ReconciliationCodSummaryGetResponse = (unknown);
+
+export type ListChargebacksApiV1ReconciliationChargebacksGetData = {
+    channel?: (string | null);
+    limit?: number;
+    skip?: number;
+    status?: (ChargebackStatus | null);
+};
+
+export type ListChargebacksApiV1ReconciliationChargebacksGetResponse = (Array<ChargebackResponse>);
+
+export type CreateChargebackApiV1ReconciliationChargebacksPostData = {
+    requestBody: ChargebackCreate;
+};
+
+export type CreateChargebackApiV1ReconciliationChargebacksPostResponse = (ChargebackResponse);
+
+export type GetChargebackApiV1ReconciliationChargebacksChargebackIdGetData = {
+    chargebackId: string;
+};
+
+export type GetChargebackApiV1ReconciliationChargebacksChargebackIdGetResponse = (ChargebackResponse);
+
+export type UpdateChargebackApiV1ReconciliationChargebacksChargebackIdPatchData = {
+    chargebackId: string;
+    requestBody: ChargebackUpdate;
+};
+
+export type UpdateChargebackApiV1ReconciliationChargebacksChargebackIdPatchResponse = (ChargebackResponse);
+
+export type DisputeChargebackApiV1ReconciliationChargebacksChargebackIdDisputePostData = {
+    chargebackId: string;
+    evidence?: (string | null);
+};
+
+export type DisputeChargebackApiV1ReconciliationChargebacksChargebackIdDisputePostResponse = (unknown);
+
+export type ListDiscrepanciesApiV1ReconciliationDiscrepanciesGetData = {
+    channel?: (string | null);
+    isResolved?: boolean;
+    limit?: number;
+    skip?: number;
+    type?: (DiscrepancyType | null);
+};
+
+export type ListDiscrepanciesApiV1ReconciliationDiscrepanciesGetResponse = (Array<ReconciliationDiscrepancyResponse>);
+
+export type CreateDiscrepancyApiV1ReconciliationDiscrepanciesPostData = {
+    requestBody: ReconciliationDiscrepancyCreate;
+};
+
+export type CreateDiscrepancyApiV1ReconciliationDiscrepanciesPostResponse = (ReconciliationDiscrepancyResponse);
+
+export type ResolveDiscrepancyApiV1ReconciliationResolveDiscrepancyIdPostData = {
+    discrepancyId: string;
+    requestBody: ResolveDiscrepancyRequest;
+};
+
+export type ResolveDiscrepancyApiV1ReconciliationResolveDiscrepancyIdPostResponse = (unknown);
+
+export type ListEscrowHoldsApiV1ReconciliationEscrowGetData = {
+    channel?: (string | null);
+    status?: (EscrowStatus | null);
+};
+
+export type ListEscrowHoldsApiV1ReconciliationEscrowGetResponse = (Array<EscrowHoldResponse>);
+
+export type CreateEscrowHoldApiV1ReconciliationEscrowPostData = {
+    requestBody: EscrowHoldCreate;
+};
+
+export type CreateEscrowHoldApiV1ReconciliationEscrowPostResponse = (EscrowHoldResponse);
+
+export type ReleaseEscrowApiV1ReconciliationEscrowEscrowIdReleasePostData = {
+    escrowId: string;
+};
+
+export type ReleaseEscrowApiV1ReconciliationEscrowEscrowIdReleasePostResponse = (unknown);
+
+export type GetReconciliationReportApiV1ReconciliationReportsGetData = {
+    channel?: (string | null);
+    fromDate: string;
+    toDate: string;
+};
+
+export type GetReconciliationReportApiV1ReconciliationReportsGetResponse = (ReconciliationReportResponse);
+
+export type ListMarketplaceConnectionsApiV1MarketplacesGetData = {
+    marketplace?: (MarketplaceType | null);
+    status?: (ConnectionStatus | null);
+};
+
+export type ListMarketplaceConnectionsApiV1MarketplacesGetResponse = (Array<MarketplaceConnectionResponse>);
+
+export type CreateMarketplaceConnectionApiV1MarketplacesPostData = {
+    requestBody: MarketplaceConnectionCreate;
+};
+
+export type CreateMarketplaceConnectionApiV1MarketplacesPostResponse = (MarketplaceConnectionResponse);
+
+export type GetMarketplaceConnectionApiV1MarketplacesConnectionIdGetData = {
+    connectionId: string;
+};
+
+export type GetMarketplaceConnectionApiV1MarketplacesConnectionIdGetResponse = (MarketplaceConnectionResponse);
+
+export type UpdateMarketplaceConnectionApiV1MarketplacesConnectionIdPatchData = {
+    connectionId: string;
+    requestBody: MarketplaceConnectionUpdate;
+};
+
+export type UpdateMarketplaceConnectionApiV1MarketplacesConnectionIdPatchResponse = (MarketplaceConnectionResponse);
+
+export type DeleteMarketplaceConnectionApiV1MarketplacesConnectionIdDeleteData = {
+    connectionId: string;
+};
+
+export type DeleteMarketplaceConnectionApiV1MarketplacesConnectionIdDeleteResponse = (void);
+
+export type InitiateOauthConnectionApiV1MarketplacesConnectionIdConnectPostData = {
+    connectionId: string;
+    redirectUri?: (string | null);
+};
+
+export type InitiateOauthConnectionApiV1MarketplacesConnectionIdConnectPostResponse = (unknown);
+
+export type HandleOauthCallbackApiV1MarketplacesConnectionIdCallbackPostData = {
+    code: string;
+    connectionId: string;
+    state?: (string | null);
+};
+
+export type HandleOauthCallbackApiV1MarketplacesConnectionIdCallbackPostResponse = (unknown);
+
+export type SyncMarketplaceOrdersApiV1MarketplacesConnectionIdSyncOrdersPostData = {
+    connectionId: string;
+    fromDate?: (string | null);
+};
+
+export type SyncMarketplaceOrdersApiV1MarketplacesConnectionIdSyncOrdersPostResponse = (unknown);
+
+export type ListOrderSyncsApiV1MarketplacesConnectionIdOrderSyncsGetData = {
+    connectionId: string;
+    limit?: number;
+};
+
+export type ListOrderSyncsApiV1MarketplacesConnectionIdOrderSyncsGetResponse = (Array<MarketplaceOrderSyncResponse>);
+
+export type PushInventoryToMarketplaceApiV1MarketplacesConnectionIdPushInventoryPostData = {
+    connectionId: string;
+    requestBody?: (Array<(string)> | null);
+};
+
+export type PushInventoryToMarketplaceApiV1MarketplacesConnectionIdPushInventoryPostResponse = (unknown);
+
+export type ListInventorySyncsApiV1MarketplacesConnectionIdInventorySyncsGetData = {
+    connectionId: string;
+    limit?: number;
+};
+
+export type ListInventorySyncsApiV1MarketplacesConnectionIdInventorySyncsGetResponse = (Array<MarketplaceInventorySyncResponse>);
+
+export type ListMarketplaceListingsApiV1MarketplacesConnectionIdListingsGetData = {
+    connectionId: string;
+    limit?: number;
+    skip?: number;
+    status?: (ListingStatus | null);
+};
+
+export type ListMarketplaceListingsApiV1MarketplacesConnectionIdListingsGetResponse = (Array<MarketplaceListingResponse>);
+
+export type CreateListingApiV1MarketplacesConnectionIdListingsPostData = {
+    connectionId: string;
+    requestBody: MarketplaceListingCreate;
+};
+
+export type CreateListingApiV1MarketplacesConnectionIdListingsPostResponse = (MarketplaceListingResponse);
+
+export type UpdateMarketplaceListingApiV1MarketplacesConnectionIdUpdateListingListingIdPostData = {
+    connectionId: string;
+    listingId: string;
+    price?: (number | null);
+    quantity?: (number | null);
+};
+
+export type UpdateMarketplaceListingApiV1MarketplacesConnectionIdUpdateListingListingIdPostResponse = (unknown);
+
+export type PublishListingApiV1MarketplacesConnectionIdListingsListingIdPublishPostData = {
+    connectionId: string;
+    listingId: string;
+};
+
+export type PublishListingApiV1MarketplacesConnectionIdListingsListingIdPublishPostResponse = (unknown);
+
+export type ListMarketplaceReturnsApiV1MarketplacesConnectionIdReturnsGetData = {
+    connectionId: string;
+    limit?: number;
+    skip?: number;
+    status?: (MarketplaceReturnStatus | null);
+};
+
+export type ListMarketplaceReturnsApiV1MarketplacesConnectionIdReturnsGetResponse = (Array<MarketplaceReturnResponse>);
+
+export type SyncMarketplaceReturnsApiV1MarketplacesConnectionIdSyncReturnsPostData = {
+    connectionId: string;
+};
+
+export type SyncMarketplaceReturnsApiV1MarketplacesConnectionIdSyncReturnsPostResponse = (unknown);
+
+export type ListMarketplaceSettlementsApiV1MarketplacesConnectionIdSettlementsGetData = {
+    connectionId: string;
+    limit?: number;
+    skip?: number;
+};
+
+export type ListMarketplaceSettlementsApiV1MarketplacesConnectionIdSettlementsGetResponse = (Array<MarketplaceSettlementResponse>);
+
+export type ImportMarketplaceSettlementApiV1MarketplacesConnectionIdImportSettlementPostData = {
+    connectionId: string;
+    settlementId?: (string | null);
+};
+
+export type ImportMarketplaceSettlementApiV1MarketplacesConnectionIdImportSettlementPostResponse = (unknown);
+
+export type GetMarketplacesDashboardApiV1MarketplacesDashboardGetResponse = (unknown);
+
 export type LoginApiAuthLoginPostData = {
     requestBody: LoginRequest;
 };
@@ -10293,7 +14554,7 @@ export type ListUsersApiUsersGetData = {
 export type ListUsersApiUsersGetResponse = (Array<app__api__routes__users__UserResponse>);
 
 export type CreateUserApiUsersPostData = {
-    requestBody: app__api__routes__users__UserCreate;
+    requestBody: UserCreate;
 };
 
 export type CreateUserApiUsersPostResponse = (app__api__routes__users__UserResponse);
@@ -10328,13 +14589,13 @@ export type ListOrdersApiOrdersGetData = {
     toDate?: (string | null);
 };
 
-export type ListOrdersApiOrdersGetResponse = (Array<app__api__routes__orders__OrderResponse>);
+export type ListOrdersApiOrdersGetResponse = (Array<OrderResponse>);
 
 export type CreateOrderApiOrdersPostData = {
-    requestBody: app__api__routes__orders__OrderCreate;
+    requestBody: OrderCreate;
 };
 
-export type CreateOrderApiOrdersPostResponse = (app__api__routes__orders__OrderResponse);
+export type CreateOrderApiOrdersPostResponse = (OrderResponse);
 
 export type GetOrderCountsApiOrdersCountGetData = {
     locationId?: (string | null);
@@ -10346,7 +14607,7 @@ export type GetOrderApiOrdersOrderIdGetData = {
     orderId: string;
 };
 
-export type GetOrderApiOrdersOrderIdGetResponse = (app__api__routes__orders__OrderResponse);
+export type GetOrderApiOrdersOrderIdGetResponse = (OrderResponse);
 
 export type UpdateOrderStatusApiOrdersOrderIdStatusPatchData = {
     newStatus: OrderStatus;
@@ -10364,26 +14625,26 @@ export type ListSkusApiSkusGetData = {
     search?: (string | null);
 };
 
-export type ListSkusApiSkusGetResponse = (Array<SKUResponse>);
+export type ListSkusApiSkusGetResponse = (Array<app__api__routes__skus__SKUResponse>);
 
 export type CreateSkuApiSkusPostData = {
-    requestBody: SKUCreate;
+    requestBody: app__api__routes__skus__SKUCreate;
 };
 
-export type CreateSkuApiSkusPostResponse = (SKUResponse);
+export type CreateSkuApiSkusPostResponse = (app__api__routes__skus__SKUResponse);
 
 export type GetSkuApiSkusSkuIdGetData = {
     skuId: string;
 };
 
-export type GetSkuApiSkusSkuIdGetResponse = (SKUResponse);
+export type GetSkuApiSkusSkuIdGetResponse = (app__api__routes__skus__SKUResponse);
 
 export type UpdateSkuApiSkusSkuIdPatchData = {
     requestBody: app__api__routes__skus__SKUUpdate;
     skuId: string;
 };
 
-export type UpdateSkuApiSkusSkuIdPatchResponse = (SKUResponse);
+export type UpdateSkuApiSkusSkuIdPatchResponse = (app__api__routes__skus__SKUResponse);
 
 export type DeleteSkuApiSkusSkuIdDeleteData = {
     skuId: string;
@@ -10409,7 +14670,7 @@ export type GetInventorySummaryApiInventorySummaryGetData = {
 export type GetInventorySummaryApiInventorySummaryGetResponse = (unknown);
 
 export type CreateAdjustmentApiInventoryAdjustmentsPostData = {
-    requestBody: InventoryAdjustment;
+    requestBody: app__api__routes__inventory__InventoryAdjustment;
 };
 
 export type CreateAdjustmentApiInventoryAdjustmentsPostResponse = (unknown);
@@ -10455,26 +14716,26 @@ export type ListBrandsApiBrandsGetData = {
     search?: (string | null);
 };
 
-export type ListBrandsApiBrandsGetResponse = (Array<BrandResponse>);
+export type ListBrandsApiBrandsGetResponse = (Array<app__api__routes__brands__BrandResponse>);
 
 export type CreateBrandApiBrandsPostData = {
-    requestBody: app__api__routes__brands__BrandCreate;
+    requestBody: BrandCreate;
 };
 
-export type CreateBrandApiBrandsPostResponse = (BrandResponse);
+export type CreateBrandApiBrandsPostResponse = (app__api__routes__brands__BrandResponse);
 
 export type GetBrandApiBrandsBrandIdGetData = {
     brandId: string;
 };
 
-export type GetBrandApiBrandsBrandIdGetResponse = (BrandResponse);
+export type GetBrandApiBrandsBrandIdGetResponse = (app__api__routes__brands__BrandResponse);
 
 export type UpdateBrandApiBrandsBrandIdPatchData = {
     brandId: string;
     requestBody: BrandUpdate;
 };
 
-export type UpdateBrandApiBrandsBrandIdPatchResponse = (BrandResponse);
+export type UpdateBrandApiBrandsBrandIdPatchResponse = (app__api__routes__brands__BrandResponse);
 
 export type DeleteBrandApiBrandsBrandIdDeleteData = {
     brandId: string;

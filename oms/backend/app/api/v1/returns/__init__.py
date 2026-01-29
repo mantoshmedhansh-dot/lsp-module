@@ -606,7 +606,7 @@ def restock_return_items(
 # Zone Routing Configuration Endpoints
 # ============================================================================
 
-@router.get("/zone-routing", response_model=List["ReturnZoneRoutingResponse"])
+@router.get("/zone-routing", response_model=List[ReturnZoneRoutingResponse])
 def list_zone_routing(
     location_id: Optional[UUID] = None,
     company_filter: CompanyFilter = Depends(),
@@ -630,9 +630,9 @@ def list_zone_routing(
     return [ReturnZoneRoutingResponse.model_validate(r) for r in rules]
 
 
-@router.post("/zone-routing", response_model="ReturnZoneRoutingResponse", status_code=status.HTTP_201_CREATED)
+@router.post("/zone-routing", response_model=ReturnZoneRoutingResponse, status_code=status.HTTP_201_CREATED)
 def create_zone_routing(
-    data: "ReturnZoneRoutingCreate",
+    data: ReturnZoneRoutingCreate,
     company_filter: CompanyFilter = Depends(),
     session: Session = Depends(get_session),
     current_user: User = Depends(require_manager)

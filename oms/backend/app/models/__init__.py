@@ -450,6 +450,30 @@ from .finance import (
     CODTransaction,
     CODTransactionCreate,
     CODTransactionResponse,
+    # Extended Finance Models
+    SettlementStatus,
+    ChargebackStatus,
+    ChargebackReason,
+    DiscrepancyType,
+    EscrowStatus,
+    PaymentSettlement,
+    PaymentSettlementCreate,
+    PaymentSettlementResponse,
+    Chargeback,
+    ChargebackCreate,
+    ChargebackUpdate,
+    ChargebackResponse,
+    EscrowHold,
+    EscrowHoldCreate,
+    EscrowHoldResponse,
+    ReconciliationDiscrepancy,
+    ReconciliationDiscrepancyCreate,
+    ReconciliationDiscrepancyResponse,
+    SettlementImportRequest,
+    MatchPaymentRequest,
+    MatchPaymentResponse,
+    ResolveDiscrepancyRequest,
+    ReconciliationReportResponse,
 )
 
 # Logistics Extended models and schemas
@@ -514,6 +538,33 @@ from .channels import (
     OrderImportUpdate,
     OrderImportResponse,
     OrderImportSummary,
+    # Marketplace Models
+    MarketplaceType,
+    ConnectionStatus,
+    ListingStatus,
+    MarketplaceReturnStatus,
+    MarketplaceConnection,
+    MarketplaceConnectionCreate,
+    MarketplaceConnectionUpdate,
+    MarketplaceConnectionResponse,
+    MarketplaceListing,
+    MarketplaceListingCreate,
+    MarketplaceListingResponse,
+    MarketplaceOrderSync,
+    MarketplaceOrderSyncResponse,
+    MarketplaceInventorySync,
+    MarketplaceInventorySyncResponse,
+    MarketplaceReturn,
+    MarketplaceReturnResponse,
+    MarketplaceSettlement,
+    MarketplaceSettlementResponse,
+    OAuthConnectRequest,
+    OAuthConnectResponse,
+    SyncOrdersRequest,
+    SyncOrdersResponse,
+    PushInventoryRequest,
+    PushInventoryResponse,
+    UpdateListingRequest,
 )
 
 # Communication models and schemas
@@ -699,6 +750,222 @@ from .stock_transfer import (
     STOShipRequest,
     STOReceiveRequest,
     STOItemReceive,
+)
+
+# WebSocket models and schemas
+from .ws_connection import (
+    WSConnectionStatus,
+    WSEventType,
+    WSTopicType,
+    WSConnection,
+    WSConnectionResponse,
+    WSSubscription,
+    WSSubscriptionCreate,
+    WSSubscriptionResponse,
+    WSEvent,
+    WSEventCreate,
+    WSEventResponse,
+    WSMessage,
+)
+
+# Mobile Device models and schemas
+from .mobile_device import (
+    DeviceType,
+    DeviceStatus,
+    ScanType,
+    MobileDevice,
+    MobileDeviceRegister,
+    MobileDeviceUpdate,
+    MobileDeviceResponse,
+    MobileDeviceAuth,
+    MobileDeviceAuthResponse,
+    MobileConfig,
+    MobileConfigUpdate,
+    MobileConfigResponse,
+    DeviceLocationLog,
+    DeviceLocationLogResponse,
+    BarcodeScanLog,
+    BarcodeScanRequest,
+    BarcodeScanResponse,
+)
+
+# Mobile Session models and schemas
+from .mobile_session import (
+    SessionStatus,
+    TaskType,
+    TaskStatus,
+    TaskPriority,
+    MobileSession,
+    MobileSessionCreate,
+    MobileSessionUpdate,
+    MobileSessionResponse,
+    MobileTask,
+    MobileTaskCreate,
+    MobileTaskUpdate,
+    MobileTaskResponse,
+    MobileTaskLine,
+    MobileTaskLineCreate,
+    MobileTaskLineResponse,
+)
+
+# Offline Sync models and schemas
+from .offline_sync import (
+    SyncOperationType,
+    SyncStatus,
+    SyncEntityType,
+    ConflictResolution,
+    OfflineSyncQueue,
+    OfflineSyncQueueCreate,
+    OfflineSyncQueueResponse,
+    SyncCheckpoint,
+    SyncCheckpointCreate,
+    SyncCheckpointResponse,
+    SyncConflict,
+    SyncConflictResolve,
+    SyncConflictResponse,
+    SyncBatch,
+    SyncBatchResponse,
+    SyncPullRequest,
+    SyncPullResponse,
+    SyncPushRequest,
+    SyncPushResponse,
+)
+
+# Labor Management models and schemas
+from .labor_management import (
+    ShiftType,
+    ShiftStatus,
+    AssignmentStatus,
+    TimeEntryType,
+    SkillLevel,
+    IncentiveType,
+    LaborShift,
+    LaborShiftCreate,
+    LaborShiftResponse,
+    LaborShiftSchedule,
+    LaborShiftScheduleCreate,
+    LaborShiftScheduleResponse,
+    LaborAssignment,
+    LaborAssignmentCreate,
+    LaborAssignmentResponse,
+    LaborTimeEntry,
+    LaborTimeEntryCreate,
+    LaborTimeEntryResponse,
+    LaborProductivity,
+    LaborProductivityResponse,
+    LaborStandard,
+    LaborStandardCreate,
+    LaborStandardResponse,
+    LaborIncentive,
+    LaborIncentiveResponse,
+    LaborSkill,
+    LaborSkillCreate,
+    LaborSkillResponse,
+    LaborDashboardSummary,
+)
+
+# Slotting models and schemas
+from .slotting import (
+    VelocityClass,
+    RecommendationType,
+    RecommendationStatus,
+    SkuVelocity,
+    SkuVelocityResponse,
+    BinCharacteristics,
+    BinCharacteristicsCreate,
+    BinCharacteristicsResponse,
+    SlottingRule,
+    SlottingRuleCreate,
+    SlottingRuleUpdate,
+    SlottingRuleResponse,
+    SlottingRecommendation,
+    SlottingRecommendationResponse,
+    VelocityAnalysisRequest,
+    VelocityAnalysisResponse,
+    SlottingOptimizeRequest,
+    SlottingMetricsResponse,
+)
+
+# Voice Picking models and schemas
+from .voice_picking import (
+    VoiceLanguage,
+    VoiceCommandType,
+    VoiceSessionStatus,
+    VoiceProfile,
+    VoiceProfileCreate,
+    VoiceProfileUpdate,
+    VoiceProfileResponse,
+    VoiceCommand,
+    VoiceCommandCreate,
+    VoiceCommandResponse,
+    VoiceSession,
+    VoiceSessionCreate,
+    VoiceSessionResponse,
+    VoiceInteraction,
+    VoiceInteractionResponse,
+    VoiceCommandRequest,
+    VoiceCommandProcessResponse,
+    VoiceInstructionResponse,
+)
+
+# Cross-Dock models and schemas
+from .cross_dock import (
+    CrossDockRuleType,
+    CrossDockStatus,
+    StagingAreaStatus,
+    CrossDockRule,
+    CrossDockRuleCreate,
+    CrossDockRuleUpdate,
+    CrossDockRuleResponse,
+    CrossDockOrder,
+    CrossDockOrderResponse,
+    CrossDockAllocation,
+    CrossDockAllocationCreate,
+    CrossDockAllocationResponse,
+    StagingArea,
+    StagingAreaCreate,
+    StagingAreaUpdate,
+    StagingAreaResponse,
+)
+
+# Preorder models and schemas
+from .preorder import (
+    PreorderStatus,
+    Preorder,
+    PreorderCreate,
+    PreorderUpdate,
+    PreorderResponse,
+    PreorderLine,
+    PreorderLineCreate,
+    PreorderLineResponse,
+    PreorderInventory,
+    PreorderInventoryResponse,
+    PreorderConvertRequest,
+    PreorderInventoryStatusResponse,
+)
+
+# Subscription models and schemas
+from .subscription import (
+    SubscriptionStatus,
+    SubscriptionFrequency,
+    ScheduleStatus,
+    Subscription,
+    SubscriptionCreate,
+    SubscriptionUpdate,
+    SubscriptionResponse,
+    SubscriptionLine,
+    SubscriptionLineCreate,
+    SubscriptionLineResponse,
+    SubscriptionSchedule,
+    SubscriptionScheduleCreate,
+    SubscriptionScheduleResponse,
+    SubscriptionHistory,
+    SubscriptionHistoryResponse,
+    SubscriptionPauseRequest,
+    SubscriptionResumeRequest,
+    SubscriptionGenerateOrdersRequest,
+    SubscriptionGenerateOrdersResponse,
+    SubscriptionUpcomingResponse,
 )
 
 # Shipping Allocation models and schemas (Phase 1 - Logistics)
@@ -1411,4 +1678,300 @@ __all__ = [
     "STOShipRequest",
     "STOReceiveRequest",
     "STOItemReceive",
+    # ========== New Phase 1-4 Models ==========
+    # Extended Finance Enums
+    "SettlementStatus",
+    "ChargebackStatus",
+    "ChargebackReason",
+    "DiscrepancyType",
+    "EscrowStatus",
+    # PaymentSettlement
+    "PaymentSettlement",
+    "PaymentSettlementCreate",
+    "PaymentSettlementResponse",
+    # Chargeback
+    "Chargeback",
+    "ChargebackCreate",
+    "ChargebackUpdate",
+    "ChargebackResponse",
+    # EscrowHold
+    "EscrowHold",
+    "EscrowHoldCreate",
+    "EscrowHoldResponse",
+    # ReconciliationDiscrepancy
+    "ReconciliationDiscrepancy",
+    "ReconciliationDiscrepancyCreate",
+    "ReconciliationDiscrepancyResponse",
+    # Finance Request/Response
+    "SettlementImportRequest",
+    "MatchPaymentRequest",
+    "MatchPaymentResponse",
+    "ResolveDiscrepancyRequest",
+    "ReconciliationReportResponse",
+    # Marketplace Enums
+    "MarketplaceType",
+    "ConnectionStatus",
+    "ListingStatus",
+    "MarketplaceReturnStatus",
+    # MarketplaceConnection
+    "MarketplaceConnection",
+    "MarketplaceConnectionCreate",
+    "MarketplaceConnectionUpdate",
+    "MarketplaceConnectionResponse",
+    # MarketplaceListing
+    "MarketplaceListing",
+    "MarketplaceListingCreate",
+    "MarketplaceListingResponse",
+    # MarketplaceOrderSync
+    "MarketplaceOrderSync",
+    "MarketplaceOrderSyncResponse",
+    # MarketplaceInventorySync
+    "MarketplaceInventorySync",
+    "MarketplaceInventorySyncResponse",
+    # MarketplaceReturn
+    "MarketplaceReturn",
+    "MarketplaceReturnResponse",
+    # MarketplaceSettlement
+    "MarketplaceSettlement",
+    "MarketplaceSettlementResponse",
+    # Marketplace Request/Response
+    "OAuthConnectRequest",
+    "OAuthConnectResponse",
+    "SyncOrdersRequest",
+    "SyncOrdersResponse",
+    "PushInventoryRequest",
+    "PushInventoryResponse",
+    "UpdateListingRequest",
+    # WebSocket Enums
+    "WSConnectionStatus",
+    "WSEventType",
+    "WSTopicType",
+    # WSConnection
+    "WSConnection",
+    "WSConnectionResponse",
+    # WSSubscription
+    "WSSubscription",
+    "WSSubscriptionCreate",
+    "WSSubscriptionResponse",
+    # WSEvent
+    "WSEvent",
+    "WSEventCreate",
+    "WSEventResponse",
+    "WSMessage",
+    # Mobile Device Enums
+    "DeviceType",
+    "DeviceStatus",
+    "ScanType",
+    # MobileDevice
+    "MobileDevice",
+    "MobileDeviceRegister",
+    "MobileDeviceUpdate",
+    "MobileDeviceResponse",
+    "MobileDeviceAuth",
+    "MobileDeviceAuthResponse",
+    # MobileConfig
+    "MobileConfig",
+    "MobileConfigUpdate",
+    "MobileConfigResponse",
+    # DeviceLocationLog
+    "DeviceLocationLog",
+    "DeviceLocationLogResponse",
+    # BarcodeScanLog
+    "BarcodeScanLog",
+    "BarcodeScanRequest",
+    "BarcodeScanResponse",
+    # Mobile Session Enums
+    "SessionStatus",
+    "TaskType",
+    "TaskStatus",
+    "TaskPriority",
+    # MobileSession
+    "MobileSession",
+    "MobileSessionCreate",
+    "MobileSessionUpdate",
+    "MobileSessionResponse",
+    # MobileTask
+    "MobileTask",
+    "MobileTaskCreate",
+    "MobileTaskUpdate",
+    "MobileTaskResponse",
+    # MobileTaskLine
+    "MobileTaskLine",
+    "MobileTaskLineCreate",
+    "MobileTaskLineResponse",
+    # Offline Sync Enums
+    "SyncOperationType",
+    "SyncStatus",
+    "SyncEntityType",
+    "ConflictResolution",
+    # OfflineSyncQueue
+    "OfflineSyncQueue",
+    "OfflineSyncQueueCreate",
+    "OfflineSyncQueueResponse",
+    # SyncCheckpoint
+    "SyncCheckpoint",
+    "SyncCheckpointCreate",
+    "SyncCheckpointResponse",
+    # SyncConflict
+    "SyncConflict",
+    "SyncConflictResolve",
+    "SyncConflictResponse",
+    # SyncBatch
+    "SyncBatch",
+    "SyncBatchResponse",
+    # Sync Request/Response
+    "SyncPullRequest",
+    "SyncPullResponse",
+    "SyncPushRequest",
+    "SyncPushResponse",
+    # Labor Management Enums
+    "ShiftType",
+    "ShiftStatus",
+    "AssignmentStatus",
+    "TimeEntryType",
+    "SkillLevel",
+    "IncentiveType",
+    # LaborShift
+    "LaborShift",
+    "LaborShiftCreate",
+    "LaborShiftResponse",
+    # LaborShiftSchedule
+    "LaborShiftSchedule",
+    "LaborShiftScheduleCreate",
+    "LaborShiftScheduleResponse",
+    # LaborAssignment
+    "LaborAssignment",
+    "LaborAssignmentCreate",
+    "LaborAssignmentResponse",
+    # LaborTimeEntry
+    "LaborTimeEntry",
+    "LaborTimeEntryCreate",
+    "LaborTimeEntryResponse",
+    # LaborProductivity
+    "LaborProductivity",
+    "LaborProductivityResponse",
+    # LaborStandard
+    "LaborStandard",
+    "LaborStandardCreate",
+    "LaborStandardResponse",
+    # LaborIncentive
+    "LaborIncentive",
+    "LaborIncentiveResponse",
+    # LaborSkill
+    "LaborSkill",
+    "LaborSkillCreate",
+    "LaborSkillResponse",
+    "LaborDashboardSummary",
+    # Slotting Enums
+    "VelocityClass",
+    "RecommendationType",
+    "RecommendationStatus",
+    # SkuVelocity
+    "SkuVelocity",
+    "SkuVelocityResponse",
+    # BinCharacteristics
+    "BinCharacteristics",
+    "BinCharacteristicsCreate",
+    "BinCharacteristicsResponse",
+    # SlottingRule
+    "SlottingRule",
+    "SlottingRuleCreate",
+    "SlottingRuleUpdate",
+    "SlottingRuleResponse",
+    # SlottingRecommendation
+    "SlottingRecommendation",
+    "SlottingRecommendationResponse",
+    # Slotting Request/Response
+    "VelocityAnalysisRequest",
+    "VelocityAnalysisResponse",
+    "SlottingOptimizeRequest",
+    "SlottingMetricsResponse",
+    # Voice Picking Enums
+    "VoiceLanguage",
+    "VoiceCommandType",
+    "VoiceSessionStatus",
+    # VoiceProfile
+    "VoiceProfile",
+    "VoiceProfileCreate",
+    "VoiceProfileUpdate",
+    "VoiceProfileResponse",
+    # VoiceCommand
+    "VoiceCommand",
+    "VoiceCommandCreate",
+    "VoiceCommandResponse",
+    # VoiceSession
+    "VoiceSession",
+    "VoiceSessionCreate",
+    "VoiceSessionResponse",
+    # VoiceInteraction
+    "VoiceInteraction",
+    "VoiceInteractionResponse",
+    # Voice Request/Response
+    "VoiceCommandRequest",
+    "VoiceCommandProcessResponse",
+    "VoiceInstructionResponse",
+    # Cross-Dock Enums
+    "CrossDockRuleType",
+    "CrossDockStatus",
+    "StagingAreaStatus",
+    # CrossDockRule
+    "CrossDockRule",
+    "CrossDockRuleCreate",
+    "CrossDockRuleUpdate",
+    "CrossDockRuleResponse",
+    # CrossDockOrder
+    "CrossDockOrder",
+    "CrossDockOrderResponse",
+    # CrossDockAllocation
+    "CrossDockAllocation",
+    "CrossDockAllocationCreate",
+    "CrossDockAllocationResponse",
+    # StagingArea
+    "StagingArea",
+    "StagingAreaCreate",
+    "StagingAreaUpdate",
+    "StagingAreaResponse",
+    # Preorder Enums
+    "PreorderStatus",
+    # Preorder
+    "Preorder",
+    "PreorderCreate",
+    "PreorderUpdate",
+    "PreorderResponse",
+    # PreorderLine
+    "PreorderLine",
+    "PreorderLineCreate",
+    "PreorderLineResponse",
+    # PreorderInventory
+    "PreorderInventory",
+    "PreorderInventoryResponse",
+    # Preorder Request/Response
+    "PreorderConvertRequest",
+    "PreorderInventoryStatusResponse",
+    # Subscription Enums
+    "SubscriptionStatus",
+    "SubscriptionFrequency",
+    "ScheduleStatus",
+    # Subscription
+    "Subscription",
+    "SubscriptionCreate",
+    "SubscriptionUpdate",
+    "SubscriptionResponse",
+    # SubscriptionLine
+    "SubscriptionLine",
+    "SubscriptionLineCreate",
+    "SubscriptionLineResponse",
+    # SubscriptionSchedule
+    "SubscriptionSchedule",
+    "SubscriptionScheduleCreate",
+    "SubscriptionScheduleResponse",
+    # SubscriptionHistory
+    "SubscriptionHistory",
+    "SubscriptionHistoryResponse",
+    # Subscription Request/Response
+    "SubscriptionPauseRequest",
+    "SubscriptionResumeRequest",
+    "SubscriptionGenerateOrdersRequest",
+    "SubscriptionGenerateOrdersResponse",
+    "SubscriptionUpcomingResponse",
 ]

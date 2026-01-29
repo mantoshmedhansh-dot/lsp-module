@@ -83,14 +83,37 @@ def run_migration(sql_file: str):
     print(f"  Errors: {error_count}")
     print(f"{'='*60}")
 
+def show_table_columns(table_name: str):
+    """Show columns in a table"""
+    engine = create_engine(DATABASE_URL, isolation_level="AUTOCOMMIT")
+
+    with engine.connect() as conn:
+        result = conn.execute(text(f"""
+            SELECT column_name, data_type
+            FROM information_schema.columns
+            WHERE table_name = '{table_name}'
+            ORDER BY ordinal_position
+        """))
+        print(f"\nColumns in {table_name}:")
+        for row in result:
+            print(f"  {row[0]}: {row[1]}")
+
+
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: python run_migration.py <migration_file.sql>")
+        print("       python run_migration.py --show-columns <table_name>")
         sys.exit(1)
 
-    migration_file = sys.argv[1]
-    if not os.path.exists(migration_file):
-        print(f"Error: File not found: {migration_file}")
-        sys.exit(1)
+    if sys.argv[1] == "--show-columns":
+        if len(sys.argv) < 3:
+            print("Error: Table name required")
+            sys.exit(1)
+        show_table_columns(sys.argv[2])
+    else:
+        migration_file = sys.argv[1]
+        if not os.path.exists(migration_file):
+            print(f"Error: File not found: {migration_file}")
+            sys.exit(1)
 
-    run_migration(migration_file)
+        run_migration(migration_file)

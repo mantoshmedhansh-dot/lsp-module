@@ -29,16 +29,32 @@ router = APIRouter(prefix="/upload-batches", tags=["Upload Batches"])
 # ============================================================================
 
 def build_batch_response(batch: UploadBatch, session: Session) -> UploadBatchRead:
-    """Build UploadBatchRead with computed fields."""
-    response = UploadBatchRead.model_validate(batch)
-
+    """Build UploadBatchRead with computed fields (snake_case to camelCase mapping)."""
     # Get uploader name
+    uploaded_by_name = None
     if batch.uploaded_by:
         user = session.exec(select(User).where(User.id == batch.uploaded_by)).first()
         if user:
-            response.uploaded_by_name = f"{user.firstName} {user.lastName}"
+            uploaded_by_name = f"{user.firstName} {user.lastName}"
 
-    return response
+    return UploadBatchRead(
+        id=batch.id,
+        companyId=batch.company_id,
+        batchNo=batch.batch_no,
+        uploadType=batch.upload_type,
+        fileName=batch.file_name,
+        fileSize=batch.file_size,
+        totalRows=batch.total_rows,
+        successRows=batch.success_rows,
+        errorRows=batch.error_rows,
+        status=batch.status,
+        errorLog=batch.error_log or [],
+        uploadedBy=batch.uploaded_by,
+        processedAt=batch.processed_at,
+        createdAt=batch.created_at,
+        updatedAt=batch.updated_at,
+        uploadedByName=uploaded_by_name,
+    )
 
 
 # ============================================================================

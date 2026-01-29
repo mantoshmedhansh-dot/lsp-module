@@ -2,6 +2,10 @@
 Stock Transfer Order (STO) Models
 
 For inter-warehouse/location stock transfers.
+
+NAMING CONVENTION:
+- Table models use snake_case (matches database columns)
+- Read/Response schemas use camelCase (matches frontend expectations)
 """
 
 from datetime import datetime
@@ -9,6 +13,7 @@ from typing import Optional, List
 from uuid import UUID, uuid4
 
 from sqlmodel import Field, SQLModel, Relationship
+from pydantic import field_validator
 
 
 # ============================================================================
@@ -16,7 +21,7 @@ from sqlmodel import Field, SQLModel, Relationship
 # ============================================================================
 
 class StockTransferOrderBase(SQLModel):
-    """Base fields for Stock Transfer Order"""
+    """Base fields for Stock Transfer Order (snake_case for DB mapping)"""
     # Status
     status: str = Field(default="DRAFT", max_length=50)
     # DRAFT, APPROVED, PICKING, PICKED, IN_TRANSIT, RECEIVED, CANCELLED
@@ -83,54 +88,75 @@ class StockTransferOrder(StockTransferOrderBase, table=True):
 
 
 class StockTransferOrderCreate(SQLModel):
-    """Create schema"""
-    source_location_id: UUID
-    destination_location_id: UUID
-    required_by_date: Optional[datetime] = None
+    """Create schema (camelCase for API input)"""
+    sourceLocationId: UUID
+    destinationLocationId: UUID
+    requiredByDate: Optional[datetime] = None
     priority: str = "NORMAL"
     remarks: Optional[str] = None
     items: Optional[List["STOItemCreate"]] = None
 
 
 class StockTransferOrderUpdate(SQLModel):
-    """Update schema"""
+    """Update schema (camelCase for API input)"""
     status: Optional[str] = None
-    required_by_date: Optional[datetime] = None
+    requiredByDate: Optional[datetime] = None
     carrier: Optional[str] = None
-    tracking_number: Optional[str] = None
-    vehicle_number: Optional[str] = None
-    driver_name: Optional[str] = None
-    driver_phone: Optional[str] = None
+    trackingNumber: Optional[str] = None
+    vehicleNumber: Optional[str] = None
+    driverName: Optional[str] = None
+    driverPhone: Optional[str] = None
     priority: Optional[str] = None
     remarks: Optional[str] = None
 
 
-class StockTransferOrderRead(StockTransferOrderBase):
-    """Read schema"""
+class StockTransferOrderRead(SQLModel):
+    """Read schema (camelCase for API output)"""
     id: UUID
-    company_id: UUID
-    sto_no: str
-    source_location_id: UUID
-    destination_location_id: UUID
-    total_items: int
-    total_requested_qty: int
-    total_shipped_qty: int
-    total_received_qty: int
-    source_gate_pass_id: Optional[UUID] = None
-    destination_grn_id: Optional[UUID] = None
-    requested_by: Optional[UUID] = None
-    approved_by: Optional[UUID] = None
-    approved_at: Optional[datetime] = None
-    created_at: datetime
-    updated_at: datetime
+    companyId: UUID
+    stoNo: str
+    sourceLocationId: UUID
+    destinationLocationId: UUID
+    status: str
+    requiredByDate: Optional[datetime] = None
+    shippedDate: Optional[datetime] = None
+    receivedDate: Optional[datetime] = None
+    carrier: Optional[str] = None
+    trackingNumber: Optional[str] = None
+    vehicleNumber: Optional[str] = None
+    driverName: Optional[str] = None
+    driverPhone: Optional[str] = None
+    priority: str
+    remarks: Optional[str] = None
+    totalItems: int
+    totalRequestedQty: int
+    totalShippedQty: int
+    totalReceivedQty: int
+    pendingQty: Optional[int] = None
+    sourceGatePassId: Optional[UUID] = None
+    destinationGrnId: Optional[UUID] = None
+    requestedBy: Optional[UUID] = None
+    approvedBy: Optional[UUID] = None
+    approvedAt: Optional[datetime] = None
+    source: str
+    createdAt: datetime
+    updatedAt: datetime
 
     # Computed
-    source_location_name: Optional[str] = None
-    destination_location_name: Optional[str] = None
-    requested_by_name: Optional[str] = None
-    approved_by_name: Optional[str] = None
-    pending_qty: Optional[int] = None
+    sourceLocationName: Optional[str] = None
+    destinationLocationName: Optional[str] = None
+    requestedByName: Optional[str] = None
+    approvedByName: Optional[str] = None
     items: Optional[List["STOItemRead"]] = None
+
+    @field_validator("pendingQty", mode="before")
+    @classmethod
+    def calc_pending(cls, v, info):
+        if v is None and info.data:
+            requested = info.data.get("totalRequestedQty", 0)
+            received = info.data.get("totalReceivedQty", 0)
+            return requested - received
+        return v
 
 
 # ============================================================================
@@ -138,7 +164,7 @@ class StockTransferOrderRead(StockTransferOrderBase):
 # ============================================================================
 
 class STOItemBase(SQLModel):
-    """Base fields for STO Item"""
+    """Base fields for STO Item (snake_case for DB mapping)"""
     # Quantities
     requested_qty: int = Field(default=0, ge=0)
     shipped_qty: int = Field(default=0, ge=0)
@@ -184,50 +210,67 @@ class STOItem(STOItemBase, table=True):
 
 
 class STOItemCreate(SQLModel):
-    """Create schema for item"""
-    sku_id: UUID
-    requested_qty: int
-    source_bin_id: Optional[UUID] = None
-    batch_no: Optional[str] = None
-    lot_no: Optional[str] = None
+    """Create schema for item (camelCase for API input)"""
+    skuId: UUID
+    requestedQty: int
+    sourceBinId: Optional[UUID] = None
+    batchNo: Optional[str] = None
+    lotNo: Optional[str] = None
     remarks: Optional[str] = None
 
 
 class STOItemUpdate(SQLModel):
-    """Update schema for item"""
-    requested_qty: Optional[int] = None
-    shipped_qty: Optional[int] = None
-    received_qty: Optional[int] = None
-    damaged_qty: Optional[int] = None
-    source_bin_id: Optional[UUID] = None
-    destination_bin_id: Optional[UUID] = None
-    batch_no: Optional[str] = None
-    lot_no: Optional[str] = None
+    """Update schema for item (camelCase for API input)"""
+    requestedQty: Optional[int] = None
+    shippedQty: Optional[int] = None
+    receivedQty: Optional[int] = None
+    damagedQty: Optional[int] = None
+    sourceBinId: Optional[UUID] = None
+    destinationBinId: Optional[UUID] = None
+    batchNo: Optional[str] = None
+    lotNo: Optional[str] = None
     status: Optional[str] = None
     remarks: Optional[str] = None
 
 
-class STOItemRead(STOItemBase):
-    """Read schema for item"""
+class STOItemRead(SQLModel):
+    """Read schema for item (camelCase for API output)"""
     id: UUID
-    stock_transfer_order_id: UUID
-    sku_id: UUID
-    source_bin_id: Optional[UUID] = None
-    destination_bin_id: Optional[UUID] = None
-    source_inventory_id: Optional[UUID] = None
-    fifo_sequence: Optional[int] = None
-    created_at: datetime
+    stockTransferOrderId: UUID
+    skuId: UUID
+    sourceBinId: Optional[UUID] = None
+    destinationBinId: Optional[UUID] = None
+    sourceInventoryId: Optional[UUID] = None
+    fifoSequence: Optional[int] = None
+    requestedQty: int
+    shippedQty: int
+    receivedQty: int
+    damagedQty: int
+    pendingQty: Optional[int] = None
+    batchNo: Optional[str] = None
+    lotNo: Optional[str] = None
+    status: str
+    remarks: Optional[str] = None
+    createdAt: datetime
 
     # Computed
-    sku_code: Optional[str] = None
-    sku_name: Optional[str] = None
-    source_bin_code: Optional[str] = None
-    destination_bin_code: Optional[str] = None
-    pending_qty: Optional[int] = None
+    skuCode: Optional[str] = None
+    skuName: Optional[str] = None
+    sourceBinCode: Optional[str] = None
+    destinationBinCode: Optional[str] = None
+
+    @field_validator("pendingQty", mode="before")
+    @classmethod
+    def calc_pending(cls, v, info):
+        if v is None and info.data:
+            requested = info.data.get("requestedQty", 0)
+            received = info.data.get("receivedQty", 0)
+            return requested - received
+        return v
 
 
 # ============================================================================
-# WORKFLOW SCHEMAS
+# WORKFLOW SCHEMAS (camelCase for API)
 # ============================================================================
 
 class STOApproveRequest(SQLModel):
@@ -238,26 +281,26 @@ class STOApproveRequest(SQLModel):
 class STOShipRequest(SQLModel):
     """Request to mark STO as shipped"""
     carrier: Optional[str] = None
-    tracking_number: Optional[str] = None
-    vehicle_number: Optional[str] = None
-    driver_name: Optional[str] = None
-    driver_phone: Optional[str] = None
+    trackingNumber: Optional[str] = None
+    vehicleNumber: Optional[str] = None
+    driverName: Optional[str] = None
+    driverPhone: Optional[str] = None
     remarks: Optional[str] = None
 
 
 class STOReceiveRequest(SQLModel):
     """Request to receive STO at destination"""
     items: List["STOItemReceive"]
-    vehicle_number: Optional[str] = None
+    vehicleNumber: Optional[str] = None
     remarks: Optional[str] = None
 
 
 class STOItemReceive(SQLModel):
     """Item receive details"""
-    item_id: UUID
-    received_qty: int
-    damaged_qty: int = 0
-    destination_bin_id: Optional[UUID] = None
+    itemId: UUID
+    receivedQty: int
+    damagedQty: int = 0
+    destinationBinId: Optional[UUID] = None
     remarks: Optional[str] = None
 
 

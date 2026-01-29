@@ -40,38 +40,91 @@ def generate_asn_number(session: Session, company_id: UUID) -> str:
 
 
 def build_asn_response(asn: AdvanceShippingNotice, session: Session) -> AdvanceShippingNoticeRead:
-    """Build AdvanceShippingNoticeRead with computed fields."""
-    response = AdvanceShippingNoticeRead.model_validate(asn)
-
+    """Build AdvanceShippingNoticeRead with computed fields (snake_case to camelCase mapping)."""
     # Get location name
+    location_name = None
     location = session.exec(
         select(Location).where(Location.id == asn.location_id)
     ).first()
     if location:
-        response.location_name = location.name
+        location_name = location.name
 
     # Get external PO number if linked
+    external_po_number = None
     if asn.external_po_id:
         ext_po = session.exec(
             select(ExternalPurchaseOrder).where(ExternalPurchaseOrder.id == asn.external_po_id)
         ).first()
         if ext_po:
-            response.external_po_number = ext_po.external_po_number
+            external_po_number = ext_po.external_po_number
 
-    return response
+    return AdvanceShippingNoticeRead(
+        id=asn.id,
+        companyId=asn.company_id,
+        locationId=asn.location_id,
+        asnNo=asn.asn_no,
+        externalAsnNo=asn.external_asn_no,
+        externalPoId=asn.external_po_id,
+        purchaseOrderId=asn.purchase_order_id,
+        vendorId=asn.vendor_id,
+        externalVendorCode=asn.external_vendor_code,
+        externalVendorName=asn.external_vendor_name,
+        status=asn.status,
+        carrier=asn.carrier,
+        trackingNumber=asn.tracking_number,
+        vehicleNumber=asn.vehicle_number,
+        driverName=asn.driver_name,
+        driverPhone=asn.driver_phone,
+        shipDate=asn.ship_date,
+        expectedArrival=asn.expected_arrival,
+        actualArrival=asn.actual_arrival,
+        totalCartons=asn.total_cartons,
+        totalPallets=asn.total_pallets,
+        totalWeightKg=asn.total_weight_kg,
+        source=asn.source,
+        remarks=asn.remarks,
+        totalLines=asn.total_lines,
+        totalExpectedQty=asn.total_expected_qty,
+        totalReceivedQty=asn.total_received_qty,
+        goodsReceiptId=asn.goods_receipt_id,
+        createdAt=asn.created_at,
+        updatedAt=asn.updated_at,
+        locationName=location_name,
+        externalPoNumber=external_po_number,
+    )
 
 
 def build_item_response(item: ASNItem, session: Session) -> ASNItemRead:
-    """Build ASNItemRead with SKU info."""
-    response = ASNItemRead.model_validate(item)
+    """Build ASNItemRead with SKU info (snake_case to camelCase mapping)."""
+    sku_code = None
+    sku_name = None
 
     if item.sku_id:
         sku = session.exec(select(SKU).where(SKU.id == item.sku_id)).first()
         if sku:
-            response.sku_code = sku.code
-            response.sku_name = sku.name
+            sku_code = sku.code
+            sku_name = sku.name
 
-    return response
+    return ASNItemRead(
+        id=item.id,
+        asnId=item.asn_id,
+        skuId=item.sku_id,
+        externalSkuCode=item.external_sku_code,
+        externalSkuName=item.external_sku_name,
+        externalPoItemId=item.external_po_item_id,
+        expectedQty=item.expected_qty,
+        receivedQty=item.received_qty,
+        batchNo=item.batch_no,
+        lotNo=item.lot_no,
+        expiryDate=item.expiry_date,
+        mfgDate=item.mfg_date,
+        cartons=item.cartons,
+        unitsPerCarton=item.units_per_carton,
+        status=item.status,
+        createdAt=item.created_at,
+        skuCode=sku_code,
+        skuName=sku_name,
+    )
 
 
 # ============================================================================
@@ -175,7 +228,7 @@ def create_asn(
     """Create a new advance shipping notice."""
     # Validate location
     location = session.exec(
-        select(Location).where(Location.id == asn_data.location_id)
+        select(Location).where(Location.id == asn_data.locationId)
     ).first()
     if not location:
         raise HTTPException(
@@ -184,9 +237,9 @@ def create_asn(
         )
 
     # Validate external PO if provided
-    if asn_data.external_po_id:
+    if asn_data.externalPoId:
         ext_po = session.exec(
-            select(ExternalPurchaseOrder).where(ExternalPurchaseOrder.id == asn_data.external_po_id)
+            select(ExternalPurchaseOrder).where(ExternalPurchaseOrder.id == asn_data.externalPoId)
         ).first()
         if not ext_po:
             raise HTTPException(
@@ -197,26 +250,54 @@ def create_asn(
     # Generate ASN number
     asn_no = generate_asn_number(session, company_filter.company_id)
 
-    # Create ASN
-    asn_dict = asn_data.model_dump(exclude={"items"})
-    asn_dict["company_id"] = company_filter.company_id
-    asn_dict["asn_no"] = asn_no
-
-    asn = AdvanceShippingNotice(**asn_dict)
+    # Create ASN (map camelCase input to snake_case DB model)
+    asn = AdvanceShippingNotice(
+        company_id=company_filter.company_id,
+        location_id=asn_data.locationId,
+        asn_no=asn_no,
+        external_asn_no=asn_data.externalAsnNo,
+        external_po_id=asn_data.externalPoId,
+        purchase_order_id=asn_data.purchaseOrderId,
+        vendor_id=asn_data.vendorId,
+        external_vendor_code=asn_data.externalVendorCode,
+        external_vendor_name=asn_data.externalVendorName,
+        carrier=asn_data.carrier,
+        tracking_number=asn_data.trackingNumber,
+        vehicle_number=asn_data.vehicleNumber,
+        driver_name=asn_data.driverName,
+        driver_phone=asn_data.driverPhone,
+        ship_date=asn_data.shipDate,
+        expected_arrival=asn_data.expectedArrival,
+        total_cartons=asn_data.totalCartons,
+        total_pallets=asn_data.totalPallets,
+        total_weight_kg=asn_data.totalWeightKg,
+        remarks=asn_data.remarks,
+    )
     session.add(asn)
     session.flush()  # Get ID
 
     # Create items if provided
     if asn_data.items:
         for item_data in asn_data.items:
-            item_dict = item_data.model_dump()
-            item_dict["asn_id"] = asn.id
-            item = ASNItem(**item_dict)
+            item = ASNItem(
+                asn_id=asn.id,
+                sku_id=item_data.skuId,
+                external_sku_code=item_data.externalSkuCode,
+                external_sku_name=item_data.externalSkuName,
+                external_po_item_id=item_data.externalPoItemId,
+                expected_qty=item_data.expectedQty,
+                batch_no=item_data.batchNo,
+                lot_no=item_data.lotNo,
+                expiry_date=item_data.expiryDate,
+                mfg_date=item_data.mfgDate,
+                cartons=item_data.cartons,
+                units_per_carton=item_data.unitsPerCarton,
+            )
             session.add(item)
 
         # Update totals
         asn.total_lines = len(asn_data.items)
-        asn.total_expected_qty = sum(item.expected_qty for item in asn_data.items)
+        asn.total_expected_qty = sum(item.expectedQty for item in asn_data.items)
         session.add(asn)
 
     session.commit()
@@ -285,10 +366,32 @@ def update_asn(
             detail="Cannot update a RECEIVED ASN"
         )
 
-    # Update fields
+    # Update fields (map camelCase input to snake_case DB fields)
+    camel_to_snake = {
+        "externalAsnNo": "external_asn_no",
+        "externalPoId": "external_po_id",
+        "purchaseOrderId": "purchase_order_id",
+        "vendorId": "vendor_id",
+        "externalVendorCode": "external_vendor_code",
+        "externalVendorName": "external_vendor_name",
+        "status": "status",
+        "carrier": "carrier",
+        "trackingNumber": "tracking_number",
+        "vehicleNumber": "vehicle_number",
+        "driverName": "driver_name",
+        "driverPhone": "driver_phone",
+        "shipDate": "ship_date",
+        "expectedArrival": "expected_arrival",
+        "actualArrival": "actual_arrival",
+        "totalCartons": "total_cartons",
+        "totalPallets": "total_pallets",
+        "totalWeightKg": "total_weight_kg",
+        "remarks": "remarks",
+    }
     update_dict = asn_data.model_dump(exclude_unset=True)
-    for field, value in update_dict.items():
-        setattr(asn, field, value)
+    for camel_field, value in update_dict.items():
+        snake_field = camel_to_snake.get(camel_field, camel_field)
+        setattr(asn, snake_field, value)
 
     asn.updated_at = datetime.utcnow()
     session.add(asn)
@@ -480,11 +583,21 @@ def add_asn_item(
             detail=f"Cannot add items to a {asn.status} ASN"
         )
 
-    # Create item
-    item_dict = item_data.model_dump()
-    item_dict["asn_id"] = asn_id
-
-    item = ASNItem(**item_dict)
+    # Create item (map camelCase input to snake_case DB model)
+    item = ASNItem(
+        asn_id=asn_id,
+        sku_id=item_data.skuId,
+        external_sku_code=item_data.externalSkuCode,
+        external_sku_name=item_data.externalSkuName,
+        external_po_item_id=item_data.externalPoItemId,
+        expected_qty=item_data.expectedQty,
+        batch_no=item_data.batchNo,
+        lot_no=item_data.lotNo,
+        expiry_date=item_data.expiryDate,
+        mfg_date=item_data.mfgDate,
+        cartons=item_data.cartons,
+        units_per_carton=item_data.unitsPerCarton,
+    )
     session.add(item)
 
     # Update ASN totals
@@ -534,16 +647,31 @@ def update_asn_item(
     # Track quantity change for totals
     old_qty = item.expected_qty
 
-    # Update fields
+    # Update fields (map camelCase input to snake_case DB fields)
+    camel_to_snake = {
+        "skuId": "sku_id",
+        "externalSkuCode": "external_sku_code",
+        "externalSkuName": "external_sku_name",
+        "expectedQty": "expected_qty",
+        "receivedQty": "received_qty",
+        "batchNo": "batch_no",
+        "lotNo": "lot_no",
+        "expiryDate": "expiry_date",
+        "mfgDate": "mfg_date",
+        "cartons": "cartons",
+        "unitsPerCarton": "units_per_carton",
+        "status": "status",
+    }
     update_dict = item_data.model_dump(exclude_unset=True)
-    for field, value in update_dict.items():
-        setattr(item, field, value)
+    for camel_field, value in update_dict.items():
+        snake_field = camel_to_snake.get(camel_field, camel_field)
+        setattr(item, snake_field, value)
 
     item.updated_at = datetime.utcnow()
     session.add(item)
 
     # Update ASN totals if quantity changed
-    if "expected_qty" in update_dict:
+    if "expectedQty" in update_dict:
         asn.total_expected_qty += (item.expected_qty - old_qty)
         asn.updated_at = datetime.utcnow()
         session.add(asn)

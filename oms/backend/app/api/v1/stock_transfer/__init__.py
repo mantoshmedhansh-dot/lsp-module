@@ -42,64 +42,116 @@ def generate_sto_number(session: Session, company_id: UUID) -> str:
 
 
 def build_sto_response(sto: StockTransferOrder, session: Session) -> StockTransferOrderRead:
-    """Build StockTransferOrderRead with computed fields."""
-    response = StockTransferOrderRead.model_validate(sto)
-
+    """Build StockTransferOrderRead with computed fields (snake_case to camelCase mapping)."""
     # Get location names
+    source_location_name = None
     source_loc = session.exec(
         select(Location).where(Location.id == sto.source_location_id)
     ).first()
     if source_loc:
-        response.source_location_name = source_loc.name
+        source_location_name = source_loc.name
 
+    destination_location_name = None
     dest_loc = session.exec(
         select(Location).where(Location.id == sto.destination_location_id)
     ).first()
     if dest_loc:
-        response.destination_location_name = dest_loc.name
+        destination_location_name = dest_loc.name
 
     # Get user names
+    requested_by_name = None
     if sto.requested_by:
         user = session.exec(select(User).where(User.id == sto.requested_by)).first()
         if user:
-            response.requested_by_name = f"{user.firstName} {user.lastName}"
+            requested_by_name = f"{user.firstName} {user.lastName}"
 
+    approved_by_name = None
     if sto.approved_by:
         user = session.exec(select(User).where(User.id == sto.approved_by)).first()
         if user:
-            response.approved_by_name = f"{user.firstName} {user.lastName}"
+            approved_by_name = f"{user.firstName} {user.lastName}"
 
-    # Calculate pending qty
-    response.pending_qty = sto.total_requested_qty - sto.total_shipped_qty
-
-    return response
+    return StockTransferOrderRead(
+        id=sto.id,
+        companyId=sto.company_id,
+        stoNo=sto.sto_no,
+        sourceLocationId=sto.source_location_id,
+        destinationLocationId=sto.destination_location_id,
+        status=sto.status,
+        requiredByDate=sto.required_by_date,
+        shippedDate=sto.shipped_date,
+        receivedDate=sto.received_date,
+        carrier=sto.carrier,
+        trackingNumber=sto.tracking_number,
+        vehicleNumber=sto.vehicle_number,
+        driverName=sto.driver_name,
+        driverPhone=sto.driver_phone,
+        priority=sto.priority,
+        remarks=sto.remarks,
+        totalItems=sto.total_items,
+        totalRequestedQty=sto.total_requested_qty,
+        totalShippedQty=sto.total_shipped_qty,
+        totalReceivedQty=sto.total_received_qty,
+        sourceGatePassId=sto.source_gate_pass_id,
+        destinationGrnId=sto.destination_grn_id,
+        requestedBy=sto.requested_by,
+        approvedBy=sto.approved_by,
+        approvedAt=sto.approved_at,
+        source=sto.source,
+        createdAt=sto.created_at,
+        updatedAt=sto.updated_at,
+        sourceLocationName=source_location_name,
+        destinationLocationName=destination_location_name,
+        requestedByName=requested_by_name,
+        approvedByName=approved_by_name,
+    )
 
 
 def build_item_response(item: STOItem, session: Session) -> STOItemRead:
-    """Build STOItemRead with SKU and bin info."""
-    response = STOItemRead.model_validate(item)
-
+    """Build STOItemRead with SKU and bin info (snake_case to camelCase mapping)."""
     # Get SKU info
+    sku_code = None
+    sku_name = None
     sku = session.exec(select(SKU).where(SKU.id == item.sku_id)).first()
     if sku:
-        response.sku_code = sku.code
-        response.sku_name = sku.name
+        sku_code = sku.code
+        sku_name = sku.name
 
     # Get bin codes
+    source_bin_code = None
     if item.source_bin_id:
         bin = session.exec(select(Bin).where(Bin.id == item.source_bin_id)).first()
         if bin:
-            response.source_bin_code = bin.code
+            source_bin_code = bin.code
 
+    destination_bin_code = None
     if item.destination_bin_id:
         bin = session.exec(select(Bin).where(Bin.id == item.destination_bin_id)).first()
         if bin:
-            response.destination_bin_code = bin.code
+            destination_bin_code = bin.code
 
-    # Calculate pending qty
-    response.pending_qty = item.requested_qty - item.shipped_qty
-
-    return response
+    return STOItemRead(
+        id=item.id,
+        stockTransferOrderId=item.stock_transfer_order_id,
+        skuId=item.sku_id,
+        sourceBinId=item.source_bin_id,
+        destinationBinId=item.destination_bin_id,
+        sourceInventoryId=item.source_inventory_id,
+        fifoSequence=item.fifo_sequence,
+        requestedQty=item.requested_qty,
+        shippedQty=item.shipped_qty,
+        receivedQty=item.received_qty,
+        damagedQty=item.damaged_qty,
+        batchNo=item.batch_no,
+        lotNo=item.lot_no,
+        status=item.status,
+        remarks=item.remarks,
+        createdAt=item.created_at,
+        skuCode=sku_code,
+        skuName=sku_name,
+        sourceBinCode=source_bin_code,
+        destinationBinCode=destination_bin_code,
+    )
 
 
 # ============================================================================
@@ -235,7 +287,7 @@ def create_stock_transfer(
     """Create a new stock transfer order."""
     # Validate source location
     source_loc = session.exec(
-        select(Location).where(Location.id == sto_data.source_location_id)
+        select(Location).where(Location.id == sto_data.sourceLocationId)
     ).first()
     if not source_loc:
         raise HTTPException(
@@ -245,7 +297,7 @@ def create_stock_transfer(
 
     # Validate destination location
     dest_loc = session.exec(
-        select(Location).where(Location.id == sto_data.destination_location_id)
+        select(Location).where(Location.id == sto_data.destinationLocationId)
     ).first()
     if not dest_loc:
         raise HTTPException(
@@ -254,7 +306,7 @@ def create_stock_transfer(
         )
 
     # Source and destination must be different
-    if sto_data.source_location_id == sto_data.destination_location_id:
+    if sto_data.sourceLocationId == sto_data.destinationLocationId:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Source and destination locations must be different"
@@ -263,13 +315,17 @@ def create_stock_transfer(
     # Generate STO number
     sto_no = generate_sto_number(session, company_filter.company_id)
 
-    # Create STO
-    sto_dict = sto_data.model_dump(exclude={"items"})
-    sto_dict["company_id"] = company_filter.company_id
-    sto_dict["sto_no"] = sto_no
-    sto_dict["requested_by"] = current_user.id
-
-    sto = StockTransferOrder(**sto_dict)
+    # Create STO (map camelCase input to snake_case DB model)
+    sto = StockTransferOrder(
+        company_id=company_filter.company_id,
+        sto_no=sto_no,
+        source_location_id=sto_data.sourceLocationId,
+        destination_location_id=sto_data.destinationLocationId,
+        required_by_date=sto_data.requiredByDate,
+        priority=sto_data.priority,
+        remarks=sto_data.remarks,
+        requested_by=current_user.id,
+    )
     session.add(sto)
     session.flush()
 
@@ -277,21 +333,27 @@ def create_stock_transfer(
     if sto_data.items:
         for item_data in sto_data.items:
             # Validate SKU exists
-            sku = session.exec(select(SKU).where(SKU.id == item_data.sku_id)).first()
+            sku = session.exec(select(SKU).where(SKU.id == item_data.skuId)).first()
             if not sku:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"SKU {item_data.sku_id} not found"
+                    detail=f"SKU {item_data.skuId} not found"
                 )
 
-            item_dict = item_data.model_dump()
-            item_dict["stock_transfer_order_id"] = sto.id
-            item = STOItem(**item_dict)
+            item = STOItem(
+                stock_transfer_order_id=sto.id,
+                sku_id=item_data.skuId,
+                requested_qty=item_data.requestedQty,
+                source_bin_id=item_data.sourceBinId,
+                batch_no=item_data.batchNo,
+                lot_no=item_data.lotNo,
+                remarks=item_data.remarks,
+            )
             session.add(item)
 
         # Update totals
         sto.total_items = len(sto_data.items)
-        sto.total_requested_qty = sum(item.requested_qty for item in sto_data.items)
+        sto.total_requested_qty = sum(item.requestedQty for item in sto_data.items)
         session.add(sto)
 
     session.commit()
@@ -360,10 +422,22 @@ def update_stock_transfer(
             detail=f"Cannot update a {sto.status} stock transfer"
         )
 
-    # Update fields
+    # Update fields (map camelCase input to snake_case DB fields)
+    camel_to_snake = {
+        "status": "status",
+        "requiredByDate": "required_by_date",
+        "carrier": "carrier",
+        "trackingNumber": "tracking_number",
+        "vehicleNumber": "vehicle_number",
+        "driverName": "driver_name",
+        "driverPhone": "driver_phone",
+        "priority": "priority",
+        "remarks": "remarks",
+    }
     update_dict = sto_data.model_dump(exclude_unset=True)
-    for field, value in update_dict.items():
-        setattr(sto, field, value)
+    for camel_field, value in update_dict.items():
+        snake_field = camel_to_snake.get(camel_field, camel_field)
+        setattr(sto, snake_field, value)
 
     sto.updated_at = datetime.utcnow()
     session.add(sto)
@@ -440,18 +514,23 @@ def add_sto_item(
         )
 
     # Validate SKU
-    sku = session.exec(select(SKU).where(SKU.id == item_data.sku_id)).first()
+    sku = session.exec(select(SKU).where(SKU.id == item_data.skuId)).first()
     if not sku:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="SKU not found"
         )
 
-    # Create item
-    item_dict = item_data.model_dump()
-    item_dict["stock_transfer_order_id"] = sto_id
-
-    item = STOItem(**item_dict)
+    # Create item (map camelCase input to snake_case DB model)
+    item = STOItem(
+        stock_transfer_order_id=sto_id,
+        sku_id=item_data.skuId,
+        requested_qty=item_data.requestedQty,
+        source_bin_id=item_data.sourceBinId,
+        batch_no=item_data.batchNo,
+        lot_no=item_data.lotNo,
+        remarks=item_data.remarks,
+    )
     session.add(item)
 
     # Update STO totals
@@ -501,16 +580,29 @@ def update_sto_item(
     # Track quantity change for totals
     old_requested_qty = item.requested_qty
 
-    # Update fields
+    # Update fields (map camelCase input to snake_case DB fields)
+    camel_to_snake = {
+        "requestedQty": "requested_qty",
+        "shippedQty": "shipped_qty",
+        "receivedQty": "received_qty",
+        "damagedQty": "damaged_qty",
+        "sourceBinId": "source_bin_id",
+        "destinationBinId": "destination_bin_id",
+        "batchNo": "batch_no",
+        "lotNo": "lot_no",
+        "status": "status",
+        "remarks": "remarks",
+    }
     update_dict = item_data.model_dump(exclude_unset=True)
-    for field, value in update_dict.items():
-        setattr(item, field, value)
+    for camel_field, value in update_dict.items():
+        snake_field = camel_to_snake.get(camel_field, camel_field)
+        setattr(item, snake_field, value)
 
     item.updated_at = datetime.utcnow()
     session.add(item)
 
     # Update STO totals if requested qty changed
-    if "requested_qty" in update_dict:
+    if "requestedQty" in update_dict:
         sto.total_requested_qty += (item.requested_qty - old_requested_qty)
         sto.updated_at = datetime.utcnow()
         session.add(sto)
@@ -669,17 +761,17 @@ def ship_stock_transfer(
             detail="Can only ship PICKED stock transfers"
         )
 
-    # Update shipping details
+    # Update shipping details (camelCase input)
     if request.carrier:
         sto.carrier = request.carrier
-    if request.tracking_number:
-        sto.tracking_number = request.tracking_number
-    if request.vehicle_number:
-        sto.vehicle_number = request.vehicle_number
-    if request.driver_name:
-        sto.driver_name = request.driver_name
-    if request.driver_phone:
-        sto.driver_phone = request.driver_phone
+    if request.trackingNumber:
+        sto.tracking_number = request.trackingNumber
+    if request.vehicleNumber:
+        sto.vehicle_number = request.vehicleNumber
+    if request.driverName:
+        sto.driver_name = request.driverName
+    if request.driverPhone:
+        sto.driver_phone = request.driverPhone
     if request.remarks:
         sto.remarks = (sto.remarks or "") + f"\nShipped: {request.remarks}"
 
@@ -736,20 +828,20 @@ def receive_stock_transfer(
     for item_receive in request.items:
         item = session.exec(
             select(STOItem)
-            .where(STOItem.id == item_receive.item_id)
+            .where(STOItem.id == item_receive.itemId)
             .where(STOItem.stock_transfer_order_id == sto_id)
         ).first()
 
         if not item:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Item {item_receive.item_id} not found"
+                detail=f"Item {item_receive.itemId} not found"
             )
 
-        item.received_qty = item_receive.received_qty
-        item.damaged_qty = item_receive.damaged_qty
-        if item_receive.destination_bin_id:
-            item.destination_bin_id = item_receive.destination_bin_id
+        item.received_qty = item_receive.receivedQty
+        item.damaged_qty = item_receive.damagedQty
+        if item_receive.destinationBinId:
+            item.destination_bin_id = item_receive.destinationBinId
         if item_receive.remarks:
             item.remarks = item_receive.remarks
 
@@ -762,8 +854,8 @@ def receive_stock_transfer(
         item.updated_at = datetime.utcnow()
         session.add(item)
 
-        total_received += item_receive.received_qty
-        total_damaged += item_receive.damaged_qty
+        total_received += item_receive.receivedQty
+        total_damaged += item_receive.damagedQty
 
     # Update STO totals and status
     sto.total_received_qty = total_received
@@ -775,8 +867,8 @@ def receive_stock_transfer(
         # Partial receipt - stay IN_TRANSIT for remaining
         pass
 
-    if request.vehicle_number:
-        sto.vehicle_number = request.vehicle_number
+    if request.vehicleNumber:
+        sto.vehicle_number = request.vehicleNumber
     if request.remarks:
         sto.remarks = (sto.remarks or "") + f"\nReceived: {request.remarks}"
 
@@ -797,7 +889,7 @@ def receive_stock_transfer(
         externalReferenceType="STO",
         externalReferenceNo=sto.sto_no,
         inboundSource="TRANSFER_IN",
-        vehicleNumber=request.vehicle_number or sto.vehicle_number,
+        vehicleNumber=request.vehicleNumber or sto.vehicle_number,
         driverName=sto.driver_name,
         source="STO",
         notes=f"Auto-created from STO {sto.sto_no}",
@@ -809,20 +901,20 @@ def receive_stock_transfer(
     # Create GRN items
     for item_receive in request.items:
         sto_item = session.exec(
-            select(STOItem).where(STOItem.id == item_receive.item_id)
+            select(STOItem).where(STOItem.id == item_receive.itemId)
         ).first()
 
-        if sto_item and item_receive.received_qty > 0:
+        if sto_item and item_receive.receivedQty > 0:
             grn_item = GoodsReceiptItem(
                 goodsReceiptId=grn.id,
                 skuId=sto_item.sku_id,
                 expectedQty=sto_item.shipped_qty,
-                receivedQty=item_receive.received_qty,
-                acceptedQty=item_receive.received_qty - item_receive.damaged_qty,
-                rejectedQty=item_receive.damaged_qty,
+                receivedQty=item_receive.receivedQty,
+                acceptedQty=item_receive.receivedQty - item_receive.damagedQty,
+                rejectedQty=item_receive.damagedQty,
                 batchNo=sto_item.batch_no,
                 lotNo=sto_item.lot_no,
-                targetBinId=item_receive.destination_bin_id,
+                targetBinId=item_receive.destinationBinId,
             )
             session.add(grn_item)
 

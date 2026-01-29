@@ -2,6 +2,10 @@
 Upload Batch Models
 
 For tracking bulk upload operations (POs, ASNs, Opening Stock, etc.)
+
+NAMING CONVENTION:
+- Table models use snake_case (matches database columns)
+- Read/Response schemas use camelCase (matches frontend expectations)
 """
 
 from datetime import datetime
@@ -17,7 +21,7 @@ from sqlalchemy import JSON
 # ============================================================================
 
 class UploadBatchBase(SQLModel):
-    """Base fields for Upload Batch"""
+    """Base fields for Upload Batch (snake_case for DB mapping)"""
     upload_type: str = Field(max_length=50)
     # Types: EXTERNAL_PO, ASN, GRN, OPENING_STOCK, STOCK_ADJUSTMENT
 
@@ -50,35 +54,42 @@ class UploadBatch(UploadBatchBase, table=True):
 
 
 class UploadBatchCreate(SQLModel):
-    """Create schema"""
-    upload_type: str
-    file_name: Optional[str] = None
-    file_size: Optional[int] = None
-    total_rows: int = 0
+    """Create schema (camelCase for API input)"""
+    uploadType: str
+    fileName: Optional[str] = None
+    fileSize: Optional[int] = None
+    totalRows: int = 0
 
 
 class UploadBatchUpdate(SQLModel):
-    """Update schema"""
+    """Update schema (camelCase for API input)"""
     status: Optional[str] = None
-    success_rows: Optional[int] = None
-    error_rows: Optional[int] = None
-    error_log: Optional[List[Dict[str, Any]]] = None
-    processed_at: Optional[datetime] = None
+    successRows: Optional[int] = None
+    errorRows: Optional[int] = None
+    errorLog: Optional[List[Dict[str, Any]]] = None
+    processedAt: Optional[datetime] = None
 
 
-class UploadBatchRead(UploadBatchBase):
-    """Read schema"""
+class UploadBatchRead(SQLModel):
+    """Read schema (camelCase for API output)"""
     id: UUID
-    company_id: UUID
-    batch_no: str
-    error_log: List[Dict[str, Any]]
-    uploaded_by: Optional[UUID] = None
-    processed_at: Optional[datetime] = None
-    created_at: datetime
-    updated_at: datetime
+    companyId: UUID
+    batchNo: str
+    uploadType: str
+    fileName: Optional[str] = None
+    fileSize: Optional[int] = None
+    totalRows: int
+    successRows: int
+    errorRows: int
+    status: str
+    errorLog: List[Dict[str, Any]]
+    uploadedBy: Optional[UUID] = None
+    processedAt: Optional[datetime] = None
+    createdAt: datetime
+    updatedAt: datetime
 
     # Computed
-    uploaded_by_name: Optional[str] = None
+    uploadedByName: Optional[str] = None
 
 
 # ============================================================================
@@ -86,7 +97,7 @@ class UploadBatchRead(UploadBatchBase):
 # ============================================================================
 
 class UploadError(SQLModel):
-    """Schema for individual upload error"""
+    """Schema for individual upload error (camelCase for API)"""
     row: int
     field: Optional[str] = None
     value: Optional[str] = None
@@ -94,48 +105,60 @@ class UploadError(SQLModel):
 
 
 # ============================================================================
-# UPLOAD ROW SCHEMAS (for parsing CSV)
+# UPLOAD ROW SCHEMAS (for parsing CSV - camelCase for API input)
 # ============================================================================
 
 class ExternalPOUploadRow(SQLModel):
     """Row schema for External PO upload"""
-    external_po_number: str
-    external_vendor_code: Optional[str] = None
-    external_vendor_name: Optional[str] = None
-    po_date: Optional[str] = None  # Will be parsed
-    expected_delivery_date: Optional[str] = None  # Will be parsed
-    external_sku_code: str
-    external_sku_name: Optional[str] = None
-    ordered_qty: int
-    unit_price: Optional[float] = None
+    externalPoNumber: str
+    externalVendorCode: Optional[str] = None
+    externalVendorName: Optional[str] = None
+    poDate: Optional[str] = None  # Will be parsed
+    expectedDeliveryDate: Optional[str] = None  # Will be parsed
+    externalSkuCode: str
+    externalSkuName: Optional[str] = None
+    orderedQty: int
+    unitPrice: Optional[float] = None
 
 
 class ASNUploadRow(SQLModel):
     """Row schema for ASN upload"""
-    external_asn_no: Optional[str] = None
-    external_po_number: Optional[str] = None
+    externalAsnNo: Optional[str] = None
+    externalPoNumber: Optional[str] = None
     carrier: Optional[str] = None
-    tracking_number: Optional[str] = None
-    expected_arrival: Optional[str] = None  # Will be parsed
-    external_sku_code: str
-    expected_qty: int
-    batch_no: Optional[str] = None
-    expiry_date: Optional[str] = None  # Will be parsed
+    trackingNumber: Optional[str] = None
+    expectedArrival: Optional[str] = None  # Will be parsed
+    externalSkuCode: str
+    expectedQty: int
+    batchNo: Optional[str] = None
+    expiryDate: Optional[str] = None  # Will be parsed
     cartons: Optional[int] = None
 
 
 class OpeningStockUploadRow(SQLModel):
     """Row schema for Opening Stock upload"""
-    location_code: str
-    sku_code: str
-    bin_code: Optional[str] = None
+    locationCode: str
+    skuCode: str
+    binCode: Optional[str] = None
     quantity: int
-    batch_no: Optional[str] = None
-    lot_no: Optional[str] = None
-    expiry_date: Optional[str] = None
-    mfg_date: Optional[str] = None
-    cost_price: Optional[float] = None
+    batchNo: Optional[str] = None
+    lotNo: Optional[str] = None
+    expiryDate: Optional[str] = None
+    mfgDate: Optional[str] = None
+    costPrice: Optional[float] = None
     mrp: Optional[float] = None
+
+
+class STOUploadRow(SQLModel):
+    """Row schema for Stock Transfer Order upload"""
+    sourceLocationCode: str
+    destinationLocationCode: str
+    skuCode: str
+    requestedQty: int
+    batchNo: Optional[str] = None
+    lotNo: Optional[str] = None
+    priority: Optional[str] = None
+    remarks: Optional[str] = None
 
 
 # ============================================================================
@@ -143,13 +166,13 @@ class OpeningStockUploadRow(SQLModel):
 # ============================================================================
 
 class UploadResult(SQLModel):
-    """Result of an upload operation"""
-    batch_id: UUID
-    batch_no: str
+    """Result of an upload operation (camelCase for API output)"""
+    batchId: UUID
+    batchNo: str
     status: str
-    total_rows: int
-    success_rows: int
-    error_rows: int
+    totalRows: int
+    successRows: int
+    errorRows: int
     errors: List[UploadError] = []
-    created_records: int = 0
-    updated_records: int = 0
+    createdRecords: int = 0
+    updatedRecords: int = 0

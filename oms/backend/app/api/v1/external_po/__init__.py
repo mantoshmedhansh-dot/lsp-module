@@ -39,30 +39,63 @@ def generate_external_po_key(session: Session, company_id: UUID) -> str:
 
 
 def build_po_response(po: ExternalPurchaseOrder, session: Session) -> ExternalPurchaseOrderRead:
-    """Build ExternalPurchaseOrderRead with computed fields."""
-    response = ExternalPurchaseOrderRead.model_validate(po)
-
+    """Build ExternalPurchaseOrderRead with computed fields (snake_case to camelCase mapping)."""
     # Get location name
+    location_name = None
     location = session.exec(
         select(Location).where(Location.id == po.location_id)
     ).first()
     if location:
-        response.location_name = location.name
+        location_name = location.name
 
-    return response
+    return ExternalPurchaseOrderRead(
+        id=po.id,
+        companyId=po.company_id,
+        locationId=po.location_id,
+        externalPoNumber=po.external_po_number,
+        externalVendorCode=po.external_vendor_code,
+        externalVendorName=po.external_vendor_name,
+        vendorId=po.vendor_id,
+        status=po.status,
+        poDate=po.po_date,
+        expectedDeliveryDate=po.expected_delivery_date,
+        source=po.source,
+        remarks=po.remarks,
+        totalLines=po.total_lines,
+        totalExpectedQty=po.total_expected_qty,
+        totalReceivedQty=po.total_received_qty,
+        totalAmount=po.total_amount,
+        createdAt=po.created_at,
+        updatedAt=po.updated_at,
+        locationName=location_name,
+    )
 
 
 def build_item_response(item: ExternalPOItem, session: Session) -> ExternalPOItemRead:
-    """Build ExternalPOItemRead with SKU info."""
-    response = ExternalPOItemRead.model_validate(item)
+    """Build ExternalPOItemRead with SKU info (snake_case to camelCase mapping)."""
+    sku_code = None
+    sku_name = None
 
     if item.sku_id:
         sku = session.exec(select(SKU).where(SKU.id == item.sku_id)).first()
         if sku:
-            response.sku_code = sku.code
-            response.sku_name = sku.name
+            sku_code = sku.code
+            sku_name = sku.name
 
-    return response
+    return ExternalPOItemRead(
+        id=item.id,
+        externalPoId=item.external_po_id,
+        externalSkuCode=item.external_sku_code,
+        externalSkuName=item.external_sku_name,
+        skuId=item.sku_id,
+        orderedQty=item.ordered_qty,
+        receivedQty=item.received_qty,
+        unitPrice=item.unit_price,
+        status=item.status,
+        createdAt=item.created_at,
+        skuCode=sku_code,
+        skuName=sku_name,
+    )
 
 
 # ============================================================================
@@ -139,7 +172,7 @@ def create_external_po(
     """Create a new external purchase order."""
     # Validate location
     location = session.exec(
-        select(Location).where(Location.id == po_data.location_id)
+        select(Location).where(Location.id == po_data.locationId)
     ).first()
     if not location:
         raise HTTPException(
@@ -151,33 +184,45 @@ def create_external_po(
     existing = session.exec(
         select(ExternalPurchaseOrder)
         .where(ExternalPurchaseOrder.company_id == company_filter.company_id)
-        .where(ExternalPurchaseOrder.external_po_number == po_data.external_po_number)
+        .where(ExternalPurchaseOrder.external_po_number == po_data.externalPoNumber)
     ).first()
     if existing:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"External PO number {po_data.external_po_number} already exists"
+            detail=f"External PO number {po_data.externalPoNumber} already exists"
         )
 
-    # Create PO
-    po_dict = po_data.model_dump(exclude={"items"})
-    po_dict["company_id"] = company_filter.company_id
-
-    po = ExternalPurchaseOrder(**po_dict)
+    # Create PO (map camelCase input to snake_case DB model)
+    po = ExternalPurchaseOrder(
+        company_id=company_filter.company_id,
+        location_id=po_data.locationId,
+        external_po_number=po_data.externalPoNumber,
+        external_vendor_code=po_data.externalVendorCode,
+        external_vendor_name=po_data.externalVendorName,
+        vendor_id=po_data.vendorId,
+        po_date=po_data.poDate,
+        expected_delivery_date=po_data.expectedDeliveryDate,
+        remarks=po_data.remarks,
+    )
     session.add(po)
     session.flush()  # Get ID
 
     # Create items if provided
     if po_data.items:
         for item_data in po_data.items:
-            item_dict = item_data.model_dump()
-            item_dict["external_po_id"] = po.id
-            item = ExternalPOItem(**item_dict)
+            item = ExternalPOItem(
+                external_po_id=po.id,
+                external_sku_code=item_data.externalSkuCode,
+                external_sku_name=item_data.externalSkuName,
+                sku_id=item_data.skuId,
+                ordered_qty=item_data.orderedQty,
+                unit_price=item_data.unitPrice,
+            )
             session.add(item)
 
         # Update totals
         po.total_lines = len(po_data.items)
-        po.total_expected_qty = sum(item.ordered_qty for item in po_data.items)
+        po.total_expected_qty = sum(item.orderedQty for item in po_data.items)
         session.add(po)
 
     session.commit()
@@ -246,10 +291,20 @@ def update_external_po(
             detail="Cannot update a CLOSED purchase order"
         )
 
-    # Update fields
+    # Update fields (map camelCase input to snake_case DB fields)
+    camel_to_snake = {
+        "externalVendorCode": "external_vendor_code",
+        "externalVendorName": "external_vendor_name",
+        "vendorId": "vendor_id",
+        "status": "status",
+        "poDate": "po_date",
+        "expectedDeliveryDate": "expected_delivery_date",
+        "remarks": "remarks",
+    }
     update_dict = po_data.model_dump(exclude_unset=True)
-    for field, value in update_dict.items():
-        setattr(po, field, value)
+    for camel_field, value in update_dict.items():
+        snake_field = camel_to_snake.get(camel_field, camel_field)
+        setattr(po, snake_field, value)
 
     po.updated_at = datetime.utcnow()
     session.add(po)
@@ -331,11 +386,15 @@ def add_po_item(
             detail="Can only add items to OPEN purchase orders"
         )
 
-    # Create item
-    item_dict = item_data.model_dump()
-    item_dict["external_po_id"] = po_id
-
-    item = ExternalPOItem(**item_dict)
+    # Create item (map camelCase input to snake_case DB model)
+    item = ExternalPOItem(
+        external_po_id=po_id,
+        external_sku_code=item_data.externalSkuCode,
+        external_sku_name=item_data.externalSkuName,
+        sku_id=item_data.skuId,
+        ordered_qty=item_data.orderedQty,
+        unit_price=item_data.unitPrice,
+    )
     session.add(item)
 
     # Update PO totals
@@ -385,16 +444,25 @@ def update_po_item(
     # Track quantity change for totals
     old_qty = item.ordered_qty
 
-    # Update fields
+    # Update fields (map camelCase input to snake_case DB fields)
+    camel_to_snake = {
+        "externalSkuName": "external_sku_name",
+        "skuId": "sku_id",
+        "orderedQty": "ordered_qty",
+        "receivedQty": "received_qty",
+        "unitPrice": "unit_price",
+        "status": "status",
+    }
     update_dict = item_data.model_dump(exclude_unset=True)
-    for field, value in update_dict.items():
-        setattr(item, field, value)
+    for camel_field, value in update_dict.items():
+        snake_field = camel_to_snake.get(camel_field, camel_field)
+        setattr(item, snake_field, value)
 
     item.updated_at = datetime.utcnow()
     session.add(item)
 
     # Update PO totals if quantity changed
-    if "ordered_qty" in update_dict:
+    if "orderedQty" in update_dict:
         po.total_expected_qty += (item.ordered_qty - old_qty)
         po.updated_at = datetime.utcnow()
         session.add(po)

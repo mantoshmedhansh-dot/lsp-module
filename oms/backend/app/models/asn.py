@@ -2,6 +2,10 @@
 Advance Shipping Notice (ASN) Models
 
 Pre-arrival notifications for incoming shipments.
+
+NAMING CONVENTION:
+- Table models use snake_case (matches database columns)
+- Read/Response schemas use camelCase (matches frontend expectations)
 """
 
 from datetime import datetime, date
@@ -10,6 +14,7 @@ from typing import Optional, List
 from uuid import UUID, uuid4
 
 from sqlmodel import Field, SQLModel, Relationship
+from pydantic import field_validator
 
 
 # ============================================================================
@@ -17,7 +22,7 @@ from sqlmodel import Field, SQLModel, Relationship
 # ============================================================================
 
 class AdvanceShippingNoticeBase(SQLModel):
-    """Base fields for ASN"""
+    """Base fields for ASN (snake_case for DB mapping)"""
     external_asn_no: Optional[str] = Field(default=None, max_length=100)
 
     # References
@@ -87,69 +92,98 @@ class AdvanceShippingNotice(AdvanceShippingNoticeBase, table=True):
 
 
 class AdvanceShippingNoticeCreate(SQLModel):
-    """Create schema"""
-    location_id: UUID
-    external_asn_no: Optional[str] = None
-    external_po_id: Optional[UUID] = None
-    purchase_order_id: Optional[UUID] = None
-    vendor_id: Optional[UUID] = None
-    external_vendor_code: Optional[str] = None
-    external_vendor_name: Optional[str] = None
+    """Create schema (camelCase for API input)"""
+    locationId: UUID
+    externalAsnNo: Optional[str] = None
+    externalPoId: Optional[UUID] = None
+    purchaseOrderId: Optional[UUID] = None
+    vendorId: Optional[UUID] = None
+    externalVendorCode: Optional[str] = None
+    externalVendorName: Optional[str] = None
     carrier: Optional[str] = None
-    tracking_number: Optional[str] = None
-    vehicle_number: Optional[str] = None
-    driver_name: Optional[str] = None
-    driver_phone: Optional[str] = None
-    ship_date: Optional[date] = None
-    expected_arrival: Optional[date] = None
-    total_cartons: Optional[int] = None
-    total_pallets: Optional[int] = None
-    total_weight_kg: Optional[Decimal] = None
+    trackingNumber: Optional[str] = None
+    vehicleNumber: Optional[str] = None
+    driverName: Optional[str] = None
+    driverPhone: Optional[str] = None
+    shipDate: Optional[date] = None
+    expectedArrival: Optional[date] = None
+    totalCartons: Optional[int] = None
+    totalPallets: Optional[int] = None
+    totalWeightKg: Optional[Decimal] = None
     remarks: Optional[str] = None
     items: Optional[List["ASNItemCreate"]] = None
 
 
 class AdvanceShippingNoticeUpdate(SQLModel):
-    """Update schema"""
-    external_asn_no: Optional[str] = None
-    external_po_id: Optional[UUID] = None
-    purchase_order_id: Optional[UUID] = None
-    vendor_id: Optional[UUID] = None
-    external_vendor_code: Optional[str] = None
-    external_vendor_name: Optional[str] = None
+    """Update schema (camelCase for API input)"""
+    externalAsnNo: Optional[str] = None
+    externalPoId: Optional[UUID] = None
+    purchaseOrderId: Optional[UUID] = None
+    vendorId: Optional[UUID] = None
+    externalVendorCode: Optional[str] = None
+    externalVendorName: Optional[str] = None
     status: Optional[str] = None
     carrier: Optional[str] = None
-    tracking_number: Optional[str] = None
-    vehicle_number: Optional[str] = None
-    driver_name: Optional[str] = None
-    driver_phone: Optional[str] = None
-    ship_date: Optional[date] = None
-    expected_arrival: Optional[date] = None
-    actual_arrival: Optional[datetime] = None
-    total_cartons: Optional[int] = None
-    total_pallets: Optional[int] = None
-    total_weight_kg: Optional[Decimal] = None
+    trackingNumber: Optional[str] = None
+    vehicleNumber: Optional[str] = None
+    driverName: Optional[str] = None
+    driverPhone: Optional[str] = None
+    shipDate: Optional[date] = None
+    expectedArrival: Optional[date] = None
+    actualArrival: Optional[datetime] = None
+    totalCartons: Optional[int] = None
+    totalPallets: Optional[int] = None
+    totalWeightKg: Optional[Decimal] = None
     remarks: Optional[str] = None
 
 
-class AdvanceShippingNoticeRead(AdvanceShippingNoticeBase):
-    """Read schema"""
+class AdvanceShippingNoticeRead(SQLModel):
+    """Read schema (camelCase for API output)"""
     id: UUID
-    company_id: UUID
-    location_id: UUID
-    asn_no: str
-    actual_arrival: Optional[datetime] = None
-    total_lines: int
-    total_expected_qty: int
-    total_received_qty: int
-    goods_receipt_id: Optional[UUID] = None
-    created_at: datetime
-    updated_at: datetime
+    companyId: UUID
+    locationId: UUID
+    asnNo: str
+    externalAsnNo: Optional[str] = None
+    externalPoId: Optional[UUID] = None
+    purchaseOrderId: Optional[UUID] = None
+    vendorId: Optional[UUID] = None
+    externalVendorCode: Optional[str] = None
+    externalVendorName: Optional[str] = None
+    status: str
+    carrier: Optional[str] = None
+    trackingNumber: Optional[str] = None
+    vehicleNumber: Optional[str] = None
+    driverName: Optional[str] = None
+    driverPhone: Optional[str] = None
+    shipDate: Optional[date] = None
+    expectedArrival: Optional[date] = None
+    actualArrival: Optional[datetime] = None
+    totalCartons: Optional[int] = None
+    totalPallets: Optional[int] = None
+    totalWeightKg: Optional[Decimal] = None
+    source: str
+    remarks: Optional[str] = None
+    totalLines: int
+    totalExpectedQty: int
+    totalReceivedQty: int
+    pendingQty: Optional[int] = None
+    goodsReceiptId: Optional[UUID] = None
+    createdAt: datetime
+    updatedAt: datetime
 
-    # Nested
-    location_name: Optional[str] = None
-    external_po_number: Optional[str] = None
+    # Computed
+    locationName: Optional[str] = None
+    externalPoNumber: Optional[str] = None
     items: Optional[List["ASNItemRead"]] = None
+
+    @field_validator("pendingQty", mode="before")
+    @classmethod
+    def calc_pending(cls, v, info):
+        if v is None and info.data:
+            expected = info.data.get("totalExpectedQty", 0)
+            received = info.data.get("totalReceivedQty", 0)
+            return expected - received
+        return v
 
 
 # ============================================================================
@@ -157,7 +191,7 @@ class AdvanceShippingNoticeRead(AdvanceShippingNoticeBase):
 # ============================================================================
 
 class ASNItemBase(SQLModel):
-    """Base fields for ASN Item"""
+    """Base fields for ASN Item (snake_case for DB mapping)"""
     sku_id: Optional[UUID] = Field(default=None, foreign_key="skus.id")
     external_sku_code: Optional[str] = Field(default=None, max_length=100)
     external_sku_name: Optional[str] = Field(default=None, max_length=255)
@@ -194,43 +228,68 @@ class ASNItem(ASNItemBase, table=True):
 
 
 class ASNItemCreate(SQLModel):
-    """Create schema for item"""
-    sku_id: Optional[UUID] = None
-    external_sku_code: Optional[str] = None
-    external_sku_name: Optional[str] = None
-    external_po_item_id: Optional[UUID] = None
-    expected_qty: int
-    batch_no: Optional[str] = None
-    lot_no: Optional[str] = None
-    expiry_date: Optional[date] = None
-    mfg_date: Optional[date] = None
+    """Create schema for item (camelCase for API input)"""
+    skuId: Optional[UUID] = None
+    externalSkuCode: Optional[str] = None
+    externalSkuName: Optional[str] = None
+    externalPoItemId: Optional[UUID] = None
+    expectedQty: int
+    batchNo: Optional[str] = None
+    lotNo: Optional[str] = None
+    expiryDate: Optional[date] = None
+    mfgDate: Optional[date] = None
     cartons: Optional[int] = None
-    units_per_carton: Optional[int] = None
+    unitsPerCarton: Optional[int] = None
 
 
 class ASNItemUpdate(SQLModel):
-    """Update schema for item"""
-    sku_id: Optional[UUID] = None
-    external_sku_code: Optional[str] = None
-    external_sku_name: Optional[str] = None
-    expected_qty: Optional[int] = None
-    received_qty: Optional[int] = None
-    batch_no: Optional[str] = None
-    lot_no: Optional[str] = None
-    expiry_date: Optional[date] = None
-    mfg_date: Optional[date] = None
+    """Update schema for item (camelCase for API input)"""
+    skuId: Optional[UUID] = None
+    externalSkuCode: Optional[str] = None
+    externalSkuName: Optional[str] = None
+    expectedQty: Optional[int] = None
+    receivedQty: Optional[int] = None
+    batchNo: Optional[str] = None
+    lotNo: Optional[str] = None
+    expiryDate: Optional[date] = None
+    mfgDate: Optional[date] = None
     cartons: Optional[int] = None
-    units_per_carton: Optional[int] = None
+    unitsPerCarton: Optional[int] = None
     status: Optional[str] = None
 
 
-class ASNItemRead(ASNItemBase):
-    """Read schema for item"""
+class ASNItemRead(SQLModel):
+    """Read schema for item (camelCase for API output)"""
     id: UUID
-    asn_id: UUID
-    sku_code: Optional[str] = None
-    sku_name: Optional[str] = None
-    created_at: datetime
+    asnId: UUID
+    skuId: Optional[UUID] = None
+    externalSkuCode: Optional[str] = None
+    externalSkuName: Optional[str] = None
+    externalPoItemId: Optional[UUID] = None
+    expectedQty: int
+    receivedQty: int
+    pendingQty: Optional[int] = None
+    batchNo: Optional[str] = None
+    lotNo: Optional[str] = None
+    expiryDate: Optional[date] = None
+    mfgDate: Optional[date] = None
+    cartons: Optional[int] = None
+    unitsPerCarton: Optional[int] = None
+    status: str
+    createdAt: datetime
+
+    # Computed
+    skuCode: Optional[str] = None
+    skuName: Optional[str] = None
+
+    @field_validator("pendingQty", mode="before")
+    @classmethod
+    def calc_pending(cls, v, info):
+        if v is None and info.data:
+            expected = info.data.get("expectedQty", 0)
+            received = info.data.get("receivedQty", 0)
+            return expected - received
+        return v
 
 
 # Forward references

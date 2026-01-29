@@ -2,6 +2,10 @@
 External Purchase Order Models
 
 For 3PL clients who don't manage POs in our system but need to reference them.
+
+NAMING CONVENTION:
+- Table models use snake_case (matches database columns)
+- Read/Response schemas use camelCase (matches frontend expectations)
 """
 
 from datetime import datetime, date
@@ -18,7 +22,7 @@ from pydantic import field_validator
 # ============================================================================
 
 class ExternalPurchaseOrderBase(SQLModel):
-    """Base fields for External PO"""
+    """Base fields for External PO (snake_case for DB mapping)"""
     external_po_number: str = Field(max_length=100, index=True)
     external_vendor_code: Optional[str] = Field(default=None, max_length=100)
     external_vendor_name: Optional[str] = Field(default=None, max_length=255)
@@ -57,46 +61,62 @@ class ExternalPurchaseOrder(ExternalPurchaseOrderBase, table=True):
     )
 
 
-class ExternalPurchaseOrderCreate(ExternalPurchaseOrderBase):
-    """Create schema"""
-    location_id: UUID
+class ExternalPurchaseOrderCreate(SQLModel):
+    """Create schema (camelCase for API input)"""
+    externalPoNumber: str
+    locationId: UUID
+    externalVendorCode: Optional[str] = None
+    externalVendorName: Optional[str] = None
+    vendorId: Optional[UUID] = None
+    poDate: Optional[date] = None
+    expectedDeliveryDate: Optional[date] = None
+    remarks: Optional[str] = None
     items: Optional[List["ExternalPOItemCreate"]] = None
 
 
 class ExternalPurchaseOrderUpdate(SQLModel):
-    """Update schema"""
-    external_vendor_code: Optional[str] = None
-    external_vendor_name: Optional[str] = None
-    vendor_id: Optional[UUID] = None
+    """Update schema (camelCase for API input)"""
+    externalVendorCode: Optional[str] = None
+    externalVendorName: Optional[str] = None
+    vendorId: Optional[UUID] = None
     status: Optional[str] = None
-    po_date: Optional[date] = None
-    expected_delivery_date: Optional[date] = None
+    poDate: Optional[date] = None
+    expectedDeliveryDate: Optional[date] = None
     remarks: Optional[str] = None
 
 
-class ExternalPurchaseOrderRead(ExternalPurchaseOrderBase):
-    """Read schema"""
+class ExternalPurchaseOrderRead(SQLModel):
+    """Read schema (camelCase for API output)"""
     id: UUID
-    company_id: UUID
-    location_id: UUID
-    total_lines: int
-    total_expected_qty: int
-    total_received_qty: int
-    total_amount: Decimal
-    pending_qty: Optional[int] = None
-    created_at: datetime
-    updated_at: datetime
+    companyId: UUID
+    locationId: UUID
+    externalPoNumber: str
+    externalVendorCode: Optional[str] = None
+    externalVendorName: Optional[str] = None
+    vendorId: Optional[UUID] = None
+    status: str
+    poDate: Optional[date] = None
+    expectedDeliveryDate: Optional[date] = None
+    source: str
+    remarks: Optional[str] = None
+    totalLines: int
+    totalExpectedQty: int
+    totalReceivedQty: int
+    totalAmount: Decimal
+    pendingQty: Optional[int] = None
+    createdAt: datetime
+    updatedAt: datetime
 
-    # Nested
-    location_name: Optional[str] = None
+    # Computed
+    locationName: Optional[str] = None
     items: Optional[List["ExternalPOItemRead"]] = None
 
-    @field_validator("pending_qty", mode="before")
+    @field_validator("pendingQty", mode="before")
     @classmethod
     def calc_pending(cls, v, info):
         if v is None and info.data:
-            expected = info.data.get("total_expected_qty", 0)
-            received = info.data.get("total_received_qty", 0)
+            expected = info.data.get("totalExpectedQty", 0)
+            received = info.data.get("totalReceivedQty", 0)
             return expected - received
         return v
 
@@ -106,7 +126,7 @@ class ExternalPurchaseOrderRead(ExternalPurchaseOrderBase):
 # ============================================================================
 
 class ExternalPOItemBase(SQLModel):
-    """Base fields for External PO Item"""
+    """Base fields for External PO Item (snake_case for DB mapping)"""
     external_sku_code: str = Field(max_length=100)
     external_sku_name: Optional[str] = Field(default=None, max_length=255)
     sku_id: Optional[UUID] = Field(default=None, foreign_key="skus.id")
@@ -131,39 +151,46 @@ class ExternalPOItem(ExternalPOItemBase, table=True):
 
 
 class ExternalPOItemCreate(SQLModel):
-    """Create schema for item"""
-    external_sku_code: str
-    external_sku_name: Optional[str] = None
-    sku_id: Optional[UUID] = None
-    ordered_qty: int
-    unit_price: Optional[Decimal] = None
+    """Create schema for item (camelCase for API input)"""
+    externalSkuCode: str
+    externalSkuName: Optional[str] = None
+    skuId: Optional[UUID] = None
+    orderedQty: int
+    unitPrice: Optional[Decimal] = None
 
 
 class ExternalPOItemUpdate(SQLModel):
-    """Update schema for item"""
-    external_sku_name: Optional[str] = None
-    sku_id: Optional[UUID] = None
-    ordered_qty: Optional[int] = None
-    received_qty: Optional[int] = None
-    unit_price: Optional[Decimal] = None
+    """Update schema for item (camelCase for API input)"""
+    externalSkuName: Optional[str] = None
+    skuId: Optional[UUID] = None
+    orderedQty: Optional[int] = None
+    receivedQty: Optional[int] = None
+    unitPrice: Optional[Decimal] = None
     status: Optional[str] = None
 
 
-class ExternalPOItemRead(ExternalPOItemBase):
-    """Read schema for item"""
+class ExternalPOItemRead(SQLModel):
+    """Read schema for item (camelCase for API output)"""
     id: UUID
-    external_po_id: UUID
-    pending_qty: Optional[int] = None
-    sku_code: Optional[str] = None
-    sku_name: Optional[str] = None
-    created_at: datetime
+    externalPoId: UUID
+    externalSkuCode: str
+    externalSkuName: Optional[str] = None
+    skuId: Optional[UUID] = None
+    orderedQty: int
+    receivedQty: int
+    unitPrice: Optional[Decimal] = None
+    status: str
+    pendingQty: Optional[int] = None
+    skuCode: Optional[str] = None
+    skuName: Optional[str] = None
+    createdAt: datetime
 
-    @field_validator("pending_qty", mode="before")
+    @field_validator("pendingQty", mode="before")
     @classmethod
     def calc_pending(cls, v, info):
         if v is None and info.data:
-            ordered = info.data.get("ordered_qty", 0)
-            received = info.data.get("received_qty", 0)
+            ordered = info.data.get("orderedQty", 0)
+            received = info.data.get("receivedQty", 0)
             return ordered - received
         return v
 

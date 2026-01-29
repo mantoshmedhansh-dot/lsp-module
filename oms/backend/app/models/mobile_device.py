@@ -58,9 +58,9 @@ class MobileDeviceBase(SQLModel):
     osVersion: Optional[str] = Field(default=None, max_length=50)
     appVersion: Optional[str] = Field(default=None, max_length=50)
     status: DeviceStatus = Field(default=DeviceStatus.PENDING, index=True)
-    locationId: Optional[UUID] = Field(default=None, foreign_key="Location.id", index=True)
+    assignedLocationId: Optional[UUID] = Field(default=None, foreign_key="Location.id", index=True)
     assignedUserId: Optional[UUID] = Field(default=None, foreign_key="User.id", index=True)
-    lastSeenAt: Optional[datetime] = None
+    lastActiveAt: Optional[datetime] = None
     registeredAt: datetime = Field(default_factory=datetime.utcnow)
     registeredById: Optional[UUID] = Field(default=None, foreign_key="User.id")
     authToken: Optional[str] = Field(default=None, max_length=500)
@@ -84,7 +84,7 @@ class MobileDeviceRegister(SQLModel):
     model: Optional[str] = None
     osVersion: Optional[str] = None
     appVersion: Optional[str] = None
-    locationId: Optional[UUID] = None
+    assignedLocationId: Optional[UUID] = None
     capabilities: Optional[dict] = None
 
 
@@ -92,7 +92,7 @@ class MobileDeviceUpdate(SQLModel):
     """Schema for device update"""
     deviceName: Optional[str] = None
     status: Optional[DeviceStatus] = None
-    locationId: Optional[UUID] = None
+    assignedLocationId: Optional[UUID] = None
     assignedUserId: Optional[UUID] = None
     appVersion: Optional[str] = None
     settings: Optional[dict] = None

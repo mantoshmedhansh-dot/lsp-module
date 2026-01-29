@@ -29,13 +29,12 @@ router = APIRouter(prefix="/voice", tags=["Voice Picking"])
 
 @router.get("/profiles", response_model=List[VoiceProfileResponse])
 def list_profiles(
-    is_active: bool = True,
     company_filter: CompanyFilter = Depends(),
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
     """List voice profiles"""
-    query = select(VoiceProfile).where(VoiceProfile.isActive == is_active)
+    query = select(VoiceProfile)
 
     if company_filter.company_id:
         query = query.where(VoiceProfile.companyId == company_filter.company_id)

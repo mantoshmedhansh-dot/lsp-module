@@ -302,7 +302,6 @@ def create_mobile_task(
     task = MobileTask(
         id=uuid4(),
         companyId=company_filter.company_id,
-        createdById=current_user.id,
         status=TaskStatus.PENDING,
         **data.model_dump()
     )

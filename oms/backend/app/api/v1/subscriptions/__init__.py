@@ -79,8 +79,7 @@ def create_subscription(
         id=uuid4(),
         companyId=company_filter.company_id,
         subscriptionNo=subscription_no,
-        status=SubscriptionStatus.PENDING,
-        createdById=current_user.id,
+        status=SubscriptionStatus.DRAFT,
         **data.model_dump()
     )
     session.add(subscription)
@@ -168,9 +167,9 @@ def cancel_subscription(
         id=uuid4(),
         companyId=subscription.companyId,
         subscriptionId=subscription_id,
-        action="CANCELLED",
-        notes=reason,
-        performedById=current_user.id
+        actionType="CANCELLED",
+        userId=current_user.id,
+        notes=reason
     )
     session.add(history)
     session.commit()
@@ -219,7 +218,7 @@ def add_subscription_line(
         id=uuid4(),
         companyId=subscription.companyId,
         subscriptionId=subscription_id,
-        totalPrice=(data.unitPrice or Decimal("0")) * data.quantity,
+        lineTotal=(data.unitPrice or Decimal("0")) * data.quantity,
         **data.model_dump()
     )
     session.add(line)
@@ -280,7 +279,7 @@ def pause_subscription(
     subscription.status = SubscriptionStatus.PAUSED
     subscription.pausedAt = datetime.utcnow()
     if resume_date:
-        subscription.resumeDate = resume_date
+        subscription.pausedUntil = resume_date
     subscription.updatedAt = datetime.utcnow()
     session.add(subscription)
 
@@ -290,9 +289,9 @@ def pause_subscription(
         id=uuid4(),
         companyId=subscription.companyId,
         subscriptionId=subscription_id,
-        action="PAUSED",
-        notes=reason,
-        performedById=current_user.id
+        actionType="PAUSED",
+        userId=current_user.id,
+        notes=reason
     )
     session.add(history)
     session.commit()
@@ -321,7 +320,7 @@ def resume_subscription(
 
     subscription.status = SubscriptionStatus.ACTIVE
     subscription.pausedAt = None
-    subscription.resumeDate = None
+    subscription.pausedUntil = None
     subscription.updatedAt = datetime.utcnow()
     session.add(subscription)
 
@@ -331,8 +330,8 @@ def resume_subscription(
         id=uuid4(),
         companyId=subscription.companyId,
         subscriptionId=subscription_id,
-        action="RESUMED",
-        performedById=current_user.id
+        actionType="RESUMED",
+        userId=current_user.id
     )
     session.add(history)
     session.commit()
@@ -360,8 +359,8 @@ def activate_subscription(
     if not subscription:
         raise HTTPException(status_code=404, detail="Subscription not found")
 
-    if subscription.status != SubscriptionStatus.PENDING:
-        raise HTTPException(status_code=400, detail="Only pending subscriptions can be activated")
+    if subscription.status != SubscriptionStatus.DRAFT:
+        raise HTTPException(status_code=400, detail="Only draft subscriptions can be activated")
 
     # Check if has lines
     lines_count = session.exec(
@@ -374,7 +373,6 @@ def activate_subscription(
         raise HTTPException(status_code=400, detail="Subscription has no active lines")
 
     subscription.status = SubscriptionStatus.ACTIVE
-    subscription.activatedAt = datetime.utcnow()
     subscription.updatedAt = datetime.utcnow()
     session.add(subscription)
 
@@ -384,8 +382,8 @@ def activate_subscription(
         id=uuid4(),
         companyId=subscription.companyId,
         subscriptionId=subscription_id,
-        action="ACTIVATED",
-        performedById=current_user.id
+        actionType="ACTIVATED",
+        userId=current_user.id
     )
     session.add(history)
     session.commit()
@@ -419,7 +417,7 @@ def generate_subscription_orders(
         select(SubscriptionSchedule)
         .where(SubscriptionSchedule.companyId == company_filter.company_id)
         .where(SubscriptionSchedule.scheduledDate <= target_date)
-        .where(SubscriptionSchedule.status == ScheduleStatus.PENDING)
+        .where(SubscriptionSchedule.status == ScheduleStatus.SCHEDULED)
     ).all()
 
     orders_created = 0
@@ -442,7 +440,7 @@ def generate_subscription_orders(
 
             # Update schedule
             schedule.status = ScheduleStatus.GENERATED
-            schedule.generatedOrderId = order_id
+            schedule.orderId = order_id
             schedule.generatedAt = datetime.utcnow()
             session.add(schedule)
 
@@ -451,10 +449,9 @@ def generate_subscription_orders(
                 id=uuid4(),
                 companyId=subscription.companyId,
                 subscriptionId=subscription.id,
-                action="ORDER_GENERATED",
-                orderId=order_id,
+                actionType="ORDER_GENERATED",
                 notes=f"Order generated for schedule {schedule.scheduledDate}",
-                performedById=current_user.id
+                userId=current_user.id
             )
             session.add(history)
 
@@ -492,7 +489,7 @@ def get_upcoming_deliveries(
     query = select(SubscriptionSchedule).where(
         SubscriptionSchedule.scheduledDate >= date.today(),
         SubscriptionSchedule.scheduledDate <= end_date,
-        SubscriptionSchedule.status == ScheduleStatus.PENDING
+        SubscriptionSchedule.status == ScheduleStatus.SCHEDULED
     )
 
     if company_filter.company_id:
@@ -559,7 +556,7 @@ def get_subscription_stats(
     upcoming_count = session.exec(
         select(func.count(SubscriptionSchedule.id))
         .where(SubscriptionSchedule.scheduledDate >= date.today())
-        .where(SubscriptionSchedule.status == ScheduleStatus.PENDING)
+        .where(SubscriptionSchedule.status == ScheduleStatus.SCHEDULED)
         .where(SubscriptionSchedule.companyId == company_filter.company_id if company_filter.company_id else True)
     ).one()
 

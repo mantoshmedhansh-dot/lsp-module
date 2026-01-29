@@ -78,8 +78,7 @@ def create_preorder(
         id=uuid4(),
         companyId=company_filter.company_id,
         preorderNo=preorder_no,
-        status=PreorderStatus.PENDING,
-        createdById=current_user.id,
+        status=PreorderStatus.DRAFT,
         **data.model_dump()
     )
     session.add(preorder)
@@ -167,8 +166,8 @@ def cancel_preorder(
         select(PreorderInventory).where(PreorderInventory.preorderId == preorder_id)
     ).all()
     for res in reservations:
-        res.isReleased = True
-        res.releasedAt = datetime.utcnow()
+        res.isActive = False
+        res.updatedAt = datetime.utcnow()
         session.add(res)
 
     session.add(preorder)
@@ -221,9 +220,8 @@ def add_preorder_line(
         id=uuid4(),
         companyId=preorder.companyId,
         preorderId=preorder_id,
-        unitPrice=data.unitPrice or Decimal("0"),
-        totalPrice=(data.unitPrice or Decimal("0")) * data.quantity,
-        **data.model_dump(exclude={"unitPrice"})
+        lineTotal=(data.unitPrice or Decimal("0")) * data.quantity,
+        **data.model_dump()
     )
     session.add(line)
     session.commit()
@@ -267,9 +265,8 @@ def convert_to_order(
     order_id = uuid4()
 
     preorder.status = PreorderStatus.CONVERTED
-    preorder.convertedToOrderId = order_id
+    preorder.convertedOrderId = order_id
     preorder.convertedAt = datetime.utcnow()
-    preorder.convertedById = current_user.id
     preorder.updatedAt = datetime.utcnow()
     session.add(preorder)
     session.commit()
@@ -289,7 +286,7 @@ def convert_to_order(
 def get_preorder_inventory_status(
     sku_id: Optional[UUID] = None,
     location_id: Optional[UUID] = None,
-    is_released: Optional[bool] = False,
+    is_active: Optional[bool] = True,
     company_filter: CompanyFilter = Depends(),
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
@@ -303,8 +300,8 @@ def get_preorder_inventory_status(
         query = query.where(PreorderInventory.skuId == sku_id)
     if location_id:
         query = query.where(PreorderInventory.locationId == location_id)
-    if is_released is not None:
-        query = query.where(PreorderInventory.isReleased == is_released)
+    if is_active is not None:
+        query = query.where(PreorderInventory.isActive == is_active)
 
     reservations = session.exec(query).all()
     return reservations
@@ -340,7 +337,7 @@ def reserve_inventory(
             select(PreorderInventory)
             .where(PreorderInventory.preorderId == preorder_id)
             .where(PreorderInventory.skuId == line.skuId)
-            .where(PreorderInventory.isReleased == False)
+            .where(PreorderInventory.isActive == True)
         ).first()
 
         if existing:
@@ -354,7 +351,7 @@ def reserve_inventory(
             skuId=line.skuId,
             locationId=location_id,
             reservedQuantity=line.quantity,
-            isReleased=False
+            isActive=True
         )
         session.add(reservation)
         reserved_count += 1
@@ -388,8 +385,8 @@ def confirm_preorder(
     if not preorder:
         raise HTTPException(status_code=404, detail="Pre-order not found")
 
-    if preorder.status != PreorderStatus.PENDING:
-        raise HTTPException(status_code=400, detail="Only pending pre-orders can be confirmed")
+    if preorder.status != PreorderStatus.DRAFT:
+        raise HTTPException(status_code=400, detail="Only draft pre-orders can be confirmed")
 
     # Check if has lines
     lines_count = session.exec(
@@ -401,7 +398,6 @@ def confirm_preorder(
         raise HTTPException(status_code=400, detail="Pre-order has no lines")
 
     preorder.status = PreorderStatus.CONFIRMED
-    preorder.confirmedAt = datetime.utcnow()
     preorder.updatedAt = datetime.utcnow()
     session.add(preorder)
     session.commit()
@@ -436,7 +432,7 @@ def get_preorder_stats(
     # Total reserved inventory value
     reserved_value = session.exec(
         select(func.sum(PreorderInventory.reservedQuantity))
-        .where(PreorderInventory.isReleased == False)
+        .where(PreorderInventory.isActive == True)
         .where(PreorderInventory.companyId == company_filter.company_id if company_filter.company_id else True)
     ).one() or 0
 

@@ -17,7 +17,7 @@ from app.models import (
     BinCharacteristics, BinCharacteristicsCreate, BinCharacteristicsResponse,
     SlottingRule, SlottingRuleCreate, SlottingRuleResponse,
     SlottingRecommendation, SlottingRecommendationResponse,
-    VelocityClass, RecommendationStatus,
+    VelocityClass, RecommendationStatus, RecommendationType,
 )
 
 
@@ -97,7 +97,6 @@ def calculate_velocity(
         if existing:
             existing.pickFrequency = pick_frequency
             existing.velocityClass = velocity_class
-            existing.calculatedAt = datetime.utcnow()
             existing.updatedAt = datetime.utcnow()
             session.add(existing)
             updated += 1
@@ -107,11 +106,12 @@ def calculate_velocity(
                 companyId=company_id,
                 skuId=sku.id,
                 locationId=location_id,
+                analysisDate=date.today(),
+                totalPicks=0,
                 pickFrequency=pick_frequency,
                 avgDailyPicks=Decimal("0"),
-                avgWeeklyPicks=Decimal("0"),
-                velocityClass=velocity_class,
-                calculatedAt=datetime.utcnow()
+                avgDailyUnits=Decimal("0"),
+                velocityClass=velocity_class
             )
             session.add(velocity)
             created += 1
@@ -147,7 +147,7 @@ def list_bin_characteristics(
     if location_id:
         query = query.where(BinCharacteristics.locationId == location_id)
     if zone:
-        query = query.where(BinCharacteristics.zone == zone)
+        query = query.where(BinCharacteristics.pickZone == zone)
     if is_pick_face is not None:
         query = query.where(BinCharacteristics.isPickFace == is_pick_face)
 
@@ -286,7 +286,7 @@ def list_recommendations(
     if status:
         query = query.where(SlottingRecommendation.status == status)
 
-    query = query.order_by(SlottingRecommendation.priority.desc()).limit(limit)
+    query = query.order_by(SlottingRecommendation.priorityScore.desc()).limit(limit)
     recommendations = session.exec(query).all()
     return recommendations
 
@@ -331,11 +331,12 @@ def generate_recommendations(
                 companyId=company_id,
                 locationId=location_id,
                 skuId=velocity.skuId,
+                recommendationType=RecommendationType.RELOCATE,
                 currentBinId=None,
-                recommendedBinId=None,
-                reason=f"High velocity SKU (Class A) - move to pick face",
-                expectedBenefit=Decimal("10"),
-                priority=1,
+                suggestedBinId=None,
+                reason="High velocity SKU (Class A) - move to pick face",
+                expectedBenefit="Reduced pick time",
+                priorityScore=Decimal("10"),
                 status=RecommendationStatus.PENDING
             )
             session.add(rec)
@@ -370,9 +371,10 @@ def apply_recommendation(
     if rec.status != RecommendationStatus.PENDING:
         raise HTTPException(status_code=400, detail="Recommendation is not pending")
 
-    rec.status = RecommendationStatus.APPLIED
-    rec.appliedById = current_user.id
-    rec.appliedAt = datetime.utcnow()
+    rec.status = RecommendationStatus.COMPLETED
+    rec.approvedById = current_user.id
+    rec.approvedAt = datetime.utcnow()
+    rec.completedAt = datetime.utcnow()
     rec.updatedAt = datetime.utcnow()
     session.add(rec)
     session.commit()

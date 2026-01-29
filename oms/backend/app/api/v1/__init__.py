@@ -65,6 +65,17 @@ from .stock_transfer import router as stock_transfer_router
 # WMS Inbound Phase 5 routers
 from .wms_dashboard import router as wms_dashboard_router
 
+# Phase 1-4 OMS/WMS Enhancement routers
+from .labor import router as labor_router
+from .slotting import router as slotting_router
+from .voice import router as voice_router
+from .cross_dock import router as cross_dock_router
+from .preorders import router as preorders_router
+from .subscriptions import router as subscriptions_router
+from .mobile import router as mobile_router
+from .reconciliation import router as reconciliation_router
+from .marketplaces import router as marketplaces_router
+
 # Main v1 router
 router = APIRouter(prefix="/v1")
 
@@ -130,3 +141,14 @@ router.include_router(stock_transfer_router)
 
 # WMS Inbound Phase 5
 router.include_router(wms_dashboard_router)
+
+# Phase 1-4 OMS/WMS Enhancements
+router.include_router(labor_router)
+router.include_router(slotting_router)
+router.include_router(voice_router)
+router.include_router(cross_dock_router)
+router.include_router(preorders_router)
+router.include_router(subscriptions_router)
+router.include_router(mobile_router)
+router.include_router(reconciliation_router)
+router.include_router(marketplaces_router)

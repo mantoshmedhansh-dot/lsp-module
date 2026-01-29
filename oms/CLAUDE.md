@@ -1,6 +1,6 @@
 # CJDQuick OMS - Project Context
 
-**Last Updated:** 2026-01-28
+**Last Updated:** 2026-01-29
 
 ---
 
@@ -129,6 +129,69 @@ const parseDecimal = (value: string | number | null): number => {
 
 - Each module (OMS, B2B, B2C) is 100% self-contained
 - Communication between modules via HTTP API only
+
+### Rule 6: Database Synchronization (CRITICAL)
+
+**ALWAYS create database tables/structures in Supabase when making codebase changes.**
+
+When adding new features, models, or modifying existing ones:
+
+1. **Create Migration First**: Write SQL migration in `backend/migrations/`
+2. **Run on Supabase**: Execute migration via Supabase SQL Editor
+3. **Verify Tables Exist**: Confirm tables/columns exist before deploying code
+4. **Document Changes**: Update migration file with comments
+
+**Checklist for any model changes:**
+```
+[ ] SQL migration written in backend/migrations/
+[ ] Migration executed on Supabase
+[ ] Tables/columns verified to exist
+[ ] Indexes created for foreign keys
+[ ] Triggers added if needed (e.g., updated_at)
+```
+
+**Migration File Naming:**
+```
+backend/migrations/
+├── wms_inbound_phase1_external_po.sql
+├── wms_inbound_phase2_asn.sql
+├── wms_inbound_phase3_sto.sql
+└── feature_name_description.sql
+```
+
+**Example Migration Template:**
+```sql
+-- ============================================================================
+-- Feature: [Feature Name]
+-- Date: YYYY-MM-DD
+-- Description: [What this migration does]
+-- ============================================================================
+
+-- Create table
+CREATE TABLE IF NOT EXISTS table_name (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    company_id UUID NOT NULL REFERENCES companies(id),
+    -- ... fields ...
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Indexes
+CREATE INDEX IF NOT EXISTS idx_table_company ON table_name(company_id);
+
+-- Trigger for updated_at
+CREATE OR REPLACE FUNCTION update_table_timestamp()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_table_updated_at
+    BEFORE UPDATE ON table_name
+    FOR EACH ROW EXECUTE FUNCTION update_table_timestamp();
+```
 
 ---
 

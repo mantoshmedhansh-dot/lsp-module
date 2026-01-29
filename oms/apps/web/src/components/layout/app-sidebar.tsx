@@ -66,6 +66,13 @@ import {
   Server,
   ScrollText,
   ShoppingBag,
+  Mic,
+  Smartphone,
+  ArrowRightLeft,
+  Repeat,
+  UserCheck,
+  LayoutGrid,
+  Link2,
 } from "lucide-react";
 import {
   Sidebar,
@@ -156,6 +163,8 @@ const ordersNav: NavItemWithSub = {
     { title: "New Order", href: "/orders/new" },
     { title: "Order Import", href: "/orders/import" },
     { title: "Bulk Actions", href: "/orders/bulk" },
+    { title: "Pre-orders", href: "/orders/preorders" },
+    { title: "Subscriptions", href: "/orders/subscriptions" },
   ],
 };
 
@@ -198,6 +207,58 @@ const fulfillmentNav: NavItemWithSub = {
     { title: "Outbound QC", href: "/fulfillment/qc" },
     { title: "Manifest", href: "/fulfillment/manifest" },
     { title: "Gate Pass", href: "/fulfillment/gate-pass" },
+  ],
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// WMS ADVANCED OPERATIONS (Phase 1-4)
+// ═══════════════════════════════════════════════════════════════════════════
+
+const laborManagementNav: NavItemWithSub = {
+  title: "Labor Management",
+  icon: UserCheck,
+  items: [
+    { title: "Dashboard", href: "/wms/labor" },
+    { title: "Shifts", href: "/wms/labor/shifts" },
+    { title: "Assignments", href: "/wms/labor/assignments" },
+    { title: "Productivity", href: "/wms/labor/productivity" },
+  ],
+};
+
+const slottingNav: NavItemWithSub = {
+  title: "Slotting",
+  icon: LayoutGrid,
+  items: [
+    { title: "Analysis", href: "/wms/slotting" },
+    { title: "Recommendations", href: "/wms/slotting/recommendations" },
+  ],
+};
+
+const voicePickingNav: NavItemWithSub = {
+  title: "Voice Picking",
+  icon: Mic,
+  items: [
+    { title: "Dashboard", href: "/wms/voice" },
+    { title: "Profiles", href: "/wms/voice/profiles" },
+  ],
+};
+
+const mobileWmsNav: NavItemWithSub = {
+  title: "Mobile WMS",
+  icon: Smartphone,
+  items: [
+    { title: "Dashboard", href: "/wms/mobile" },
+    { title: "Devices", href: "/wms/mobile/devices" },
+    { title: "Tasks", href: "/wms/mobile/tasks" },
+  ],
+};
+
+const crossDockNav: NavItemWithSub = {
+  title: "Cross-Docking",
+  icon: ArrowRightLeft,
+  items: [
+    { title: "Dashboard", href: "/wms/cross-dock" },
+    { title: "Rules", href: "/wms/cross-dock/rules" },
   ],
 };
 
@@ -325,6 +386,7 @@ const financeNav: NavItemWithSub = {
     { title: "Finance Dashboard", href: "/finance/dashboard" },
     { title: "Invoices", href: "/finance/invoices" },
     { title: "COD Reconciliation", href: "/finance/cod-reconciliation" },
+    { title: "Payment Reconciliation", href: "/finance/reconciliation" },
     { title: "Freight Billing", href: "/finance/freight-billing" },
     { title: "Weight Discrepancy", href: "/finance/weight-discrepancy" },
     { title: "Payment Ledger", href: "/finance/payment-ledger" },
@@ -394,7 +456,8 @@ const channelsNav: NavItemWithSub = {
   title: "Channels",
   icon: Store,
   items: [
-    { title: "Marketplace Integrations", href: "/channels" },
+    { title: "Channel Overview", href: "/channels" },
+    { title: "Marketplace Hub", href: "/channels/marketplaces" },
     { title: "Sync Settings", href: "/channels/sync" },
   ],
 };
@@ -643,6 +706,22 @@ export function AppSidebar() {
               <CollapsibleNavItem item={inventoryNav} pathname={pathname} />
               <CollapsibleNavItem item={fulfillmentNav} pathname={pathname} />
               <CollapsibleNavItem item={returnsNav} pathname={pathname} />
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* ═══ WMS ADVANCED ═══ */}
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-xs font-semibold text-indigo-600">
+            WMS Advanced
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <CollapsibleNavItem item={laborManagementNav} pathname={pathname} />
+              <CollapsibleNavItem item={slottingNav} pathname={pathname} />
+              <CollapsibleNavItem item={voicePickingNav} pathname={pathname} />
+              <CollapsibleNavItem item={mobileWmsNav} pathname={pathname} />
+              <CollapsibleNavItem item={crossDockNav} pathname={pathname} />
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

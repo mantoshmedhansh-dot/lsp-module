@@ -28,6 +28,103 @@ router = APIRouter(prefix="/reconciliation", tags=["Payment Reconciliation"])
 
 
 # ============================================================================
+# Dashboard
+# ============================================================================
+
+@router.get("/dashboard")
+def get_reconciliation_dashboard(
+    company_filter: CompanyFilter = Depends(),
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """Get reconciliation dashboard summary"""
+    if not company_filter.company_id:
+        return {
+            "totalSettlements": 0,
+            "pendingReconciliation": 0,
+            "matchedPercentage": 0,
+            "totalDiscrepancies": 0,
+            "openChargebacks": 0,
+            "chargebackAmount": 0,
+            "codPending": 0,
+            "escrowHeld": 0
+        }
+
+    # Total settlements
+    total_settlements = session.exec(
+        select(func.count(PaymentSettlement.id))
+        .where(PaymentSettlement.companyId == company_filter.company_id)
+    ).one() or 0
+
+    # Pending reconciliation
+    pending_recon = session.exec(
+        select(func.count(PaymentSettlement.id))
+        .where(PaymentSettlement.companyId == company_filter.company_id)
+        .where(PaymentSettlement.status == SettlementStatus.PENDING)
+    ).one() or 0
+
+    # Matched amount percentage
+    matched_pct = 0
+    if total_settlements > 0:
+        matched_result = session.exec(
+            select(func.count(PaymentSettlement.id))
+            .where(PaymentSettlement.companyId == company_filter.company_id)
+            .where(PaymentSettlement.status == SettlementStatus.MATCHED)
+        ).one() or 0
+        matched_pct = round((matched_result / total_settlements) * 100, 1)
+
+    # Total discrepancies
+    total_discrepancies = session.exec(
+        select(func.count(ReconciliationDiscrepancy.id))
+        .where(ReconciliationDiscrepancy.companyId == company_filter.company_id)
+        .where(ReconciliationDiscrepancy.isResolved == False)
+    ).one() or 0
+
+    # Open chargebacks
+    open_chargebacks = session.exec(
+        select(func.count(Chargeback.id))
+        .where(Chargeback.companyId == company_filter.company_id)
+        .where(Chargeback.status.in_([ChargebackStatus.PENDING, ChargebackStatus.DISPUTED]))
+    ).one() or 0
+
+    # Chargeback amount
+    chargeback_amount = session.exec(
+        select(func.sum(Chargeback.amount))
+        .where(Chargeback.companyId == company_filter.company_id)
+        .where(Chargeback.status.in_([ChargebackStatus.PENDING, ChargebackStatus.DISPUTED]))
+    ).one() or 0
+
+    # COD pending (from CODReconciliation if exists)
+    cod_pending = 0
+    try:
+        cod_pending = session.exec(
+            select(func.count(CODReconciliation.id))
+            .where(CODReconciliation.companyId == company_filter.company_id)
+            .where(CODReconciliation.status == CODReconciliationStatus.PENDING)
+        ).one() or 0
+    except Exception:
+        pass
+
+    # Escrow held
+    escrow_held = session.exec(
+        select(func.sum(EscrowHold.amount))
+        .where(EscrowHold.companyId == company_filter.company_id)
+        .where(EscrowHold.status == EscrowStatus.HELD)
+    ).one() or 0
+
+    return {
+        "totalSettlements": total_settlements,
+        "pendingReconciliation": pending_recon,
+        "matchedPercentage": matched_pct,
+        "totalDiscrepancies": total_discrepancies,
+        "openChargebacks": open_chargebacks,
+        "chargebackAmount": float(chargeback_amount) if chargeback_amount else 0,
+        "codPending": cod_pending,
+        "escrowHeld": float(escrow_held) if escrow_held else 0
+    }
+
+
+# ============================================================================
 # Settlements
 # ============================================================================
 

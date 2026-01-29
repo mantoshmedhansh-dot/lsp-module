@@ -254,6 +254,49 @@ def process_barcode_scan(
     return {"success": True, "data": result}
 
 
+@router.get("/scan-logs")
+def list_scan_logs(
+    device_id: Optional[UUID] = None,
+    user_id: Optional[UUID] = None,
+    is_successful: Optional[bool] = None,
+    limit: int = Query(50, ge=1, le=200),
+    company_filter: CompanyFilter = Depends(),
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """List barcode scan logs"""
+    query = select(BarcodeScanLog)
+
+    if company_filter.company_id:
+        query = query.where(BarcodeScanLog.companyId == company_filter.company_id)
+    if device_id:
+        query = query.where(BarcodeScanLog.deviceId == device_id)
+    if user_id:
+        query = query.where(BarcodeScanLog.userId == user_id)
+    if is_successful is not None:
+        query = query.where(BarcodeScanLog.isSuccessful == is_successful)
+
+    query = query.order_by(BarcodeScanLog.scannedAt.desc()).limit(limit)
+    logs = session.exec(query).all()
+
+    # Enrich with user names
+    results = []
+    for log in logs:
+        user = session.exec(select(User).where(User.id == log.userId)).first()
+        results.append({
+            "id": str(log.id),
+            "deviceId": str(log.deviceId) if log.deviceId else None,
+            "userId": str(log.userId),
+            "userName": user.name if user else None,
+            "barcode": log.barcode,
+            "scanType": log.scanType,
+            "isSuccessful": log.isSuccessful,
+            "scannedAt": log.scannedAt.isoformat() if log.scannedAt else None
+        })
+
+    return results
+
+
 # ============================================================================
 # Tasks
 # ============================================================================

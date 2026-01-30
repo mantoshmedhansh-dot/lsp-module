@@ -1,6 +1,6 @@
 # CJDQuick OMS - Project Context
 
-**Last Updated:** 2026-01-29
+**Last Updated:** 2026-01-30
 
 ---
 
@@ -272,10 +272,10 @@ export default function FeaturePage() {
 
 ### Platform Mapping (CRITICAL)
 
-| Platform | What | Source Folder | Deploy From | URL |
-|----------|------|---------------|-------------|-----|
-| **Vercel** | Frontend (Next.js) | `apps/web/` | **Repo root** `/oms/` | https://oms-sable.vercel.app |
-| **Render** | Backend (FastAPI) | `backend/` | Auto on push | https://cjdquick-api-vr4w.onrender.com |
+| Platform | What | Source Folder | Deploy Trigger | URL |
+|----------|------|---------------|----------------|-----|
+| **Vercel** | Frontend (Next.js) | `apps/web/` | **Auto on git push** | https://oms-sable.vercel.app |
+| **Render** | Backend (FastAPI) | `backend/` | Auto on git push | https://cjdquick-api-vr4w.onrender.com |
 
 ### Vercel Project Settings (vercel.com)
 
@@ -308,21 +308,11 @@ export default function FeaturePage() {
 
 ### Vercel Deployment Rules
 
-**ALWAYS deploy from git repo root `/Users/mantosh/CJDQuickApp/`**
+**Vercel auto-deploys on git push to `main`** (GitHub integration enabled)
 
-```bash
-# CORRECT - Deploy from git repo root
-cd /Users/mantosh/CJDQuickApp
-npx vercel deploy --prod --yes --force   # Use --force to clear cache if needed
-
-# WRONG - Don't deploy from oms/ or apps/web/
-cd /Users/mantosh/CJDQuickApp/oms
-npx vercel deploy --prod --yes           # WRONG! Causes path duplication
-```
-
-**Why git repo root?**
+- Push to `main` branch triggers automatic Vercel deployment
+- No CLI deploy needed - just `git push origin main`
 - Vercel's `rootDirectory` is set to `oms` on their server
-- Deploying from repo root + rootDirectory=oms → Vercel builds from `oms/`
 - The `oms/vercel.json` handles the build: `npm run vercel-build` → `cd apps/web && npm run build`
 
 ### Render Deployment Rules
@@ -333,22 +323,23 @@ npx vercel deploy --prod --yes           # WRONG! Causes path duplication
 - Frontend-only changes do NOT trigger Render deploy (correct behavior)
 - No manual deployment needed for Render
 
-### Manual Deploy Commands
+### Deploy Commands
 
 ```bash
-# 1. Test build locally (from repo root)
+# 1. Test build locally before pushing
 cd /Users/mantosh/CJDQuickApp/oms
 npm run vercel-build
 
-# 2. Commit and push (triggers Render auto-deploy for backend)
+# 2. Commit and push (triggers BOTH Vercel and Render auto-deploy)
+cd /Users/mantosh/CJDQuickApp
 git add <files>
 git commit -m "message"
 git push origin main
 
-# 3. Deploy to Vercel (from repo root)
-cd /Users/mantosh/CJDQuickApp/oms
-npx vercel deploy --prod --yes
+# Vercel and Render will automatically deploy after push
 ```
+
+**DO NOT use `npx vercel deploy`** - this causes duplicate deployments since GitHub auto-deploy is enabled.
 
 ### Git Repository
 
@@ -360,7 +351,7 @@ npx vercel deploy --prod --yes
 
 | Platform | Trigger | Branch | Project Name |
 |----------|---------|--------|--------------|
-| Vercel | CLI deploy | `main` | `oms` |
+| Vercel | Auto (git push) | `main` | `oms` |
 | Render | Auto (git push) | `main` | `cjdquick-api` |
 
 ### Vercel Project Verification
@@ -494,12 +485,11 @@ curl https://cjdquick-api-vr4w.onrender.com/health
 ## 13. DEPLOYMENT PRE-FLIGHT CHECKLIST
 
 ```
-[ ] npm run vercel-build passes
-[ ] Backend starts without errors
-[ ] Tested affected pages locally
-[ ] Tested API endpoints
-[ ] Pushed to both remotes
-[ ] Verified production after deploy
+[ ] npm run vercel-build passes locally
+[ ] Backend health check passes
+[ ] Run any required SQL migrations on Supabase
+[ ] git push origin main (triggers auto-deploy to Vercel + Render)
+[ ] Verify production after deploy: https://oms-sable.vercel.app
 ```
 
 ---

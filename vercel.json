@@ -1,0 +1,7 @@
+{
+  "version": 2,
+  "framework": "nextjs",
+  "buildCommand": "cd oms/apps/web && npm install && npm run build",
+  "outputDirectory": "oms/apps/web/.next",
+  "installCommand": "cd oms/apps/web && npm install"
+}

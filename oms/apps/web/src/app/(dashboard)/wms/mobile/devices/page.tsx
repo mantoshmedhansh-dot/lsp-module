@@ -148,7 +148,7 @@ export default function DevicesPage() {
     try {
       const url = editingDevice
         ? `/api/v1/mobile/devices/${editingDevice.id}`
-        : "/api/v1/mobile/devices";
+        : "/api/v1/mobile/register";
       const method = editingDevice ? "PATCH" : "POST";
 
       const response = await fetch(url, {

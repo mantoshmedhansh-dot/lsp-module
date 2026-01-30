@@ -165,7 +165,7 @@ export default function VoiceProfilesPage() {
 
   const startTraining = async (id: string) => {
     try {
-      const response = await fetch(`/api/v1/voice/profiles/${id}/start-training`, {
+      const response = await fetch(`/api/v1/voice/profiles/${id}/training/start`, {
         method: "POST",
       });
       if (response.ok) {

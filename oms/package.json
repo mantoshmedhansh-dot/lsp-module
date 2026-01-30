@@ -29,6 +29,7 @@
     "validate": "npm run build:web"
   },
   "devDependencies": {
+    "pg": "^8.18.0",
     "turbo": "^2.0.0",
     "vitest": "^4.0.17"
   },

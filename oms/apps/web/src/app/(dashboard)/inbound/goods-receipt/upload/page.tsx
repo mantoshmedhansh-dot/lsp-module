@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -88,10 +88,10 @@ export default function BulkUploadPage() {
   const [uploadError, setUploadError] = useState<string | null>(null);
 
   // Fetch locations on mount
-  useState(() => {
+  useEffect(() => {
     fetchLocations();
     fetchUploadHistory();
-  });
+  }, []);
 
   async function fetchLocations() {
     try {

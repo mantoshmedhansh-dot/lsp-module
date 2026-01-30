@@ -710,22 +710,6 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* ═══ WMS ADVANCED ═══ */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-indigo-600">
-            WMS Advanced
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <CollapsibleNavItem item={laborManagementNav} pathname={pathname} />
-              <CollapsibleNavItem item={slottingNav} pathname={pathname} />
-              <CollapsibleNavItem item={voicePickingNav} pathname={pathname} />
-              <CollapsibleNavItem item={mobileWmsNav} pathname={pathname} />
-              <CollapsibleNavItem item={crossDockNav} pathname={pathname} />
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
         {/* ═══ LOGISTICS & DELIVERY ═══ */}
         <SidebarGroup>
           <SidebarGroupLabel className="text-xs font-semibold text-amber-600">
@@ -779,6 +763,11 @@ export function AppSidebar() {
             logisticsSetupNav,
             channelsNav,
             qcSetupNav,
+            laborManagementNav,
+            slottingNav,
+            voicePickingNav,
+            mobileWmsNav,
+            crossDockNav,
             notificationsNav,
             settingsNav,
           ]}

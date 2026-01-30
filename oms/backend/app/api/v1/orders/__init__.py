@@ -495,7 +495,7 @@ def generate_invoice(
     today = datetime.utcnow().strftime("%Y%m%d")
     invoice_count = session.exec(
         select(func.count(Order.id)).where(
-            Order.invoiceNo.isnot(None),
+            Order.invoiceNo != None,
             Order.invoiceNo.like(f"INV-{today}-%")
         )
     ).one()

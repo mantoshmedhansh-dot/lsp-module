@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 
 from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlmodel import Session, select, func
+from sqlmodel import Session, select, func, SQLModel
 
 from app.core.database import get_session
 from app.core.deps import get_current_user, require_manager, CompanyFilter
@@ -15,99 +15,22 @@ from app.models import (
     User,
     MarketplaceConnection,
     ConnectionStatus,
+    MarketplaceReturn,
+    MarketplaceReturnResponse,
+    MarketplaceReturnStatus,
 )
-from app.models.base import BaseModel
-from sqlmodel import SQLModel, Field
-from sqlalchemy import Column, JSON, Text
 
 
-# ============================================================================
-# Models for Marketplace Returns
-# ============================================================================
-
-class MarketplaceReturnStatus:
-    """Status values for marketplace returns"""
-    INITIATED = "INITIATED"
-    APPROVED = "APPROVED"
-    IN_TRANSIT = "IN_TRANSIT"
-    RECEIVED = "RECEIVED"
-    QC_PENDING = "QC_PENDING"
-    QC_PASSED = "QC_PASSED"
-    QC_FAILED = "QC_FAILED"
-    REFUND_PENDING = "REFUND_PENDING"
-    REFUND_PROCESSED = "REFUND_PROCESSED"
-    COMPLETED = "COMPLETED"
-    REJECTED = "REJECTED"
-    CANCELLED = "CANCELLED"
-
-
-class MarketplaceReturnBase(SQLModel):
-    """Marketplace Return base fields"""
-    companyId: UUID = Field(foreign_key="Company.id", index=True)
-    connectionId: UUID = Field(foreign_key="MarketplaceConnection.id", index=True)
-    channel: str = Field(max_length=50)
-    marketplaceReturnId: str = Field(max_length=100, index=True)
-    marketplaceOrderId: str = Field(max_length=100, index=True)
-    localOrderId: Optional[UUID] = Field(default=None, foreign_key="Order.id")
-    returnReason: Optional[str] = Field(default=None, max_length=255)
-    returnSubReason: Optional[str] = Field(default=None, max_length=255)
-    customerComments: Optional[str] = Field(default=None, sa_column=Column(Text))
-    returnType: str = Field(default="REFUND", max_length=50)  # REFUND, REPLACEMENT, EXCHANGE
-    status: str = Field(default=MarketplaceReturnStatus.INITIATED, max_length=50)
-    initiatedAt: datetime
-    expectedDeliveryAt: Optional[datetime] = None
-    receivedAt: Optional[datetime] = None
-    refundAmount: Decimal = Field(default=Decimal("0"))
-    refundStatus: Optional[str] = Field(default=None, max_length=50)
-    refundedAt: Optional[datetime] = None
-    qcStatus: Optional[str] = Field(default=None, max_length=50)
-    qcNotes: Optional[str] = Field(default=None, sa_column=Column(Text))
-    qcCompletedAt: Optional[datetime] = None
-    qcCompletedBy: Optional[UUID] = Field(default=None, foreign_key="User.id")
-    trackingNumber: Optional[str] = Field(default=None, max_length=100)
-    courierName: Optional[str] = Field(default=None, max_length=100)
-    returnData: Optional[dict] = Field(default=None, sa_column=Column(JSON))
-
-
-class MarketplaceReturn(MarketplaceReturnBase, BaseModel, table=True):
-    """Marketplace Return model"""
-    __tablename__ = "MarketplaceReturn"
-
-
-class MarketplaceReturnItemBase(SQLModel):
-    """Marketplace Return Item base fields"""
-    returnId: UUID = Field(foreign_key="MarketplaceReturn.id", index=True)
-    marketplaceLineId: Optional[str] = Field(default=None, max_length=100)
-    skuId: Optional[UUID] = Field(default=None, foreign_key="SKU.id")
-    marketplaceSku: str = Field(max_length=100)
-    skuCode: Optional[str] = Field(default=None, max_length=100)
-    productName: Optional[str] = Field(default=None, max_length=255)
-    quantity: int = Field(default=1)
-    returnedQuantity: int = Field(default=0)
-    saleableQuantity: int = Field(default=0)
-    damagedQuantity: int = Field(default=0)
-    unitPrice: Decimal = Field(default=Decimal("0"))
-    refundAmount: Decimal = Field(default=Decimal("0"))
-    qcStatus: Optional[str] = Field(default=None, max_length=50)
-    qcNotes: Optional[str] = Field(default=None, sa_column=Column(Text))
-
-
-class MarketplaceReturnItem(MarketplaceReturnItemBase, BaseModel, table=True):
-    """Marketplace Return Item model"""
-    __tablename__ = "MarketplaceReturnItem"
-
-
-# Response schemas
-class MarketplaceReturnResponse(MarketplaceReturnBase):
-    """Response for marketplace return"""
-    id: UUID
-    createdAt: datetime
-    updatedAt: datetime
-
-
-class MarketplaceReturnItemResponse(MarketplaceReturnItemBase):
+# Additional response schemas for items (if needed locally)
+class MarketplaceReturnItemResponse(SQLModel):
     """Response for marketplace return item"""
     id: UUID
+    returnId: UUID
+    marketplaceSku: str
+    skuCode: Optional[str] = None
+    productName: Optional[str] = None
+    quantity: int = 1
+    returnedQuantity: int = 0
     createdAt: datetime
     updatedAt: datetime
 

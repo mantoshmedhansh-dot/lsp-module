@@ -556,8 +556,6 @@ from .channels import (
     MarketplaceInventorySyncResponse,
     MarketplaceReturn,
     MarketplaceReturnResponse,
-    MarketplaceSettlement,
-    MarketplaceSettlementResponse,
     OAuthConnectRequest,
     OAuthConnectResponse,
     SyncOrdersRequest,
@@ -1786,9 +1784,6 @@ __all__ = [
     # MarketplaceReturn
     "MarketplaceReturn",
     "MarketplaceReturnResponse",
-    # MarketplaceSettlement
-    "MarketplaceSettlement",
-    "MarketplaceSettlementResponse",
     # Marketplace Request/Response
     "OAuthConnectRequest",
     "OAuthConnectResponse",

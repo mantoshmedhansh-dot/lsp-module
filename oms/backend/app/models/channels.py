@@ -404,52 +404,6 @@ class MarketplaceReturnResponse(MarketplaceReturnBase):
 
 
 # ============================================================================
-# Marketplace Settlement
-# ============================================================================
-
-class MarketplaceSettlementBase(SQLModel):
-    """Marketplace settlement base fields"""
-    companyId: UUID = Field(foreign_key="Company.id", index=True)
-    connectionId: UUID = Field(foreign_key="MarketplaceConnection.id", index=True)
-    marketplace: MarketplaceType = Field(index=True)
-    settlementId: str = Field(max_length=100, index=True)
-    settlementDate: date = Field(index=True)
-    periodFrom: date
-    periodTo: date
-    totalOrders: int = Field(default=0)
-    grossSales: Decimal = Field(default=Decimal("0"))
-    marketplaceFee: Decimal = Field(default=Decimal("0"))
-    shippingFee: Decimal = Field(default=Decimal("0"))
-    taxCollected: Decimal = Field(default=Decimal("0"))
-    taxRemitted: Decimal = Field(default=Decimal("0"))
-    promotions: Decimal = Field(default=Decimal("0"))
-    refunds: Decimal = Field(default=Decimal("0"))
-    chargebacks: Decimal = Field(default=Decimal("0"))
-    adjustments: Decimal = Field(default=Decimal("0"))
-    netAmount: Decimal = Field(default=Decimal("0"))
-    currency: str = Field(default="INR", max_length=10)
-    paymentReference: Optional[str] = Field(default=None, max_length=100)
-    paymentDate: Optional[date] = None
-    isReconciled: bool = Field(default=False)
-    reconciledAt: Optional[datetime] = None
-    fileUrl: Optional[str] = Field(default=None, max_length=500)
-    rawData: Optional[dict] = Field(default=None, sa_column=Column(JSON))
-    notes: Optional[str] = Field(default=None, max_length=1000)
-
-
-class MarketplaceSettlement(MarketplaceSettlementBase, BaseModel, table=True):
-    """Marketplace settlement model"""
-    __tablename__ = "MarketplaceSettlement"
-
-
-class MarketplaceSettlementResponse(MarketplaceSettlementBase):
-    """Response schema for settlement"""
-    id: UUID
-    createdAt: datetime
-    updatedAt: datetime
-
-
-# ============================================================================
 # Request/Response Schemas for Marketplace Operations
 # ============================================================================
 

@@ -60,6 +60,8 @@ import {
   X,
   AlertCircle,
   Download,
+  PackageCheck,
+  ExternalLink,
 } from "lucide-react";
 import { toast } from "sonner";
 import { exportToCSV, type ExportColumn } from "@/lib/utils";
@@ -646,6 +648,22 @@ export default function ASNManagementPage() {
                               <Eye className="mr-2 h-4 w-4" />
                               View Details
                             </DropdownMenuItem>
+                            {(inbound.status === "PENDING" || inbound.status === "IN_PROGRESS") && !inbound.grnNo && (
+                              <DropdownMenuItem
+                                onClick={() => router.push(`/inbound/goods-receipt/new?source=asn&asnId=${inbound.id}`)}
+                              >
+                                <PackageCheck className="mr-2 h-4 w-4 text-green-600" />
+                                Create GRN
+                              </DropdownMenuItem>
+                            )}
+                            {inbound.grnNo && (
+                              <DropdownMenuItem
+                                onClick={() => router.push(`/inbound/goods-receipt?search=${inbound.grnNo}`)}
+                              >
+                                <ExternalLink className="mr-2 h-4 w-4 text-blue-600" />
+                                View GRN
+                              </DropdownMenuItem>
+                            )}
                             {inbound.status === "PENDING" && (
                               <DropdownMenuItem
                                 onClick={() => router.push(`/inbound/receiving?id=${inbound.id}`)}

@@ -189,6 +189,7 @@ const inboundNav: NavItemWithSub = {
   icon: ArrowDownToLine,
   items: [
     { title: "Goods Receipt (GRN)", href: "/inbound/goods-receipt" },
+    { title: "External POs", href: "/inbound/external-pos" },
     { title: "ASN Management", href: "/inbound/asn" },
     { title: "Receiving", href: "/inbound/receiving" },
     { title: "Putaway Tasks", href: "/inbound/putaway" },

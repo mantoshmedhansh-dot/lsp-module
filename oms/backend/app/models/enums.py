@@ -122,6 +122,7 @@ class OrderStatus(str, Enum):
     PICKED = "PICKED"
     PACKING = "PACKING"
     PACKED = "PACKED"
+    INVOICED = "INVOICED"
     MANIFESTED = "MANIFESTED"
     SHIPPED = "SHIPPED"
     IN_TRANSIT = "IN_TRANSIT"

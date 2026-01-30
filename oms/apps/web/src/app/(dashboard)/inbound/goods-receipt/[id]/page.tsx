@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 import {
   ArrowLeft,
   Plus,
@@ -16,6 +17,14 @@ import {
   Search,
   Loader2,
   Edit,
+  Truck,
+  ShoppingCart,
+  CornerDownLeft,
+  ArrowRightLeft,
+  PenLine,
+  ExternalLink,
+  PackageCheck,
+  Warehouse,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -78,6 +87,19 @@ interface GoodsReceipt {
   itemCount: number;
   createdAt: string;
   items: GoodsReceiptItem[];
+  // Source information
+  sourceType?: string;
+  externalPoId?: string | null;
+  externalPoNumber?: string | null;
+  asnId?: string | null;
+  returnId?: string | null;
+  stoId?: string | null;
+  vendorId?: string | null;
+  vendorCode?: string | null;
+  vendorName?: string | null;
+  vehicleNumber?: string | null;
+  driverName?: string | null;
+  gateEntryNo?: string | null;
 }
 
 interface GoodsReceiptItem {
@@ -121,6 +143,88 @@ const statusConfig: Record<string, { label: string; color: string; icon: React.E
   REVERSED: { label: "Reversed", color: "bg-orange-500", icon: RotateCcw },
   CANCELLED: { label: "Cancelled", color: "bg-red-500", icon: XCircle },
 };
+
+const sourceTypeConfig: Record<string, { label: string; icon: React.ElementType; color: string }> = {
+  EXTERNAL_PO: { label: "External PO", icon: ShoppingCart, color: "text-blue-600" },
+  ASN: { label: "ASN", icon: Truck, color: "text-purple-600" },
+  RETURN: { label: "Sales Return", icon: CornerDownLeft, color: "text-orange-600" },
+  STO: { label: "Stock Transfer", icon: ArrowRightLeft, color: "text-cyan-600" },
+  MANUAL: { label: "Manual Entry", icon: PenLine, color: "text-gray-600" },
+};
+
+// Workflow Stepper Component
+function WorkflowStepper({ status }: { status: string }) {
+  const steps = [
+    { key: "DRAFT", label: "Draft", icon: FileText },
+    { key: "RECEIVING", label: "Receiving", icon: PlayCircle },
+    { key: "POSTED", label: "Posted", icon: CheckCircle2 },
+  ];
+
+  const getStepStatus = (stepKey: string) => {
+    if (status === "CANCELLED") return stepKey === "DRAFT" ? "cancelled" : "pending";
+    if (status === "REVERSED") {
+      if (stepKey === "DRAFT" || stepKey === "RECEIVING" || stepKey === "POSTED") return "reversed";
+    }
+
+    const currentIndex = steps.findIndex((s) => s.key === status);
+    const stepIndex = steps.findIndex((s) => s.key === stepKey);
+
+    if (stepIndex < currentIndex) return "completed";
+    if (stepIndex === currentIndex) return "current";
+    return "pending";
+  };
+
+  return (
+    <div className="flex items-center justify-center py-4">
+      {steps.map((step, index) => {
+        const stepStatus = getStepStatus(step.key);
+        const StepIcon = step.icon;
+
+        return (
+          <div key={step.key} className="flex items-center">
+            <div className="flex flex-col items-center">
+              <div
+                className={`
+                  flex items-center justify-center w-10 h-10 rounded-full border-2 transition-colors
+                  ${stepStatus === "completed" ? "bg-green-500 border-green-500 text-white" : ""}
+                  ${stepStatus === "current" ? "bg-blue-500 border-blue-500 text-white" : ""}
+                  ${stepStatus === "pending" ? "bg-gray-100 border-gray-300 text-gray-400" : ""}
+                  ${stepStatus === "cancelled" ? "bg-red-100 border-red-300 text-red-500" : ""}
+                  ${stepStatus === "reversed" ? "bg-orange-100 border-orange-300 text-orange-500" : ""}
+                `}
+              >
+                {stepStatus === "completed" ? (
+                  <CheckCircle2 className="h-5 w-5" />
+                ) : (
+                  <StepIcon className="h-5 w-5" />
+                )}
+              </div>
+              <span
+                className={`
+                  mt-2 text-xs font-medium
+                  ${stepStatus === "completed" ? "text-green-600" : ""}
+                  ${stepStatus === "current" ? "text-blue-600" : ""}
+                  ${stepStatus === "pending" ? "text-gray-400" : ""}
+                  ${stepStatus === "cancelled" || stepStatus === "reversed" ? "text-gray-500" : ""}
+                `}
+              >
+                {step.label}
+              </span>
+            </div>
+            {index < steps.length - 1 && (
+              <div
+                className={`
+                  w-16 h-0.5 mx-2 mt-[-20px]
+                  ${getStepStatus(steps[index + 1].key) !== "pending" ? "bg-green-500" : "bg-gray-300"}
+                `}
+              />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export default function GoodsReceiptDetailPage() {
   const router = useRouter();
@@ -450,6 +554,119 @@ export default function GoodsReceiptDetailPage() {
         </div>
       </div>
 
+      {/* Workflow Stepper */}
+      <Card>
+        <CardContent className="pt-6">
+          <WorkflowStepper status={gr.status} />
+          {gr.status === "CANCELLED" && (
+            <div className="flex items-center justify-center mt-2">
+              <Badge variant="destructive" className="text-sm">
+                <XCircle className="h-3 w-3 mr-1" />
+                This goods receipt has been cancelled
+              </Badge>
+            </div>
+          )}
+          {gr.status === "REVERSED" && (
+            <div className="flex items-center justify-center mt-2">
+              <Badge variant="outline" className="text-sm border-orange-500 text-orange-600">
+                <RotateCcw className="h-3 w-3 mr-1" />
+                This goods receipt has been reversed
+              </Badge>
+            </div>
+          )}
+          {gr.status === "POSTED" && (
+            <div className="flex items-center justify-center mt-2">
+              <Badge variant="outline" className="text-sm border-green-500 text-green-600">
+                <PackageCheck className="h-3 w-3 mr-1" />
+                Inventory created successfully
+              </Badge>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Source Information */}
+      {(gr.sourceType || gr.externalPoId || gr.asnId || gr.vendorName) && (
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              {(() => {
+                const sourceConfig = sourceTypeConfig[gr.sourceType || "MANUAL"];
+                const SourceIcon = sourceConfig?.icon || PenLine;
+                return (
+                  <>
+                    <SourceIcon className={`h-5 w-5 ${sourceConfig?.color || "text-gray-500"}`} />
+                    <CardTitle className="text-base">Source: {sourceConfig?.label || "Manual Entry"}</CardTitle>
+                  </>
+                );
+              })()}
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-3">
+              {/* Source Document Reference */}
+              {gr.externalPoNumber && (
+                <div>
+                  <Label className="text-muted-foreground text-xs">External PO</Label>
+                  <div className="flex items-center gap-1">
+                    <p className="font-medium">{gr.externalPoNumber}</p>
+                    {gr.externalPoId && (
+                      <Link href={`/inbound/external-po/${gr.externalPoId}`}>
+                        <ExternalLink className="h-3 w-3 text-blue-500 hover:text-blue-700" />
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              )}
+              {gr.asnNo && (
+                <div>
+                  <Label className="text-muted-foreground text-xs">ASN Number</Label>
+                  <div className="flex items-center gap-1">
+                    <p className="font-medium">{gr.asnNo}</p>
+                    {gr.asnId && (
+                      <Link href={`/inbound/asn/${gr.asnId}`}>
+                        <ExternalLink className="h-3 w-3 text-blue-500 hover:text-blue-700" />
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Vendor Info */}
+              {gr.vendorName && (
+                <div>
+                  <Label className="text-muted-foreground text-xs">Vendor</Label>
+                  <p className="font-medium">{gr.vendorName}</p>
+                  {gr.vendorCode && (
+                    <p className="text-xs text-muted-foreground">{gr.vendorCode}</p>
+                  )}
+                </div>
+              )}
+
+              {/* Receiving Details */}
+              {gr.vehicleNumber && (
+                <div>
+                  <Label className="text-muted-foreground text-xs">Vehicle</Label>
+                  <p className="font-medium">{gr.vehicleNumber}</p>
+                </div>
+              )}
+              {gr.driverName && (
+                <div>
+                  <Label className="text-muted-foreground text-xs">Driver</Label>
+                  <p className="font-medium">{gr.driverName}</p>
+                </div>
+              )}
+              {gr.gateEntryNo && (
+                <div>
+                  <Label className="text-muted-foreground text-xs">Gate Entry</Label>
+                  <p className="font-medium">{gr.gateEntryNo}</p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid gap-6 md:grid-cols-3">
         {/* Details */}
         <Card className="md:col-span-2">
@@ -475,10 +692,6 @@ export default function GoodsReceiptDetailPage() {
                 </p>
               </div>
               <div>
-                <Label className="text-muted-foreground">ASN Number</Label>
-                <p className="font-medium">{gr.asnNo || "-"}</p>
-              </div>
-              <div>
                 <Label className="text-muted-foreground">Created At</Label>
                 <p className="font-medium">
                   {format(new Date(gr.createdAt), "PPp")}
@@ -486,7 +699,7 @@ export default function GoodsReceiptDetailPage() {
               </div>
               {gr.receivedAt && (
                 <div>
-                  <Label className="text-muted-foreground">Received At</Label>
+                  <Label className="text-muted-foreground">Receiving Started</Label>
                   <p className="font-medium">
                     {format(new Date(gr.receivedAt), "PPp")}
                   </p>
@@ -644,6 +857,97 @@ export default function GoodsReceiptDetailPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Inventory Created - Show for POSTED GRNs */}
+      {gr.status === "POSTED" && gr.items && gr.items.length > 0 && (
+        <Card className="border-green-200 bg-green-50/50">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <Warehouse className="h-5 w-5 text-green-600" />
+              <CardTitle className="text-base text-green-800">Inventory Created</CardTitle>
+            </div>
+            <CardDescription>
+              The following inventory records were created when this GRN was posted
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>SKU</TableHead>
+                  <TableHead>Batch/Lot</TableHead>
+                  <TableHead className="text-right">Quantity</TableHead>
+                  <TableHead>FIFO Sequence</TableHead>
+                  <TableHead className="text-right">Unit Cost</TableHead>
+                  <TableHead className="text-right">Total Value</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {gr.items.filter(item => item.acceptedQty > 0).map((item) => (
+                  <TableRow key={`inv-${item.id}`}>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium">{item.skuCode || item.skuId}</p>
+                        {item.skuName && (
+                          <p className="text-xs text-muted-foreground">{item.skuName}</p>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm">
+                        {item.batchNo && <span>Batch: {item.batchNo}</span>}
+                        {item.batchNo && item.lotNo && <span> / </span>}
+                        {item.lotNo && <span>Lot: {item.lotNo}</span>}
+                        {!item.batchNo && !item.lotNo && <span className="text-muted-foreground">-</span>}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right font-medium">
+                      {item.acceptedQty.toLocaleString()}
+                    </TableCell>
+                    <TableCell>
+                      {item.fifoSequence ? (
+                        <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300">
+                          #{item.fifoSequence}
+                        </Badge>
+                      ) : (
+                        "-"
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {item.costPrice
+                        ? new Intl.NumberFormat("en-IN", {
+                            style: "currency",
+                            currency: "INR",
+                          }).format(item.costPrice)
+                        : "-"}
+                    </TableCell>
+                    <TableCell className="text-right font-medium">
+                      {new Intl.NumberFormat("en-IN", {
+                        style: "currency",
+                        currency: "INR",
+                      }).format((item.costPrice || 0) * item.acceptedQty)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            <div className="mt-4 flex justify-between items-center pt-4 border-t">
+              <div>
+                <p className="text-sm text-muted-foreground">
+                  Total inventory created: {gr.items.filter(i => i.acceptedQty > 0).length} SKUs,{" "}
+                  {gr.items.reduce((sum, i) => sum + i.acceptedQty, 0).toLocaleString()} units
+                </p>
+              </div>
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/inventory">
+                  <Warehouse className="mr-2 h-4 w-4" />
+                  View Inventory
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Add Item Dialog */}
       <Dialog open={showAddItemDialog} onOpenChange={setShowAddItemDialog}>

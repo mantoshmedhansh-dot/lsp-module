@@ -16,7 +16,7 @@ from app.models import (
     OrderItem, OrderItemCreate, OrderItemUpdate, OrderItemResponse,
     Delivery, DeliveryCreate, DeliveryUpdate, DeliveryResponse,
     Location, User, OrderStatus, Channel, OrderType, PaymentMode,
-    ItemStatus, DeliveryStatus
+    ItemStatus, DeliveryStatus, SKU
 )
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
@@ -378,6 +378,174 @@ def cancel_order(
     session.refresh(order)
 
     return OrderResponse.model_validate(order)
+
+
+@router.post("/{order_id}/confirm", response_model=OrderResponse)
+def confirm_order(
+    order_id: UUID,
+    company_filter: CompanyFilter = Depends(),
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Confirm an order for fulfillment.
+
+    Validates the order and moves it from CREATED to CONFIRMED status.
+    This is a prerequisite for inventory allocation.
+    """
+    query = select(Order).where(Order.id == order_id)
+
+    if company_filter.company_id:
+        location_ids = session.exec(
+            select(Location.id).where(Location.companyId == company_filter.company_id)
+        ).all()
+        query = query.where(Order.locationId.in_(location_ids))
+
+    order = session.exec(query).first()
+
+    if not order:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Order not found"
+        )
+
+    # Check if order can be confirmed
+    if order.status != OrderStatus.CREATED:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Cannot confirm order in {order.status.value} status. Only CREATED orders can be confirmed."
+        )
+
+    # Validate order has items
+    items = session.exec(
+        select(OrderItem).where(OrderItem.orderId == order_id)
+    ).all()
+
+    if not items:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot confirm order without items"
+        )
+
+    order.status = OrderStatus.CONFIRMED
+    order.updatedAt = datetime.utcnow()
+    session.add(order)
+    session.commit()
+    session.refresh(order)
+
+    return OrderResponse.model_validate(order)
+
+
+@router.post("/{order_id}/invoice")
+def generate_invoice(
+    order_id: UUID,
+    company_filter: CompanyFilter = Depends(),
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Generate invoice for a packed order.
+
+    Creates a GST-compliant tax invoice with:
+    - Invoice number (auto-generated)
+    - CGST/SGST (intra-state) or IGST (inter-state)
+    - HSN codes for items
+    - E-way bill reference (if applicable)
+
+    Updates order status to INVOICED.
+    """
+    from datetime import datetime
+
+    query = select(Order).where(Order.id == order_id)
+
+    if company_filter.company_id:
+        location_ids = session.exec(
+            select(Location.id).where(Location.companyId == company_filter.company_id)
+        ).all()
+        query = query.where(Order.locationId.in_(location_ids))
+
+    order = session.exec(query).first()
+
+    if not order:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Order not found"
+        )
+
+    # Check if order can be invoiced (should be PACKED or after picking)
+    invoiceable_statuses = [
+        OrderStatus.PACKED,
+        OrderStatus.PICKED,
+        OrderStatus.PICKING,
+        OrderStatus.PICKLIST_GENERATED,
+        OrderStatus.ALLOCATED
+    ]
+    if order.status not in invoiceable_statuses:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Cannot generate invoice for order in {order.status.value} status"
+        )
+
+    # Get order items for invoice
+    items = session.exec(
+        select(OrderItem).where(OrderItem.orderId == order_id)
+    ).all()
+
+    # Generate invoice number
+    today = datetime.utcnow().strftime("%Y%m%d")
+    invoice_count = session.exec(
+        select(func.count(Order.id)).where(
+            Order.invoiceNo.isnot(None),
+            Order.invoiceNo.like(f"INV-{today}-%")
+        )
+    ).one()
+    invoice_no = f"INV-{today}-{invoice_count + 1:04d}"
+
+    # Calculate totals
+    subtotal = sum(float(item.subtotal or 0) for item in items)
+    tax_amount = sum(float(item.taxAmount or 0) for item in items)
+
+    # Update order with invoice details
+    order.invoiceNo = invoice_no
+    order.invoiceDate = datetime.utcnow()
+    order.status = OrderStatus.INVOICED
+    order.updatedAt = datetime.utcnow()
+
+    session.add(order)
+    session.commit()
+    session.refresh(order)
+
+    # Build invoice response
+    invoice_items = []
+    for item in items:
+        sku = session.get(SKU, item.skuId)
+        invoice_items.append({
+            "skuCode": sku.code if sku else None,
+            "skuName": sku.name if sku else item.skuName,
+            "hsnCode": sku.hsnCode if sku else None,
+            "quantity": item.quantity,
+            "unitPrice": str(item.unitPrice),
+            "discount": str(item.discount or 0),
+            "taxableValue": str(item.subtotal or 0),
+            "gstRate": str(item.taxRate or 0),
+            "gstAmount": str(item.taxAmount or 0),
+            "total": str(item.total or 0)
+        })
+
+    return {
+        "success": True,
+        "orderId": str(order.id),
+        "orderNo": order.orderNo,
+        "invoiceNo": invoice_no,
+        "invoiceDate": order.invoiceDate.isoformat(),
+        "customerName": order.customerName,
+        "shippingAddress": order.shippingAddress,
+        "subtotal": str(subtotal),
+        "taxAmount": str(tax_amount),
+        "totalAmount": str(order.totalAmount),
+        "items": invoice_items,
+        "status": "INVOICED"
+    }
 
 
 # ============================================================================

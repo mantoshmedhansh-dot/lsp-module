@@ -260,20 +260,77 @@ export default function FeaturePage() {
 
 ## 6. DEPLOYMENT
 
-### One-Command Deploy (Recommended)
+### Folder Structure for Deployment
 
-```bash
-./scripts/deploy.sh
+```
+/Users/mantosh/CJDQuickApp/oms/     ← REPO ROOT (deploy from here)
+├── apps/web/                        ← Frontend source (Next.js)
+├── backend/                         ← Backend source (FastAPI)
+├── vercel.json                      ← Vercel config (at root)
+└── .vercel/                         ← Vercel project link
 ```
 
-This pushes to `main` and deploys to Vercel.
+### Platform Mapping (CRITICAL)
 
-### Manual Deploy
+| Platform | What | Source Folder | Deploy From | URL |
+|----------|------|---------------|-------------|-----|
+| **Vercel** | Frontend (Next.js) | `apps/web/` | **Repo root** `/oms/` | https://oms-sable.vercel.app |
+| **Render** | Backend (FastAPI) | `backend/` | Auto on push | https://cjdquick-api-vr4w.onrender.com |
+
+### Vercel Project Settings (vercel.com)
+
+**CRITICAL:** These settings must be configured correctly on Vercel dashboard:
+
+| Setting | Value | Notes |
+|---------|-------|-------|
+| **Root Directory** | `apps/web` | NOT `oms/apps/web` (repo root IS oms) |
+| **Build Command** | `npm run build` | Override in vercel.json |
+| **Output Directory** | `.next` | Standard Next.js |
+| **Install Command** | `npm install` | Standard |
+
+**To verify/fix:** https://vercel.com/mantosh-singhs-projects/oms/settings
+
+### Vercel Deployment Rules
+
+**ALWAYS deploy from repo root `/Users/mantosh/CJDQuickApp/oms/`**
 
 ```bash
-npm run vercel-build              # Test build locally
-git push origin main              # Render auto-deploy
-npx vercel deploy --prod --yes    # Vercel deploy
+# CORRECT - Deploy from repo root
+cd /Users/mantosh/CJDQuickApp/oms
+npx vercel deploy --prod --yes
+
+# WRONG - Never deploy from apps/web
+cd /Users/mantosh/CJDQuickApp/oms/apps/web
+npx vercel deploy --prod --yes  # WRONG! Creates wrong project link
+```
+
+**Why repo root?** The `vercel.json` at root configures:
+- Build command: `npm run vercel-build`
+- Output directory: `apps/web/.next`
+
+### Render Deployment Rules
+
+**Render auto-deploys on git push to `main`**
+
+- Backend changes in `backend/` trigger auto-deploy
+- Frontend-only changes do NOT trigger Render deploy (correct behavior)
+- No manual deployment needed for Render
+
+### Manual Deploy Commands
+
+```bash
+# 1. Test build locally (from repo root)
+cd /Users/mantosh/CJDQuickApp/oms
+npm run vercel-build
+
+# 2. Commit and push (triggers Render auto-deploy for backend)
+git add <files>
+git commit -m "message"
+git push origin main
+
+# 3. Deploy to Vercel (from repo root)
+cd /Users/mantosh/CJDQuickApp/oms
+npx vercel deploy --prod --yes
 ```
 
 ### Git Repository
@@ -284,10 +341,25 @@ npx vercel deploy --prod --yes    # Vercel deploy
 
 ### Platform Configuration
 
-| Platform | Trigger | Branch |
-|----------|---------|--------|
-| Render | Auto (git push) | `main` |
-| Vercel | CLI or webhook | `main` |
+| Platform | Trigger | Branch | Project Name |
+|----------|---------|--------|--------------|
+| Vercel | CLI deploy | `main` | `oms` |
+| Render | Auto (git push) | `main` | `cjdquick-api` |
+
+### Vercel Project Verification
+
+Before deploying, verify correct project link:
+```bash
+cat /Users/mantosh/CJDQuickApp/oms/.vercel/project.json
+# Should show: "projectName": "oms"
+```
+
+If wrong project, re-link:
+```bash
+cd /Users/mantosh/CJDQuickApp/oms
+rm -rf .vercel
+npx vercel link --yes --project oms
+```
 
 ---
 

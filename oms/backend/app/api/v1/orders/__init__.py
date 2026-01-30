@@ -493,13 +493,12 @@ def generate_invoice(
 
     # Generate invoice number
     today = datetime.utcnow().strftime("%Y%m%d")
-    invoice_count = session.exec(
-        select(func.count(Order.id)).where(
-            Order.invoiceNo != None,
-            Order.invoiceNo.like(f"INV-{today}-%")
-        )
-    ).one()
-    invoice_no = f"INV-{today}-{invoice_count + 1:04d}"
+    # Simple counter - count all orders with invoices today
+    existing_invoices = session.exec(
+        select(Order).where(Order.invoiceNo != None)
+    ).all()
+    today_count = sum(1 for o in existing_invoices if o.invoiceNo and o.invoiceNo.startswith(f"INV-{today}"))
+    invoice_no = f"INV-{today}-{today_count + 1:04d}"
 
     # Calculate totals
     subtotal = sum(float(item.subtotal or 0) for item in items)

@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+**/node_modules/
+.pnpm-store/
+
+# Build outputs - all levels
+.next/
+**/.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+
+# Other modules (not needed for oms deployment)
+b2b/
+b2c/
+client-portal/
+
+# Backend (not needed for frontend deployment)
+oms/backend/
+
+# Large/unnecessary files
+*.log
+.git/
+.pg-data/
+coverage/
+.turbo/
+
+# Environment files
+.env
+.env.local
+.env.*.local

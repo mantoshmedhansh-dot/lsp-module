@@ -283,30 +283,47 @@ export default function FeaturePage() {
 
 | Setting | Value | Notes |
 |---------|-------|-------|
-| **Root Directory** | `apps/web` | NOT `oms/apps/web` (repo root IS oms) |
-| **Build Command** | `npm run build` | Override in vercel.json |
-| **Output Directory** | `.next` | Standard Next.js |
+| **Root Directory** | `oms` | NOT empty, NOT `apps/web`, NOT `oms/apps/web` |
+| **Build Command** | Uses vercel.json | `npm run vercel-build` → `cd apps/web && npm run build` |
+| **Output Directory** | `apps/web/.next` | Relative to Root Directory |
 | **Install Command** | `npm install` | Standard |
+
+**Repository Structure:**
+```
+/Users/mantosh/CJDQuickApp/         ← GIT REPO ROOT
+├── .vercel/                        ← Vercel project link (at repo root)
+├── .vercelignore                   ← Ignore large files (node_modules, .next, etc.)
+├── vercel.json                     ← Root config (not used, rootDirectory=oms)
+├── oms/                            ← ROOT DIRECTORY FOR VERCEL
+│   ├── .vercelignore               ← OMS-specific ignores
+│   ├── vercel.json                 ← OMS Vercel config (used by Vercel)
+│   ├── apps/web/                   ← Frontend source
+│   └── backend/                    ← Backend source (ignored for Vercel)
+├── b2b/                            ← Ignored
+├── b2c/                            ← Ignored
+└── client-portal/                  ← Ignored
+```
 
 **To verify/fix:** https://vercel.com/mantosh-singhs-projects/oms/settings
 
 ### Vercel Deployment Rules
 
-**ALWAYS deploy from repo root `/Users/mantosh/CJDQuickApp/oms/`**
+**ALWAYS deploy from git repo root `/Users/mantosh/CJDQuickApp/`**
 
 ```bash
-# CORRECT - Deploy from repo root
-cd /Users/mantosh/CJDQuickApp/oms
-npx vercel deploy --prod --yes
+# CORRECT - Deploy from git repo root
+cd /Users/mantosh/CJDQuickApp
+npx vercel deploy --prod --yes --force   # Use --force to clear cache if needed
 
-# WRONG - Never deploy from apps/web
-cd /Users/mantosh/CJDQuickApp/oms/apps/web
-npx vercel deploy --prod --yes  # WRONG! Creates wrong project link
+# WRONG - Don't deploy from oms/ or apps/web/
+cd /Users/mantosh/CJDQuickApp/oms
+npx vercel deploy --prod --yes           # WRONG! Causes path duplication
 ```
 
-**Why repo root?** The `vercel.json` at root configures:
-- Build command: `npm run vercel-build`
-- Output directory: `apps/web/.next`
+**Why git repo root?**
+- Vercel's `rootDirectory` is set to `oms` on their server
+- Deploying from repo root + rootDirectory=oms → Vercel builds from `oms/`
+- The `oms/vercel.json` handles the build: `npm run vercel-build` → `cd apps/web && npm run build`
 
 ### Render Deployment Rules
 

@@ -7,6 +7,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlmodel import Session, select, func
+from sqlalchemy import extract
 
 from app.core.database import get_session
 from app.core.deps import get_current_user, require_manager, CompanyFilter
@@ -16,7 +17,8 @@ from app.models import (
     NDROutreach, NDROutreachCreate, NDROutreachUpdate, NDROutreachResponse,
     AIActionLog, AIActionLogCreate, AIActionLogUpdate, AIActionLogResponse,
     User, NDRStatus, NDRPriority, NDRReason, ResolutionType,
-    OutreachChannel, OutreachStatus, AIActionType, AIActionStatus
+    OutreachChannel, OutreachStatus, AIActionType, AIActionStatus,
+    Order, Delivery
 )
 
 router = APIRouter(prefix="/ndr", tags=["NDR"])
@@ -46,7 +48,7 @@ def list_ndrs(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
-    """List NDRs with pagination and filters."""
+    """List NDRs with pagination, filters, and real statistics."""
     actual_skip = skip if skip > 0 else (page - 1) * limit
 
     # Build filter query
@@ -73,9 +75,73 @@ def list_ndrs(
         base_query.offset(actual_skip).limit(limit).order_by(NDR.createdAt.desc())
     ).all()
 
-    # Format response
+    # Collect all order IDs and delivery IDs for batch fetching
+    order_ids = [n.orderId for n in ndrs if n.orderId]
+    delivery_ids = [n.deliveryId for n in ndrs if n.deliveryId]
+    ndr_ids = [n.id for n in ndrs]
+
+    # Batch fetch Orders
+    orders_map = {}
+    if order_ids:
+        orders = session.exec(select(Order).where(Order.id.in_(order_ids))).all()
+        orders_map = {o.id: o for o in orders}
+
+    # Batch fetch Deliveries
+    deliveries_map = {}
+    if delivery_ids:
+        deliveries = session.exec(select(Delivery).where(Delivery.id.in_(delivery_ids))).all()
+        deliveries_map = {d.id: d for d in deliveries}
+
+    # Batch fetch Outreaches for all NDRs in this page
+    outreaches_map = {}
+    if ndr_ids:
+        outreaches = session.exec(
+            select(NDROutreach).where(NDROutreach.ndrId.in_(ndr_ids)).order_by(NDROutreach.createdAt.desc())
+        ).all()
+        for o in outreaches:
+            if o.ndrId not in outreaches_map:
+                outreaches_map[o.ndrId] = []
+            outreaches_map[o.ndrId].append({
+                "id": str(o.id),
+                "channel": safe_enum_value(o.channel, "WHATSAPP"),
+                "status": safe_enum_value(o.status, "PENDING"),
+                "message": o.message,
+                "attemptNumber": o.attemptNumber,
+                "createdAt": o.createdAt.isoformat() if o.createdAt else None,
+            })
+
+    # Format response with real data
     formatted_ndrs = []
     for n in ndrs:
+        # Get order info
+        order_info = None
+        if n.orderId and n.orderId in orders_map:
+            order = orders_map[n.orderId]
+            order_info = {
+                "id": str(order.id),
+                "orderNo": order.orderNo,
+                "customerName": order.customerName,
+                "customerPhone": order.customerPhone,
+                "customerEmail": order.customerEmail,
+                "shippingAddress": order.shippingAddress,
+                "paymentMode": safe_enum_value(order.paymentMode, "PREPAID"),
+                "totalAmount": float(order.totalAmount) if order.totalAmount else 0,
+            }
+
+        # Get delivery info
+        delivery_info = None
+        if n.deliveryId and n.deliveryId in deliveries_map:
+            delivery = deliveries_map[n.deliveryId]
+            delivery_info = {
+                "id": str(delivery.id),
+                "deliveryNo": delivery.deliveryNo,
+                "awbNo": delivery.awbNo,
+                "status": safe_enum_value(delivery.status, "PENDING"),
+            }
+
+        # Get outreach attempts
+        outreach_list = outreaches_map.get(n.id, [])
+
         formatted_ndrs.append({
             "id": str(n.id),
             "ndrCode": n.ndrCode,
@@ -89,20 +155,70 @@ def list_ndrs(
             "attemptDate": n.attemptDate.isoformat() if n.attemptDate else None,
             "carrierRemark": n.carrierRemark,
             "createdAt": n.createdAt.isoformat() if n.createdAt else None,
-            "order": None,
-            "delivery": None,
-            "outreachAttempts": [],
-            "outreachCount": 0,
+            "order": order_info,
+            "delivery": delivery_info,
+            "outreachAttempts": outreach_list,
+            "outreachCount": len(outreach_list),
         })
+
+    # Calculate statistics for the company (not just filtered results)
+    status_counts = {}
+    priority_counts = {}
+    reason_counts = {}
+
+    # Get all NDRs for the company to calculate aggregates
+    all_ndrs_query = select(NDR)
+    if company_filter.company_id:
+        all_ndrs_query = all_ndrs_query.where(NDR.companyId == company_filter.company_id)
+    all_ndrs = session.exec(all_ndrs_query).all()
+
+    for n in all_ndrs:
+        # Status counts
+        status_key = safe_enum_value(n.status, "OPEN")
+        status_counts[status_key] = status_counts.get(status_key, 0) + 1
+
+        # Priority counts
+        priority_key = safe_enum_value(n.priority, "MEDIUM")
+        priority_counts[priority_key] = priority_counts.get(priority_key, 0) + 1
+
+        # Reason counts
+        reason_key = safe_enum_value(n.reason, "OTHER")
+        reason_counts[reason_key] = reason_counts.get(reason_key, 0) + 1
+
+    # Calculate average resolution hours
+    resolved_ndrs = [n for n in all_ndrs if n.resolvedAt and n.createdAt]
+    avg_resolution_hours = 0.0
+    if resolved_ndrs:
+        total_hours = sum(
+            (n.resolvedAt - n.createdAt).total_seconds() / 3600.0
+            for n in resolved_ndrs
+        )
+        avg_resolution_hours = round(total_hours / len(resolved_ndrs), 2)
+
+    # Calculate outreach success rate
+    all_ndr_ids = [n.id for n in all_ndrs]
+    outreach_success_rate = 0.0
+    if all_ndr_ids:
+        total_outreaches = session.exec(
+            select(func.count(NDROutreach.id)).where(NDROutreach.ndrId.in_(all_ndr_ids))
+        ).one()
+        if total_outreaches > 0:
+            successful_statuses = ["DELIVERED", "READ", "RESPONDED"]
+            successful_count = session.exec(
+                select(func.count(NDROutreach.id))
+                .where(NDROutreach.ndrId.in_(all_ndr_ids))
+                .where(NDROutreach.status.in_(successful_statuses))
+            ).one()
+            outreach_success_rate = round((successful_count / total_outreaches) * 100, 2)
 
     return {
         "ndrs": formatted_ndrs,
         "total": count,
-        "statusCounts": {},
-        "priorityCounts": {},
-        "reasonCounts": {},
-        "avgResolutionHours": 0.0,
-        "outreachSuccessRate": 0.0,
+        "statusCounts": status_counts,
+        "priorityCounts": priority_counts,
+        "reasonCounts": reason_counts,
+        "avgResolutionHours": avg_resolution_hours,
+        "outreachSuccessRate": outreach_success_rate,
     }
 
 

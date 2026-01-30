@@ -130,6 +130,7 @@ export default function NDRQueuePage() {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [showBanner, setShowBanner] = useState(true);
 
   // Filters
   const [search, setSearch] = useState("");
@@ -255,6 +256,43 @@ export default function NDRQueuePage() {
           </Button>
         </div>
       </div>
+
+      {/* AI Command Center Promotion Banner */}
+      {showBanner && (
+        <Card className="bg-gradient-to-r from-indigo-50 to-blue-50 border-indigo-200">
+          <CardContent className="py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Bot className="h-5 w-5 text-indigo-600" />
+                <div>
+                  <p className="font-medium text-indigo-700">Try AI-Powered NDR Command Center</p>
+                  <p className="text-sm text-indigo-600">
+                    Rule-based detection, AI actions, risk scoring, and automated outreach
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  className="bg-indigo-600 hover:bg-indigo-700"
+                  onClick={() => router.push("/control-tower/ndr")}
+                >
+                  <Bot className="mr-2 h-4 w-4" />
+                  Open Command Center
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-indigo-600"
+                  onClick={() => setShowBanner(false)}
+                >
+                  Dismiss
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Summary Cards */}
       {summary && (

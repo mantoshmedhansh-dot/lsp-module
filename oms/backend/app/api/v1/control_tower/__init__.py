@@ -678,21 +678,38 @@ async def execute_ndr_action(
             channel = config.get("channel", "WHATSAPP") if config else "WHATSAPP"
             template_id = config.get("templateId", "ndr_default") if config else "ndr_default"
 
-            # Generate message based on NDR reason
+            # Calculate attempt number by counting existing outreaches for this NDR
+            existing_outreach_count = session.exec(
+                select(func.count(NDROutreach.id)).where(NDROutreach.ndrId == ndr_id)
+            ).one()
+            attempt_number = existing_outreach_count + 1
+
+            # Fetch order details for personalized message
+            customer_name = "Customer"
+            order_no = ""
+            if ndr.orderId:
+                order = session.get(Order, ndr.orderId)
+                if order:
+                    customer_name = order.customerName.split()[0] if order.customerName else "Customer"
+                    order_no = order.orderNo
+
+            # Generate personalized message based on NDR reason
             reason = ndr.reason.value if hasattr(ndr.reason, 'value') else str(ndr.reason)
             messages = {
-                "CUSTOMER_UNAVAILABLE": "Hi, we tried to deliver your order but you were unavailable. Please confirm your availability.",
-                "WRONG_ADDRESS": "Hi, we couldn't find your address. Please share the correct address for delivery.",
-                "COD_NOT_READY": "Hi, we tried to deliver your COD order. Please keep the exact amount ready for the next attempt.",
-                "PHONE_UNREACHABLE": "Hi, we couldn't reach you. Please confirm your phone number for delivery coordination.",
+                "CUSTOMER_UNAVAILABLE": f"Hi {customer_name}, we tried to deliver your order {order_no} but you were unavailable. Please confirm your availability for the next attempt.",
+                "WRONG_ADDRESS": f"Hi {customer_name}, we couldn't find your address for order {order_no}. Please share the correct address for delivery.",
+                "COD_NOT_READY": f"Hi {customer_name}, we tried to deliver your COD order {order_no}. Please keep the exact amount ready for the next attempt.",
+                "PHONE_UNREACHABLE": f"Hi {customer_name}, we couldn't reach you for order {order_no}. Please confirm your phone number for delivery coordination.",
+                "CUSTOMER_REFUSED": f"Hi {customer_name}, our delivery agent reported that you refused to accept order {order_no}. Please let us know if there was an issue.",
+                "ADDRESS_NOT_FOUND": f"Hi {customer_name}, our delivery agent couldn't locate the address for order {order_no}. Please share a landmark or updated address.",
             }
-            message = messages.get(reason, "Hi, we need your help to complete your delivery. Please respond with your preferred time slot.")
+            message = messages.get(reason, f"Hi {customer_name}, we need your help to complete delivery of order {order_no}. Please respond with your preferred time slot.")
 
             outreach = NDROutreach(
                 id=uuid4(),
                 ndrId=ndr_id,
                 channel=channel,
-                attemptNumber=1,  # Will be calculated properly
+                attemptNumber=attempt_number,
                 templateId=template_id,
                 messageContent=message,
                 status="PENDING",

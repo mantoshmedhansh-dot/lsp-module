@@ -188,8 +188,7 @@ const inboundNav: NavItemWithSub = {
   title: "Inbound",
   icon: ArrowDownToLine,
   items: [
-    { title: "Purchase Orders", href: "/inbound/purchase-orders" },
-    { title: "Goods Receipt", href: "/inbound/goods-receipt" },
+    { title: "Goods Receipt (GRN)", href: "/inbound/goods-receipt" },
     { title: "ASN Management", href: "/inbound/asn" },
     { title: "Receiving", href: "/inbound/receiving" },
     { title: "Putaway Tasks", href: "/inbound/putaway" },
@@ -447,7 +446,6 @@ const logisticsSetupNav: NavItemWithSub = {
     { title: "Transporters", href: "/logistics/transporters" },
     { title: "Rate Cards", href: "/logistics/rate-cards" },
     { title: "Shipping Rules", href: "/logistics/shipping-rules" },
-    { title: "Allocation Rules", href: "/logistics/allocation-rules" },
     { title: "Serviceability", href: "/logistics/pincodes" },
   ],
 };

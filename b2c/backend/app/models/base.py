@@ -12,7 +12,7 @@ class BaseModel(SQLModel):
     """Base model with common fields"""
     id: UUID = Field(
         default_factory=uuid4,
-        sa_column=Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid4)
+        primary_key=True
     )
     createdAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updatedAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

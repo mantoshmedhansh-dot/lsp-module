@@ -264,35 +264,30 @@ export default function FeaturePage() {
 
 ```bash
 ./scripts/deploy.sh
-# OR
-git deploy   # git alias
 ```
 
-This pushes to both `main` (Render) and `master` (Vercel) branches.
+This pushes to `main` and deploys to Vercel.
 
 ### Manual Deploy
 
 ```bash
 npm run vercel-build              # Test build locally
 git push origin main              # Render auto-deploy
-git push origin main:master       # Vercel auto-deploy
+npx vercel deploy --prod --yes    # Vercel deploy
 ```
 
-### Git Remotes
+### Git Repository
 
-| Remote | Repository | Purpose |
-|--------|------------|---------|
-| origin | singhmantoshkumar22/cjdquick-app | Both Render & Vercel |
-| puneet | puneet1409/CJDQuickApp | Backup |
+| Remote | Repository | Branch |
+|--------|------------|--------|
+| origin | singhmantoshkumar22/cjdquick-app | `main` |
 
-### Branch Configuration
+### Platform Configuration
 
-| Branch | Platform | Type |
-|--------|----------|------|
-| `main` | Render | Production |
-| `master` | Vercel | Production |
-
-**Note:** Always push to both branches using `./scripts/deploy.sh` or `git deploy`
+| Platform | Trigger | Branch |
+|----------|---------|--------|
+| Render | Auto (git push) | `main` |
+| Vercel | CLI or webhook | `main` |
 
 ---
 

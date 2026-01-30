@@ -92,6 +92,14 @@ class Inventory(BaseModel, table=True):
             index=True
         )
     )
+    companyId: UUID = Field(
+        sa_column=Column(
+            PG_UUID(as_uuid=True),
+            ForeignKey("Company.id"),
+            nullable=False,
+            index=True
+        )
+    )
 
     # Relationships
     sku: Optional["SKU"] = Relationship(back_populates="inventory")
@@ -137,6 +145,7 @@ class InventoryCreate(CreateBase):
     skuId: UUID
     binId: UUID
     locationId: UUID
+    companyId: Optional[UUID] = None  # Will be auto-filled from location if not provided
 
 
 class InventoryUpdate(UpdateBase):

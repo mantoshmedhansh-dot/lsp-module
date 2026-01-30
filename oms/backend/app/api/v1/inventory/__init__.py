@@ -258,8 +258,11 @@ def create_inventory(
             detail="Inventory record already exists for this SKU/Bin/Batch combination"
         )
 
-    # Create inventory
-    inventory = Inventory(**inventory_data.model_dump())
+    # Create inventory - auto-fill companyId from location if not provided
+    inventory_dict = inventory_data.model_dump()
+    if not inventory_dict.get('companyId'):
+        inventory_dict['companyId'] = location.companyId
+    inventory = Inventory(**inventory_dict)
     session.add(inventory)
     session.commit()
     session.refresh(inventory)
@@ -356,6 +359,7 @@ def adjust_inventory(
                 skuId=adjustment.skuId,
                 binId=adjustment.binId,
                 locationId=adjustment.locationId,
+                companyId=location.companyId,
                 batchNo=adjustment.batchNo,
                 quantity=adjustment.adjustmentQty,
                 serialNumbers=adjustment.serialNumbers or []

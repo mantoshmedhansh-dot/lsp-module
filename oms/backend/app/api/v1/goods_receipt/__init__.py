@@ -598,6 +598,7 @@ def post_goods_receipt(
                 skuId=item.skuId,
                 binId=target_bin_id,
                 locationId=gr.locationId,
+                companyId=gr.companyId,
                 quantity=item.acceptedQty,
                 reservedQty=0,
                 batchNo=item.batchNo,

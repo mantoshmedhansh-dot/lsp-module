@@ -500,9 +500,10 @@ def generate_invoice(
     today_count = sum(1 for o in existing_invoices if o.invoiceNo and o.invoiceNo.startswith(f"INV-{today}"))
     invoice_no = f"INV-{today}-{today_count + 1:04d}"
 
-    # Calculate totals
-    subtotal = sum(float(item.subtotal or 0) for item in items)
+    # Calculate totals from order items
+    subtotal = sum(float(item.unitPrice or 0) * item.quantity for item in items)
     tax_amount = sum(float(item.taxAmount or 0) for item in items)
+    discount_total = sum(float(item.discount or 0) for item in items)
 
     # Update order with invoice details
     order.invoiceNo = invoice_no
@@ -518,6 +519,7 @@ def generate_invoice(
     invoice_items = []
     for item in items:
         sku = session.get(SKU, item.skuId)
+        taxable_value = float(item.unitPrice or 0) * item.quantity - float(item.discount or 0)
         invoice_items.append({
             "skuCode": sku.code if sku else None,
             "skuName": sku.name if sku else item.skuName,
@@ -525,10 +527,10 @@ def generate_invoice(
             "quantity": item.quantity,
             "unitPrice": str(item.unitPrice),
             "discount": str(item.discount or 0),
-            "taxableValue": str(item.subtotal or 0),
-            "gstRate": str(item.taxRate or 0),
+            "taxableValue": str(taxable_value),
+            "gstRate": "18",  # Default GST rate
             "gstAmount": str(item.taxAmount or 0),
-            "total": str(item.total or 0)
+            "total": str(item.totalPrice or 0)
         })
 
     return {

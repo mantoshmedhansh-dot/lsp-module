@@ -521,7 +521,7 @@ def generate_invoice(
         invoice_items.append({
             "skuCode": sku.code if sku else None,
             "skuName": sku.name if sku else item.skuName,
-            "hsnCode": sku.hsnCode if sku else None,
+            "hsnCode": sku.hsn if sku else None,
             "quantity": item.quantity,
             "unitPrice": str(item.unitPrice),
             "discount": str(item.discount or 0),

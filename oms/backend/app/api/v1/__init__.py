@@ -65,6 +65,9 @@ from .stock_transfer import router as stock_transfer_router
 # WMS Inbound Phase 5 routers
 from .wms_dashboard import router as wms_dashboard_router
 
+# Direct Picklist generation
+from .picklists import router as picklists_router
+
 # Phase 1-4 OMS/WMS Enhancement routers
 from .labor import router as labor_router
 from .slotting import router as slotting_router
@@ -141,6 +144,9 @@ router.include_router(stock_transfer_router)
 
 # WMS Inbound Phase 5
 router.include_router(wms_dashboard_router)
+
+# Direct Picklist generation
+router.include_router(picklists_router)
 
 # Phase 1-4 OMS/WMS Enhancements
 router.include_router(labor_router)

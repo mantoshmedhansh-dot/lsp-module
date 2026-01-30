@@ -79,6 +79,15 @@ from .mobile import router as mobile_router
 from .reconciliation import router as reconciliation_router
 from .marketplaces import router as marketplaces_router
 
+# Omni-Channel OMS routers
+from .sku_mappings import router as sku_mappings_router
+from .order_sync import router as order_sync_router
+from .inventory_sync import router as inventory_sync_router
+from .webhooks import router as webhooks_router
+from .settlements import router as settlements_router
+from .marketplace_returns import router as marketplace_returns_router
+from .scheduled_jobs import router as scheduled_jobs_router
+
 # Main v1 router
 router = APIRouter(prefix="/v1")
 
@@ -158,3 +167,12 @@ router.include_router(subscriptions_router)
 router.include_router(mobile_router)
 router.include_router(reconciliation_router)
 router.include_router(marketplaces_router)
+
+# Omni-Channel OMS
+router.include_router(sku_mappings_router)
+router.include_router(order_sync_router)
+router.include_router(inventory_sync_router)
+router.include_router(webhooks_router)
+router.include_router(settlements_router)
+router.include_router(marketplace_returns_router)
+router.include_router(scheduled_jobs_router)

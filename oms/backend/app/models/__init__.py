@@ -968,6 +968,61 @@ from .subscription import (
     SubscriptionUpcomingResponse,
 )
 
+# Marketplace Integration models and schemas (OMS Omni-Channel)
+from .marketplace_integration import (
+    # Enums
+    SkuMappingStatus,
+    SyncJobType,
+    SyncJobStatus,
+    WebhookEventStatus,
+    WebhookEventType,
+    ReconciliationStatus,
+    SyncTrigger,
+    # MarketplaceSkuMapping
+    MarketplaceSkuMapping,
+    MarketplaceSkuMappingCreate,
+    MarketplaceSkuMappingUpdate,
+    MarketplaceSkuMappingResponse,
+    MarketplaceSkuMappingBulkCreate,
+    MarketplaceSkuMappingBulkResponse,
+    # MarketplaceOAuthToken
+    MarketplaceOAuthToken,
+    MarketplaceOAuthTokenCreate,
+    MarketplaceOAuthTokenResponse,
+    # MarketplaceWebhookEvent
+    MarketplaceWebhookEvent,
+    MarketplaceWebhookEventCreate,
+    MarketplaceWebhookEventResponse,
+    # MarketplaceSyncJob
+    MarketplaceSyncJob,
+    MarketplaceSyncJobCreate,
+    MarketplaceSyncJobUpdate,
+    MarketplaceSyncJobResponse,
+    # MarketplaceSettlement
+    MarketplaceSettlement,
+    MarketplaceSettlementCreate,
+    MarketplaceSettlementUpdate,
+    MarketplaceSettlementResponse,
+    # MarketplaceSettlementItem
+    MarketplaceSettlementItem,
+    MarketplaceSettlementItemCreate,
+    MarketplaceSettlementItemResponse,
+    # MarketplaceOrderLineSync
+    MarketplaceOrderLineSync,
+    MarketplaceOrderLineSyncCreate,
+    MarketplaceOrderLineSyncResponse,
+    # MarketplaceInventorySyncLog
+    MarketplaceInventorySyncLog,
+    MarketplaceInventorySyncLogCreate,
+    MarketplaceInventorySyncLogResponse,
+    # Request/Response
+    TriggerSyncRequest,
+    TriggerSyncResponse,
+    UnmappedSkuResponse,
+    SkuMappingSummary,
+    SyncStatusResponse,
+)
+
 # Shipping Allocation models and schemas (Phase 1 - Logistics)
 from .shipping_allocation import (
     # FTL Models
@@ -1974,4 +2029,55 @@ __all__ = [
     "SubscriptionGenerateOrdersRequest",
     "SubscriptionGenerateOrdersResponse",
     "SubscriptionUpcomingResponse",
+    # Marketplace Integration Enums
+    "SkuMappingStatus",
+    "SyncJobType",
+    "SyncJobStatus",
+    "WebhookEventStatus",
+    "WebhookEventType",
+    "ReconciliationStatus",
+    "SyncTrigger",
+    # MarketplaceSkuMapping
+    "MarketplaceSkuMapping",
+    "MarketplaceSkuMappingCreate",
+    "MarketplaceSkuMappingUpdate",
+    "MarketplaceSkuMappingResponse",
+    "MarketplaceSkuMappingBulkCreate",
+    "MarketplaceSkuMappingBulkResponse",
+    # MarketplaceOAuthToken
+    "MarketplaceOAuthToken",
+    "MarketplaceOAuthTokenCreate",
+    "MarketplaceOAuthTokenResponse",
+    # MarketplaceWebhookEvent
+    "MarketplaceWebhookEvent",
+    "MarketplaceWebhookEventCreate",
+    "MarketplaceWebhookEventResponse",
+    # MarketplaceSyncJob
+    "MarketplaceSyncJob",
+    "MarketplaceSyncJobCreate",
+    "MarketplaceSyncJobUpdate",
+    "MarketplaceSyncJobResponse",
+    # MarketplaceSettlement
+    "MarketplaceSettlement",
+    "MarketplaceSettlementCreate",
+    "MarketplaceSettlementUpdate",
+    "MarketplaceSettlementResponse",
+    # MarketplaceSettlementItem
+    "MarketplaceSettlementItem",
+    "MarketplaceSettlementItemCreate",
+    "MarketplaceSettlementItemResponse",
+    # MarketplaceOrderLineSync
+    "MarketplaceOrderLineSync",
+    "MarketplaceOrderLineSyncCreate",
+    "MarketplaceOrderLineSyncResponse",
+    # MarketplaceInventorySyncLog
+    "MarketplaceInventorySyncLog",
+    "MarketplaceInventorySyncLogCreate",
+    "MarketplaceInventorySyncLogResponse",
+    # Marketplace Integration Request/Response
+    "TriggerSyncRequest",
+    "TriggerSyncResponse",
+    "UnmappedSkuResponse",
+    "SkuMappingSummary",
+    "SyncStatusResponse",
 ]

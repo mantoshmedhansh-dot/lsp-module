@@ -450,6 +450,60 @@ def start_scheduler():
         name="Detection Engine - Startup Run",
     )
 
+    # Import marketplace sync jobs
+    try:
+        from app.jobs.order_sync_job import run_order_sync_all
+        from app.jobs.inventory_sync_job import run_inventory_push_all
+        from app.jobs.settlement_sync_job import run_settlement_fetch_all
+        from app.jobs.token_refresh_job import run_token_refresh
+
+        # Order sync: Every 15 minutes
+        scheduler.add_job(
+            lambda: __import__('asyncio').get_event_loop().run_until_complete(run_order_sync_all()),
+            trigger=IntervalTrigger(minutes=15),
+            id="marketplace_order_sync",
+            name="Marketplace Order Sync (All Connections)",
+            replace_existing=True,
+            max_instances=1,
+        )
+        logger.info("Scheduled marketplace order sync job: every 15 minutes")
+
+        # Inventory push: Every 30 minutes
+        scheduler.add_job(
+            lambda: __import__('asyncio').get_event_loop().run_until_complete(run_inventory_push_all()),
+            trigger=IntervalTrigger(minutes=30),
+            id="marketplace_inventory_push",
+            name="Marketplace Inventory Push (All Connections)",
+            replace_existing=True,
+            max_instances=1,
+        )
+        logger.info("Scheduled marketplace inventory push job: every 30 minutes")
+
+        # Settlement fetch: Daily at 6 AM UTC
+        scheduler.add_job(
+            lambda: __import__('asyncio').get_event_loop().run_until_complete(run_settlement_fetch_all()),
+            trigger=CronTrigger(hour=6, minute=0),
+            id="marketplace_settlement_fetch",
+            name="Marketplace Settlement Fetch (Daily)",
+            replace_existing=True,
+            max_instances=1,
+        )
+        logger.info("Scheduled marketplace settlement fetch job: daily at 6 AM UTC")
+
+        # Token refresh: Every 45 minutes
+        scheduler.add_job(
+            lambda: __import__('asyncio').get_event_loop().run_until_complete(run_token_refresh()),
+            trigger=IntervalTrigger(minutes=45),
+            id="marketplace_token_refresh",
+            name="OAuth Token Refresh",
+            replace_existing=True,
+            max_instances=1,
+        )
+        logger.info("Scheduled marketplace token refresh job: every 45 minutes")
+
+    except ImportError as e:
+        logger.warning(f"Marketplace sync jobs not available: {e}")
+
     scheduler.start()
     logger.info("Scheduler started with Detection Engine job (every 15 minutes)")
 
@@ -459,3 +513,62 @@ def shutdown_scheduler():
     if scheduler.running:
         scheduler.shutdown(wait=False)
         logger.info("Scheduler shutdown complete")
+
+
+def get_all_jobs_status():
+    """Get status of all scheduled jobs."""
+    if not scheduler.running:
+        return {"status": "not_running", "jobs": []}
+
+    jobs = []
+    for job in scheduler.get_jobs():
+        jobs.append({
+            "id": job.id,
+            "name": job.name,
+            "next_run": job.next_run_time.isoformat() if job.next_run_time else None,
+            "trigger": str(job.trigger),
+            "pending": job.pending
+        })
+
+    return {
+        "status": "running",
+        "jobs": jobs
+    }
+
+
+def trigger_job_immediately(job_id: str) -> bool:
+    """Manually trigger a job to run immediately."""
+    if not scheduler.running:
+        return False
+
+    job = scheduler.get_job(job_id)
+    if job is None:
+        return False
+
+    from datetime import datetime
+    scheduler.modify_job(job_id, next_run_time=datetime.utcnow())
+    return True
+
+
+def pause_scheduled_job(job_id: str) -> bool:
+    """Pause a scheduled job."""
+    if not scheduler.running:
+        return False
+
+    try:
+        scheduler.pause_job(job_id)
+        return True
+    except Exception:
+        return False
+
+
+def resume_scheduled_job(job_id: str) -> bool:
+    """Resume a paused job."""
+    if not scheduler.running:
+        return False
+
+    try:
+        scheduler.resume_job(job_id)
+        return True
+    except Exception:
+        return False

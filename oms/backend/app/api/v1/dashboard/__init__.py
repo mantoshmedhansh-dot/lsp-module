@@ -1,9 +1,11 @@
 """
 Dashboard API v1 - Dashboard statistics and analytics
+Optimized with in-memory caching for fast responses.
 """
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Optional, Dict, Any
 from uuid import UUID
+import time
 
 from fastapi import APIRouter, Depends, Query
 from sqlmodel import Session, select, func
@@ -14,6 +16,25 @@ from app.models import Order, OrderStatus, Inventory, SKU, Location, User
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
+# Simple in-memory cache for dashboard stats
+_cache: Dict[str, Any] = {}
+_cache_ttl: Dict[str, float] = {}
+CACHE_DURATION = 30  # seconds
+
+
+def get_cached(key: str) -> Optional[Any]:
+    """Get cached value if not expired."""
+    if key in _cache and key in _cache_ttl:
+        if time.time() < _cache_ttl[key]:
+            return _cache[key]
+    return None
+
+
+def set_cached(key: str, value: Any, ttl: int = CACHE_DURATION):
+    """Set cache with TTL."""
+    _cache[key] = value
+    _cache_ttl[key] = time.time() + ttl
+
 
 @router.get("")
 def get_dashboard(
@@ -22,25 +43,54 @@ def get_dashboard(
     current_user: User = Depends(get_current_user)
 ):
     """
-    Get dashboard statistics.
+    Get dashboard statistics with caching.
     Returns order counts, revenue, inventory stats, and order status breakdown.
+    Cached for 30 seconds to improve response time.
     """
+    # Check cache first
+    cache_key = f"dashboard_{locationId or 'all'}"
+    cached = get_cached(cache_key)
+    if cached:
+        return cached
+
     today = datetime.now().date()
     today_start = datetime.combine(today, datetime.min.time())
     today_end = datetime.combine(today, datetime.max.time())
 
-    # Build base query with optional location filter
+    # Build base filter
     base_filter = []
     if locationId:
         base_filter.append(Order.locationId == locationId)
 
-    # Total orders
-    total_query = select(func.count(Order.id))
-    if base_filter:
-        total_query = total_query.where(*base_filter)
-    total_orders = session.exec(total_query).one() or 0
+    # OPTIMIZED: Single query with all counts using CASE statements
+    pending_statuses = [OrderStatus.CREATED, OrderStatus.CONFIRMED, OrderStatus.ALLOCATED]
 
-    # Today's orders
+    # Get order status breakdown (this gives us most metrics in one query)
+    status_query = select(Order.status, func.count(Order.id)).group_by(Order.status)
+    if base_filter:
+        status_query = status_query.where(*base_filter)
+    status_results = session.exec(status_query).all()
+
+    # Calculate metrics from status breakdown
+    order_by_status = {}
+    total_orders = 0
+    pending_orders = 0
+    shipped_orders = 0
+    delivered_orders = 0
+
+    for status, count in status_results:
+        status_str = str(status.value) if hasattr(status, 'value') else str(status)
+        order_by_status[status_str] = count
+        total_orders += count
+
+        if status in pending_statuses:
+            pending_orders += count
+        elif status == OrderStatus.SHIPPED:
+            shipped_orders = count
+        elif status == OrderStatus.DELIVERED:
+            delivered_orders = count
+
+    # Today's orders (separate query - needed for date filter)
     today_query = select(func.count(Order.id)).where(
         Order.orderDate >= today_start,
         Order.orderDate <= today_end
@@ -49,26 +99,7 @@ def get_dashboard(
         today_query = today_query.where(*base_filter)
     today_orders = session.exec(today_query).one() or 0
 
-    # Pending orders (CREATED, CONFIRMED, ALLOCATED)
-    pending_statuses = [OrderStatus.CREATED, OrderStatus.CONFIRMED, OrderStatus.ALLOCATED]
-    pending_query = select(func.count(Order.id)).where(Order.status.in_(pending_statuses))
-    if base_filter:
-        pending_query = pending_query.where(*base_filter)
-    pending_orders = session.exec(pending_query).one() or 0
-
-    # Shipped orders
-    shipped_query = select(func.count(Order.id)).where(Order.status == OrderStatus.SHIPPED)
-    if base_filter:
-        shipped_query = shipped_query.where(*base_filter)
-    shipped_orders = session.exec(shipped_query).one() or 0
-
-    # Delivered orders
-    delivered_query = select(func.count(Order.id)).where(Order.status == OrderStatus.DELIVERED)
-    if base_filter:
-        delivered_query = delivered_query.where(*base_filter)
-    delivered_orders = session.exec(delivered_query).one() or 0
-
-    # Total revenue (from delivered orders)
+    # Revenue from delivered orders
     revenue_query = select(func.sum(Order.totalAmount)).where(Order.status == OrderStatus.DELIVERED)
     if base_filter:
         revenue_query = revenue_query.where(*base_filter)
@@ -80,17 +111,14 @@ def get_dashboard(
         inv_query = inv_query.where(Inventory.locationId == locationId)
     total_inventory = session.exec(inv_query).one() or 0
 
-    # Total SKUs
-    total_skus = session.exec(select(func.count(SKU.id))).one() or 0
+    # Total SKUs (cached separately for longer)
+    sku_cache_key = "total_skus"
+    total_skus = get_cached(sku_cache_key)
+    if total_skus is None:
+        total_skus = session.exec(select(func.count(SKU.id))).one() or 0
+        set_cached(sku_cache_key, total_skus, 300)  # Cache for 5 minutes
 
-    # Order status breakdown
-    status_query = select(Order.status, func.count(Order.id)).group_by(Order.status)
-    if base_filter:
-        status_query = status_query.where(*base_filter)
-    status_results = session.exec(status_query).all()
-    order_by_status = {str(status.value) if hasattr(status, 'value') else str(status): count for status, count in status_results}
-
-    return {
+    result = {
         "summary": {
             "totalOrders": total_orders,
             "todayOrders": today_orders,
@@ -105,6 +133,10 @@ def get_dashboard(
         "recentActivity": []
     }
 
+    # Cache the result
+    set_cached(cache_key, result)
+    return result
+
 
 @router.get("/analytics")
 def get_analytics(
@@ -115,7 +147,14 @@ def get_analytics(
 ):
     """
     Get dashboard analytics - order trends over time.
+    Cached for 60 seconds.
     """
+    # Check cache
+    cache_key = f"analytics_{locationId or 'all'}_{period}"
+    cached = get_cached(cache_key)
+    if cached:
+        return cached
+
     today = datetime.now().date()
 
     if period == "day":
@@ -147,7 +186,7 @@ def get_analytics(
 
     results = session.exec(trend_query).all()
 
-    return {
+    result = {
         "period": period,
         "orderTrend": [
             {
@@ -158,3 +197,17 @@ def get_analytics(
             for row in results
         ]
     }
+
+    # Cache for 60 seconds
+    set_cached(cache_key, result, 60)
+    return result
+
+
+@router.get("/ping")
+def ping():
+    """
+    Lightweight endpoint to keep the server warm.
+    Call this every 10-14 minutes to prevent cold starts.
+    No authentication required.
+    """
+    return {"status": "warm", "timestamp": datetime.utcnow().isoformat()}

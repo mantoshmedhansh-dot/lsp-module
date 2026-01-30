@@ -93,23 +93,32 @@ async function fetchDashboardAnalytics(params: DashboardAnalyticsParams = {}): P
 
 /**
  * Hook to fetch dashboard statistics
+ * Optimized with longer cache time and background refetch
  */
 export function useDashboardStats(params: DashboardStatsParams = {}) {
   return useQuery({
     queryKey: dashboardKeys.stats(params),
     queryFn: () => fetchDashboardStats(params),
-    staleTime: 30 * 1000, // 30 seconds - dashboard should be relatively fresh
-    refetchInterval: 60 * 1000, // Auto-refresh every minute
+    staleTime: 60 * 1000, // 1 minute - data is cached on backend too
+    gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
+    refetchInterval: 2 * 60 * 1000, // Auto-refresh every 2 minutes
+    refetchOnWindowFocus: false, // Don't refetch on tab focus
+    retry: 2, // Retry failed requests twice
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
   });
 }
 
 /**
  * Hook to fetch dashboard analytics data
+ * Optimized with longer cache time
  */
 export function useDashboardAnalytics(params: DashboardAnalyticsParams = {}) {
   return useQuery({
     queryKey: dashboardKeys.analytics(params),
     queryFn: () => fetchDashboardAnalytics(params),
-    staleTime: 60 * 1000, // 1 minute
+    staleTime: 2 * 60 * 1000, // 2 minutes - analytics don't change frequently
+    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
+    refetchOnWindowFocus: false,
+    retry: 2,
   });
 }

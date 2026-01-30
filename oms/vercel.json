@@ -7,5 +7,11 @@
   "outputDirectory": "apps/web/.next",
   "env": {
     "PRISMA_GENERATE_SKIP_AUTOINSTALL": "true"
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/keep-alive",
+      "schedule": "*/10 * * * *"
+    }
+  ]
 }

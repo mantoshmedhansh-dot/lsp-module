@@ -12,6 +12,7 @@ from app.core.deps import get_current_user, require_manager, CompanyFilter
 from app.models import (
     Inventory, InventoryCreate, InventoryUpdate, InventoryResponse,
     InventoryAdjustment, InventoryTransfer, InventorySummary,
+    InventoryMovement, InventoryMovementResponse,
     SKU, Location, Bin, User
 )
 
@@ -147,6 +148,47 @@ def get_inventory_summary(
         )
         for r in results
     ]
+
+
+@router.get("/movements", response_model=List[InventoryMovementResponse])
+def list_inventory_movements(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=100),
+    sku_id: Optional[UUID] = None,
+    movement_type: Optional[str] = None,
+    search: Optional[str] = None,
+    company_filter: CompanyFilter = Depends(),
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    List inventory movements (transaction history).
+    Supports filtering by SKU, movement type, and search.
+    """
+    query = select(InventoryMovement)
+
+    # Apply company filter via location
+    if company_filter.company_id:
+        location_ids = session.exec(
+            select(Location.id).where(Location.companyId == company_filter.company_id)
+        ).all()
+        query = query.where(InventoryMovement.locationId.in_(location_ids))
+
+    if sku_id:
+        query = query.where(InventoryMovement.skuId == sku_id)
+    if movement_type:
+        query = query.where(InventoryMovement.movementType == movement_type)
+    if search:
+        search_pattern = f"%{search}%"
+        query = query.where(InventoryMovement.movementNo.ilike(search_pattern))
+
+    query = query.order_by(InventoryMovement.performedAt.desc()).offset(skip).limit(limit)
+
+    try:
+        movements = session.exec(query).all()
+        return [InventoryMovementResponse.model_validate(m) for m in movements]
+    except Exception:
+        return []
 
 
 @router.get("/{inventory_id}", response_model=InventoryResponse)

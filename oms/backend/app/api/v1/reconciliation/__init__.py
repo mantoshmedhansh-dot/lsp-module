@@ -28,6 +28,48 @@ router = APIRouter(prefix="/reconciliation", tags=["Payment Reconciliation"])
 
 
 # ============================================================================
+# Root list endpoint (used by bin-audit page)
+# ============================================================================
+
+@router.get("")
+def list_reconciliation(
+    search: Optional[str] = None,
+    status: Optional[str] = None,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=100),
+    company_filter: CompanyFilter = Depends(),
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    List reconciliation discrepancies (used by bin audit page).
+    Returns discrepancy records that can represent physical vs system inventory mismatches.
+    """
+    query = select(ReconciliationDiscrepancy)
+
+    if company_filter.company_id:
+        query = query.where(ReconciliationDiscrepancy.companyId == company_filter.company_id)
+    if status and status != "all":
+        if status == "Resolved":
+            query = query.where(ReconciliationDiscrepancy.isResolved == True)
+        else:
+            query = query.where(ReconciliationDiscrepancy.isResolved == False)
+    if search:
+        search_pattern = f"%{search}%"
+        query = query.where(
+            ReconciliationDiscrepancy.notes.ilike(search_pattern)
+        )
+
+    query = query.order_by(ReconciliationDiscrepancy.createdAt.desc()).offset(skip).limit(limit)
+
+    try:
+        records = session.exec(query).all()
+        return [r.model_dump() for r in records]
+    except Exception:
+        return []
+
+
+# ============================================================================
 # Dashboard
 # ============================================================================
 

@@ -254,7 +254,7 @@ class ShipmentBrief(ResponseBase):
     status: DeliveryStatus
     consigneeName: str
     paymentMode: PaymentMode
-    codAmount: Decimal
+    codAmount: Optional[Decimal] = Decimal("0")
     createdAt: datetime
 
 

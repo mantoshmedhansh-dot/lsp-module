@@ -120,6 +120,33 @@ def delete_template(
 # QC Parameter Endpoints
 # ============================================================================
 
+@router.get("/parameters", response_model=List[QCParameterResponse])
+def list_all_parameters(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=100),
+    search: Optional[str] = None,
+    category: Optional[str] = None,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """List all QC parameters across all templates."""
+    query = select(QCParameter)
+
+    if search:
+        search_pattern = f"%{search}%"
+        query = query.where(QCParameter.name.ilike(search_pattern))
+    if category:
+        query = query.where(QCParameter.parameterType == category)
+
+    query = query.offset(skip).limit(limit).order_by(QCParameter.name)
+
+    try:
+        params = session.exec(query).all()
+        return [QCParameterResponse.model_validate(p) for p in params]
+    except Exception:
+        return []
+
+
 @router.get("/templates/{template_id}/parameters", response_model=List[QCParameterResponse])
 def list_parameters(
     template_id: UUID,

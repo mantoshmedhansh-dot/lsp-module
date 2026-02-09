@@ -14,65 +14,46 @@ import {
   RotateCcw,
   BarChart3,
   Settings,
-  Building2,
   Users,
   LogOut,
   ChevronDown,
   ChevronRight,
-  ClipboardCheck,
   CreditCard,
-  AlertTriangle,
   PackageOpen,
-  FileBox,
   ArrowDownToLine,
   Route,
   BadgeCheck,
-  Tags,
   Store,
   Plug,
   Shield,
   Radar,
-  BrainCircuit,
   Bell,
   Handshake,
-  Receipt,
-  FileText,
   TrendingUp,
   PackageSearch,
-  MapPin,
-  RefreshCw,
   AlertCircle,
   Target,
-  Activity,
   DollarSign,
-  Scale,
-  BookOpen,
-  Timer,
   Layers,
   Grid3X3,
-  Megaphone,
-  Mail,
-  ListChecks,
   ClipboardList,
   Scan,
-  PackageX,
-  CircleDollarSign,
   TruckIcon,
   LineChart,
-  PieChart,
-  Calendar,
-  FileSpreadsheet,
   Database,
-  Server,
-  ScrollText,
-  ShoppingBag,
   Mic,
   Smartphone,
   ArrowRightLeft,
-  Repeat,
   UserCheck,
   LayoutGrid,
-  Link2,
+  Repeat,
+  FileText,
+  Tags,
+  Calendar,
+  FileSpreadsheet,
+  Building2,
+  MapPin,
+  Scale,
 } from "lucide-react";
 import {
   Sidebar,
@@ -115,7 +96,22 @@ type NavItemWithHref = { title: string; icon: LucideIcon; href: string };
 type NavItem = NavItemWithSub | NavItemWithHref;
 
 // ═══════════════════════════════════════════════════════════════════════════
-// COMMAND CENTER
+// 1. ADMIN (SUPER_ADMIN ONLY)
+// ═══════════════════════════════════════════════════════════════════════════
+
+const platformAdminNav: NavItemWithSub = {
+  title: "Platform Admin",
+  icon: Shield,
+  items: [
+    { title: "All Companies", href: "/master/companies" },
+    { title: "All Brands/Tenants", href: "/master/brands" },
+    { title: "System Health", href: "/master/health" },
+    { title: "Audit Logs", href: "/master/audit" },
+  ],
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 2. COMMAND CENTER
 // ═══════════════════════════════════════════════════════════════════════════
 
 const dashboardNav: NavItemWithSub = {
@@ -152,7 +148,7 @@ const ndrManagementNav: NavItemWithSub = {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
-// ORDER LIFECYCLE
+// 3. ORDER LIFECYCLE
 // ═══════════════════════════════════════════════════════════════════════════
 
 const ordersNav: NavItemWithSub = {
@@ -181,176 +177,69 @@ const b2bSalesNav: NavItemWithSub = {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
-// WAREHOUSE OPERATIONS
+// 4. WMS (Warehouse Management System) — RESTRUCTURED
 // ═══════════════════════════════════════════════════════════════════════════
 
-const inboundNav: NavItemWithSub = {
+const wmsSetupNav: NavItemWithSub = {
+  title: "Setup",
+  icon: Settings,
+  items: [
+    { title: "Zones", href: "/wms/zones" },
+    { title: "Bins", href: "/wms/bins" },
+    { title: "Putaway Rules", href: "/inbound/putaway" },
+    { title: "QC Templates", href: "/wms/qc/templates" },
+    { title: "Cycle Count Waves", href: "/inventory/cycle-counts" },
+    { title: "SKU Label Print", href: "/wms/sku-label-print" },
+  ],
+};
+
+const wmsInboundNav: NavItemWithSub = {
   title: "Inbound",
   icon: ArrowDownToLine,
   items: [
     { title: "Goods Receipt (GRN)", href: "/inbound/goods-receipt" },
-    { title: "External POs", href: "/inbound/external-pos" },
     { title: "ASN Management", href: "/inbound/asn" },
     { title: "Receiving", href: "/inbound/receiving" },
-    { title: "Putaway Tasks", href: "/inbound/putaway" },
     { title: "Inbound QC", href: "/inbound/qc" },
+    { title: "Putaway Tasks", href: "/inbound/putaway" },
+    { title: "Direct Inbound", href: "/inbound/direct" },
+    { title: "Return Inbound", href: "/inbound/return-inbound" },
   ],
 };
 
-const fulfillmentNav: NavItemWithSub = {
-  title: "Outbound (Fulfillment)",
+const wmsInventoryNav: NavItemWithSub = {
+  title: "Inventory",
+  icon: Boxes,
+  items: [
+    { title: "Inventory View", href: "/inventory" },
+    { title: "Movement History", href: "/inventory/movements" },
+    { title: "Inventory Move / Transfer", href: "/inventory/transfers" },
+    { title: "Stock Adjustments", href: "/inventory/adjustments" },
+    { title: "Cycle Count", href: "/inventory/cycle-counts" },
+    { title: "BIN Audit", href: "/inventory/bin-audit" },
+    { title: "Virtual Inventory", href: "/inventory/virtual" },
+    { title: "SKU Transaction History", href: "/inventory/sku-transactions" },
+    { title: "Inventory Reservation", href: "/inventory/reservations" },
+  ],
+};
+
+const wmsOrderProcessingNav: NavItemWithSub = {
+  title: "Order Processing",
   icon: PackageOpen,
   items: [
+    { title: "Order Allocate / Unallocate", href: "/fulfillment/allocate" },
     { title: "Wave Planning", href: "/fulfillment/waves" },
-    { title: "Picking", href: "/fulfillment/picklist" },
+    { title: "Picklist Management", href: "/fulfillment/picklist" },
     { title: "Packing", href: "/fulfillment/packing" },
     { title: "Outbound QC", href: "/fulfillment/qc" },
+    { title: "Delivery Split", href: "/fulfillment/delivery-split" },
     { title: "Manifest", href: "/fulfillment/manifest" },
+    { title: "Delivery Shipping", href: "/fulfillment/delivery-shipping" },
     { title: "Gate Pass", href: "/fulfillment/gate-pass" },
   ],
 };
 
-// ═══════════════════════════════════════════════════════════════════════════
-// WMS ADVANCED OPERATIONS (Phase 1-4)
-// ═══════════════════════════════════════════════════════════════════════════
-
-const laborManagementNav: NavItemWithSub = {
-  title: "Labor Management",
-  icon: UserCheck,
-  items: [
-    { title: "Dashboard", href: "/wms/labor" },
-    { title: "Shifts", href: "/wms/labor/shifts" },
-    { title: "Assignments", href: "/wms/labor/assignments" },
-    { title: "Productivity", href: "/wms/labor/productivity" },
-  ],
-};
-
-const slottingNav: NavItemWithSub = {
-  title: "Slotting",
-  icon: LayoutGrid,
-  items: [
-    { title: "Analysis", href: "/wms/slotting" },
-    { title: "Recommendations", href: "/wms/slotting/recommendations" },
-  ],
-};
-
-const voicePickingNav: NavItemWithSub = {
-  title: "Voice Picking",
-  icon: Mic,
-  items: [
-    { title: "Dashboard", href: "/wms/voice" },
-    { title: "Profiles", href: "/wms/voice/profiles" },
-  ],
-};
-
-const mobileWmsNav: NavItemWithSub = {
-  title: "Mobile WMS",
-  icon: Smartphone,
-  items: [
-    { title: "Dashboard", href: "/wms/mobile" },
-    { title: "Devices", href: "/wms/mobile/devices" },
-    { title: "Tasks", href: "/wms/mobile/tasks" },
-  ],
-};
-
-const crossDockNav: NavItemWithSub = {
-  title: "Cross-Docking",
-  icon: ArrowRightLeft,
-  items: [
-    { title: "Dashboard", href: "/wms/cross-dock" },
-    { title: "Rules", href: "/wms/cross-dock/rules" },
-  ],
-};
-
-const inventoryNav: NavItemWithSub = {
-  title: "Inventory",
-  icon: Boxes,
-  items: [
-    { title: "Stock Overview", href: "/inventory" },
-    { title: "Stock Adjustments", href: "/inventory/adjustments" },
-    { title: "Cycle Counts", href: "/inventory/cycle-counts" },
-    { title: "Bin Transfers", href: "/inventory/transfers" },
-    { title: "Movement History", href: "/inventory/movements" },
-    { title: "Virtual Inventory", href: "/inventory/virtual" },
-  ],
-};
-
-// ═══════════════════════════════════════════════════════════════════════════
-// LOGISTICS & DELIVERY
-// ═══════════════════════════════════════════════════════════════════════════
-
-const shipmentsNav: NavItemWithSub = {
-  title: "Shipments",
-  icon: Truck,
-  items: [
-    { title: "Tracking Dashboard", href: "/logistics/tracking" },
-    { title: "AWB Management", href: "/logistics/awb" },
-    { title: "Delivery Performance", href: "/logistics/performance" },
-  ],
-};
-
-// FTL (Full Truck Load) Management
-const ftlNav: NavItemWithSub = {
-  title: "FTL Management",
-  icon: TruckIcon,
-  items: [
-    { title: "FTL Vendors", href: "/logistics/ftl/vendors" },
-    { title: "Vehicle Types", href: "/logistics/ftl/vehicle-types" },
-    { title: "Lane Rates", href: "/logistics/ftl/lane-rates" },
-    { title: "Indent Management", href: "/logistics/ftl/indents" },
-    { title: "FTL Rate Comparison", href: "/logistics/ftl/rate-comparison" },
-  ],
-};
-
-// PTL (Part Truck Load) / B2B Management
-const ptlNav: NavItemWithSub = {
-  title: "PTL / B2B",
-  icon: Boxes,
-  items: [
-    { title: "PTL Rate Matrix", href: "/logistics/ptl/rate-matrix" },
-    { title: "TAT Matrix", href: "/logistics/ptl/tat-matrix" },
-    { title: "PTL Rate Comparison", href: "/logistics/ptl/rate-comparison" },
-  ],
-};
-
-// B2C / Courier Management
-const b2cCourierNav: NavItemWithSub = {
-  title: "B2C / Courier",
-  icon: Package,
-  items: [
-    { title: "Courier Partners", href: "/logistics/transporters" },
-    { title: "B2C Rate Cards", href: "/logistics/rate-cards" },
-    { title: "Pincode Serviceability", href: "/logistics/pincodes" },
-    { title: "Shipping Rules", href: "/logistics/shipping-rules" },
-  ],
-};
-
-// Allocation Engine
-const allocationNav: NavItemWithSub = {
-  title: "Allocation Engine",
-  icon: Target,
-  items: [
-    { title: "Allocation Rules", href: "/logistics/allocation/rules" },
-    { title: "CSR Configuration", href: "/logistics/allocation/csr-config" },
-    { title: "Allocation Audit", href: "/logistics/allocation/audit" },
-  ],
-};
-
-// Logistics Analytics
-const logisticsAnalyticsNav: NavItemWithSub = {
-  title: "Logistics Analytics",
-  icon: LineChart,
-  items: [
-    { title: "Logistics Dashboard", href: "/logistics/dashboard" },
-    { title: "Carrier Scorecards", href: "/logistics/analytics/carrier-scorecards" },
-    { title: "Lane Performance", href: "/logistics/analytics/lane-performance" },
-    { title: "Pincode Performance", href: "/logistics/analytics/pincode-performance" },
-    { title: "Delivery Performance", href: "/logistics/performance" },
-  ],
-};
-
-
-const returnsNav: NavItemWithSub = {
+const wmsReturnsNav: NavItemWithSub = {
   title: "Returns & RTO",
   icon: RotateCcw,
   items: [
@@ -361,8 +250,99 @@ const returnsNav: NavItemWithSub = {
   ],
 };
 
+const wmsQualityControlNav: NavItemWithSub = {
+  title: "Quality Control",
+  icon: BadgeCheck,
+  items: [
+    { title: "QC Templates", href: "/wms/qc/templates" },
+    { title: "QC Executions", href: "/wms/qc/executions" },
+    { title: "QC Parameters", href: "/wms/qc/parameters" },
+  ],
+};
+
+const wmsAdvancedNav: NavItemWithSub = {
+  title: "Advanced WMS",
+  icon: Layers,
+  items: [
+    { title: "Labor Management", href: "/wms/labor" },
+    { title: "Slotting Optimization", href: "/wms/slotting" },
+    { title: "Voice Picking", href: "/wms/voice" },
+    { title: "Mobile WMS", href: "/wms/mobile" },
+    { title: "Cross-Docking", href: "/wms/cross-dock" },
+    { title: "Transhipment", href: "/wms/transhipment" },
+  ],
+};
+
 // ═══════════════════════════════════════════════════════════════════════════
-// PROCUREMENT
+// 5. LOGISTICS — DEDUPLICATED
+// ═══════════════════════════════════════════════════════════════════════════
+
+const shipmentTrackingNav: NavItemWithSub = {
+  title: "Shipment Tracking",
+  icon: Truck,
+  items: [
+    { title: "Tracking Dashboard", href: "/logistics/tracking" },
+    { title: "AWB Management", href: "/logistics/awb" },
+    { title: "Delivery Performance", href: "/logistics/performance" },
+  ],
+};
+
+const b2cCourierNav: NavItemWithSub = {
+  title: "B2C / Courier",
+  icon: Package,
+  items: [
+    { title: "Courier Partners", href: "/logistics/transporters" },
+    { title: "B2C Rate Cards", href: "/logistics/rate-cards" },
+    { title: "Shipping Rules", href: "/logistics/shipping-rules" },
+    { title: "Pincode Serviceability", href: "/logistics/pincodes" },
+  ],
+};
+
+const ftlNav: NavItemWithSub = {
+  title: "FTL Management",
+  icon: TruckIcon,
+  items: [
+    { title: "FTL Vendors", href: "/logistics/ftl/vendors" },
+    { title: "Vehicle Types", href: "/logistics/ftl/vehicle-types" },
+    { title: "Lane Rates", href: "/logistics/ftl/lane-rates" },
+    { title: "Indent Management", href: "/logistics/ftl/indents" },
+    { title: "Rate Comparison", href: "/logistics/ftl/rate-comparison" },
+  ],
+};
+
+const ptlNav: NavItemWithSub = {
+  title: "PTL / B2B",
+  icon: Boxes,
+  items: [
+    { title: "PTL Rate Matrix", href: "/logistics/ptl/rate-matrix" },
+    { title: "TAT Matrix", href: "/logistics/ptl/tat-matrix" },
+    { title: "Rate Comparison", href: "/logistics/ptl/rate-comparison" },
+  ],
+};
+
+const allocationNav: NavItemWithSub = {
+  title: "Allocation Engine",
+  icon: Target,
+  items: [
+    { title: "Allocation Rules", href: "/logistics/allocation/rules" },
+    { title: "CSR Configuration", href: "/logistics/allocation/csr-config" },
+    { title: "Allocation Audit", href: "/logistics/allocation/audit" },
+  ],
+};
+
+const logisticsAnalyticsNav: NavItemWithSub = {
+  title: "Logistics Analytics",
+  icon: LineChart,
+  items: [
+    { title: "Logistics Dashboard", href: "/logistics/dashboard" },
+    { title: "Carrier Scorecards", href: "/logistics/analytics/carrier-scorecards" },
+    { title: "Lane Performance", href: "/logistics/analytics/lane-performance" },
+    { title: "Pincode Performance", href: "/logistics/analytics/pincode-performance" },
+  ],
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 6. PROCUREMENT
 // ═══════════════════════════════════════════════════════════════════════════
 
 const procurementNav: NavItemWithSub = {
@@ -370,13 +350,33 @@ const procurementNav: NavItemWithSub = {
   icon: ClipboardList,
   items: [
     { title: "Purchase Orders", href: "/procurement/purchase-orders" },
+    { title: "External POs", href: "/inbound/external-pos" },
     { title: "Vendors", href: "/procurement/vendors" },
     { title: "Vendor Performance", href: "/procurement/performance" },
   ],
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
-// FINANCE & ANALYTICS
+// 7. CHANNELS & MARKETPLACE — PROMOTED
+// ═══════════════════════════════════════════════════════════════════════════
+
+const marketplaceNav: NavItemWithSub = {
+  title: "Marketplace",
+  icon: Store,
+  items: [
+    { title: "Connections", href: "/channels/marketplaces" },
+    { title: "SKU Mapping", href: "/channels/sku-mapping" },
+    { title: "Order Sync", href: "/channels/order-sync" },
+    { title: "Inventory Sync", href: "/channels/inventory-sync" },
+    { title: "Marketplace Returns", href: "/channels/returns" },
+    { title: "Settlements", href: "/channels/settlements" },
+    { title: "Scheduled Jobs", href: "/channels/scheduled-jobs" },
+    { title: "Sync Settings", href: "/channels/sync" },
+  ],
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 8. FINANCE
 // ═══════════════════════════════════════════════════════════════════════════
 
 const financeNav: NavItemWithSub = {
@@ -393,8 +393,12 @@ const financeNav: NavItemWithSub = {
   ],
 };
 
+// ═══════════════════════════════════════════════════════════════════════════
+// 9. REPORTS & ANALYTICS — MERGED
+// ═══════════════════════════════════════════════════════════════════════════
+
 const reportsNav: NavItemWithSub = {
-  title: "Reports & Analytics",
+  title: "Reports",
   icon: BarChart3,
   items: [
     { title: "Reports Hub", href: "/reports" },
@@ -418,7 +422,7 @@ const analyticsNav: NavItemWithSub = {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
-// CONFIGURATION (COLLAPSIBLE SECTION)
+// 10. CONFIGURATION — CLEANED (Only true config items)
 // ═══════════════════════════════════════════════════════════════════════════
 
 const mastersNav: NavItemWithSub = {
@@ -431,77 +435,30 @@ const mastersNav: NavItemWithSub = {
   ],
 };
 
-const warehouseSetupNav: NavItemWithSub = {
-  title: "Warehouse Setup",
-  icon: Warehouse,
+const companyUsersNav: NavItemWithSub = {
+  title: "Company & Users",
+  icon: Building2,
   items: [
-    { title: "Locations", href: "/settings/locations" },
-    { title: "Zones & Bins", href: "/wms/zones" },
+    { title: "Company Profile", href: "/settings/company" },
+    { title: "Users & Roles", href: "/settings/users" },
+    { title: "Locations / Warehouses", href: "/settings/locations" },
   ],
 };
 
-const logisticsSetupNav: NavItemWithSub = {
-  title: "Logistics Setup",
-  icon: Route,
+const integrationsNav: NavItemWithSub = {
+  title: "Integrations",
+  icon: Plug,
   items: [
-    { title: "Transporters", href: "/logistics/transporters" },
-    { title: "Rate Cards", href: "/logistics/rate-cards" },
-    { title: "Shipping Rules", href: "/logistics/shipping-rules" },
-    { title: "Serviceability", href: "/logistics/pincodes" },
-  ],
-};
-
-const channelsNav: NavItemWithSub = {
-  title: "Channels",
-  icon: Store,
-  items: [
-    { title: "Channel Overview", href: "/channels" },
-    { title: "Marketplace Hub", href: "/channels/marketplaces" },
-    { title: "Sync Settings", href: "/channels/sync" },
-  ],
-};
-
-const qcSetupNav: NavItemWithSub = {
-  title: "Quality Control",
-  icon: BadgeCheck,
-  items: [
-    { title: "QC Templates", href: "/wms/qc/templates" },
-    { title: "QC Executions", href: "/wms/qc/executions" },
-  ],
-};
-
-const notificationsNav: NavItemWithSub = {
-  title: "Notifications",
-  icon: Bell,
-  items: [
-    { title: "Detection Rules", href: "/control-tower/rules" },
+    { title: "API & Integrations", href: "/settings/integrations" },
     { title: "Communication Templates", href: "/setup/templates" },
   ],
 };
 
-const settingsNav: NavItemWithSub = {
+const appSettingsNav: NavItemWithSub = {
   title: "Settings",
   icon: Settings,
   items: [
-    { title: "Company Profile", href: "/settings/company" },
-    { title: "Users & Roles", href: "/settings/users" },
-    { title: "API & Integrations", href: "/settings/integrations" },
     { title: "Inventory Valuation", href: "/settings/inventory/valuation" },
-  ],
-};
-
-// ═══════════════════════════════════════════════════════════════════════════
-// ADMIN (SUPER ADMIN ONLY)
-// ═══════════════════════════════════════════════════════════════════════════
-
-const platformAdminNav: NavItemWithSub = {
-  title: "Platform Admin",
-  icon: Shield,
-  items: [
-    { title: "All Companies", href: "/master/companies" },
-    { title: "All Brands/Tenants", href: "/master/brands" },
-    { title: "System Health", href: "/master/health" },
-    { title: "Audit Logs", href: "/master/audit" },
   ],
 };
 
@@ -650,7 +607,7 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        {/* ═══ SUPER ADMIN SECTION ═══ */}
+        {/* ═══ 1. ADMIN (SUPER_ADMIN ONLY) ═══ */}
         {session?.user?.role === "SUPER_ADMIN" && (
           <SidebarGroup>
             <SidebarGroupLabel className="text-xs font-semibold text-orange-600">
@@ -664,24 +621,21 @@ export function AppSidebar() {
           </SidebarGroup>
         )}
 
-        {/* ═══ COMMAND CENTER ═══ */}
+        {/* ═══ 2. COMMAND CENTER ═══ */}
         <SidebarGroup>
           <SidebarGroupLabel className="text-xs font-semibold text-blue-600">
             Command Center
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {/* Dashboard */}
               <CollapsibleNavItem item={dashboardNav} pathname={pathname} />
-              {/* Control Tower */}
               <CollapsibleNavItem item={controlTowerNav} pathname={pathname} />
-              {/* NDR Management */}
               <CollapsibleNavItem item={ndrManagementNav} pathname={pathname} />
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* ═══ ORDER LIFECYCLE ═══ */}
+        {/* ═══ 3. ORDER LIFECYCLE ═══ */}
         <SidebarGroup>
           <SidebarGroupLabel className="text-xs font-semibold text-green-600">
             Order Lifecycle
@@ -694,39 +648,42 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* ═══ WAREHOUSE OPERATIONS ═══ */}
+        {/* ═══ 4. WMS (Warehouse Management) ═══ */}
         <SidebarGroup>
           <SidebarGroupLabel className="text-xs font-semibold text-purple-600">
-            Warehouse Operations
+            WMS
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <CollapsibleNavItem item={inboundNav} pathname={pathname} />
-              <CollapsibleNavItem item={inventoryNav} pathname={pathname} />
-              <CollapsibleNavItem item={fulfillmentNav} pathname={pathname} />
-              <CollapsibleNavItem item={returnsNav} pathname={pathname} />
+              <CollapsibleNavItem item={wmsSetupNav} pathname={pathname} />
+              <CollapsibleNavItem item={wmsInboundNav} pathname={pathname} />
+              <CollapsibleNavItem item={wmsInventoryNav} pathname={pathname} />
+              <CollapsibleNavItem item={wmsOrderProcessingNav} pathname={pathname} />
+              <CollapsibleNavItem item={wmsReturnsNav} pathname={pathname} />
+              <CollapsibleNavItem item={wmsQualityControlNav} pathname={pathname} />
+              <CollapsibleNavItem item={wmsAdvancedNav} pathname={pathname} />
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* ═══ LOGISTICS & DELIVERY ═══ */}
+        {/* ═══ 5. LOGISTICS ═══ */}
         <SidebarGroup>
           <SidebarGroupLabel className="text-xs font-semibold text-amber-600">
-            Logistics & Delivery
+            Logistics
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <CollapsibleNavItem item={shipmentsNav} pathname={pathname} />
+              <CollapsibleNavItem item={shipmentTrackingNav} pathname={pathname} />
+              <CollapsibleNavItem item={b2cCourierNav} pathname={pathname} />
               <CollapsibleNavItem item={ftlNav} pathname={pathname} />
               <CollapsibleNavItem item={ptlNav} pathname={pathname} />
-              <CollapsibleNavItem item={b2cCourierNav} pathname={pathname} />
               <CollapsibleNavItem item={allocationNav} pathname={pathname} />
               <CollapsibleNavItem item={logisticsAnalyticsNav} pathname={pathname} />
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* ═══ PROCUREMENT ═══ */}
+        {/* ═══ 6. PROCUREMENT ═══ */}
         <SidebarGroup>
           <SidebarGroupLabel className="text-xs font-semibold text-teal-600">
             Procurement
@@ -738,37 +695,52 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* ═══ FINANCE & ANALYTICS ═══ */}
+        {/* ═══ 7. CHANNELS & MARKETPLACE ═══ */}
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-xs font-semibold text-indigo-600">
+            Channels & Marketplace
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <CollapsibleNavItem item={marketplaceNav} pathname={pathname} />
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* ═══ 8. FINANCE ═══ */}
         <SidebarGroup>
           <SidebarGroupLabel className="text-xs font-semibold text-rose-600">
-            Finance & Analytics
+            Finance
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <CollapsibleNavItem item={financeNav} pathname={pathname} />
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* ═══ 9. REPORTS & ANALYTICS ═══ */}
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-xs font-semibold text-rose-600">
+            Reports & Analytics
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
               <CollapsibleNavItem item={reportsNav} pathname={pathname} />
               <CollapsibleNavItem item={analyticsNav} pathname={pathname} />
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* ═══ CONFIGURATION (COLLAPSIBLE) ═══ */}
+        {/* ═══ 10. CONFIGURATION (COLLAPSED) ═══ */}
         <CollapsibleSectionGroup
           label="Configuration"
           labelColor="text-slate-500"
           items={[
             mastersNav,
-            warehouseSetupNav,
-            logisticsSetupNav,
-            channelsNav,
-            qcSetupNav,
-            laborManagementNav,
-            slottingNav,
-            voicePickingNav,
-            mobileWmsNav,
-            crossDockNav,
-            notificationsNav,
-            settingsNav,
+            companyUsersNav,
+            integrationsNav,
+            appSettingsNav,
           ]}
           pathname={pathname}
           defaultOpen={false}

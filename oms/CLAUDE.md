@@ -495,3 +495,100 @@ curl https://cjdquick-api-vr4w.onrender.com/health
 ---
 
 **For detailed table inventory and database verification queries, see `report.claude.md`**
+
+---
+
+## 14. NAVIGATION ARCHITECTURE (Restructured 2026-02-09)
+
+### Problems Solved
+- **12 duplicate nav entries eliminated** (Transporters, Rate Cards, Shipping Rules, Pincodes, Detection Rules, Delivery Performance appeared in multiple places)
+- **WMS functionality consolidated** from 5+ scattered sections into one unified WMS section
+- **5 QC entry points unified** (Inbound QC, Outbound QC, Returns QC, QC Templates, QC Executions)
+- **6 orphaned pages** now have navigation entries (channels/inventory-sync, order-sync, returns, settlements, sku-mapping, scheduled-jobs)
+- **12 legacy /setup/* pages** cleaned up
+- **7 new pages created** from WMS reference (SKU Label Print, Direct Inbound, BIN Audit, SKU Transaction History, Inventory Reservation, Delivery Split, Transhipment)
+
+### Navigation Structure (10 Sections)
+
+```
+1. ADMIN (SUPER_ADMIN only) [Orange]
+   └── Platform Admin → /master/companies, /master/brands, /master/health, /master/audit
+
+2. COMMAND CENTER [Blue]
+   ├── Dashboard → /dashboard, /dashboard/seller-panel
+   ├── Control Tower → /control-tower, /control-tower/exceptions, /control-tower/sla, /control-tower/rules, /control-tower/ai-actions, /control-tower/proactive
+   └── NDR Management → /control-tower/ndr, /ndr, /ndr/reattempts, /ndr/escalations
+
+3. ORDER LIFECYCLE [Green]
+   ├── Orders → /orders, /orders/new, /orders/import, /orders/bulk, /orders/preorders, /orders/subscriptions
+   └── B2B Sales → /b2b/quotations, /b2b/orders, /b2b/price-lists, /b2b/credit, /b2b/customers
+
+4. WMS (Warehouse Management) [Purple] ← RESTRUCTURED
+   ├── Setup → /wms/zones, /wms/bins, /inbound/putaway, /wms/qc/templates, /inventory/cycle-counts, /wms/sku-label-print
+   ├── Inbound → /inbound/goods-receipt, /inbound/asn, /inbound/receiving, /inbound/qc, /inbound/putaway, /inbound/direct, /inbound/return-inbound
+   ├── Inventory → /inventory, /inventory/movements, /inventory/transfers, /inventory/adjustments, /inventory/cycle-counts, /inventory/bin-audit, /inventory/virtual, /inventory/sku-transactions, /inventory/reservations
+   ├── Order Processing → /fulfillment/allocate, /fulfillment/waves, /fulfillment/picklist, /fulfillment/packing, /fulfillment/qc, /fulfillment/delivery-split, /fulfillment/manifest, /fulfillment/delivery-shipping, /fulfillment/gate-pass
+   ├── Returns & RTO → /returns, /returns/rto, /returns/qc, /returns/refunds
+   ├── Quality Control → /wms/qc/templates, /wms/qc/executions, /wms/qc/parameters
+   └── Advanced WMS → /wms/labor, /wms/slotting, /wms/voice, /wms/mobile, /wms/cross-dock, /wms/transhipment
+
+5. LOGISTICS [Amber] ← DEDUPLICATED
+   ├── Shipment Tracking → /logistics/tracking, /logistics/awb, /logistics/performance
+   ├── B2C / Courier → /logistics/transporters, /logistics/rate-cards, /logistics/shipping-rules, /logistics/pincodes
+   ├── FTL Management → /logistics/ftl/vendors, /logistics/ftl/vehicle-types, /logistics/ftl/lane-rates, /logistics/ftl/indents, /logistics/ftl/rate-comparison
+   ├── PTL / B2B → /logistics/ptl/rate-matrix, /logistics/ptl/tat-matrix, /logistics/ptl/rate-comparison
+   ├── Allocation Engine → /logistics/allocation/rules, /logistics/allocation/csr-config, /logistics/allocation/audit
+   └── Logistics Analytics → /logistics/dashboard, /logistics/analytics/carrier-scorecards, /logistics/analytics/lane-performance, /logistics/analytics/pincode-performance
+
+6. PROCUREMENT [Teal]
+   └── Procurement → /procurement/purchase-orders, /inbound/external-pos, /procurement/vendors, /procurement/performance
+
+7. CHANNELS & MARKETPLACE [Indigo] ← PROMOTED FROM CONFIG
+   └── Marketplace → /channels/marketplaces, /channels/sku-mapping, /channels/order-sync, /channels/inventory-sync, /channels/returns, /channels/settlements, /channels/scheduled-jobs, /channels/sync
+
+8. FINANCE [Rose]
+   └── Finance → /finance/dashboard, /finance/invoices, /finance/cod-reconciliation, /finance/reconciliation, /finance/freight-billing, /finance/weight-discrepancy, /finance/payment-ledger
+
+9. REPORTS & ANALYTICS [Rose] ← MERGED
+   ├── Reports → /reports, /reports/sales, /reports/inventory, /reports/logistics, /reports/finance, /reports/scheduled, /reports/custom
+   └── Analytics → /analytics/sales, /analytics/operations, /analytics/carriers
+
+10. CONFIGURATION [Slate] ← CLEANED (collapsed, 4 groups only)
+    ├── Masters → /masters/skus, /masters/bundles, /masters/categories
+    ├── Company & Users → /settings/company, /settings/users, /settings/locations
+    ├── Integrations → /settings/integrations, /setup/templates
+    └── Settings → /settings/inventory/valuation
+```
+
+### API Endpoint Mapping (Page → Backend API)
+
+| Frontend Page | Backend API Endpoint |
+|--------------|---------------------|
+| /wms/zones | GET/POST /api/v1/zones |
+| /wms/bins | GET/POST /api/v1/bins |
+| /wms/sku-label-print | GET /api/v1/skus |
+| /wms/qc/templates | GET/POST /api/v1/qc/templates |
+| /wms/qc/executions | GET /api/v1/qc/executions |
+| /wms/qc/parameters | GET/POST /api/v1/qc/parameters |
+| /inbound/goods-receipt | GET/POST /api/v1/goods-receipt |
+| /inbound/asn | GET/POST /api/v1/asn |
+| /inbound/direct | POST /api/v1/inbound |
+| /inbound/return-inbound | GET /api/v1/returns (inbound receiving) |
+| /inventory | GET /api/v1/inventory |
+| /inventory/movements | GET /api/v1/inventory (filter: movements) |
+| /inventory/bin-audit | GET /api/v1/reconciliation |
+| /inventory/sku-transactions | GET /api/v1/inventory (SKU history) |
+| /inventory/reservations | GET /api/v1/allocation |
+| /fulfillment/allocate | POST /api/v1/allocation/allocate |
+| /fulfillment/waves | GET/POST /api/v1/waves |
+| /fulfillment/picklist | POST /api/v1/picklists |
+| /fulfillment/delivery-split | POST /api/v1/waves/{id}/split |
+| /fulfillment/delivery-shipping | GET /api/v1/shipments |
+| /wms/transhipment | GET/POST /api/v1/stock-transfer |
+| /channels/marketplaces | GET /api/v1/marketplaces |
+| /channels/sku-mapping | GET /api/v1/sku-mappings |
+| /channels/order-sync | GET /api/v1/order-sync |
+| /channels/inventory-sync | GET /api/v1/inventory-sync |
+| /channels/settlements | GET /api/v1/settlements |
+
+---

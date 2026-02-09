@@ -81,7 +81,7 @@ export default function TranshipmentPage() {
       params.append("page", page.toString());
       params.append("limit", "20");
 
-      const response = await fetch(`/api/v1/stock-transfer?${params}`);
+      const response = await fetch(`/api/v1/stock-transfers?${params}`);
       const data: StockTransfersResponse = await response.json();
 
       setTransfers(data.transfers || []);
@@ -105,7 +105,7 @@ export default function TranshipmentPage() {
 
   const handleCreateTransfer = async () => {
     try {
-      const response = await fetch("/api/v1/stock-transfer", {
+      const response = await fetch("/api/v1/stock-transfers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({}),

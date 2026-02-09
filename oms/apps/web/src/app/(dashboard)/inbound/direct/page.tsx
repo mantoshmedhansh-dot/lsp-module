@@ -83,7 +83,7 @@ export default function DirectInboundPage() {
       params.append("page", page.toString());
       params.append("limit", "20");
 
-      const response = await fetch(`/api/v1/inbounds?${params}`);
+      const response = await fetch(`/api/v1/inbound?${params}`);
       const data: InboundResponse = await response.json();
 
       setInbounds(data.inbounds || []);

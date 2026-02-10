@@ -180,7 +180,26 @@ export default function CustomersPage() {
       const response = await fetch(`/api/v1/customers?${params}`);
       if (!response.ok) throw new Error("Failed to fetch customers");
       const result = await response.json();
-      setData(result);
+      // Normalize: API may return array directly or { customers: [...] } or { data: [...] }
+      if (Array.isArray(result)) {
+        setData({
+          customers: result,
+          total: result.length,
+          page: 1,
+          limit: 25,
+          totalPages: 1,
+          statusCounts: {},
+        });
+      } else {
+        setData({
+          customers: result.customers || result.data || result.items || [],
+          total: result.total || 0,
+          page: result.page || 1,
+          limit: result.limit || 25,
+          totalPages: result.totalPages || 1,
+          statusCounts: result.statusCounts || {},
+        });
+      }
     } catch (error) {
       console.error("Error fetching customers:", error);
       toast.error("Failed to load customers");

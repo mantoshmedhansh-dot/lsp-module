@@ -267,6 +267,7 @@ export default function NewGoodsReceiptPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             skuId: item.skuId,
+            companyId: session?.user?.companyId,
             expectedQty: item.expectedQty,
             receivedQty: item.receivedQty,
             acceptedQty: item.acceptedQty,

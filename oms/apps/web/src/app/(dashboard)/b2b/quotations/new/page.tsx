@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import {
   Card,
   CardContent,
@@ -95,6 +96,7 @@ interface QuotationItem {
 function NewQuotationPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { data: session } = useSession();
   const preselectedCustomerId = searchParams.get("customerId");
 
   const [saving, setSaving] = useState(false);
@@ -126,7 +128,8 @@ function NewQuotationPageContent() {
       );
       if (response.ok) {
         const data = await response.json();
-        setCustomers(data.data || []);
+        const list = Array.isArray(data) ? data : (data.customers || data.data || data.items || []);
+        setCustomers(list);
       }
     } catch (error) {
       console.error("Error searching customers:", error);
@@ -143,7 +146,8 @@ function NewQuotationPageContent() {
       );
       if (response.ok) {
         const data = await response.json();
-        setSkus(data.data || []);
+        const list = Array.isArray(data) ? data : (data.skus || data.data || data.items || []);
+        setSkus(list);
       }
     } catch (error) {
       console.error("Error searching SKUs:", error);
@@ -308,20 +312,20 @@ function NewQuotationPageContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           customerId: formData.customerId,
+          companyId: session?.user?.companyId,
           validUntil: formData.validUntil.toISOString(),
           remarks: formData.notes,
           items: items.map((item) => ({
             skuId: item.skuId,
             quantity: parseInt(String(item.quantity)),
-            unitPrice: parseFloat(String(item.unitPrice)).toFixed(2),
-            discount: parseFloat(String(item.discount)).toFixed(2),
-            taxRate: parseFloat(String(item.taxRate)).toFixed(2),
+            unitPrice: String(parseFloat(String(item.unitPrice)).toFixed(2)),
+            discount: String(parseFloat(String(item.discount)).toFixed(2)),
+            taxRate: String(parseFloat(String(item.taxRate)).toFixed(2)),
           })),
-          // Map frontend totals to backend field names
-          subtotal: parseFloat(String(totals.subtotal)).toFixed(2),
-          discount: parseFloat(String(totals.discountTotal)).toFixed(2),
-          taxAmount: parseFloat(String(totals.taxTotal)).toFixed(2),
-          totalAmount: parseFloat(String(totals.total)).toFixed(2),
+          subtotal: String(parseFloat(String(totals.subtotal)).toFixed(2)),
+          discount: String(parseFloat(String(totals.discountTotal)).toFixed(2)),
+          taxAmount: String(parseFloat(String(totals.taxTotal)).toFixed(2)),
+          totalAmount: String(parseFloat(String(totals.total)).toFixed(2)),
         }),
       });
 

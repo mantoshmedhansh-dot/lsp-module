@@ -10,16 +10,16 @@ const loginSchema = z.object({
 });
 
 interface AuthResponse {
-  access_token: string;
-  token_type: string;
+  token: string;
+  expiresIn: number;
   user: {
     id: string;
     email: string;
     name: string;
     role: string;
     companyId: string | null;
-    companyName: string | null;
-    companyCode: string | null;
+    companyName?: string | null;
+    companyCode?: string | null;
     locationAccess: string[];
     isActive: boolean;
   };

@@ -451,6 +451,7 @@ const companyUsersNav: NavItemWithSub = {
     { title: "Company Profile", href: "/settings/company" },
     { title: "Users & Roles", href: "/settings/users" },
     { title: "Locations / Warehouses", href: "/settings/locations" },
+    { title: "LSP Clients", href: "/settings/clients" },
   ],
 };
 

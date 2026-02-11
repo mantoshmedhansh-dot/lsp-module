@@ -138,6 +138,62 @@ from .api_key import (
     APIKeyCreatedResponse,
 )
 
+# SaaS Plan models and schemas
+from .plan import (
+    Plan,
+    PlanModule,
+    PlanLimit,
+    PlanResponse,
+    PlanBrief,
+    PlanCreate,
+    PlanUpdate,
+    PlanModuleResponse,
+    PlanModuleCreate,
+    PlanLimitResponse,
+    PlanLimitCreate,
+    PlanLimitUpdate,
+)
+
+# SaaS Subscription models and schemas
+from .tenant_subscription import (
+    TenantSubscription,
+    SubscriptionUsage,
+    TenantSubscriptionResponse,
+    TenantSubscriptionCreate,
+    TenantSubscriptionUpdate,
+    SubscriptionUsageResponse,
+    SubscriptionUsageUpdate,
+    ChangePlanRequest,
+)
+
+# Billing Invoice model and schemas
+from .billing_invoice import (
+    BillingInvoice,
+    BillingInvoiceResponse,
+    BillingInvoiceCreate,
+)
+
+# Feature Flag models and schemas
+from .feature_flag import (
+    FeatureFlag,
+    TenantFeature,
+    FeatureFlagResponse,
+    FeatureFlagCreate,
+    FeatureFlagUpdate,
+    TenantFeatureResponse,
+    TenantFeatureCreate,
+    TenantFeatureUpdate,
+)
+
+# Onboarding model and schemas
+from .onboarding import (
+    OnboardingStep,
+    OnboardingStepResponse,
+    OnboardingStepCreate,
+    OnboardingStepUpdate,
+    OnboardingStatusResponse,
+)
+
 # External Order schemas
 from .external_order import (
     ExternalOrderCreate,
@@ -2075,4 +2131,45 @@ __all__ = [
     "UnmappedSkuResponse",
     "SkuMappingSummary",
     "SyncStatusResponse",
+    # SaaS Plan
+    "Plan",
+    "PlanModule",
+    "PlanLimit",
+    "PlanResponse",
+    "PlanBrief",
+    "PlanCreate",
+    "PlanUpdate",
+    "PlanModuleResponse",
+    "PlanModuleCreate",
+    "PlanLimitResponse",
+    "PlanLimitCreate",
+    "PlanLimitUpdate",
+    # SaaS Subscription
+    "TenantSubscription",
+    "SubscriptionUsage",
+    "TenantSubscriptionResponse",
+    "TenantSubscriptionCreate",
+    "TenantSubscriptionUpdate",
+    "SubscriptionUsageResponse",
+    "SubscriptionUsageUpdate",
+    "ChangePlanRequest",
+    # Billing Invoice
+    "BillingInvoice",
+    "BillingInvoiceResponse",
+    "BillingInvoiceCreate",
+    # Feature Flags
+    "FeatureFlag",
+    "TenantFeature",
+    "FeatureFlagResponse",
+    "FeatureFlagCreate",
+    "FeatureFlagUpdate",
+    "TenantFeatureResponse",
+    "TenantFeatureCreate",
+    "TenantFeatureUpdate",
+    # Onboarding
+    "OnboardingStep",
+    "OnboardingStepResponse",
+    "OnboardingStepCreate",
+    "OnboardingStepUpdate",
+    "OnboardingStatusResponse",
 ]

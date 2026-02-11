@@ -9,7 +9,7 @@ from uuid import UUID
 
 from sqlmodel import SQLModel, Field, Relationship
 from sqlalchemy import Column, String, JSON, ForeignKey, text, Integer, Boolean, Numeric
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID, JSONB
 
 from .base import BaseModel, ResponseBase, CreateBase, UpdateBase
 from .enums import LocationType, ZoneType, BinType, TemperatureType
@@ -20,6 +20,8 @@ if TYPE_CHECKING:
     from .sku import SKU
     from .customer import Customer, CustomerGroup
     from .api_key import APIKey
+    from .tenant_subscription import TenantSubscription
+    from .onboarding import OnboardingStep
 
 
 # ============================================================================
@@ -71,6 +73,21 @@ class Company(BaseModel, table=True):
     # Status
     isActive: bool = Field(default=True)
 
+    # SaaS Subscription
+    subscriptionStatus: Optional[str] = Field(
+        default="trialing",
+        sa_column=Column(String(20), default="trialing")
+    )  # trialing, active, past_due, cancelled, expired
+    trialEndsAt: Optional[datetime] = Field(default=None)
+    branding: Optional[dict] = Field(
+        default=None,
+        sa_column=Column(JSONB, default={})
+    )  # logo, primaryColor, accentColor, favicon
+    stripeCustomerId: Optional[str] = Field(
+        default=None,
+        sa_column=Column(String(100))
+    )
+
     # Relationships
     users: List["User"] = Relationship(back_populates="company")
     locations: List["Location"] = Relationship(back_populates="company")
@@ -79,6 +96,8 @@ class Company(BaseModel, table=True):
     customers: List["Customer"] = Relationship(back_populates="company")
     customerGroups: List["CustomerGroup"] = Relationship(back_populates="company")
     apiKeys: List["APIKey"] = Relationship(back_populates="company")
+    tenantSubscriptions: List["TenantSubscription"] = Relationship(back_populates="company")
+    onboardingSteps: List["OnboardingStep"] = Relationship(back_populates="company")
 
 
 # ============================================================================
@@ -359,6 +378,10 @@ class CompanyUpdate(UpdateBase):
     settings: Optional[dict] = None
     defaultValuationMethod: Optional[str] = None  # FIFO, LIFO, FEFO, WAC
     isActive: Optional[bool] = None
+    subscriptionStatus: Optional[str] = None
+    trialEndsAt: Optional[datetime] = None
+    branding: Optional[dict] = None
+    stripeCustomerId: Optional[str] = None
 
 
 class CompanyResponse(ResponseBase):
@@ -376,6 +399,10 @@ class CompanyResponse(ResponseBase):
     settings: Optional[dict] = None
     defaultValuationMethod: Optional[str] = "FIFO"  # FIFO, LIFO, FEFO, WAC
     isActive: bool
+    subscriptionStatus: Optional[str] = "trialing"
+    trialEndsAt: Optional[datetime] = None
+    branding: Optional[dict] = None
+    stripeCustomerId: Optional[str] = None
     createdAt: datetime
     updatedAt: datetime
 

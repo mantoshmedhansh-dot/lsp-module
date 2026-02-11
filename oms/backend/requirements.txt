@@ -38,3 +38,6 @@ apscheduler>=3.10.4
 
 # Rate Limiting
 slowapi>=0.1.9
+
+# Billing
+stripe>=8.0.0

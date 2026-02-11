@@ -79,6 +79,9 @@ from .mobile import router as mobile_router
 from .reconciliation import router as reconciliation_router
 from .marketplaces import router as marketplaces_router
 
+# SaaS Platform routers
+from .platform import router as platform_router
+
 # Omni-Channel OMS routers
 from .sku_mappings import router as sku_mappings_router
 from .order_sync import router as order_sync_router
@@ -167,6 +170,9 @@ router.include_router(subscriptions_router)
 router.include_router(mobile_router)
 router.include_router(reconciliation_router)
 router.include_router(marketplaces_router)
+
+# SaaS Platform
+router.include_router(platform_router)
 
 # Omni-Channel OMS
 router.include_router(sku_mappings_router)

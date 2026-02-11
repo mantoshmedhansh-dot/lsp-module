@@ -119,11 +119,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return session;
     },
     async authorized({ auth, request }) {
-      // Allow access to login page without authentication
-      const isLoginPage = request.nextUrl.pathname === "/login";
-      const isApiAuth = request.nextUrl.pathname.startsWith("/api/auth");
+      // Allow access to public pages without authentication
+      const { pathname } = request.nextUrl;
+      const isPublicPage =
+        pathname === "/login" ||
+        pathname === "/signup" ||
+        pathname.startsWith("/api/auth");
 
-      if (isLoginPage || isApiAuth) {
+      if (isPublicPage) {
         return true;
       }
 

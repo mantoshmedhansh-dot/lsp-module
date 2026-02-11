@@ -8,6 +8,7 @@ from slowapi.errors import RateLimitExceeded
 from .core.config import settings
 from .core.rate_limit import limiter, rate_limit_exceeded_handler
 from .core.audit_log import AuditLogMiddleware
+from .middleware.subscription import SubscriptionMiddleware
 from .api.routes import api_router
 from .services.scheduler import start_scheduler, shutdown_scheduler, get_last_scan_result
 
@@ -74,6 +75,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Subscription enforcement middleware (checks module access per plan)
+app.add_middleware(SubscriptionMiddleware)
 
 # Audit Logging middleware (logs all API requests)
 app.add_middleware(AuditLogMiddleware)

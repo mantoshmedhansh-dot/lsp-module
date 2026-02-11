@@ -54,6 +54,8 @@ import {
   Building2,
   MapPin,
   Scale,
+  Lock,
+  Crown,
 } from "lucide-react";
 import {
   Sidebar,
@@ -85,6 +87,9 @@ import {
 } from "@/components/ui/collapsible";
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSubscription } from "@/contexts/subscription-context";
+import { UsageSummary } from "@/components/subscription/usage-bar";
+import { Badge } from "@/components/ui/badge";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPE DEFINITIONS
@@ -103,6 +108,10 @@ const platformAdminNav: NavItemWithSub = {
   title: "Platform Admin",
   icon: Shield,
   items: [
+    { title: "Revenue Dashboard", href: "/platform-admin" },
+    { title: "All Tenants", href: "/platform-admin/tenants" },
+    { title: "Plans Management", href: "/platform-admin/plans" },
+    { title: "Feature Flags", href: "/platform-admin/feature-flags" },
     { title: "All Companies", href: "/master/companies" },
     { title: "All Brands/Tenants", href: "/master/brands" },
     { title: "System Health", href: "/master/health" },
@@ -574,12 +583,69 @@ function CollapsibleSectionGroup({
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// HELPER COMPONENT: Module-Gated Section Group
+// ═══════════════════════════════════════════════════════════════════════════
+
+function GatedSectionGroup({
+  label,
+  labelColor,
+  module,
+  items,
+  pathname,
+  defaultOpen = true,
+}: {
+  label: string;
+  labelColor?: string;
+  module: string;
+  items: NavItemWithSub[];
+  pathname: string;
+  defaultOpen?: boolean;
+}) {
+  const { hasModule, isSuperAdmin } = useSubscription();
+  const isUnlocked = isSuperAdmin || hasModule(module);
+
+  if (!isUnlocked) {
+    return (
+      <SidebarGroup>
+        <SidebarGroupLabel
+          className={cn(
+            "text-xs font-semibold flex items-center justify-between",
+            "text-muted-foreground/50"
+          )}
+        >
+          <span className="flex items-center gap-1.5">
+            <Lock className="h-3 w-3" />
+            {label}
+          </span>
+          <Link href="/settings/billing">
+            <Badge variant="outline" className="text-[10px] px-1.5 py-0 cursor-pointer hover:bg-accent">
+              Upgrade
+            </Badge>
+          </Link>
+        </SidebarGroupLabel>
+      </SidebarGroup>
+    );
+  }
+
+  return (
+    <CollapsibleSectionGroup
+      label={label}
+      labelColor={labelColor}
+      items={items}
+      pathname={pathname}
+      defaultOpen={defaultOpen}
+    />
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // MAIN SIDEBAR COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════
 
 export function AppSidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const { hasModule, isTrialing, daysLeftInTrial, plan, isSuperAdmin } = useSubscription();
 
   const getInitials = (name: string) => {
     return name
@@ -607,6 +673,23 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
+        {/* ═══ TRIAL BANNER ═══ */}
+        {isTrialing && !isSuperAdmin && (
+          <div className="mx-3 mt-2 rounded-md bg-amber-50 border border-amber-200 px-3 py-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-amber-800">
+                <Crown className="h-3 w-3 inline mr-1" />
+                Trial: {daysLeftInTrial} days left
+              </span>
+              <Link href="/settings/billing">
+                <Badge variant="outline" className="text-[10px] px-1.5 py-0 cursor-pointer text-amber-700 border-amber-300 hover:bg-amber-100">
+                  Upgrade
+                </Badge>
+              </Link>
+            </div>
+          </div>
+        )}
+
         {/* ═══ 1. ADMIN (SUPER_ADMIN ONLY) ═══ */}
         {session?.user?.role === "SUPER_ADMIN" && (
           <SidebarGroup>
@@ -621,7 +704,7 @@ export function AppSidebar() {
           </SidebarGroup>
         )}
 
-        {/* ═══ 2. COMMAND CENTER ═══ */}
+        {/* ═══ 2. COMMAND CENTER (Dashboard = OMS, Control Tower = gated) ═══ */}
         <SidebarGroup>
           <SidebarGroupLabel className="text-xs font-semibold text-blue-600">
             Command Center
@@ -629,13 +712,17 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <CollapsibleNavItem item={dashboardNav} pathname={pathname} />
-              <CollapsibleNavItem item={controlTowerNav} pathname={pathname} />
-              <CollapsibleNavItem item={ndrManagementNav} pathname={pathname} />
+              {(isSuperAdmin || hasModule("CONTROL_TOWER")) && (
+                <>
+                  <CollapsibleNavItem item={controlTowerNav} pathname={pathname} />
+                  <CollapsibleNavItem item={ndrManagementNav} pathname={pathname} />
+                </>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* ═══ 3. ORDER LIFECYCLE ═══ */}
+        {/* ═══ 3. ORDER LIFECYCLE (OMS - all plans) ═══ */}
         <SidebarGroup>
           <SidebarGroupLabel className="text-xs font-semibold text-green-600">
             Order Lifecycle
@@ -648,42 +735,40 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* ═══ 4. WMS (Warehouse Management) ═══ */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-purple-600">
-            WMS
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <CollapsibleNavItem item={wmsSetupNav} pathname={pathname} />
-              <CollapsibleNavItem item={wmsInboundNav} pathname={pathname} />
-              <CollapsibleNavItem item={wmsInventoryNav} pathname={pathname} />
-              <CollapsibleNavItem item={wmsOrderProcessingNav} pathname={pathname} />
-              <CollapsibleNavItem item={wmsReturnsNav} pathname={pathname} />
-              <CollapsibleNavItem item={wmsQualityControlNav} pathname={pathname} />
-              <CollapsibleNavItem item={wmsAdvancedNav} pathname={pathname} />
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {/* ═══ 4. WMS (Warehouse Management) — MODULE GATED ═══ */}
+        <GatedSectionGroup
+          label="WMS"
+          labelColor="text-purple-600"
+          module="WMS"
+          items={[
+            wmsSetupNav,
+            wmsInboundNav,
+            wmsInventoryNav,
+            wmsOrderProcessingNav,
+            wmsReturnsNav,
+            wmsQualityControlNav,
+            wmsAdvancedNav,
+          ]}
+          pathname={pathname}
+        />
 
-        {/* ═══ 5. LOGISTICS ═══ */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-amber-600">
-            Logistics
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <CollapsibleNavItem item={shipmentTrackingNav} pathname={pathname} />
-              <CollapsibleNavItem item={b2cCourierNav} pathname={pathname} />
-              <CollapsibleNavItem item={ftlNav} pathname={pathname} />
-              <CollapsibleNavItem item={ptlNav} pathname={pathname} />
-              <CollapsibleNavItem item={allocationNav} pathname={pathname} />
-              <CollapsibleNavItem item={logisticsAnalyticsNav} pathname={pathname} />
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {/* ═══ 5. LOGISTICS — MODULE GATED ═══ */}
+        <GatedSectionGroup
+          label="Logistics"
+          labelColor="text-amber-600"
+          module="LOGISTICS"
+          items={[
+            shipmentTrackingNav,
+            b2cCourierNav,
+            ftlNav,
+            ptlNav,
+            allocationNav,
+            logisticsAnalyticsNav,
+          ]}
+          pathname={pathname}
+        />
 
-        {/* ═══ 6. PROCUREMENT ═══ */}
+        {/* ═══ 6. PROCUREMENT (always visible) ═══ */}
         <SidebarGroup>
           <SidebarGroupLabel className="text-xs font-semibold text-teal-600">
             Procurement
@@ -695,42 +780,32 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* ═══ 7. CHANNELS & MARKETPLACE ═══ */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-indigo-600">
-            Channels & Marketplace
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <CollapsibleNavItem item={marketplaceNav} pathname={pathname} />
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {/* ═══ 7. CHANNELS & MARKETPLACE — MODULE GATED ═══ */}
+        <GatedSectionGroup
+          label="Channels & Marketplace"
+          labelColor="text-indigo-600"
+          module="CHANNELS"
+          items={[marketplaceNav]}
+          pathname={pathname}
+        />
 
-        {/* ═══ 8. FINANCE ═══ */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-rose-600">
-            Finance
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <CollapsibleNavItem item={financeNav} pathname={pathname} />
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {/* ═══ 8. FINANCE — MODULE GATED ═══ */}
+        <GatedSectionGroup
+          label="Finance"
+          labelColor="text-rose-600"
+          module="FINANCE"
+          items={[financeNav]}
+          pathname={pathname}
+        />
 
-        {/* ═══ 9. REPORTS & ANALYTICS ═══ */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-rose-600">
-            Reports & Analytics
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <CollapsibleNavItem item={reportsNav} pathname={pathname} />
-              <CollapsibleNavItem item={analyticsNav} pathname={pathname} />
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {/* ═══ 9. REPORTS & ANALYTICS — MODULE GATED ═══ */}
+        <GatedSectionGroup
+          label="Reports & Analytics"
+          labelColor="text-rose-600"
+          module="ANALYTICS"
+          items={[reportsNav, analyticsNav]}
+          pathname={pathname}
+        />
 
         {/* ═══ 10. CONFIGURATION (COLLAPSED) ═══ */}
         <CollapsibleSectionGroup
@@ -745,6 +820,18 @@ export function AppSidebar() {
           pathname={pathname}
           defaultOpen={false}
         />
+
+        {/* ═══ USAGE SUMMARY ═══ */}
+        {!isSuperAdmin && plan && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground">
+              Usage ({plan.name})
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <UsageSummary />
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
       <SidebarFooter className="border-t">

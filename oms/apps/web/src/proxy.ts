@@ -7,6 +7,7 @@ const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY || "cjd-internal-api-key-2
 export default auth((req) => {
   const isLoggedIn = !!req.auth;
   const isAuthPage = req.nextUrl.pathname.startsWith("/login");
+  const isSignupPage = req.nextUrl.pathname === "/signup";
   const isApiAuthRoute = req.nextUrl.pathname.startsWith("/api/auth");
   const isApiRoute = req.nextUrl.pathname.startsWith("/api/");
   const isPublicRoute = req.nextUrl.pathname === "/";
@@ -22,6 +23,14 @@ export default auth((req) => {
     if (apiKey === INTERNAL_API_KEY) {
       return NextResponse.next();
     }
+  }
+
+  // Allow signup page without auth
+  if (isSignupPage) {
+    if (isLoggedIn) {
+      return NextResponse.redirect(new URL("/dashboard", req.url));
+    }
+    return NextResponse.next();
   }
 
   // Redirect logged in users away from auth pages

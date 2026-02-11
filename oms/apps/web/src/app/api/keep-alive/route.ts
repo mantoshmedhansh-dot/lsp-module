@@ -10,7 +10,7 @@
 
 import { NextResponse } from "next/server";
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://cjdquick-api-vr4w.onrender.com";
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://lsp-oms-api.onrender.com";
 
 export async function GET() {
   const startTime = Date.now();

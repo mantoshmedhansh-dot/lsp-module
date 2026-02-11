@@ -226,7 +226,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const { id: orderId } = await params;
 
     // Fetch order data from backend
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || "https://cjdquick-api-vr4w.onrender.com";
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || "https://lsp-oms-api.onrender.com";
     const orderRes = await fetch(`${backendUrl}/api/v1/orders/${orderId}`, {
       headers: {
         "Content-Type": "application/json",

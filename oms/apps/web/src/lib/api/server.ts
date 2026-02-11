@@ -10,7 +10,7 @@
 import { OpenAPI } from './generated';
 import { auth } from '../auth';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://cjdquick-api-vr4w.onrender.com';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://lsp-oms-api.onrender.com';
 
 // Service-to-service authentication for backend calls
 const BACKEND_SERVICE_KEY = process.env.BACKEND_SERVICE_KEY || process.env.INTERNAL_API_KEY;

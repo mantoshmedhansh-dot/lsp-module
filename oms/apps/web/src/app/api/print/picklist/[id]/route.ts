@@ -338,7 +338,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const { id: picklistId } = await params;
 
     // Fetch picklist data from backend
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || "https://cjdquick-api-vr4w.onrender.com";
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || "https://lsp-oms-api.onrender.com";
     const picklistRes = await fetch(`${backendUrl}/api/v1/waves/${picklistId}`, {
       headers: {
         "Content-Type": "application/json",

@@ -11,7 +11,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://cjdquick-api-vr4w.onrender.com";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://lsp-oms-api.onrender.com";
 const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY || "internal-service-key";
 
 /**

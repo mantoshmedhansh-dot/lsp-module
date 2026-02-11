@@ -6,6 +6,39 @@ from enum import Enum
 
 
 # ============================================================================
+# Company & Tenant Enums
+# ============================================================================
+
+class CompanyType(str, Enum):
+    """Type of company tenant"""
+    LSP = "LSP"        # Logistics Service Provider (has clients)
+    BRAND = "BRAND"    # Brand / Direct client (self-managed or under LSP)
+
+
+class ServiceModel(str, Enum):
+    """Service model in LSP-to-Brand contract"""
+    WAREHOUSING = "WAREHOUSING"  # 3PL warehousing only
+    LOGISTICS = "LOGISTICS"      # Transport/carrier only
+    FULL = "FULL"                # Warehousing + Logistics (end-to-end fulfillment)
+
+
+class ContractStatus(str, Enum):
+    """Status of LSP-Brand client contract"""
+    ACTIVE = "active"
+    ONBOARDING = "onboarding"
+    SUSPENDED = "suspended"
+    TERMINATED = "terminated"
+
+
+class BillingType(str, Enum):
+    """Billing type for LSP-Brand contracts"""
+    PER_ORDER = "per_order"
+    PER_SQFT = "per_sqft"
+    FIXED = "fixed"
+    HYBRID = "hybrid"
+
+
+# ============================================================================
 # User & Access Enums
 # ============================================================================
 

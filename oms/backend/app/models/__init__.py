@@ -81,6 +81,11 @@ from .enums import (
     RateMatrixType,
     PerformanceMetricType,
     AllocationDecisionReason,
+    # Hierarchical Tenancy Enums (Phase H1)
+    CompanyType,
+    ServiceModel,
+    ContractStatus,
+    BillingType,
 )
 
 # User model and schemas
@@ -1075,6 +1080,14 @@ from .marketplace_integration import (
     UnmappedSkuResponse,
     SkuMappingSummary,
     SyncStatusResponse,
+)
+
+# Client Contract models and schemas (Phase H1 - Hierarchical Tenancy)
+from .client_contract import (
+    ClientContract,
+    ClientContractCreate,
+    ClientContractUpdate,
+    ClientContractResponse,
 )
 
 # Shipping Allocation models and schemas (Phase 1 - Logistics)
@@ -2131,6 +2144,16 @@ __all__ = [
     "UnmappedSkuResponse",
     "SkuMappingSummary",
     "SyncStatusResponse",
+    # Hierarchical Tenancy Enums (Phase H1)
+    "CompanyType",
+    "ServiceModel",
+    "ContractStatus",
+    "BillingType",
+    # ClientContract
+    "ClientContract",
+    "ClientContractCreate",
+    "ClientContractUpdate",
+    "ClientContractResponse",
     # SaaS Plan
     "Plan",
     "PlanModule",

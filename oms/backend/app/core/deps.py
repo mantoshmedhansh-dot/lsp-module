@@ -196,7 +196,8 @@ class CompanyFilter:
 
     Automatically filters queries by company based on user role:
     - SUPER_ADMIN: Can see all companies (no filter)
-    - Others: Filtered to their company only
+    - LSP users: See own company + all client brand companies
+    - Brand users: Filtered to their company only
 
     Usage:
         @router.get("/items")
@@ -205,18 +206,50 @@ class CompanyFilter:
             db: Session = Depends(get_db)
         ):
             query = select(Item)
-            if company_filter.company_id:
-                query = query.where(Item.companyId == company_filter.company_id)
+            query = company_filter.apply_filter(query, Item.companyId)
             ...
     """
 
-    def __init__(self, current_user: Any = Depends(get_current_user)):
+    def __init__(self, current_user: Any = Depends(get_current_user), db: Session = Depends(get_db)):
         self.user = current_user
+        self.db = db
         self.is_super_admin = current_user.role == "SUPER_ADMIN"
         self.company_id: Optional[UUID] = None if self.is_super_admin else current_user.companyId
+        self._company_ids: Optional[List[UUID]] = None  # Cached list for LSP hierarchy
+
+    @property
+    def company_ids(self) -> Optional[List[UUID]]:
+        """Get all company IDs this user can access (for LSP hierarchy)."""
+        if self.is_super_admin:
+            return None  # No filter
+        if self._company_ids is not None:
+            return self._company_ids
+
+        # Check if user's company is an LSP
+        from app.models.company import Company
+        company = self.db.exec(
+            select(Company).where(Company.id == self.company_id)
+        ).first()
+
+        if company and company.companyType == "LSP":
+            # LSP sees own data + all child brand data
+            children = self.db.exec(
+                select(Company.id).where(Company.parentId == self.company_id)
+            ).all()
+            self._company_ids = [self.company_id] + list(children)
+        else:
+            self._company_ids = [self.company_id] if self.company_id else None
+
+        return self._company_ids
 
     def apply_filter(self, query: Any, company_field: Any) -> Any:
-        """Apply company filter to a query"""
-        if self.company_id:
+        """Apply company filter to a query (supports LSP hierarchy)."""
+        if self.is_super_admin:
+            return query
+        ids = self.company_ids
+        if ids and len(ids) > 1:
+            # LSP: filter to own + children
+            return query.where(company_field.in_(ids))
+        elif self.company_id:
             return query.where(company_field == self.company_id)
         return query

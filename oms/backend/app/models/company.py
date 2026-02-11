@@ -22,6 +22,7 @@ if TYPE_CHECKING:
     from .api_key import APIKey
     from .tenant_subscription import TenantSubscription
     from .onboarding import OnboardingStep
+    from .client_contract import ClientContract
 
 
 # ============================================================================
@@ -70,6 +71,21 @@ class Company(BaseModel, table=True):
         sa_column=Column(String, default="FIFO")
     )  # FIFO, LIFO, FEFO, WAC
 
+    # Tenant Hierarchy
+    companyType: Optional[str] = Field(
+        default="BRAND",
+        sa_column=Column(String(20), default="BRAND")
+    )  # LSP, BRAND
+    parentId: Optional[UUID] = Field(
+        default=None,
+        sa_column=Column(
+            PG_UUID(as_uuid=True),
+            ForeignKey("Company.id", ondelete="SET NULL"),
+            nullable=True,
+            index=True
+        )
+    )  # null = top-level tenant; set = brand under an LSP
+
     # Status
     isActive: bool = Field(default=True)
 
@@ -90,7 +106,10 @@ class Company(BaseModel, table=True):
 
     # Relationships
     users: List["User"] = Relationship(back_populates="company")
-    locations: List["Location"] = Relationship(back_populates="company")
+    locations: List["Location"] = Relationship(
+        back_populates="company",
+        sa_relationship_kwargs={"foreign_keys": "[Location.companyId]"}
+    )
     brands: List["Brand"] = Relationship(back_populates="company")
     skus: List["SKU"] = Relationship(back_populates="company")
     customers: List["Customer"] = Relationship(back_populates="company")
@@ -98,6 +117,22 @@ class Company(BaseModel, table=True):
     apiKeys: List["APIKey"] = Relationship(back_populates="company")
     tenantSubscriptions: List["TenantSubscription"] = Relationship(back_populates="company")
     onboardingSteps: List["OnboardingStep"] = Relationship(back_populates="company")
+
+    # Hierarchical relationships
+    children: List["Company"] = Relationship(
+        back_populates="parent",
+        sa_relationship_kwargs={"foreign_keys": "[Company.parentId]"}
+    )
+    parent: Optional["Company"] = Relationship(
+        back_populates="children",
+        sa_relationship_kwargs={"remote_side": "[Company.id]", "foreign_keys": "[Company.parentId]"}
+    )
+    lspContracts: List["ClientContract"] = Relationship(
+        sa_relationship_kwargs={"foreign_keys": "[ClientContract.lspCompanyId]"}
+    )
+    brandContracts: List["ClientContract"] = Relationship(
+        sa_relationship_kwargs={"foreign_keys": "[ClientContract.brandCompanyId]"}
+    )
 
 
 # ============================================================================
@@ -157,8 +192,29 @@ class Location(BaseModel, table=True):
         )
     )
 
+    # Shared warehouse support (LSP architecture)
+    ownerCompanyId: Optional[UUID] = Field(
+        default=None,
+        sa_column=Column(
+            PG_UUID(as_uuid=True),
+            ForeignKey("Company.id", ondelete="SET NULL"),
+            nullable=True,
+            index=True
+        )
+    )  # The LSP who owns this warehouse (null = self-owned by companyId)
+    isShared: bool = Field(
+        default=False,
+        sa_column=Column(Boolean, nullable=False, default=False)
+    )  # Is this a multi-brand warehouse?
+
     # Relationships
-    company: Optional["Company"] = Relationship(back_populates="locations")
+    company: Optional["Company"] = Relationship(
+        back_populates="locations",
+        sa_relationship_kwargs={"foreign_keys": "[Location.companyId]"}
+    )
+    ownerCompany: Optional["Company"] = Relationship(
+        sa_relationship_kwargs={"foreign_keys": "[Location.ownerCompanyId]"}
+    )
     zones: List["Zone"] = Relationship(back_populates="location")
 
 
@@ -362,6 +418,8 @@ class CompanyCreate(CreateBase):
     address: Optional[dict] = None
     settings: Optional[dict] = None
     defaultValuationMethod: Optional[str] = "FIFO"  # FIFO, LIFO, FEFO, WAC
+    companyType: Optional[str] = "BRAND"  # LSP, BRAND
+    parentId: Optional[UUID] = None
 
 
 class CompanyUpdate(UpdateBase):
@@ -382,6 +440,8 @@ class CompanyUpdate(UpdateBase):
     trialEndsAt: Optional[datetime] = None
     branding: Optional[dict] = None
     stripeCustomerId: Optional[str] = None
+    companyType: Optional[str] = None  # LSP, BRAND
+    parentId: Optional[UUID] = None
 
 
 class CompanyResponse(ResponseBase):
@@ -399,6 +459,8 @@ class CompanyResponse(ResponseBase):
     settings: Optional[dict] = None
     defaultValuationMethod: Optional[str] = "FIFO"  # FIFO, LIFO, FEFO, WAC
     isActive: bool
+    companyType: Optional[str] = "BRAND"
+    parentId: Optional[UUID] = None
     subscriptionStatus: Optional[str] = "trialing"
     trialEndsAt: Optional[datetime] = None
     branding: Optional[dict] = None
@@ -427,6 +489,8 @@ class LocationCreate(CreateBase):
     settings: Optional[dict] = None
     valuationMethod: Optional[str] = None  # FIFO, LIFO, FEFO, WAC - overrides company default
     companyId: UUID
+    ownerCompanyId: Optional[UUID] = None  # LSP who owns this warehouse
+    isShared: bool = False  # Multi-brand warehouse?
 
 
 class LocationUpdate(UpdateBase):
@@ -441,6 +505,8 @@ class LocationUpdate(UpdateBase):
     settings: Optional[dict] = None
     valuationMethod: Optional[str] = None  # FIFO, LIFO, FEFO, WAC - overrides company default
     isActive: Optional[bool] = None
+    ownerCompanyId: Optional[UUID] = None
+    isShared: Optional[bool] = None
 
 
 class LocationResponse(ResponseBase):
@@ -457,6 +523,8 @@ class LocationResponse(ResponseBase):
     valuationMethod: Optional[str] = None  # FIFO, LIFO, FEFO, WAC
     isActive: bool
     companyId: UUID
+    ownerCompanyId: Optional[UUID] = None
+    isShared: bool = False
     createdAt: datetime
     updatedAt: datetime
 

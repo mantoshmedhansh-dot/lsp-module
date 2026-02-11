@@ -66,6 +66,7 @@ import {
 } from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { ReadOnlyBanner, useBrandReadOnly } from "@/components/subscription/read-only-banner";
 
 interface Location {
   id: string;
@@ -148,6 +149,7 @@ const adjustmentReasons = [
 
 export default function StockAdjustmentPage() {
   const router = useRouter();
+  const isReadOnly = useBrandReadOnly();
   const [activeTab, setActiveTab] = useState("create");
 
   // Create adjustment state
@@ -396,9 +398,13 @@ export default function StockAdjustmentPage() {
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <ReadOnlyBanner />
+
+      <Tabs value={isReadOnly ? "history" : activeTab} onValueChange={setActiveTab}>
         <TabsList>
-          <TabsTrigger value="create">Create Adjustment</TabsTrigger>
+          {!isReadOnly && (
+            <TabsTrigger value="create">Create Adjustment</TabsTrigger>
+          )}
           <TabsTrigger value="history">Adjustment History</TabsTrigger>
         </TabsList>
 

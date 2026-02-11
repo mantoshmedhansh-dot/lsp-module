@@ -602,8 +602,16 @@ function GatedSectionGroup({
   pathname: string;
   defaultOpen?: boolean;
 }) {
-  const { hasModule, isSuperAdmin } = useSubscription();
-  const isUnlocked = isSuperAdmin || hasModule(module);
+  const { hasModule, isSuperAdmin, hasServiceModule, isBrandUnderLsp } = useSubscription();
+
+  // Check subscription plan module
+  const planUnlocked = isSuperAdmin || hasModule(module);
+  // For brand-under-LSP users, also check their contract's service model
+  let serviceUnlocked = true;
+  if (isBrandUnderLsp && (module === "WMS" || module === "LOGISTICS")) {
+    serviceUnlocked = hasServiceModule(module === "WMS" ? "WMS" : "LOGISTICS");
+  }
+  const isUnlocked = planUnlocked && serviceUnlocked;
 
   if (!isUnlocked) {
     return (
@@ -646,7 +654,7 @@ function GatedSectionGroup({
 export function AppSidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
-  const { hasModule, isTrialing, daysLeftInTrial, plan, isSuperAdmin } = useSubscription();
+  const { hasModule, isTrialing, daysLeftInTrial, plan, isSuperAdmin, isLsp, isBrandUnderLsp } = useSubscription();
 
   const getInitials = (name: string) => {
     return name
@@ -688,6 +696,16 @@ export function AppSidebar() {
                 </Badge>
               </Link>
             </div>
+          </div>
+        )}
+
+        {/* ═══ BRAND-UNDER-LSP INDICATOR ═══ */}
+        {isBrandUnderLsp && !isSuperAdmin && (
+          <div className="mx-3 mt-2 rounded-md bg-blue-50 border border-blue-200 px-3 py-2">
+            <span className="text-xs font-medium text-blue-800">
+              <Building2 className="h-3 w-3 inline mr-1" />
+              Managed by LSP
+            </span>
           </div>
         )}
 
@@ -814,7 +832,15 @@ export function AppSidebar() {
           labelColor="text-slate-500"
           items={[
             mastersNav,
-            companyUsersNav,
+            // Filter "LSP Clients" for non-LSP companies
+            (isLsp || isSuperAdmin)
+              ? companyUsersNav
+              : {
+                  ...companyUsersNav,
+                  items: companyUsersNav.items.filter(
+                    (item) => item.href !== "/settings/clients"
+                  ),
+                },
             integrationsNav,
             appSettingsNav,
           ]}

@@ -53,6 +53,7 @@ import {
   QC_STATUSES,
   getStatusConfig,
 } from "@/lib/constants/statuses";
+import { ReadOnlyBanner, useBrandReadOnly } from "@/components/subscription/read-only-banner";
 
 interface SKU {
   id: string;
@@ -109,6 +110,7 @@ interface Zone {
 }
 
 export default function ReturnsPage() {
+  const isReadOnly = useBrandReadOnly();
   const [returns, setReturns] = useState<Return[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -447,11 +449,15 @@ export default function ReturnsPage() {
             Manage customer returns and RTOs
           </p>
         </div>
-        <Button onClick={() => setCreateDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Create Return
-        </Button>
+        {!isReadOnly && (
+          <Button onClick={() => setCreateDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Create Return
+          </Button>
+        )}
       </div>
+
+      <ReadOnlyBanner />
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-6">

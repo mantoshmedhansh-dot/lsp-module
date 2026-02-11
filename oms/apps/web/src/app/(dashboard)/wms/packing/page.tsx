@@ -61,6 +61,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { ReadOnlyBanner, useBrandReadOnly } from "@/components/subscription/read-only-banner";
 
 interface OrderItem {
   id: string;
@@ -138,6 +139,7 @@ const statusTabs = [
 
 export default function PackingPage() {
   const router = useRouter();
+  const isReadOnly = useBrandReadOnly();
   const [data, setData] = useState<OrdersResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [transporters, setTransporters] = useState<Transporter[]>([]);
@@ -312,6 +314,8 @@ export default function PackingPage() {
         </Button>
       </div>
 
+      <ReadOnlyBanner />
+
       {/* Status Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
@@ -458,7 +462,7 @@ export default function PackingPage() {
                                 View Order
                               </DropdownMenuItem>
 
-                              {order.status === "PICKED" && (
+                              {!isReadOnly && order.status === "PICKED" && (
                                 <>
                                   <DropdownMenuSeparator />
                                   <DropdownMenuItem
@@ -476,7 +480,7 @@ export default function PackingPage() {
                                 </>
                               )}
 
-                              {order.status === "PACKING" && (
+                              {!isReadOnly && order.status === "PACKING" && (
                                 <>
                                   <DropdownMenuSeparator />
                                   <DropdownMenuItem

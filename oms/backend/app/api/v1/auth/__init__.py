@@ -13,6 +13,8 @@ from app.models import (
     User, UserCreate, UserUpdate, UserResponse, UserBrief,
     UserLogin, UserLoginResponse
 )
+from app.models.company import Company
+from app.models.client_contract import ClientContract
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -122,6 +124,51 @@ def refresh_token(current_user: User = Depends(get_current_user)):
         token=token,
         expiresIn=3600  # 1 hour
     )
+
+
+@router.get("/company-context")
+def get_company_context(
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Get the current user's company context for frontend sidebar/gating.
+    Returns companyType, parentId, and contract details if brand under LSP.
+    """
+    if not current_user.companyId:
+        return {"companyType": None, "parentId": None, "contract": None}
+
+    company = session.exec(
+        select(Company).where(Company.id == current_user.companyId)
+    ).first()
+
+    if not company:
+        return {"companyType": None, "parentId": None, "contract": None}
+
+    result = {
+        "companyType": company.companyType or "BRAND",
+        "parentId": str(company.parentId) if company.parentId else None,
+        "contract": None,
+    }
+
+    # If this is a brand under an LSP, fetch the contract
+    if company.parentId and company.companyType == "BRAND":
+        contract = session.exec(
+            select(ClientContract).where(
+                ClientContract.brandCompanyId == company.id,
+                ClientContract.lspCompanyId == company.parentId,
+            )
+        ).first()
+        if contract:
+            result["contract"] = {
+                "id": str(contract.id),
+                "serviceModel": contract.serviceModel,
+                "status": contract.status,
+                "billingType": contract.billingType,
+                "modules": contract.modules or [],
+            }
+
+    return result
 
 
 @router.post("/logout")

@@ -65,6 +65,7 @@ import {
 } from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { ReadOnlyBanner, useBrandReadOnly } from "@/components/subscription/read-only-banner";
 
 interface Location {
   id: string;
@@ -130,6 +131,7 @@ interface TransferHistory {
 
 export default function BinTransfersPage() {
   const router = useRouter();
+  const isReadOnly = useBrandReadOnly();
   const [activeTab, setActiveTab] = useState("create");
 
   // Create transfer state
@@ -382,9 +384,13 @@ export default function BinTransfersPage() {
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <ReadOnlyBanner />
+
+      <Tabs value={isReadOnly ? "history" : activeTab} onValueChange={setActiveTab}>
         <TabsList>
-          <TabsTrigger value="create">Create Transfer</TabsTrigger>
+          {!isReadOnly && (
+            <TabsTrigger value="create">Create Transfer</TabsTrigger>
+          )}
           <TabsTrigger value="history">Transfer History</TabsTrigger>
         </TabsList>
 

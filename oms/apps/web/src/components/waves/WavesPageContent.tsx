@@ -65,6 +65,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { ReadOnlyBanner, useBrandReadOnly } from "@/components/subscription/read-only-banner";
 
 interface Wave {
   id: string;
@@ -148,6 +149,7 @@ interface WavesPageContentProps {
 export default function WavesPageContent({ config }: WavesPageContentProps) {
   const router = useRouter();
   const { data: session } = useSession();
+  const isReadOnly = useBrandReadOnly();
   const [data, setData] = useState<WavesResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedWaves, setSelectedWaves] = useState<string[]>([]);
@@ -291,6 +293,7 @@ export default function WavesPageContent({ config }: WavesPageContentProps) {
             <RefreshCw className="mr-2 h-4 w-4" />
             Refresh
           </Button>
+          {!isReadOnly && (
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button>
@@ -370,8 +373,11 @@ export default function WavesPageContent({ config }: WavesPageContentProps) {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          )}
         </div>
       </div>
+
+      <ReadOnlyBanner />
 
       {/* Status Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>

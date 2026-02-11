@@ -56,6 +56,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
+import { ReadOnlyBanner, useBrandReadOnly } from "@/components/subscription/read-only-banner";
 
 interface PicklistItem {
   id: string;
@@ -136,6 +137,7 @@ const statusTabs = [
 export default function PicklistPage() {
   const router = useRouter();
   const { data: session } = useSession();
+  const isReadOnly = useBrandReadOnly();
   const [data, setData] = useState<PicklistsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedPicklists, setSelectedPicklists] = useState<string[]>([]);
@@ -281,6 +283,8 @@ export default function PicklistPage() {
           Refresh
         </Button>
       </div>
+
+      <ReadOnlyBanner />
 
       {/* Status Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -471,7 +475,7 @@ export default function PicklistPage() {
                                 View Details
                               </DropdownMenuItem>
 
-                              {picklist.status === "PENDING" && (
+                              {!isReadOnly && picklist.status === "PENDING" && (
                                 <>
                                   {!picklist.assignedTo && (
                                     <DropdownMenuItem
@@ -490,7 +494,7 @@ export default function PicklistPage() {
                                 </>
                               )}
 
-                              {picklist.status === "IN_PROGRESS" && (
+                              {!isReadOnly && picklist.status === "IN_PROGRESS" && (
                                 <DropdownMenuItem
                                   onClick={() => router.push(`/wms/picklist/${picklist.id}`)}
                                 >
@@ -499,7 +503,7 @@ export default function PicklistPage() {
                                 </DropdownMenuItem>
                               )}
 
-                              {["PENDING", "ASSIGNED", "IN_PROGRESS"].includes(picklist.status) && (
+                              {!isReadOnly && ["PENDING", "ASSIGNED", "IN_PROGRESS"].includes(picklist.status) && (
                                 <>
                                   <DropdownMenuSeparator />
                                   <DropdownMenuItem

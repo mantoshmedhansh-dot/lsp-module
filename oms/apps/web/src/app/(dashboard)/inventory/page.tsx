@@ -52,6 +52,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { ReadOnlyBanner, useBrandReadOnly } from "@/components/subscription/read-only-banner";
 
 interface Location {
   id: string;
@@ -140,6 +141,7 @@ const viewTabs = [
 
 export default function InventoryPage() {
   const router = useRouter();
+  const isReadOnly = useBrandReadOnly();
   const [data, setData] = useState<InventoryResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [locations, setLocations] = useState<Location[]>([]);
@@ -339,12 +341,16 @@ export default function InventoryPage() {
             <RefreshCw className="mr-2 h-4 w-4" />
             Refresh
           </Button>
-          <Button onClick={() => router.push("/inventory/adjustment")}>
-            <Plus className="mr-2 h-4 w-4" />
-            Stock Adjustment
-          </Button>
+          {!isReadOnly && (
+            <Button onClick={() => router.push("/inventory/adjustment")}>
+              <Plus className="mr-2 h-4 w-4" />
+              Stock Adjustment
+            </Button>
+          )}
         </div>
       </div>
+
+      <ReadOnlyBanner />
 
       {/* Stats Cards */}
       {data?.stats && (
@@ -611,7 +617,7 @@ export default function InventoryPage() {
                           )}
                         </TableCell>
                         <TableCell className="text-right">
-                          {available > 0 && (
+                          {!isReadOnly && available > 0 && (
                             <Button
                               variant="ghost"
                               size="sm"

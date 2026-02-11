@@ -61,6 +61,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { formatDistanceToNow, format } from "date-fns";
+import { ReadOnlyBanner, useBrandReadOnly } from "@/components/subscription/read-only-banner";
 
 interface GoodsReceipt {
   id: string;
@@ -126,6 +127,7 @@ const sourceTypeConfig: Record<string, { label: string; icon: React.ElementType;
 export default function GoodsReceiptsPage() {
   const router = useRouter();
   const { data: session } = useSession();
+  const isReadOnly = useBrandReadOnly();
   const [goodsReceipts, setGoodsReceipts] = useState<GoodsReceipt[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -269,7 +271,7 @@ export default function GoodsReceiptsPage() {
             Manage inbound goods receipt documents
           </p>
         </div>
-        {canManage && (
+        {canManage && !isReadOnly && (
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
@@ -313,6 +315,8 @@ export default function GoodsReceiptsPage() {
           </div>
         )}
       </div>
+
+      <ReadOnlyBanner />
 
       {/* Quick Stats */}
       <div className="grid gap-4 md:grid-cols-5">
@@ -414,13 +418,15 @@ export default function GoodsReceiptsPage() {
                     <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
                       {asn.status}
                     </Badge>
-                    <Button
-                      size="sm"
-                      onClick={() => router.push(`/inbound/goods-receipt/new?source=asn&asnId=${asn.id}`)}
-                    >
-                      Create GRN
-                      <ChevronRight className="ml-1 h-4 w-4" />
-                    </Button>
+                    {!isReadOnly && (
+                      <Button
+                        size="sm"
+                        onClick={() => router.push(`/inbound/goods-receipt/new?source=asn&asnId=${asn.id}`)}
+                      >
+                        Create GRN
+                        <ChevronRight className="ml-1 h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -444,13 +450,15 @@ export default function GoodsReceiptsPage() {
                     <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
                       {po.status}
                     </Badge>
-                    <Button
-                      size="sm"
-                      onClick={() => router.push(`/inbound/goods-receipt/new?source=external-po&poId=${po.id}`)}
-                    >
-                      Create GRN
-                      <ChevronRight className="ml-1 h-4 w-4" />
-                    </Button>
+                    {!isReadOnly && (
+                      <Button
+                        size="sm"
+                        onClick={() => router.push(`/inbound/goods-receipt/new?source=external-po&poId=${po.id}`)}
+                      >
+                        Create GRN
+                        <ChevronRight className="ml-1 h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -553,7 +561,7 @@ export default function GoodsReceiptsPage() {
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <PackageOpen className="h-12 w-12 text-muted-foreground mb-4" />
               <p className="text-muted-foreground">No goods receipts found</p>
-              {canManage && (
+              {canManage && !isReadOnly && (
                 <Button
                   variant="link"
                   onClick={() => router.push("/inbound/goods-receipt/new")}

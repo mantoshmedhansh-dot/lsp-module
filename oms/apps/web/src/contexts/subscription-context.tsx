@@ -35,6 +35,18 @@ interface UsageData {
   apiCallsCount: number;
 }
 
+interface CompanyContext {
+  companyType: string | null; // "LSP" or "BRAND"
+  parentId: string | null; // non-null = brand under an LSP
+  contract: {
+    id: string;
+    serviceModel: string; // "WAREHOUSING", "LOGISTICS", "FULL"
+    status: string;
+    billingType: string | null;
+    modules: string[];
+  } | null;
+}
+
 interface SubscriptionContextType {
   plan: SubscriptionPlan | null;
   usage: UsageData | null;
@@ -46,6 +58,11 @@ interface SubscriptionContextType {
   isWithinLimit: (key: string, currentValue?: number) => boolean;
   isLoading: boolean;
   isSuperAdmin: boolean;
+  // Company hierarchy context
+  companyContext: CompanyContext;
+  isBrandUnderLsp: boolean;
+  isLsp: boolean;
+  hasServiceModule: (module: "WMS" | "LOGISTICS") => boolean;
 }
 
 const SubscriptionContext = createContext<SubscriptionContextType>({
@@ -59,6 +76,10 @@ const SubscriptionContext = createContext<SubscriptionContextType>({
   isWithinLimit: () => true,
   isLoading: true,
   isSuperAdmin: false,
+  companyContext: { companyType: null, parentId: null, contract: null },
+  isBrandUnderLsp: false,
+  isLsp: false,
+  hasServiceModule: () => true,
 });
 
 export function SubscriptionProvider({ children }: { children: ReactNode }) {
@@ -86,6 +107,37 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     enabled: !!session?.user && !isSuperAdmin,
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
+
+  const { data: companyData } = useQuery({
+    queryKey: ["company-context"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/auth/company-context");
+      if (!res.ok) return { companyType: null, parentId: null, contract: null };
+      return res.json();
+    },
+    enabled: !!session?.user && !isSuperAdmin,
+    staleTime: 10 * 60 * 1000, // 10 minutes — rarely changes
+  });
+
+  const companyContext: CompanyContext = {
+    companyType: companyData?.companyType || null,
+    parentId: companyData?.parentId || null,
+    contract: companyData?.contract || null,
+  };
+
+  const isBrandUnderLsp = companyContext.companyType === "BRAND" && !!companyContext.parentId;
+  const isLsp = companyContext.companyType === "LSP";
+
+  const hasServiceModule = (module: "WMS" | "LOGISTICS"): boolean => {
+    if (isSuperAdmin) return true;
+    if (!isBrandUnderLsp) return true; // standalone companies see everything
+    if (!companyContext.contract) return false;
+    const sm = companyContext.contract.serviceModel;
+    if (sm === "FULL") return true;
+    if (module === "WMS") return sm === "WAREHOUSING";
+    if (module === "LOGISTICS") return sm === "LOGISTICS";
+    return false;
+  };
 
   const subscription = subData?.subscription;
   const plan = subData?.plan;
@@ -130,6 +182,10 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         isWithinLimit,
         isLoading: subLoading || usageLoading,
         isSuperAdmin,
+        companyContext,
+        isBrandUnderLsp,
+        isLsp,
+        hasServiceModule,
       }}
     >
       {children}

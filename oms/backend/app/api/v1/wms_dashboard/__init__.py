@@ -43,16 +43,14 @@ def get_dashboard_summary(
     Get WMS Inbound dashboard summary.
     Returns counts and metrics for all inbound operations.
     """
-    if not company_filter.company_id:
+    if not company_filter.company_id and not company_filter.is_super_admin:
         raise HTTPException(status_code=400, detail="Company ID required")
 
-    company_id = company_filter.company_id
     since = datetime.utcnow() - timedelta(days=days)
 
     # External PO counts
-    po_query = select(func.count(ExternalPurchaseOrder.id)).where(
-        ExternalPurchaseOrder.company_id == company_id
-    )
+    po_query = select(func.count(ExternalPurchaseOrder.id))
+    po_query = company_filter.apply_filter(po_query, ExternalPurchaseOrder.company_id)
     po_pending_query = po_query.where(ExternalPurchaseOrder.status == "OPEN")
     po_received_query = po_query.where(
         ExternalPurchaseOrder.status == "FULLY_RECEIVED",
@@ -64,9 +62,8 @@ def get_dashboard_summary(
     received_pos = session.exec(po_received_query).one() or 0
 
     # ASN counts
-    asn_query = select(func.count(AdvanceShippingNotice.id)).where(
-        AdvanceShippingNotice.company_id == company_id
-    )
+    asn_query = select(func.count(AdvanceShippingNotice.id))
+    asn_query = company_filter.apply_filter(asn_query, AdvanceShippingNotice.company_id)
     if location_id:
         asn_query = asn_query.where(AdvanceShippingNotice.location_id == location_id)
 
@@ -78,9 +75,8 @@ def get_dashboard_summary(
     arrived_asns = session.exec(asn_arrived_query).one() or 0
 
     # GRN counts
-    grn_query = select(func.count(GoodsReceipt.id)).where(
-        GoodsReceipt.companyId == company_id
-    )
+    grn_query = select(func.count(GoodsReceipt.id))
+    grn_query = company_filter.apply_filter(grn_query, GoodsReceipt.companyId)
     if location_id:
         grn_query = grn_query.where(GoodsReceipt.locationId == location_id)
 
@@ -95,9 +91,8 @@ def get_dashboard_summary(
     posted_grns = session.exec(grn_posted_query).one() or 0
 
     # STO counts
-    sto_query = select(func.count(StockTransferOrder.id)).where(
-        StockTransferOrder.company_id == company_id
-    )
+    sto_query = select(func.count(StockTransferOrder.id))
+    sto_query = company_filter.apply_filter(sto_query, StockTransferOrder.company_id)
     if location_id:
         sto_query = sto_query.where(
             or_(
@@ -114,9 +109,8 @@ def get_dashboard_summary(
     intransit_stos = session.exec(sto_intransit_query).one() or 0
 
     # Return counts
-    return_query = select(func.count(Return.id)).where(
-        Return.companyId == company_id
-    )
+    return_query = select(func.count(Return.id))
+    return_query = company_filter.apply_filter(return_query, Return.companyId)
     if location_id:
         return_query = return_query.where(Return.locationId == location_id)
 
@@ -179,17 +173,14 @@ def get_pending_actions(
     Get list of pending actions requiring attention.
     Prioritized by urgency and date.
     """
-    if not company_filter.company_id:
+    if not company_filter.company_id and not company_filter.is_super_admin:
         raise HTTPException(status_code=400, detail="Company ID required")
 
-    company_id = company_filter.company_id
     actions = []
 
     # Pending GRNs (high priority)
-    grn_query = select(GoodsReceipt).where(
-        GoodsReceipt.companyId == company_id,
-        GoodsReceipt.status == "PENDING"
-    )
+    grn_query = select(GoodsReceipt).where(GoodsReceipt.status == "PENDING")
+    grn_query = company_filter.apply_filter(grn_query, GoodsReceipt.companyId)
     if location_id:
         grn_query = grn_query.where(GoodsReceipt.locationId == location_id)
     grn_query = grn_query.order_by(GoodsReceipt.createdAt).limit(limit)
@@ -207,10 +198,8 @@ def get_pending_actions(
         })
 
     # Expected ASNs (medium priority)
-    asn_query = select(AdvanceShippingNotice).where(
-        AdvanceShippingNotice.company_id == company_id,
-        AdvanceShippingNotice.status == "EXPECTED"
-    )
+    asn_query = select(AdvanceShippingNotice).where(AdvanceShippingNotice.status == "EXPECTED")
+    asn_query = company_filter.apply_filter(asn_query, AdvanceShippingNotice.company_id)
     if location_id:
         asn_query = asn_query.where(AdvanceShippingNotice.location_id == location_id)
     asn_query = asn_query.order_by(AdvanceShippingNotice.expected_arrival).limit(limit)
@@ -230,10 +219,10 @@ def get_pending_actions(
 
     # Returns pending QC
     return_query = select(Return).where(
-        Return.companyId == company_id,
         Return.status == "RECEIVED",
         Return.qcStatus == None
     )
+    return_query = company_filter.apply_filter(return_query, Return.companyId)
     if location_id:
         return_query = return_query.where(Return.locationId == location_id)
     return_query = return_query.order_by(Return.receivedAt).limit(limit)
@@ -251,10 +240,8 @@ def get_pending_actions(
         })
 
     # STOs in transit
-    sto_query = select(StockTransferOrder).where(
-        StockTransferOrder.company_id == company_id,
-        StockTransferOrder.status == "IN_TRANSIT"
-    )
+    sto_query = select(StockTransferOrder).where(StockTransferOrder.status == "IN_TRANSIT")
+    sto_query = company_filter.apply_filter(sto_query, StockTransferOrder.company_id)
     if location_id:
         sto_query = sto_query.where(StockTransferOrder.destination_location_id == location_id)
     sto_query = sto_query.order_by(StockTransferOrder.shipped_date).limit(limit)
@@ -297,18 +284,17 @@ def get_inbound_trend(
     Get daily inbound trend data for charts.
     Returns daily counts of GRNs posted and units received.
     """
-    if not company_filter.company_id:
+    if not company_filter.company_id and not company_filter.is_super_admin:
         raise HTTPException(status_code=400, detail="Company ID required")
 
-    company_id = company_filter.company_id
     since = datetime.utcnow() - timedelta(days=days)
 
     # Get posted GRNs with quantities
     grn_query = select(GoodsReceipt).where(
-        GoodsReceipt.companyId == company_id,
         GoodsReceipt.status == "POSTED",
         GoodsReceipt.updatedAt >= since
     )
+    grn_query = company_filter.apply_filter(grn_query, GoodsReceipt.companyId)
     if location_id:
         grn_query = grn_query.where(GoodsReceipt.locationId == location_id)
 
@@ -351,17 +337,16 @@ def get_inbound_by_source(
     """
     Get inbound breakdown by source type.
     """
-    if not company_filter.company_id:
+    if not company_filter.company_id and not company_filter.is_super_admin:
         raise HTTPException(status_code=400, detail="Company ID required")
 
-    company_id = company_filter.company_id
     since = datetime.utcnow() - timedelta(days=days)
 
     grn_query = select(GoodsReceipt).where(
-        GoodsReceipt.companyId == company_id,
         GoodsReceipt.status == "POSTED",
         GoodsReceipt.updatedAt >= since
     )
+    grn_query = company_filter.apply_filter(grn_query, GoodsReceipt.companyId)
     if location_id:
         grn_query = grn_query.where(GoodsReceipt.locationId == location_id)
 
@@ -396,16 +381,14 @@ def get_recent_activity(
     """
     Get recent inbound activity feed.
     """
-    if not company_filter.company_id:
+    if not company_filter.company_id and not company_filter.is_super_admin:
         raise HTTPException(status_code=400, detail="Company ID required")
 
-    company_id = company_filter.company_id
     activities = []
 
     # Recent GRNs
-    grn_query = select(GoodsReceipt).where(
-        GoodsReceipt.companyId == company_id
-    )
+    grn_query = select(GoodsReceipt)
+    grn_query = company_filter.apply_filter(grn_query, GoodsReceipt.companyId)
     if location_id:
         grn_query = grn_query.where(GoodsReceipt.locationId == location_id)
     grn_query = grn_query.order_by(GoodsReceipt.updatedAt.desc()).limit(limit)
@@ -423,9 +406,9 @@ def get_recent_activity(
 
     # Recent ASN arrivals
     asn_query = select(AdvanceShippingNotice).where(
-        AdvanceShippingNotice.company_id == company_id,
         AdvanceShippingNotice.status.in_(["ARRIVED", "RECEIVED"])
     )
+    asn_query = company_filter.apply_filter(asn_query, AdvanceShippingNotice.company_id)
     if location_id:
         asn_query = asn_query.where(AdvanceShippingNotice.location_id == location_id)
     asn_query = asn_query.order_by(AdvanceShippingNotice.updated_at.desc()).limit(limit)
@@ -442,10 +425,8 @@ def get_recent_activity(
         })
 
     # Recent STOs received
-    sto_query = select(StockTransferOrder).where(
-        StockTransferOrder.company_id == company_id,
-        StockTransferOrder.status == "RECEIVED"
-    )
+    sto_query = select(StockTransferOrder).where(StockTransferOrder.status == "RECEIVED")
+    sto_query = company_filter.apply_filter(sto_query, StockTransferOrder.company_id)
     if location_id:
         sto_query = sto_query.where(StockTransferOrder.destination_location_id == location_id)
     sto_query = sto_query.order_by(StockTransferOrder.received_date.desc()).limit(limit)
@@ -483,16 +464,14 @@ def get_upload_summary(
     """
     Get summary of recent bulk uploads.
     """
-    if not company_filter.company_id:
+    if not company_filter.company_id and not company_filter.is_super_admin:
         raise HTTPException(status_code=400, detail="Company ID required")
 
-    company_id = company_filter.company_id
     since = datetime.utcnow() - timedelta(days=days)
 
-    query = select(UploadBatch).where(
-        UploadBatch.company_id == company_id,
-        UploadBatch.created_at >= since
-    ).order_by(UploadBatch.created_at.desc())
+    query = select(UploadBatch).where(UploadBatch.created_at >= since)
+    query = company_filter.apply_filter(query, UploadBatch.company_id)
+    query = query.order_by(UploadBatch.created_at.desc())
 
     batches = session.exec(query).all()
 
@@ -549,10 +528,8 @@ def get_inbound_report(
     """
     Get detailed inbound report with filtering.
     """
-    if not company_filter.company_id:
+    if not company_filter.company_id and not company_filter.is_super_admin:
         raise HTTPException(status_code=400, detail="Company ID required")
-
-    company_id = company_filter.company_id
 
     # Default date range: last 30 days
     if not date_to:
@@ -562,11 +539,11 @@ def get_inbound_report(
 
     # Query GRNs
     grn_query = select(GoodsReceipt).where(
-        GoodsReceipt.companyId == company_id,
         GoodsReceipt.status == "POSTED",
         GoodsReceipt.updatedAt >= date_from,
         GoodsReceipt.updatedAt <= date_to
     )
+    grn_query = company_filter.apply_filter(grn_query, GoodsReceipt.companyId)
     if location_id:
         grn_query = grn_query.where(GoodsReceipt.locationId == location_id)
     if inbound_source:

@@ -108,9 +108,7 @@ def list_exceptions(
 ):
     """List exceptions."""
     query = select(ExceptionModel)
-
-    if company_filter.company_id:
-        query = query.where(ExceptionModel.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ExceptionModel.companyId)
     if type:
         query = query.where(ExceptionModel.type == type)
     if severity:
@@ -135,9 +133,7 @@ def count_exceptions(
 ):
     """Get exception counts."""
     query = select(func.count(ExceptionModel.id))
-
-    if company_filter.company_id:
-        query = query.where(ExceptionModel.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ExceptionModel.companyId)
     if status:
         query = query.where(ExceptionModel.status == status)
     if severity:
@@ -156,8 +152,7 @@ def get_exception(
 ):
     """Get exception by ID."""
     query = select(ExceptionModel).where(ExceptionModel.id == exception_id)
-    if company_filter.company_id:
-        query = query.where(ExceptionModel.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ExceptionModel.companyId)
 
     exception = session.exec(query).first()
     if not exception:
@@ -199,8 +194,7 @@ def update_exception(
 ):
     """Update exception."""
     query = select(ExceptionModel).where(ExceptionModel.id == exception_id)
-    if company_filter.company_id:
-        query = query.where(ExceptionModel.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ExceptionModel.companyId)
 
     exception = session.exec(query).first()
     if not exception:
@@ -226,8 +220,7 @@ def resolve_exception(
 ):
     """Resolve exception."""
     query = select(ExceptionModel).where(ExceptionModel.id == exception_id)
-    if company_filter.company_id:
-        query = query.where(ExceptionModel.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ExceptionModel.companyId)
 
     exception = session.exec(query).first()
     if not exception:

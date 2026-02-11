@@ -36,8 +36,7 @@ def list_profiles(
     """List voice profiles"""
     query = select(VoiceProfile)
 
-    if company_filter.company_id:
-        query = query.where(VoiceProfile.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, VoiceProfile.companyId)
 
     profiles = session.exec(query).all()
     return profiles
@@ -51,8 +50,7 @@ def get_my_profile(
 ):
     """Get current user's voice profile"""
     query = select(VoiceProfile).where(VoiceProfile.userId == current_user.id)
-    if company_filter.company_id:
-        query = query.where(VoiceProfile.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, VoiceProfile.companyId)
 
     profile = session.exec(query).first()
     if not profile:
@@ -105,8 +103,7 @@ def update_profile(
 ):
     """Update voice profile settings"""
     query = select(VoiceProfile).where(VoiceProfile.id == profile_id)
-    if company_filter.company_id:
-        query = query.where(VoiceProfile.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, VoiceProfile.companyId)
 
     profile = session.exec(query).first()
     if not profile:
@@ -141,8 +138,7 @@ def list_commands(
     """List available voice commands"""
     query = select(VoiceCommand).where(VoiceCommand.isActive == is_active)
 
-    if company_filter.company_id:
-        query = query.where(VoiceCommand.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, VoiceCommand.companyId)
     if category:
         query = query.where(VoiceCommand.category == category)
 
@@ -272,8 +268,7 @@ def list_sessions(
     """List voice sessions"""
     query = select(VoiceSession)
 
-    if company_filter.company_id:
-        query = query.where(VoiceSession.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, VoiceSession.companyId)
     if user_id:
         query = query.where(VoiceSession.userId == user_id)
     if status:

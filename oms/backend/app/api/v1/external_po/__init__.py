@@ -117,8 +117,7 @@ def list_external_pos(
     query = select(ExternalPurchaseOrder)
 
     # Apply company filter
-    if company_filter.company_id:
-        query = query.where(ExternalPurchaseOrder.company_id == company_filter.company_id)
+    query = company_filter.apply_filter(query, ExternalPurchaseOrder.company_id)
 
     # Apply filters
     if status:
@@ -150,8 +149,7 @@ def count_external_pos(
     """Get count of external purchase orders."""
     query = select(func.count(ExternalPurchaseOrder.id))
 
-    if company_filter.company_id:
-        query = query.where(ExternalPurchaseOrder.company_id == company_filter.company_id)
+    query = company_filter.apply_filter(query, ExternalPurchaseOrder.company_id)
     if status:
         query = query.where(ExternalPurchaseOrder.status == status)
     if location_id:
@@ -240,9 +238,7 @@ def get_external_po(
 ):
     """Get an external purchase order with its items."""
     query = select(ExternalPurchaseOrder).where(ExternalPurchaseOrder.id == po_id)
-
-    if company_filter.company_id:
-        query = query.where(ExternalPurchaseOrder.company_id == company_filter.company_id)
+    query = company_filter.apply_filter(query, ExternalPurchaseOrder.company_id)
 
     po = session.exec(query).first()
     if not po:
@@ -274,9 +270,7 @@ def update_external_po(
 ):
     """Update an external purchase order."""
     query = select(ExternalPurchaseOrder).where(ExternalPurchaseOrder.id == po_id)
-
-    if company_filter.company_id:
-        query = query.where(ExternalPurchaseOrder.company_id == company_filter.company_id)
+    query = company_filter.apply_filter(query, ExternalPurchaseOrder.company_id)
 
     po = session.exec(query).first()
     if not po:
@@ -324,9 +318,7 @@ def delete_external_po(
 ):
     """Delete an external purchase order (only if OPEN with no receipts)."""
     query = select(ExternalPurchaseOrder).where(ExternalPurchaseOrder.id == po_id)
-
-    if company_filter.company_id:
-        query = query.where(ExternalPurchaseOrder.company_id == company_filter.company_id)
+    query = company_filter.apply_filter(query, ExternalPurchaseOrder.company_id)
 
     po = session.exec(query).first()
     if not po:

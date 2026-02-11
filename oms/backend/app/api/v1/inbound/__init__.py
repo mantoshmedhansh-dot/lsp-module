@@ -39,11 +39,7 @@ def list_inbounds(
     """List inbounds with pagination and filters."""
     query = select(Inbound)
 
-    if company_filter.company_id:
-        location_ids = session.exec(
-            select(Location.id).where(Location.companyId == company_filter.company_id)
-        ).all()
-        query = query.where(Inbound.locationId.in_(location_ids))
+    query = company_filter.apply_location_filter(query, Inbound.locationId)
 
     if status:
         query = query.where(Inbound.status == status)
@@ -74,11 +70,7 @@ def count_inbounds(
     """Get total count of inbounds."""
     query = select(func.count(Inbound.id))
 
-    if company_filter.company_id:
-        location_ids = session.exec(
-            select(Location.id).where(Location.companyId == company_filter.company_id)
-        ).all()
-        query = query.where(Inbound.locationId.in_(location_ids))
+    query = company_filter.apply_location_filter(query, Inbound.locationId)
 
     if status:
         query = query.where(Inbound.status == status)

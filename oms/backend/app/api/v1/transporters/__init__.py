@@ -159,8 +159,7 @@ def list_configs(
     """List transporter configurations for company."""
     query = select(TransporterConfig)
 
-    if company_filter.company_id:
-        query = query.where(TransporterConfig.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, TransporterConfig.companyId)
     if is_active is not None:
         query = query.where(TransporterConfig.isActive == is_active)
 

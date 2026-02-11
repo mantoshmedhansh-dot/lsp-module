@@ -75,8 +75,7 @@ def list_upload_batches(
     query = select(UploadBatch)
 
     # Apply company filter
-    if company_filter.company_id:
-        query = query.where(UploadBatch.company_id == company_filter.company_id)
+    query = company_filter.apply_filter(query, UploadBatch.company_id)
 
     # Apply filters
     if upload_type:
@@ -102,8 +101,7 @@ def count_upload_batches(
     """Get count of upload batches."""
     query = select(func.count(UploadBatch.id))
 
-    if company_filter.company_id:
-        query = query.where(UploadBatch.company_id == company_filter.company_id)
+    query = company_filter.apply_filter(query, UploadBatch.company_id)
     if upload_type:
         query = query.where(UploadBatch.upload_type == upload_type)
     if status:
@@ -122,8 +120,7 @@ def get_upload_summary(
     """Get summary of upload batches by type and status."""
     query = select(UploadBatch)
 
-    if company_filter.company_id:
-        query = query.where(UploadBatch.company_id == company_filter.company_id)
+    query = company_filter.apply_filter(query, UploadBatch.company_id)
 
     batches = session.exec(query).all()
 
@@ -167,8 +164,7 @@ def get_upload_batch(
     """Get an upload batch with its error log."""
     query = select(UploadBatch).where(UploadBatch.id == batch_id)
 
-    if company_filter.company_id:
-        query = query.where(UploadBatch.company_id == company_filter.company_id)
+    query = company_filter.apply_filter(query, UploadBatch.company_id)
 
     batch = session.exec(query).first()
     if not batch:
@@ -192,8 +188,7 @@ def get_batch_errors(
     """Get paginated errors for an upload batch."""
     query = select(UploadBatch).where(UploadBatch.id == batch_id)
 
-    if company_filter.company_id:
-        query = query.where(UploadBatch.company_id == company_filter.company_id)
+    query = company_filter.apply_filter(query, UploadBatch.company_id)
 
     batch = session.exec(query).first()
     if not batch:
@@ -224,8 +219,7 @@ def delete_upload_batch(
     """Delete an upload batch (metadata only, doesn't affect created records)."""
     query = select(UploadBatch).where(UploadBatch.id == batch_id)
 
-    if company_filter.company_id:
-        query = query.where(UploadBatch.company_id == company_filter.company_id)
+    query = company_filter.apply_filter(query, UploadBatch.company_id)
 
     batch = session.exec(query).first()
     if not batch:

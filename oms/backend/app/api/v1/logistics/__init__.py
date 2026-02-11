@@ -40,8 +40,7 @@ def list_rate_cards(
     """List rate cards."""
     query = select(RateCard)
 
-    if company_filter.company_id:
-        query = query.where(RateCard.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, RateCard.companyId)
     if transporter_id:
         query = query.where(RateCard.transporterId == transporter_id)
     if status:
@@ -61,8 +60,7 @@ def get_rate_card(
 ):
     """Get rate card by ID."""
     query = select(RateCard).where(RateCard.id == rate_card_id)
-    if company_filter.company_id:
-        query = query.where(RateCard.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, RateCard.companyId)
 
     rate_card = session.exec(query).first()
     if not rate_card:
@@ -119,8 +117,7 @@ def update_rate_card(
 ):
     """Update rate card."""
     query = select(RateCard).where(RateCard.id == rate_card_id)
-    if company_filter.company_id:
-        query = query.where(RateCard.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, RateCard.companyId)
 
     rate_card = session.exec(query).first()
     if not rate_card:
@@ -145,8 +142,7 @@ def activate_rate_card(
 ):
     """Activate rate card."""
     query = select(RateCard).where(RateCard.id == rate_card_id)
-    if company_filter.company_id:
-        query = query.where(RateCard.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, RateCard.companyId)
 
     rate_card = session.exec(query).first()
     if not rate_card:
@@ -175,8 +171,7 @@ def list_shipping_rules(
     """List shipping rules."""
     query = select(ShippingRule)
 
-    if company_filter.company_id:
-        query = query.where(ShippingRule.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ShippingRule.companyId)
     if is_active is not None:
         query = query.where(ShippingRule.isActive == is_active)
 
@@ -194,8 +189,7 @@ def get_shipping_rule(
 ):
     """Get shipping rule by ID."""
     query = select(ShippingRule).where(ShippingRule.id == rule_id)
-    if company_filter.company_id:
-        query = query.where(ShippingRule.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ShippingRule.companyId)
 
     rule = session.exec(query).first()
     if not rule:
@@ -231,8 +225,7 @@ def update_shipping_rule(
 ):
     """Update shipping rule."""
     query = select(ShippingRule).where(ShippingRule.id == rule_id)
-    if company_filter.company_id:
-        query = query.where(ShippingRule.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ShippingRule.companyId)
 
     rule = session.exec(query).first()
     if not rule:
@@ -257,8 +250,7 @@ def delete_shipping_rule(
 ):
     """Delete shipping rule."""
     query = select(ShippingRule).where(ShippingRule.id == rule_id)
-    if company_filter.company_id:
-        query = query.where(ShippingRule.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ShippingRule.companyId)
 
     rule = session.exec(query).first()
     if not rule:

@@ -44,11 +44,7 @@ def list_waves(
     """List waves with pagination and filters."""
     query = select(Wave)
 
-    if company_filter.company_id:
-        location_ids = session.exec(
-            select(Location.id).where(Location.companyId == company_filter.company_id)
-        ).all()
-        query = query.where(Wave.locationId.in_(location_ids))
+    query = company_filter.apply_location_filter(query, Wave.locationId)
 
     if status:
         query = query.where(Wave.status == status)
@@ -76,11 +72,7 @@ def count_waves(
     """Get total count of waves."""
     query = select(func.count(Wave.id))
 
-    if company_filter.company_id:
-        location_ids = session.exec(
-            select(Location.id).where(Location.companyId == company_filter.company_id)
-        ).all()
-        query = query.where(Wave.locationId.in_(location_ids))
+    query = company_filter.apply_location_filter(query, Wave.locationId)
 
     if status:
         query = query.where(Wave.status == status)

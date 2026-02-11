@@ -248,8 +248,7 @@ def list_inventory_sync_jobs(
         MarketplaceSyncJob.jobType == SyncJobType.INVENTORY_PUSH
     )
 
-    if company_filter.company_id:
-        query = query.where(MarketplaceSyncJob.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, MarketplaceSyncJob.companyId)
 
     if connection_id:
         query = query.where(MarketplaceSyncJob.connectionId == connection_id)
@@ -278,8 +277,7 @@ def list_inventory_sync_logs(
     """List inventory sync logs"""
     query = select(MarketplaceInventorySyncLog)
 
-    if company_filter.company_id:
-        query = query.where(MarketplaceInventorySyncLog.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, MarketplaceInventorySyncLog.companyId)
 
     if connection_id:
         query = query.where(MarketplaceInventorySyncLog.connectionId == connection_id)

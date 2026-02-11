@@ -175,8 +175,7 @@ def list_webhook_events(
     """List webhook events"""
     query = select(MarketplaceWebhookEvent)
 
-    if company_filter.company_id:
-        query = query.where(MarketplaceWebhookEvent.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, MarketplaceWebhookEvent.companyId)
 
     if channel:
         query = query.where(MarketplaceWebhookEvent.channel == channel.upper())
@@ -210,8 +209,7 @@ def get_webhook_event(
     """Get a specific webhook event"""
     query = select(MarketplaceWebhookEvent).where(MarketplaceWebhookEvent.id == event_id)
 
-    if company_filter.company_id:
-        query = query.where(MarketplaceWebhookEvent.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, MarketplaceWebhookEvent.companyId)
 
     event = session.exec(query).first()
 
@@ -232,8 +230,7 @@ def retry_webhook_event(
     """Retry processing a failed webhook event"""
     query = select(MarketplaceWebhookEvent).where(MarketplaceWebhookEvent.id == event_id)
 
-    if company_filter.company_id:
-        query = query.where(MarketplaceWebhookEvent.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, MarketplaceWebhookEvent.companyId)
 
     event = session.exec(query).first()
 
@@ -273,8 +270,7 @@ def ignore_webhook_event(
     """Mark a webhook event as ignored"""
     query = select(MarketplaceWebhookEvent).where(MarketplaceWebhookEvent.id == event_id)
 
-    if company_filter.company_id:
-        query = query.where(MarketplaceWebhookEvent.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, MarketplaceWebhookEvent.companyId)
 
     event = session.exec(query).first()
 

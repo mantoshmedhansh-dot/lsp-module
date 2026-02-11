@@ -41,8 +41,7 @@ def list_subscriptions(
     """List subscriptions"""
     query = select(Subscription)
 
-    if company_filter.company_id:
-        query = query.where(Subscription.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Subscription.companyId)
     if status:
         query = query.where(Subscription.status == status)
     if customer_id:
@@ -97,8 +96,7 @@ def get_subscription(
 ):
     """Get a specific subscription"""
     query = select(Subscription).where(Subscription.id == subscription_id)
-    if company_filter.company_id:
-        query = query.where(Subscription.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Subscription.companyId)
 
     subscription = session.exec(query).first()
     if not subscription:
@@ -116,8 +114,7 @@ def update_subscription(
 ):
     """Update a subscription"""
     query = select(Subscription).where(Subscription.id == subscription_id)
-    if company_filter.company_id:
-        query = query.where(Subscription.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Subscription.companyId)
 
     subscription = session.exec(query).first()
     if not subscription:
@@ -147,8 +144,7 @@ def cancel_subscription(
 ):
     """Cancel a subscription"""
     query = select(Subscription).where(Subscription.id == subscription_id)
-    if company_filter.company_id:
-        query = query.where(Subscription.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Subscription.companyId)
 
     subscription = session.exec(query).first()
     if not subscription:
@@ -266,8 +262,7 @@ def pause_subscription(
 ):
     """Pause a subscription"""
     query = select(Subscription).where(Subscription.id == subscription_id)
-    if company_filter.company_id:
-        query = query.where(Subscription.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Subscription.companyId)
 
     subscription = session.exec(query).first()
     if not subscription:
@@ -308,8 +303,7 @@ def resume_subscription(
 ):
     """Resume a paused subscription"""
     query = select(Subscription).where(Subscription.id == subscription_id)
-    if company_filter.company_id:
-        query = query.where(Subscription.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Subscription.companyId)
 
     subscription = session.exec(query).first()
     if not subscription:
@@ -352,8 +346,7 @@ def activate_subscription(
 ):
     """Activate a pending subscription"""
     query = select(Subscription).where(Subscription.id == subscription_id)
-    if company_filter.company_id:
-        query = query.where(Subscription.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Subscription.companyId)
 
     subscription = session.exec(query).first()
     if not subscription:
@@ -492,8 +485,7 @@ def get_upcoming_deliveries(
         SubscriptionSchedule.status == ScheduleStatus.SCHEDULED
     )
 
-    if company_filter.company_id:
-        query = query.where(SubscriptionSchedule.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, SubscriptionSchedule.companyId)
 
     query = query.order_by(SubscriptionSchedule.scheduledDate)
     schedules = session.exec(query).all()

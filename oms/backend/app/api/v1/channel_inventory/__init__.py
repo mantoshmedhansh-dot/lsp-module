@@ -47,8 +47,7 @@ def list_channel_inventory_rules(
     """List channel inventory allocation rules with filters."""
     query = select(ChannelInventoryRule)
 
-    if company_filter.company_id:
-        query = query.where(ChannelInventoryRule.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ChannelInventoryRule.companyId)
     if sku_id:
         query = query.where(ChannelInventoryRule.skuId == sku_id)
     if location_id:
@@ -95,8 +94,7 @@ def count_channel_inventory_rules(
     """Count channel inventory rules."""
     query = select(func.count(ChannelInventoryRule.id))
 
-    if company_filter.company_id:
-        query = query.where(ChannelInventoryRule.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ChannelInventoryRule.companyId)
     if sku_id:
         query = query.where(ChannelInventoryRule.skuId == sku_id)
     if location_id:
@@ -119,8 +117,7 @@ def get_channel_inventory_rule(
 ):
     """Get a specific channel inventory rule."""
     query = select(ChannelInventoryRule).where(ChannelInventoryRule.id == rule_id)
-    if company_filter.company_id:
-        query = query.where(ChannelInventoryRule.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ChannelInventoryRule.companyId)
 
     rule = session.exec(query).first()
     if not rule:
@@ -200,8 +197,7 @@ def update_channel_inventory_rule(
 ):
     """Update a channel inventory rule."""
     query = select(ChannelInventoryRule).where(ChannelInventoryRule.id == rule_id)
-    if company_filter.company_id:
-        query = query.where(ChannelInventoryRule.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ChannelInventoryRule.companyId)
 
     rule = session.exec(query).first()
     if not rule:
@@ -228,8 +224,7 @@ def delete_channel_inventory_rule(
 ):
     """Delete a channel inventory rule."""
     query = select(ChannelInventoryRule).where(ChannelInventoryRule.id == rule_id)
-    if company_filter.company_id:
-        query = query.where(ChannelInventoryRule.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ChannelInventoryRule.companyId)
 
     rule = session.exec(query).first()
     if not rule:
@@ -325,8 +320,7 @@ def get_rules_by_sku(
         ChannelInventoryRule.skuId == sku_id,
         ChannelInventoryRule.isActive == True
     )
-    if company_filter.company_id:
-        query = query.where(ChannelInventoryRule.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ChannelInventoryRule.companyId)
     if location_id:
         query = query.where(ChannelInventoryRule.locationId == location_id)
 
@@ -355,8 +349,7 @@ def list_channel_inventory(
     """List channel inventory records."""
     query = select(ChannelInventory)
 
-    if company_filter.company_id:
-        query = query.where(ChannelInventory.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ChannelInventory.companyId)
     if sku_id:
         query = query.where(ChannelInventory.skuId == sku_id)
     if location_id:
@@ -407,8 +400,7 @@ def get_channel_inventory_summary(
         ChannelInventory.channel,
     )
 
-    if company_filter.company_id:
-        query = query.where(ChannelInventory.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ChannelInventory.companyId)
     if sku_id:
         query = query.where(ChannelInventory.skuId == sku_id)
     if location_id:
@@ -458,8 +450,7 @@ def get_available_channel_inventory(
         (ChannelInventory.quantity - ChannelInventory.reservedQty) > 0
     ).order_by(ChannelInventory.fifoSequence)
 
-    if company_filter.company_id:
-        query = query.where(ChannelInventory.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ChannelInventory.companyId)
 
     records = session.exec(query).all()
 
@@ -487,8 +478,7 @@ def get_channel_inventory(
 ):
     """Get a specific channel inventory record."""
     query = select(ChannelInventory).where(ChannelInventory.id == inventory_id)
-    if company_filter.company_id:
-        query = query.where(ChannelInventory.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ChannelInventory.companyId)
 
     record = session.exec(query).first()
     if not record:
@@ -508,8 +498,7 @@ def update_channel_inventory(
 ):
     """Update a channel inventory record."""
     query = select(ChannelInventory).where(ChannelInventory.id == inventory_id)
-    if company_filter.company_id:
-        query = query.where(ChannelInventory.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ChannelInventory.companyId)
 
     record = session.exec(query).first()
     if not record:

@@ -46,8 +46,7 @@ def list_snapshots(
     """List analytics snapshots."""
     query = select(AnalyticsSnapshot)
 
-    if company_filter.company_id:
-        query = query.where(AnalyticsSnapshot.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, AnalyticsSnapshot.companyId)
     if snapshot_type:
         query = query.where(AnalyticsSnapshot.snapshotType == snapshot_type)
     if location_id:
@@ -75,8 +74,7 @@ def get_latest_snapshot(
         AnalyticsSnapshot.snapshotType == snapshot_type
     )
 
-    if company_filter.company_id:
-        query = query.where(AnalyticsSnapshot.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, AnalyticsSnapshot.companyId)
     if location_id:
         query = query.where(AnalyticsSnapshot.locationId == location_id)
 
@@ -97,8 +95,7 @@ def get_snapshot(
 ):
     """Get snapshot by ID."""
     query = select(AnalyticsSnapshot).where(AnalyticsSnapshot.id == snapshot_id)
-    if company_filter.company_id:
-        query = query.where(AnalyticsSnapshot.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, AnalyticsSnapshot.companyId)
 
     snapshot = session.exec(query).first()
     if not snapshot:
@@ -125,8 +122,7 @@ def list_forecasts(
     """List demand forecasts."""
     query = select(DemandForecast)
 
-    if company_filter.company_id:
-        query = query.where(DemandForecast.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, DemandForecast.companyId)
     if sku_id:
         query = query.where(DemandForecast.skuId == sku_id)
     if location_id:
@@ -156,8 +152,7 @@ def get_sku_forecasts(
         DemandForecast.forecastFor >= datetime.utcnow()
     )
 
-    if company_filter.company_id:
-        query = query.where(DemandForecast.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, DemandForecast.companyId)
     if location_id:
         query = query.where(DemandForecast.locationId == location_id)
 
@@ -183,8 +178,7 @@ def list_scheduled_reports(
     """List scheduled reports."""
     query = select(ScheduledReport)
 
-    if company_filter.company_id:
-        query = query.where(ScheduledReport.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ScheduledReport.companyId)
     if report_type:
         query = query.where(ScheduledReport.reportType == report_type)
     if is_active is not None:
@@ -204,8 +198,7 @@ def get_scheduled_report(
 ):
     """Get scheduled report by ID."""
     query = select(ScheduledReport).where(ScheduledReport.id == report_id)
-    if company_filter.company_id:
-        query = query.where(ScheduledReport.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ScheduledReport.companyId)
 
     report = session.exec(query).first()
     if not report:
@@ -243,8 +236,7 @@ def update_scheduled_report(
 ):
     """Update scheduled report."""
     query = select(ScheduledReport).where(ScheduledReport.id == report_id)
-    if company_filter.company_id:
-        query = query.where(ScheduledReport.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ScheduledReport.companyId)
 
     report = session.exec(query).first()
     if not report:
@@ -269,8 +261,7 @@ def delete_scheduled_report(
 ):
     """Delete scheduled report."""
     query = select(ScheduledReport).where(ScheduledReport.id == report_id)
-    if company_filter.company_id:
-        query = query.where(ScheduledReport.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ScheduledReport.companyId)
 
     report = session.exec(query).first()
     if not report:
@@ -289,8 +280,7 @@ def run_scheduled_report(
 ):
     """Manually run a scheduled report."""
     query = select(ScheduledReport).where(ScheduledReport.id == report_id)
-    if company_filter.company_id:
-        query = query.where(ScheduledReport.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ScheduledReport.companyId)
 
     report = session.exec(query).first()
     if not report:
@@ -363,8 +353,7 @@ def get_carrier_scorecards(
         Transporter, CarrierPerformance.transporterId == Transporter.id
     )
 
-    if company_filter.company_id:
-        query = query.where(CarrierPerformance.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, CarrierPerformance.companyId)
     if shipment_type and shipment_type != "all":
         query = query.where(CarrierPerformance.shipmentType == shipment_type)
     if transporter_id:
@@ -404,8 +393,7 @@ def get_carrier_scorecard_summary(
         func.avg(CarrierPerformance.rtoRate).label("avgRTORate")
     )
 
-    if company_filter.company_id:
-        query = query.where(CarrierPerformance.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, CarrierPerformance.companyId)
     if shipment_type and shipment_type != "all":
         query = query.where(CarrierPerformance.shipmentType == shipment_type)
 
@@ -444,8 +432,7 @@ def get_pincode_performance(
         Transporter, PincodePerformance.transporterId == Transporter.id
     )
 
-    if company_filter.company_id:
-        query = query.where(PincodePerformance.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, PincodePerformance.companyId)
     if pincode:
         query = query.where(PincodePerformance.pincode.ilike(f"%{pincode}%"))
     if transporter_id:
@@ -498,8 +485,7 @@ def get_pincode_performance_summary(
         func.avg(PincodePerformance.avgTATDays).label("avgTAT")
     )
 
-    if company_filter.company_id:
-        query = query.where(PincodePerformance.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, PincodePerformance.companyId)
 
     result = session.exec(query).first()
 
@@ -535,8 +521,7 @@ def get_lane_performance(
         Transporter, LanePerformance.transporterId == Transporter.id
     )
 
-    if company_filter.company_id:
-        query = query.where(LanePerformance.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, LanePerformance.companyId)
     if origin_city and origin_city != "all":
         query = query.where(LanePerformance.originCity.ilike(f"%{origin_city}%"))
     if destination_city and destination_city != "all":
@@ -579,8 +564,7 @@ def get_lane_performance_summary(
         func.avg(LanePerformance.avgTATDays).label("avgTAT")
     )
 
-    if company_filter.company_id:
-        query = query.where(LanePerformance.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, LanePerformance.companyId)
     if shipment_type and shipment_type != "all":
         query = query.where(LanePerformance.shipmentType == shipment_type)
 

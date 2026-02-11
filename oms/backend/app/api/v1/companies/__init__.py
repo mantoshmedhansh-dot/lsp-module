@@ -141,8 +141,7 @@ def list_companies(
     query = select(Company)
 
     # Non-super-admins can only see their own company
-    if company_filter.company_id:
-        query = query.where(Company.id == company_filter.company_id)
+    query = company_filter.apply_filter(query, Company.id)
 
     # Apply filters
     if is_active is not None:

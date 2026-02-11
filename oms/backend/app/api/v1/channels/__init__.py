@@ -36,8 +36,7 @@ def list_channel_configs(
     """List channel configurations."""
     query = select(ChannelConfig)
 
-    if company_filter.company_id:
-        query = query.where(ChannelConfig.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ChannelConfig.companyId)
     if channel:
         query = query.where(ChannelConfig.channel == channel)
     if is_active is not None:
@@ -57,8 +56,7 @@ def get_channel_config(
 ):
     """Get channel config by ID."""
     query = select(ChannelConfig).where(ChannelConfig.id == config_id)
-    if company_filter.company_id:
-        query = query.where(ChannelConfig.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ChannelConfig.companyId)
 
     config = session.exec(query).first()
     if not config:
@@ -94,8 +92,7 @@ def update_channel_config(
 ):
     """Update channel config."""
     query = select(ChannelConfig).where(ChannelConfig.id == config_id)
-    if company_filter.company_id:
-        query = query.where(ChannelConfig.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ChannelConfig.companyId)
 
     config = session.exec(query).first()
     if not config:
@@ -120,8 +117,7 @@ def delete_channel_config(
 ):
     """Delete channel config."""
     query = select(ChannelConfig).where(ChannelConfig.id == config_id)
-    if company_filter.company_id:
-        query = query.where(ChannelConfig.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ChannelConfig.companyId)
 
     config = session.exec(query).first()
     if not config:
@@ -140,8 +136,7 @@ def trigger_channel_sync(
 ):
     """Trigger manual sync for channel."""
     query = select(ChannelConfig).where(ChannelConfig.id == config_id)
-    if company_filter.company_id:
-        query = query.where(ChannelConfig.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ChannelConfig.companyId)
 
     config = session.exec(query).first()
     if not config:
@@ -174,8 +169,7 @@ def list_order_imports(
     """List order imports."""
     query = select(OrderImport)
 
-    if company_filter.company_id:
-        query = query.where(OrderImport.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, OrderImport.companyId)
     if status:
         query = query.where(OrderImport.status == status)
     if channel:
@@ -194,8 +188,7 @@ def get_import_summary(
 ):
     """Get order import summary."""
     base_query = select(OrderImport)
-    if company_filter.company_id:
-        base_query = base_query.where(OrderImport.companyId == company_filter.company_id)
+    base_query = company_filter.apply_filter(base_query, OrderImport.companyId)
 
     pending = session.exec(
         select(func.count(OrderImport.id)).where(OrderImport.status == ImportStatus.PENDING)
@@ -231,8 +224,7 @@ def get_order_import(
 ):
     """Get order import by ID."""
     query = select(OrderImport).where(OrderImport.id == import_id)
-    if company_filter.company_id:
-        query = query.where(OrderImport.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, OrderImport.companyId)
 
     order_import = session.exec(query).first()
     if not order_import:
@@ -275,8 +267,7 @@ def update_order_import(
 ):
     """Update order import."""
     query = select(OrderImport).where(OrderImport.id == import_id)
-    if company_filter.company_id:
-        query = query.where(OrderImport.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, OrderImport.companyId)
 
     order_import = session.exec(query).first()
     if not order_import:
@@ -301,8 +292,7 @@ def start_order_import(
 ):
     """Start processing order import."""
     query = select(OrderImport).where(OrderImport.id == import_id)
-    if company_filter.company_id:
-        query = query.where(OrderImport.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, OrderImport.companyId)
 
     order_import = session.exec(query).first()
     if not order_import:

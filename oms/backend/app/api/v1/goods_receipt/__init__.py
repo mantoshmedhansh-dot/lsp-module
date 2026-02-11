@@ -151,8 +151,7 @@ def list_goods_receipts(
     query = select(GoodsReceipt)
 
     # Apply company filter
-    if company_filter.company_id:
-        query = query.where(GoodsReceipt.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, GoodsReceipt.companyId)
 
     # Apply filters
     if status:
@@ -184,8 +183,7 @@ def count_goods_receipts(
     """Get count of goods receipts."""
     query = select(func.count(GoodsReceipt.id))
 
-    if company_filter.company_id:
-        query = query.where(GoodsReceipt.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, GoodsReceipt.companyId)
     if status:
         query = query.where(GoodsReceipt.status == status)
     if location_id:
@@ -240,8 +238,7 @@ def get_goods_receipt(
     """Get a goods receipt with its items."""
     query = select(GoodsReceipt).where(GoodsReceipt.id == gr_id)
 
-    if company_filter.company_id:
-        query = query.where(GoodsReceipt.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, GoodsReceipt.companyId)
 
     gr = session.exec(query).first()
     if not gr:
@@ -275,8 +272,7 @@ def update_goods_receipt(
     """Update a goods receipt (only DRAFT status)."""
     query = select(GoodsReceipt).where(GoodsReceipt.id == gr_id)
 
-    if company_filter.company_id:
-        query = query.where(GoodsReceipt.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, GoodsReceipt.companyId)
 
     gr = session.exec(query).first()
     if not gr:

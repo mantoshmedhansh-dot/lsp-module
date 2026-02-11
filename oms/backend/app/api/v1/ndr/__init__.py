@@ -53,8 +53,7 @@ def list_ndrs(
 
     # Build filter query
     base_query = select(NDR)
-    if company_filter.company_id:
-        base_query = base_query.where(NDR.companyId == company_filter.company_id)
+    base_query = company_filter.apply_filter(base_query, NDR.companyId)
     if ndr_status:
         base_query = base_query.where(NDR.status == ndr_status)
     if priority:
@@ -62,8 +61,7 @@ def list_ndrs(
 
     # Get total count - build separate count query with same conditions
     count_query = select(func.count(NDR.id))
-    if company_filter.company_id:
-        count_query = count_query.where(NDR.companyId == company_filter.company_id)
+    count_query = company_filter.apply_filter(count_query, NDR.companyId)
     if ndr_status:
         count_query = count_query.where(NDR.status == ndr_status)
     if priority:
@@ -168,8 +166,7 @@ def list_ndrs(
 
     # Get all NDRs for the company to calculate aggregates
     all_ndrs_query = select(NDR)
-    if company_filter.company_id:
-        all_ndrs_query = all_ndrs_query.where(NDR.companyId == company_filter.company_id)
+    all_ndrs_query = company_filter.apply_filter(all_ndrs_query, NDR.companyId)
     all_ndrs = session.exec(all_ndrs_query).all()
 
     for n in all_ndrs:
@@ -233,8 +230,7 @@ def count_ndrs(
     """Get total count of NDRs."""
     query = select(func.count(NDR.id))
 
-    if company_filter.company_id:
-        query = query.where(NDR.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, NDR.companyId)
     if status:
         query = query.where(NDR.status == status)
     if priority:
@@ -252,8 +248,7 @@ def get_ndr_summary(
 ):
     """Get NDR summary statistics."""
     base_query = select(NDR)
-    if company_filter.company_id:
-        base_query = base_query.where(NDR.companyId == company_filter.company_id)
+    base_query = company_filter.apply_filter(base_query, NDR.companyId)
 
     ndrs = session.exec(base_query).all()
 

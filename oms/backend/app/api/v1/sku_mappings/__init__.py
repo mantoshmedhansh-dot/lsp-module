@@ -47,8 +47,7 @@ def list_sku_mappings(
     """List SKU mappings with filters"""
     query = select(MarketplaceSkuMapping)
 
-    if company_filter.company_id:
-        query = query.where(MarketplaceSkuMapping.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, MarketplaceSkuMapping.companyId)
 
     if channel:
         query = query.where(MarketplaceSkuMapping.channel == channel.upper())
@@ -253,8 +252,7 @@ def get_sku_mapping(
     """Get a specific SKU mapping"""
     query = select(MarketplaceSkuMapping).where(MarketplaceSkuMapping.id == mapping_id)
 
-    if company_filter.company_id:
-        query = query.where(MarketplaceSkuMapping.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, MarketplaceSkuMapping.companyId)
 
     mapping = session.exec(query).first()
 
@@ -276,8 +274,7 @@ def update_sku_mapping(
     """Update a SKU mapping"""
     query = select(MarketplaceSkuMapping).where(MarketplaceSkuMapping.id == mapping_id)
 
-    if company_filter.company_id:
-        query = query.where(MarketplaceSkuMapping.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, MarketplaceSkuMapping.companyId)
 
     mapping = session.exec(query).first()
 
@@ -323,8 +320,7 @@ def delete_sku_mapping(
     """Delete a SKU mapping"""
     query = select(MarketplaceSkuMapping).where(MarketplaceSkuMapping.id == mapping_id)
 
-    if company_filter.company_id:
-        query = query.where(MarketplaceSkuMapping.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, MarketplaceSkuMapping.companyId)
 
     mapping = session.exec(query).first()
 

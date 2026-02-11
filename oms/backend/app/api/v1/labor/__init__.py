@@ -52,8 +52,7 @@ def list_shifts(
     """List all shifts"""
     query = select(LaborShift)
 
-    if company_filter.company_id:
-        query = query.where(LaborShift.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, LaborShift.companyId)
     if location_id:
         query = query.where(LaborShift.locationId == location_id)
     if is_active is not None:
@@ -102,8 +101,7 @@ def get_shift(
 ):
     """Get a specific shift"""
     query = select(LaborShift).where(LaborShift.id == shift_id)
-    if company_filter.company_id:
-        query = query.where(LaborShift.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, LaborShift.companyId)
 
     shift = session.exec(query).first()
     if not shift:
@@ -121,8 +119,7 @@ def delete_shift(
 ):
     """Delete/deactivate a shift"""
     query = select(LaborShift).where(LaborShift.id == shift_id)
-    if company_filter.company_id:
-        query = query.where(LaborShift.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, LaborShift.companyId)
 
     shift = session.exec(query).first()
     if not shift:
@@ -150,8 +147,7 @@ def list_schedules(
     """List shift schedules"""
     query = select(LaborShiftSchedule)
 
-    if company_filter.company_id:
-        query = query.where(LaborShiftSchedule.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, LaborShiftSchedule.companyId)
     if shift_id:
         query = query.where(LaborShiftSchedule.shiftId == shift_id)
     if user_id:
@@ -205,8 +201,7 @@ def list_assignments(
     """List labor assignments"""
     query = select(LaborAssignment)
 
-    if company_filter.company_id:
-        query = query.where(LaborAssignment.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, LaborAssignment.companyId)
     if user_id:
         query = query.where(LaborAssignment.userId == user_id)
     if location_id:
@@ -260,8 +255,7 @@ def start_assignment(
 ):
     """Start working on an assignment"""
     query = select(LaborAssignment).where(LaborAssignment.id == assignment_id)
-    if company_filter.company_id:
-        query = query.where(LaborAssignment.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, LaborAssignment.companyId)
 
     assignment = session.exec(query).first()
     if not assignment:
@@ -289,8 +283,7 @@ def complete_assignment(
 ):
     """Complete an assignment"""
     query = select(LaborAssignment).where(LaborAssignment.id == assignment_id)
-    if company_filter.company_id:
-        query = query.where(LaborAssignment.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, LaborAssignment.companyId)
 
     assignment = session.exec(query).first()
     if not assignment:
@@ -326,12 +319,10 @@ def clock_in(
         raise HTTPException(status_code=400, detail="Company ID required")
 
     # Check if already clocked in
-    last_entry = session.exec(
-        select(LaborTimeEntry)
-        .where(LaborTimeEntry.userId == current_user.id)
-        .where(LaborTimeEntry.companyId == company_filter.company_id)
-        .order_by(LaborTimeEntry.timestamp.desc())
-    ).first()
+    last_entry_query = select(LaborTimeEntry).where(LaborTimeEntry.userId == current_user.id)
+    last_entry_query = company_filter.apply_filter(last_entry_query, LaborTimeEntry.companyId)
+    last_entry_query = last_entry_query.order_by(LaborTimeEntry.timestamp.desc())
+    last_entry = session.exec(last_entry_query).first()
 
     if last_entry and last_entry.entryType == TimeEntryType.CLOCK_IN:
         raise HTTPException(status_code=400, detail="Already clocked in")
@@ -362,12 +353,10 @@ def clock_out(
         raise HTTPException(status_code=400, detail="Company ID required")
 
     # Check if clocked in
-    last_entry = session.exec(
-        select(LaborTimeEntry)
-        .where(LaborTimeEntry.userId == current_user.id)
-        .where(LaborTimeEntry.companyId == company_filter.company_id)
-        .order_by(LaborTimeEntry.timestamp.desc())
-    ).first()
+    last_entry_query = select(LaborTimeEntry).where(LaborTimeEntry.userId == current_user.id)
+    last_entry_query = company_filter.apply_filter(last_entry_query, LaborTimeEntry.companyId)
+    last_entry_query = last_entry_query.order_by(LaborTimeEntry.timestamp.desc())
+    last_entry = session.exec(last_entry_query).first()
 
     if not last_entry or last_entry.entryType == TimeEntryType.CLOCK_OUT:
         raise HTTPException(status_code=400, detail="Not clocked in")
@@ -399,8 +388,7 @@ def list_time_entries(
     """List time entries"""
     query = select(LaborTimeEntry)
 
-    if company_filter.company_id:
-        query = query.where(LaborTimeEntry.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, LaborTimeEntry.companyId)
     if user_id:
         query = query.where(LaborTimeEntry.userId == user_id)
     if from_date:
@@ -430,8 +418,7 @@ def get_user_productivity(
     """Get productivity metrics for a user"""
     query = select(LaborProductivity).where(LaborProductivity.userId == user_id)
 
-    if company_filter.company_id:
-        query = query.where(LaborProductivity.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, LaborProductivity.companyId)
     if from_date:
         query = query.where(LaborProductivity.recordDate >= from_date)
     if to_date:
@@ -463,8 +450,7 @@ def get_team_analytics(
         func.avg(LaborProductivity.accuracyRate).label("avgAccuracy")
     ).group_by(LaborProductivity.taskType)
 
-    if company_filter.company_id:
-        query = query.where(LaborProductivity.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, LaborProductivity.companyId)
     if location_id:
         query = query.where(LaborProductivity.locationId == location_id)
     if from_date:
@@ -503,8 +489,7 @@ def get_leaderboard(
         func.avg(LaborProductivity.performanceScore).label("avgPerformance")
     ).group_by(LaborProductivity.userId)
 
-    if company_filter.company_id:
-        query = query.where(LaborProductivity.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, LaborProductivity.companyId)
     if location_id:
         query = query.where(LaborProductivity.locationId == location_id)
     if task_type:
@@ -549,8 +534,7 @@ def list_standards(
     """List labor standards"""
     query = select(LaborStandard).where(LaborStandard.isActive == is_active)
 
-    if company_filter.company_id:
-        query = query.where(LaborStandard.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, LaborStandard.companyId)
     if location_id:
         query = query.where(LaborStandard.locationId == location_id)
     if task_type:
@@ -605,8 +589,7 @@ def list_skills(
     """List labor skills"""
     query = select(LaborSkill).where(LaborSkill.isActive == True)
 
-    if company_filter.company_id:
-        query = query.where(LaborSkill.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, LaborSkill.companyId)
     if user_id:
         query = query.where(LaborSkill.userId == user_id)
     if skill_category:
@@ -660,8 +643,7 @@ def get_labor_dashboard(
     schedule_query = select(func.count(func.distinct(LaborShiftSchedule.userId))).where(
         LaborShiftSchedule.scheduleDate == today
     )
-    if company_filter.company_id:
-        schedule_query = schedule_query.where(LaborShiftSchedule.companyId == company_filter.company_id)
+    schedule_query = company_filter.apply_filter(schedule_query, LaborShiftSchedule.companyId)
 
     total_workers = session.exec(schedule_query).one() or 0
 
@@ -670,8 +652,7 @@ def get_labor_dashboard(
         LaborTimeEntry.entryType == TimeEntryType.CLOCK_IN,
         func.date(LaborTimeEntry.timestamp) == today
     )
-    if company_filter.company_id:
-        active_query = active_query.where(LaborTimeEntry.companyId == company_filter.company_id)
+    active_query = company_filter.apply_filter(active_query, LaborTimeEntry.companyId)
 
     active_workers = session.exec(active_query).one() or 0
 
@@ -681,8 +662,7 @@ def get_labor_dashboard(
         func.count(LaborAssignment.id).filter(LaborAssignment.status.in_([AssignmentStatus.PENDING, AssignmentStatus.IN_PROGRESS]))
     ).where(func.date(LaborAssignment.assignedAt) == today)
 
-    if company_filter.company_id:
-        task_query = task_query.where(LaborAssignment.companyId == company_filter.company_id)
+    task_query = company_filter.apply_filter(task_query, LaborAssignment.companyId)
 
     task_result = session.exec(task_query).first()
     tasks_completed = task_result[0] if task_result else 0

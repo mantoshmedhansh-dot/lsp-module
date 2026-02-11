@@ -70,8 +70,7 @@ def list_allocations(
     query = select(InventoryAllocation)
 
     # Apply company filter
-    if company_filter.company_id:
-        query = query.where(InventoryAllocation.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, InventoryAllocation.companyId)
 
     # Apply filters
     if status:
@@ -106,9 +105,7 @@ def count_allocations(
 ):
     """Get count of allocations."""
     query = select(func.count(InventoryAllocation.id))
-
-    if company_filter.company_id:
-        query = query.where(InventoryAllocation.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, InventoryAllocation.companyId)
     if status:
         query = query.where(InventoryAllocation.status == status)
     if order_id:
@@ -146,9 +143,7 @@ def get_allocation(
 ):
     """Get a specific allocation."""
     query = select(InventoryAllocation).where(InventoryAllocation.id == allocation_id)
-
-    if company_filter.company_id:
-        query = query.where(InventoryAllocation.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, InventoryAllocation.companyId)
 
     allocation = session.exec(query).first()
     if not allocation:
@@ -247,8 +242,7 @@ def deallocate_inventory(
     """
     # Verify allocation exists
     query = select(InventoryAllocation).where(InventoryAllocation.id == allocation_id)
-    if company_filter.company_id:
-        query = query.where(InventoryAllocation.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, InventoryAllocation.companyId)
 
     allocation = session.exec(query).first()
     if not allocation:
@@ -337,8 +331,7 @@ def confirm_pick(
     """
     # Verify allocation exists
     query = select(InventoryAllocation).where(InventoryAllocation.id == allocation_id)
-    if company_filter.company_id:
-        query = query.where(InventoryAllocation.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, InventoryAllocation.companyId)
 
     allocation = session.exec(query).first()
     if not allocation:

@@ -91,8 +91,7 @@ def list_devices(
     """List registered devices"""
     query = select(MobileDevice)
 
-    if company_filter.company_id:
-        query = query.where(MobileDevice.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, MobileDevice.companyId)
     if status:
         query = query.where(MobileDevice.status == status)
     if location_id:
@@ -267,8 +266,7 @@ def list_scan_logs(
     """List barcode scan logs"""
     query = select(BarcodeScanLog)
 
-    if company_filter.company_id:
-        query = query.where(BarcodeScanLog.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, BarcodeScanLog.companyId)
     if device_id:
         query = query.where(BarcodeScanLog.deviceId == device_id)
     if user_id:
@@ -314,8 +312,7 @@ def list_mobile_tasks(
     """Get mobile tasks"""
     query = select(MobileTask)
 
-    if company_filter.company_id:
-        query = query.where(MobileTask.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, MobileTask.companyId)
     if status:
         query = query.where(MobileTask.status == status)
     if task_type:
@@ -755,8 +752,7 @@ def get_sync_conflicts(
     """Get sync conflicts"""
     query = select(SyncConflict).where(SyncConflict.isResolved == is_resolved)
 
-    if company_filter.company_id:
-        query = query.where(SyncConflict.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, SyncConflict.companyId)
     if device_id:
         query = query.where(SyncConflict.deviceId == device_id)
 

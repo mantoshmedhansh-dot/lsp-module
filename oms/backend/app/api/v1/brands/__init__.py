@@ -141,8 +141,7 @@ def list_brands(
     query = select(Brand)
 
     # Non-super-admins can only see their own company's brands
-    if company_filter.company_id:
-        query = query.where(Brand.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Brand.companyId)
 
     # Apply filters
     if is_active is not None:
@@ -172,8 +171,7 @@ def count_brands(
     query = select(func.count(Brand.id))
 
     # Non-super-admins can only count their own company's brands
-    if company_filter.company_id:
-        query = query.where(Brand.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Brand.companyId)
 
     if is_active is not None:
         query = query.where(Brand.isActive == is_active)

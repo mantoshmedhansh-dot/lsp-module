@@ -36,8 +36,7 @@ def list_cod_reconciliations(
     """List COD reconciliations."""
     query = select(CODReconciliation)
 
-    if company_filter.company_id:
-        query = query.where(CODReconciliation.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, CODReconciliation.companyId)
     if status:
         query = query.where(CODReconciliation.status == status)
     if transporter_id:
@@ -58,8 +57,7 @@ def count_cod_reconciliations(
     """Get total count of COD reconciliations."""
     query = select(func.count(CODReconciliation.id))
 
-    if company_filter.company_id:
-        query = query.where(CODReconciliation.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, CODReconciliation.companyId)
     if status:
         query = query.where(CODReconciliation.status == status)
 
@@ -76,8 +74,7 @@ def get_cod_reconciliation(
 ):
     """Get COD reconciliation by ID."""
     query = select(CODReconciliation).where(CODReconciliation.id == reconciliation_id)
-    if company_filter.company_id:
-        query = query.where(CODReconciliation.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, CODReconciliation.companyId)
 
     reconciliation = session.exec(query).first()
     if not reconciliation:
@@ -120,8 +117,7 @@ def update_cod_reconciliation(
 ):
     """Update COD reconciliation."""
     query = select(CODReconciliation).where(CODReconciliation.id == reconciliation_id)
-    if company_filter.company_id:
-        query = query.where(CODReconciliation.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, CODReconciliation.companyId)
 
     reconciliation = session.exec(query).first()
     if not reconciliation:
@@ -146,8 +142,7 @@ def verify_cod_reconciliation(
 ):
     """Verify COD reconciliation."""
     query = select(CODReconciliation).where(CODReconciliation.id == reconciliation_id)
-    if company_filter.company_id:
-        query = query.where(CODReconciliation.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, CODReconciliation.companyId)
 
     reconciliation = session.exec(query).first()
     if not reconciliation:
@@ -172,8 +167,7 @@ def complete_cod_reconciliation(
 ):
     """Complete COD reconciliation."""
     query = select(CODReconciliation).where(CODReconciliation.id == reconciliation_id)
-    if company_filter.company_id:
-        query = query.where(CODReconciliation.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, CODReconciliation.companyId)
 
     reconciliation = session.exec(query).first()
     if not reconciliation:

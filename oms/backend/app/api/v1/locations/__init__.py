@@ -152,8 +152,7 @@ def list_locations(
     query = select(Location)
 
     # Apply company filter
-    if company_filter.company_id:
-        query = query.where(Location.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Location.companyId)
 
     # Filter by user's location access (unless super admin)
     if current_user.role != "SUPER_ADMIN" and current_user.locationAccess:
@@ -187,9 +186,7 @@ def get_location(
 ):
     """Get a specific location by ID."""
     query = select(Location).where(Location.id == location_id)
-
-    if company_filter.company_id:
-        query = query.where(Location.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Location.companyId)
 
     location = session.exec(query).first()
 
@@ -266,9 +263,7 @@ def update_location(
 ):
     """Update a location. Requires ADMIN or SUPER_ADMIN role."""
     query = select(Location).where(Location.id == location_id)
-
-    if company_filter.company_id:
-        query = query.where(Location.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Location.companyId)
 
     location = session.exec(query).first()
 
@@ -299,9 +294,7 @@ def delete_location(
 ):
     """Soft delete a location. Requires ADMIN or SUPER_ADMIN role."""
     query = select(Location).where(Location.id == location_id)
-
-    if company_filter.company_id:
-        query = query.where(Location.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Location.companyId)
 
     location = session.exec(query).first()
 
@@ -334,8 +327,7 @@ def list_zones(
     """List zones for a location."""
     # Verify location access
     location_query = select(Location).where(Location.id == location_id)
-    if company_filter.company_id:
-        location_query = location_query.where(Location.companyId == company_filter.company_id)
+    location_query = company_filter.apply_filter(location_query, Location.companyId)
 
     location = session.exec(location_query).first()
     if not location:
@@ -369,8 +361,7 @@ def create_zone(
     """Create a new zone in a location."""
     # Verify location exists and belongs to company
     location_query = select(Location).where(Location.id == location_id)
-    if company_filter.company_id:
-        location_query = location_query.where(Location.companyId == company_filter.company_id)
+    location_query = company_filter.apply_filter(location_query, Location.companyId)
 
     location = session.exec(location_query).first()
     if not location:
@@ -566,8 +557,7 @@ def list_all_zones(
     query = select(Zone).join(Location, Zone.locationId == Location.id)
 
     # Apply company filter
-    if company_filter.company_id:
-        query = query.where(Location.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Location.companyId)
 
     # Filter by user's location access (unless super admin)
     if current_user.role != "SUPER_ADMIN" and current_user.locationAccess:
@@ -610,8 +600,7 @@ def count_zones(
         Location, Zone.locationId == Location.id
     )
 
-    if company_filter.company_id:
-        query = query.where(Location.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Location.companyId)
 
     if current_user.role != "SUPER_ADMIN" and current_user.locationAccess:
         query = query.where(Zone.locationId.in_(current_user.locationAccess))
@@ -637,8 +626,7 @@ def create_zone_direct(
     """Create a new zone. Requires ADMIN or SUPER_ADMIN role."""
     # Verify location exists and belongs to company
     location_query = select(Location).where(Location.id == zone_data.locationId)
-    if company_filter.company_id:
-        location_query = location_query.where(Location.companyId == company_filter.company_id)
+    location_query = company_filter.apply_filter(location_query, Location.companyId)
 
     location = session.exec(location_query).first()
     if not location:
@@ -667,8 +655,7 @@ def get_zone(
     """Get a specific zone by ID."""
     query = select(Zone).join(Location).where(Zone.id == zone_id)
 
-    if company_filter.company_id:
-        query = query.where(Location.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Location.companyId)
 
     if current_user.role != "SUPER_ADMIN" and current_user.locationAccess:
         query = query.where(Zone.locationId.in_(current_user.locationAccess))
@@ -695,8 +682,7 @@ def update_zone_direct(
     """Update a zone. Requires ADMIN or SUPER_ADMIN role."""
     query = select(Zone).join(Location).where(Zone.id == zone_id)
 
-    if company_filter.company_id:
-        query = query.where(Location.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Location.companyId)
 
     zone = session.exec(query).first()
 
@@ -761,8 +747,7 @@ def list_all_bins(
     )
 
     # Apply company filter
-    if company_filter.company_id:
-        query = query.where(Location.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Location.companyId)
 
     # Filter by user's location access (unless super admin)
     if current_user.role != "SUPER_ADMIN" and current_user.locationAccess:
@@ -812,8 +797,7 @@ def count_bins(
         Zone, Bin.zoneId == Zone.id
     ).join(Location, Zone.locationId == Location.id)
 
-    if company_filter.company_id:
-        query = query.where(Location.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Location.companyId)
 
     if current_user.role != "SUPER_ADMIN" and current_user.locationAccess:
         query = query.where(Zone.locationId.in_(current_user.locationAccess))
@@ -844,8 +828,7 @@ def create_bins_bulk(
     """
     # Verify zone exists
     zone_query = select(Zone).join(Location).where(Zone.id == bulk_data.zoneId)
-    if company_filter.company_id:
-        zone_query = zone_query.where(Location.companyId == company_filter.company_id)
+    zone_query = company_filter.apply_filter(zone_query, Location.companyId)
 
     zone = session.exec(zone_query).first()
     if not zone:
@@ -901,8 +884,7 @@ def get_bin(
     """Get a specific bin by ID."""
     query = select(Bin).join(Zone).join(Location).where(Bin.id == bin_id)
 
-    if company_filter.company_id:
-        query = query.where(Location.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Location.companyId)
 
     if current_user.role != "SUPER_ADMIN" and current_user.locationAccess:
         query = query.where(Zone.locationId.in_(current_user.locationAccess))
@@ -929,8 +911,7 @@ def update_bin_direct(
     """Update a bin. Requires MANAGER or above role."""
     query = select(Bin).join(Zone).join(Location).where(Bin.id == bin_id)
 
-    if company_filter.company_id:
-        query = query.where(Location.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Location.companyId)
 
     bin_obj = session.exec(query).first()
 
@@ -962,8 +943,7 @@ def get_bin_inventory(
     """Get inventory contents of a bin."""
     # Verify bin access
     bin_query = select(Bin).join(Zone).join(Location).where(Bin.id == bin_id)
-    if company_filter.company_id:
-        bin_query = bin_query.where(Location.companyId == company_filter.company_id)
+    bin_query = company_filter.apply_filter(bin_query, Location.companyId)
 
     bin_obj = session.exec(bin_query).first()
     if not bin_obj:
@@ -1007,8 +987,7 @@ def get_bin_capacity(
     """Get capacity utilization of a bin."""
     # Verify bin access
     bin_query = select(Bin).join(Zone).join(Location).where(Bin.id == bin_id)
-    if company_filter.company_id:
-        bin_query = bin_query.where(Location.companyId == company_filter.company_id)
+    bin_query = company_filter.apply_filter(bin_query, Location.companyId)
 
     bin_obj = session.exec(bin_query).first()
     if not bin_obj:

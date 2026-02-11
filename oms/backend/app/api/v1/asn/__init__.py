@@ -147,8 +147,7 @@ def list_asns(
     query = select(AdvanceShippingNotice)
 
     # Apply company filter
-    if company_filter.company_id:
-        query = query.where(AdvanceShippingNotice.company_id == company_filter.company_id)
+    query = company_filter.apply_filter(query, AdvanceShippingNotice.company_id)
 
     # Apply filters
     if status:
@@ -183,8 +182,7 @@ def count_asns(
     """Get count of advance shipping notices."""
     query = select(func.count(AdvanceShippingNotice.id))
 
-    if company_filter.company_id:
-        query = query.where(AdvanceShippingNotice.company_id == company_filter.company_id)
+    query = company_filter.apply_filter(query, AdvanceShippingNotice.company_id)
     if status:
         query = query.where(AdvanceShippingNotice.status == status)
     if location_id:
@@ -206,8 +204,7 @@ def get_pending_asns(
         AdvanceShippingNotice.status.in_(["EXPECTED", "IN_TRANSIT", "ARRIVED"])
     )
 
-    if company_filter.company_id:
-        query = query.where(AdvanceShippingNotice.company_id == company_filter.company_id)
+    query = company_filter.apply_filter(query, AdvanceShippingNotice.company_id)
     if location_id:
         query = query.where(AdvanceShippingNotice.location_id == location_id)
 
@@ -316,8 +313,7 @@ def get_asn(
     """Get an advance shipping notice with its items."""
     query = select(AdvanceShippingNotice).where(AdvanceShippingNotice.id == asn_id)
 
-    if company_filter.company_id:
-        query = query.where(AdvanceShippingNotice.company_id == company_filter.company_id)
+    query = company_filter.apply_filter(query, AdvanceShippingNotice.company_id)
 
     asn = session.exec(query).first()
     if not asn:
@@ -350,8 +346,7 @@ def update_asn(
     """Update an advance shipping notice."""
     query = select(AdvanceShippingNotice).where(AdvanceShippingNotice.id == asn_id)
 
-    if company_filter.company_id:
-        query = query.where(AdvanceShippingNotice.company_id == company_filter.company_id)
+    query = company_filter.apply_filter(query, AdvanceShippingNotice.company_id)
 
     asn = session.exec(query).first()
     if not asn:
@@ -412,8 +407,7 @@ def delete_asn(
     """Delete an ASN (only if EXPECTED with no receipts)."""
     query = select(AdvanceShippingNotice).where(AdvanceShippingNotice.id == asn_id)
 
-    if company_filter.company_id:
-        query = query.where(AdvanceShippingNotice.company_id == company_filter.company_id)
+    query = company_filter.apply_filter(query, AdvanceShippingNotice.company_id)
 
     asn = session.exec(query).first()
     if not asn:
@@ -721,10 +715,9 @@ async def upload_asns(
     file_size = len(content)
 
     # Create upload batch
-    batch_count = session.exec(
-        select(func.count(UploadBatch.id))
-        .where(UploadBatch.company_id == company_filter.company_id)
-    ).one()
+    batch_count_query = select(func.count(UploadBatch.id))
+    batch_count_query = company_filter.apply_filter(batch_count_query, UploadBatch.company_id)
+    batch_count = session.exec(batch_count_query).one()
     batch_no = f"BATCH-{batch_count + 1:06d}"
 
     upload_batch = UploadBatch(
@@ -810,11 +803,11 @@ async def upload_asns(
         # Look up external PO if provided
         external_po_id = None
         if asn_data['external_po_number']:
-            ext_po = session.exec(
-                select(ExternalPurchaseOrder)
-                .where(ExternalPurchaseOrder.company_id == company_filter.company_id)
-                .where(ExternalPurchaseOrder.external_po_number == asn_data['external_po_number'])
-            ).first()
+            ext_po_query = select(ExternalPurchaseOrder).where(
+                ExternalPurchaseOrder.external_po_number == asn_data['external_po_number']
+            )
+            ext_po_query = company_filter.apply_filter(ext_po_query, ExternalPurchaseOrder.company_id)
+            ext_po = session.exec(ext_po_query).first()
             if ext_po:
                 external_po_id = ext_po.id
 

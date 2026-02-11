@@ -63,10 +63,9 @@ def get_b2b_logistics_stats(
     consignee_query = select(B2BConsignee)
     booking_query = select(B2BBooking)
 
-    if company_filter.company_id:
-        lr_query = lr_query.where(LorryReceipt.companyId == company_filter.company_id)
-        consignee_query = consignee_query.where(B2BConsignee.companyId == company_filter.company_id)
-        booking_query = booking_query.where(B2BBooking.companyId == company_filter.company_id)
+    lr_query = company_filter.apply_filter(lr_query, LorryReceipt.companyId)
+    consignee_query = company_filter.apply_filter(consignee_query, B2BConsignee.companyId)
+    booking_query = company_filter.apply_filter(booking_query, B2BBooking.companyId)
 
     lrs = session.exec(lr_query).all()
     consignees = session.exec(consignee_query.where(B2BConsignee.isActive == True)).all()
@@ -117,8 +116,7 @@ def list_consignees(
     """List consignees with optional filters."""
     query = select(B2BConsignee)
 
-    if company_filter.company_id:
-        query = query.where(B2BConsignee.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, B2BConsignee.companyId)
 
     if active_only:
         query = query.where(B2BConsignee.isActive == True)
@@ -149,8 +147,7 @@ def get_consignee(
 ):
     """Get consignee by ID."""
     query = select(B2BConsignee).where(B2BConsignee.id == consignee_id)
-    if company_filter.company_id:
-        query = query.where(B2BConsignee.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, B2BConsignee.companyId)
 
     consignee = session.exec(query).first()
     if not consignee:
@@ -202,8 +199,7 @@ def update_consignee(
 ):
     """Update a consignee."""
     query = select(B2BConsignee).where(B2BConsignee.id == consignee_id)
-    if company_filter.company_id:
-        query = query.where(B2BConsignee.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, B2BConsignee.companyId)
 
     consignee = session.exec(query).first()
     if not consignee:
@@ -229,8 +225,7 @@ def delete_consignee(
 ):
     """Delete a consignee (soft delete - sets isActive=False)."""
     query = select(B2BConsignee).where(B2BConsignee.id == consignee_id)
-    if company_filter.company_id:
-        query = query.where(B2BConsignee.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, B2BConsignee.companyId)
 
     consignee = session.exec(query).first()
     if not consignee:
@@ -262,8 +257,7 @@ def list_lorry_receipts(
     """List Lorry Receipts with pagination and filters."""
     query = select(LorryReceipt)
 
-    if company_filter.company_id:
-        query = query.where(LorryReceipt.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, LorryReceipt.companyId)
 
     if status:
         query = query.where(LorryReceipt.status == status)
@@ -303,8 +297,7 @@ def count_lorry_receipts(
     """Get count of LRs matching filters."""
     query = select(func.count(LorryReceipt.id))
 
-    if company_filter.company_id:
-        query = query.where(LorryReceipt.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, LorryReceipt.companyId)
     if status:
         query = query.where(LorryReceipt.status == status)
     if date_from:
@@ -325,8 +318,7 @@ def get_lorry_receipt(
 ):
     """Get Lorry Receipt by ID."""
     query = select(LorryReceipt).where(LorryReceipt.id == lr_id)
-    if company_filter.company_id:
-        query = query.where(LorryReceipt.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, LorryReceipt.companyId)
 
     lr = session.exec(query).first()
     if not lr:
@@ -412,8 +404,7 @@ def update_lorry_receipt(
 ):
     """Update a Lorry Receipt."""
     query = select(LorryReceipt).where(LorryReceipt.id == lr_id)
-    if company_filter.company_id:
-        query = query.where(LorryReceipt.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, LorryReceipt.companyId)
 
     lr = session.exec(query).first()
     if not lr:
@@ -446,8 +437,7 @@ def delete_lorry_receipt(
 ):
     """Delete a Lorry Receipt (only if BOOKED status)."""
     query = select(LorryReceipt).where(LorryReceipt.id == lr_id)
-    if company_filter.company_id:
-        query = query.where(LorryReceipt.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, LorryReceipt.companyId)
 
     lr = session.exec(query).first()
     if not lr:
@@ -476,8 +466,7 @@ def dispatch_lr(
 ):
     """Mark LR as dispatched."""
     query = select(LorryReceipt).where(LorryReceipt.id == lr_id)
-    if company_filter.company_id:
-        query = query.where(LorryReceipt.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, LorryReceipt.companyId)
 
     lr = session.exec(query).first()
     if not lr:
@@ -510,8 +499,7 @@ def deliver_lr(
 ):
     """Mark LR as delivered."""
     query = select(LorryReceipt).where(LorryReceipt.id == lr_id)
-    if company_filter.company_id:
-        query = query.where(LorryReceipt.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, LorryReceipt.companyId)
 
     lr = session.exec(query).first()
     if not lr:
@@ -544,8 +532,7 @@ def upload_pod(
 ):
     """Upload POD for an LR."""
     query = select(LorryReceipt).where(LorryReceipt.id == lr_id)
-    if company_filter.company_id:
-        query = query.where(LorryReceipt.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, LorryReceipt.companyId)
 
     lr = session.exec(query).first()
     if not lr:
@@ -586,8 +573,7 @@ def list_bookings(
     """List bookings with filters."""
     query = select(B2BBooking)
 
-    if company_filter.company_id:
-        query = query.where(B2BBooking.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, B2BBooking.companyId)
 
     if booking_type:
         query = query.where(B2BBooking.bookingType == booking_type)
@@ -609,8 +595,7 @@ def get_booking(
 ):
     """Get booking by ID."""
     query = select(B2BBooking).where(B2BBooking.id == booking_id)
-    if company_filter.company_id:
-        query = query.where(B2BBooking.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, B2BBooking.companyId)
 
     booking = session.exec(query).first()
     if not booking:
@@ -671,8 +656,7 @@ def update_booking(
 ):
     """Update a booking."""
     query = select(B2BBooking).where(B2BBooking.id == booking_id)
-    if company_filter.company_id:
-        query = query.where(B2BBooking.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, B2BBooking.companyId)
 
     booking = session.exec(query).first()
     if not booking:
@@ -698,8 +682,7 @@ def delete_booking(
 ):
     """Delete/cancel a booking."""
     query = select(B2BBooking).where(B2BBooking.id == booking_id)
-    if company_filter.company_id:
-        query = query.where(B2BBooking.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, B2BBooking.companyId)
 
     booking = session.exec(query).first()
     if not booking:
@@ -724,8 +707,7 @@ def convert_booking_to_lr(
 ):
     """Convert a confirmed booking to a Lorry Receipt."""
     query = select(B2BBooking).where(B2BBooking.id == booking_id)
-    if company_filter.company_id:
-        query = query.where(B2BBooking.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, B2BBooking.companyId)
 
     booking = session.exec(query).first()
     if not booking:

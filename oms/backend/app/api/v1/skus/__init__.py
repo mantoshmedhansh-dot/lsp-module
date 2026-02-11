@@ -34,8 +34,7 @@ def list_skus(
     query = select(SKU)
 
     # Apply company filter
-    if company_filter.company_id:
-        query = query.where(SKU.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, SKU.companyId)
 
     # Apply filters
     if category:
@@ -70,8 +69,7 @@ def count_skus(
     """Get total count of SKUs matching filters."""
     query = select(func.count(SKU.id))
 
-    if company_filter.company_id:
-        query = query.where(SKU.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, SKU.companyId)
     if category:
         query = query.where(SKU.category == category)
     if brand:
@@ -91,8 +89,7 @@ def list_categories(
     """Get list of unique categories."""
     query = select(SKU.category).distinct()
 
-    if company_filter.company_id:
-        query = query.where(SKU.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, SKU.companyId)
 
     query = query.where(SKU.category.isnot(None))
 
@@ -108,8 +105,7 @@ def list_brands(
     """Get list of unique brands."""
     query = select(SKU.brand).distinct()
 
-    if company_filter.company_id:
-        query = query.where(SKU.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, SKU.companyId)
 
     query = query.where(SKU.brand.isnot(None))
 
@@ -126,8 +122,7 @@ def get_sku(
     """Get a specific SKU by ID."""
     query = select(SKU).where(SKU.id == sku_id)
 
-    if company_filter.company_id:
-        query = query.where(SKU.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, SKU.companyId)
 
     sku = session.exec(query).first()
 
@@ -149,8 +144,7 @@ def get_sku_by_code(
     """Get a SKU by code."""
     query = select(SKU).where(SKU.code == code)
 
-    if company_filter.company_id:
-        query = query.where(SKU.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, SKU.companyId)
 
     sku = session.exec(query).first()
 
@@ -212,8 +206,7 @@ def update_sku(
     """Update a SKU. Requires MANAGER or higher role."""
     query = select(SKU).where(SKU.id == sku_id)
 
-    if company_filter.company_id:
-        query = query.where(SKU.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, SKU.companyId)
 
     sku = session.exec(query).first()
 
@@ -260,8 +253,7 @@ def delete_sku(
     """Soft delete a SKU. Requires MANAGER or higher role."""
     query = select(SKU).where(SKU.id == sku_id)
 
-    if company_filter.company_id:
-        query = query.where(SKU.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, SKU.companyId)
 
     sku = session.exec(query).first()
 

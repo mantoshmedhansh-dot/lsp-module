@@ -38,11 +38,7 @@ def list_inventory(
     query = select(Inventory)
 
     # Apply company filter via location
-    if company_filter.company_id:
-        location_ids = session.exec(
-            select(Location.id).where(Location.companyId == company_filter.company_id)
-        ).all()
-        query = query.where(Inventory.locationId.in_(location_ids))
+    query = company_filter.apply_location_filter(query, Inventory.locationId)
 
     # Filter by user's location access (unless super admin)
     if current_user.role != "SUPER_ADMIN" and current_user.locationAccess:
@@ -83,11 +79,7 @@ def count_inventory(
     """Get total count of inventory records matching filters."""
     query = select(func.count(Inventory.id))
 
-    if company_filter.company_id:
-        location_ids = session.exec(
-            select(Location.id).where(Location.companyId == company_filter.company_id)
-        ).all()
-        query = query.where(Inventory.locationId.in_(location_ids))
+    query = company_filter.apply_location_filter(query, Inventory.locationId)
 
     if sku_id:
         query = query.where(Inventory.skuId == sku_id)
@@ -118,11 +110,7 @@ def get_inventory_summary(
     ).join(SKU, Inventory.skuId == SKU.id)
 
     # Apply company filter
-    if company_filter.company_id:
-        location_ids = session.exec(
-            select(Location.id).where(Location.companyId == company_filter.company_id)
-        ).all()
-        query = query.where(Inventory.locationId.in_(location_ids))
+    query = company_filter.apply_location_filter(query, Inventory.locationId)
 
     # Filter by user's location access
     if current_user.role != "SUPER_ADMIN" and current_user.locationAccess:
@@ -168,11 +156,7 @@ def list_inventory_movements(
     query = select(InventoryMovement)
 
     # Apply company filter via location
-    if company_filter.company_id:
-        location_ids = session.exec(
-            select(Location.id).where(Location.companyId == company_filter.company_id)
-        ).all()
-        query = query.where(InventoryMovement.locationId.in_(location_ids))
+    query = company_filter.apply_location_filter(query, InventoryMovement.locationId)
 
     if sku_id:
         query = query.where(InventoryMovement.skuId == sku_id)
@@ -202,11 +186,7 @@ def get_inventory(
     query = select(Inventory).where(Inventory.id == inventory_id)
 
     # Apply company filter via location
-    if company_filter.company_id:
-        location_ids = session.exec(
-            select(Location.id).where(Location.companyId == company_filter.company_id)
-        ).all()
-        query = query.where(Inventory.locationId.in_(location_ids))
+    query = company_filter.apply_location_filter(query, Inventory.locationId)
 
     inventory = session.exec(query).first()
 
@@ -325,11 +305,7 @@ def update_inventory(
     """Update an inventory record. Requires MANAGER or higher role."""
     query = select(Inventory).where(Inventory.id == inventory_id)
 
-    if company_filter.company_id:
-        location_ids = session.exec(
-            select(Location.id).where(Location.companyId == company_filter.company_id)
-        ).all()
-        query = query.where(Inventory.locationId.in_(location_ids))
+    query = company_filter.apply_location_filter(query, Inventory.locationId)
 
     inventory = session.exec(query).first()
 
@@ -580,11 +556,7 @@ def delete_inventory(
     """Delete an inventory record. Requires MANAGER or higher role."""
     query = select(Inventory).where(Inventory.id == inventory_id)
 
-    if company_filter.company_id:
-        location_ids = session.exec(
-            select(Location.id).where(Location.companyId == company_filter.company_id)
-        ).all()
-        query = query.where(Inventory.locationId.in_(location_ids))
+    query = company_filter.apply_location_filter(query, Inventory.locationId)
 
     inventory = session.exec(query).first()
 

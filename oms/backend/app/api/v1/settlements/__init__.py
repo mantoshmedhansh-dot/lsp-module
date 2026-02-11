@@ -49,8 +49,7 @@ def list_settlements(
     """List settlements with filters"""
     query = select(MarketplaceSettlement)
 
-    if company_filter.company_id:
-        query = query.where(MarketplaceSettlement.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, MarketplaceSettlement.companyId)
 
     if connection_id:
         query = query.where(MarketplaceSettlement.connectionId == connection_id)
@@ -84,8 +83,7 @@ def get_settlement(
     """Get settlement details"""
     query = select(MarketplaceSettlement).where(MarketplaceSettlement.id == settlement_id)
 
-    if company_filter.company_id:
-        query = query.where(MarketplaceSettlement.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, MarketplaceSettlement.companyId)
 
     settlement = session.exec(query).first()
 
@@ -160,8 +158,7 @@ def update_settlement(
     """Update settlement details"""
     query = select(MarketplaceSettlement).where(MarketplaceSettlement.id == settlement_id)
 
-    if company_filter.company_id:
-        query = query.where(MarketplaceSettlement.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, MarketplaceSettlement.companyId)
 
     settlement = session.exec(query).first()
 

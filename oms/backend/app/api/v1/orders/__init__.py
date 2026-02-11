@@ -49,11 +49,7 @@ def list_orders(
     query = select(Order)
 
     # Apply company filter via location
-    if company_filter.company_id:
-        location_ids = session.exec(
-            select(Location.id).where(Location.companyId == company_filter.company_id)
-        ).all()
-        query = query.where(Order.locationId.in_(location_ids))
+    query = company_filter.apply_location_filter(query, Order.locationId)
 
     # Filter by user's location access (unless super admin)
     if current_user.role != "SUPER_ADMIN" and current_user.locationAccess:
@@ -104,11 +100,7 @@ def count_orders(
     """Get total count of orders matching filters."""
     query = select(func.count(Order.id))
 
-    if company_filter.company_id:
-        location_ids = session.exec(
-            select(Location.id).where(Location.companyId == company_filter.company_id)
-        ).all()
-        query = query.where(Order.locationId.in_(location_ids))
+    query = company_filter.apply_location_filter(query, Order.locationId)
 
     if current_user.role != "SUPER_ADMIN" and current_user.locationAccess:
         query = query.where(Order.locationId.in_(current_user.locationAccess))
@@ -142,11 +134,7 @@ def get_order_stats(
     """Get order statistics."""
     base_query = select(Order)
 
-    if company_filter.company_id:
-        location_ids = session.exec(
-            select(Location.id).where(Location.companyId == company_filter.company_id)
-        ).all()
-        base_query = base_query.where(Order.locationId.in_(location_ids))
+    base_query = company_filter.apply_location_filter(base_query, Order.locationId)
 
     if current_user.role != "SUPER_ADMIN" and current_user.locationAccess:
         base_query = base_query.where(Order.locationId.in_(current_user.locationAccess))
@@ -162,15 +150,13 @@ def get_order_stats(
     status_counts = {}
     for s in OrderStatus:
         count_query = select(func.count(Order.id)).where(Order.status == s)
-        if company_filter.company_id:
-            count_query = count_query.where(Order.locationId.in_(location_ids))
+        count_query = company_filter.apply_location_filter(count_query, Order.locationId)
         count = session.exec(count_query).one()
         status_counts[s.value] = count
 
     # Total amount
     total_query = select(func.sum(Order.totalAmount))
-    if company_filter.company_id:
-        total_query = total_query.where(Order.locationId.in_(location_ids))
+    total_query = company_filter.apply_location_filter(total_query, Order.locationId)
     if location_id:
         total_query = total_query.where(Order.locationId == location_id)
     if date_from:
@@ -196,11 +182,7 @@ def get_order(
     """Get a specific order by ID."""
     query = select(Order).where(Order.id == order_id)
 
-    if company_filter.company_id:
-        location_ids = session.exec(
-            select(Location.id).where(Location.companyId == company_filter.company_id)
-        ).all()
-        query = query.where(Order.locationId.in_(location_ids))
+    query = company_filter.apply_location_filter(query, Order.locationId)
 
     order = session.exec(query).first()
 
@@ -232,11 +214,7 @@ def get_order_by_number(
     """Get an order by order number."""
     query = select(Order).where(Order.orderNo == order_no)
 
-    if company_filter.company_id:
-        location_ids = session.exec(
-            select(Location.id).where(Location.companyId == company_filter.company_id)
-        ).all()
-        query = query.where(Order.locationId.in_(location_ids))
+    query = company_filter.apply_location_filter(query, Order.locationId)
 
     order = session.exec(query).first()
 
@@ -314,11 +292,7 @@ def update_order(
     """Update an order. Requires MANAGER or higher role."""
     query = select(Order).where(Order.id == order_id)
 
-    if company_filter.company_id:
-        location_ids = session.exec(
-            select(Location.id).where(Location.companyId == company_filter.company_id)
-        ).all()
-        query = query.where(Order.locationId.in_(location_ids))
+    query = company_filter.apply_location_filter(query, Order.locationId)
 
     order = session.exec(query).first()
 
@@ -350,11 +324,7 @@ def cancel_order(
     """Cancel an order. Requires MANAGER or higher role."""
     query = select(Order).where(Order.id == order_id)
 
-    if company_filter.company_id:
-        location_ids = session.exec(
-            select(Location.id).where(Location.companyId == company_filter.company_id)
-        ).all()
-        query = query.where(Order.locationId.in_(location_ids))
+    query = company_filter.apply_location_filter(query, Order.locationId)
 
     order = session.exec(query).first()
 
@@ -395,11 +365,7 @@ def confirm_order(
     """
     query = select(Order).where(Order.id == order_id)
 
-    if company_filter.company_id:
-        location_ids = session.exec(
-            select(Location.id).where(Location.companyId == company_filter.company_id)
-        ).all()
-        query = query.where(Order.locationId.in_(location_ids))
+    query = company_filter.apply_location_filter(query, Order.locationId)
 
     order = session.exec(query).first()
 
@@ -458,11 +424,7 @@ def generate_invoice(
 
     query = select(Order).where(Order.id == order_id)
 
-    if company_filter.company_id:
-        location_ids = session.exec(
-            select(Location.id).where(Location.companyId == company_filter.company_id)
-        ).all()
-        query = query.where(Order.locationId.in_(location_ids))
+    query = company_filter.apply_location_filter(query, Order.locationId)
 
     order = session.exec(query).first()
 
@@ -563,11 +525,7 @@ def list_order_items(
     """List items for a specific order."""
     # Verify order exists and access
     order_query = select(Order).where(Order.id == order_id)
-    if company_filter.company_id:
-        location_ids = session.exec(
-            select(Location.id).where(Location.companyId == company_filter.company_id)
-        ).all()
-        order_query = order_query.where(Order.locationId.in_(location_ids))
+    order_query = company_filter.apply_location_filter(order_query, Order.locationId)
 
     order = session.exec(order_query).first()
     if not order:
@@ -595,11 +553,7 @@ def create_order_item(
     """Add an item to an order. Requires MANAGER or higher role."""
     # Verify order exists
     order_query = select(Order).where(Order.id == order_id)
-    if company_filter.company_id:
-        location_ids = session.exec(
-            select(Location.id).where(Location.companyId == company_filter.company_id)
-        ).all()
-        order_query = order_query.where(Order.locationId.in_(location_ids))
+    order_query = company_filter.apply_location_filter(order_query, Order.locationId)
 
     order = session.exec(order_query).first()
     if not order:
@@ -698,11 +652,7 @@ def allocate_order(
 
     # Get order
     order_query = select(Order).where(Order.id == order_id)
-    if company_filter.company_id:
-        location_ids = session.exec(
-            select(Location.id).where(Location.companyId == company_filter.company_id)
-        ).all()
-        order_query = order_query.where(Order.locationId.in_(location_ids))
+    order_query = company_filter.apply_location_filter(order_query, Order.locationId)
 
     order = session.exec(order_query).first()
     if not order:
@@ -827,11 +777,7 @@ def list_deliveries(
     """List deliveries for a specific order."""
     # Verify order exists
     order_query = select(Order).where(Order.id == order_id)
-    if company_filter.company_id:
-        location_ids = session.exec(
-            select(Location.id).where(Location.companyId == company_filter.company_id)
-        ).all()
-        order_query = order_query.where(Order.locationId.in_(location_ids))
+    order_query = company_filter.apply_location_filter(order_query, Order.locationId)
 
     order = session.exec(order_query).first()
     if not order:
@@ -859,11 +805,7 @@ def create_delivery(
     """Create a delivery for an order. Requires MANAGER or higher role."""
     # Verify order exists
     order_query = select(Order).where(Order.id == order_id)
-    if company_filter.company_id:
-        location_ids = session.exec(
-            select(Location.id).where(Location.companyId == company_filter.company_id)
-        ).all()
-        order_query = order_query.where(Order.locationId.in_(location_ids))
+    order_query = company_filter.apply_location_filter(order_query, Order.locationId)
 
     order = session.exec(order_query).first()
     if not order:

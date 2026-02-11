@@ -43,8 +43,7 @@ def list_customers(
     query = select(Customer)
 
     # Apply company filter
-    if company_filter.company_id:
-        query = query.where(Customer.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Customer.companyId)
 
     # Apply filters
     if type:
@@ -82,8 +81,7 @@ def count_customers(
     """Get total count of customers matching filters."""
     query = select(func.count(Customer.id))
 
-    if company_filter.company_id:
-        query = query.where(Customer.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Customer.companyId)
     if type:
         query = query.where(Customer.type == type)
     if status:
@@ -108,8 +106,7 @@ def get_credit_summary(
         func.sum(Customer.creditAvailable).label("total_credit_available")
     ).where(Customer.creditEnabled == True)
 
-    if company_filter.company_id:
-        query = query.where(Customer.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Customer.companyId)
 
     result = session.exec(query).first()
 
@@ -120,8 +117,7 @@ def get_credit_summary(
             Customer.creditStatus == cs,
             Customer.creditEnabled == True
         )
-        if company_filter.company_id:
-            count_query = count_query.where(Customer.companyId == company_filter.company_id)
+        count_query = company_filter.apply_filter(count_query, Customer.companyId)
         status_counts[cs.value] = session.exec(count_query).one()
 
     return {
@@ -142,8 +138,7 @@ def get_customer(
     """Get a specific customer by ID."""
     query = select(Customer).where(Customer.id == customer_id)
 
-    if company_filter.company_id:
-        query = query.where(Customer.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Customer.companyId)
 
     customer = session.exec(query).first()
 
@@ -165,8 +160,7 @@ def get_customer_by_code(
     """Get a customer by code."""
     query = select(Customer).where(Customer.code == code)
 
-    if company_filter.company_id:
-        query = query.where(Customer.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Customer.companyId)
 
     customer = session.exec(query).first()
 
@@ -235,8 +229,7 @@ def update_customer(
     """Update a customer. Requires MANAGER or higher role."""
     query = select(Customer).where(Customer.id == customer_id)
 
-    if company_filter.company_id:
-        query = query.where(Customer.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Customer.companyId)
 
     customer = session.exec(query).first()
 
@@ -300,8 +293,7 @@ def adjust_customer_credit(
     """
     query = select(Customer).where(Customer.id == customer_id)
 
-    if company_filter.company_id:
-        query = query.where(Customer.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Customer.companyId)
 
     customer = session.exec(query).first()
 
@@ -361,8 +353,7 @@ def delete_customer(
     """Soft delete a customer (set status to INACTIVE). Requires ADMIN or higher role."""
     query = select(Customer).where(Customer.id == customer_id)
 
-    if company_filter.company_id:
-        query = query.where(Customer.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Customer.companyId)
 
     customer = session.exec(query).first()
 
@@ -395,8 +386,7 @@ def list_customer_groups(
     """List customer groups."""
     query = select(CustomerGroup)
 
-    if company_filter.company_id:
-        query = query.where(CustomerGroup.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, CustomerGroup.companyId)
 
     if is_active is not None:
         query = query.where(CustomerGroup.isActive == is_active)
@@ -422,8 +412,7 @@ def get_customer_group(
     """Get a specific customer group by ID."""
     query = select(CustomerGroup).where(CustomerGroup.id == group_id)
 
-    if company_filter.company_id:
-        query = query.where(CustomerGroup.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, CustomerGroup.companyId)
 
     group = session.exec(query).first()
 
@@ -483,8 +472,7 @@ def update_customer_group(
     """Update a customer group. Requires ADMIN or higher role."""
     query = select(CustomerGroup).where(CustomerGroup.id == group_id)
 
-    if company_filter.company_id:
-        query = query.where(CustomerGroup.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, CustomerGroup.companyId)
 
     group = session.exec(query).first()
 
@@ -530,8 +518,7 @@ def delete_customer_group(
     """Soft delete a customer group. Requires ADMIN or higher role."""
     query = select(CustomerGroup).where(CustomerGroup.id == group_id)
 
-    if company_filter.company_id:
-        query = query.where(CustomerGroup.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, CustomerGroup.companyId)
 
     group = session.exec(query).first()
 

@@ -44,9 +44,8 @@ def list_ai_actions(
     query = select(AIActionLog)
     count_query = select(func.count(AIActionLog.id))
 
-    if company_filter.company_id:
-        query = query.where(AIActionLog.companyId == company_filter.company_id)
-        count_query = count_query.where(AIActionLog.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, AIActionLog.companyId)
+    count_query = company_filter.apply_filter(count_query, AIActionLog.companyId)
     if entityType:
         query = query.where(AIActionLog.entityType == entityType)
         count_query = count_query.where(AIActionLog.entityType == entityType)
@@ -70,8 +69,7 @@ def list_ai_actions(
 
     # Today's stats
     today_query = select(AIActionLog).where(AIActionLog.createdAt >= today_start)
-    if company_filter.company_id:
-        today_query = today_query.where(AIActionLog.companyId == company_filter.company_id)
+    today_query = company_filter.apply_filter(today_query, AIActionLog.companyId)
     today_actions = session.exec(today_query).all()
 
     today_total = len(today_actions)
@@ -80,8 +78,7 @@ def list_ai_actions(
 
     # Aggregate stats
     all_query = select(AIActionLog)
-    if company_filter.company_id:
-        all_query = all_query.where(AIActionLog.companyId == company_filter.company_id)
+    all_query = company_filter.apply_filter(all_query, AIActionLog.companyId)
     all_actions = session.exec(all_query).all()
 
     action_types = {}
@@ -161,8 +158,7 @@ def get_ai_stats(
 ):
     """Get AI action statistics."""
     query = select(AIActionLog)
-    if company_filter.company_id:
-        query = query.where(AIActionLog.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, AIActionLog.companyId)
 
     actions = session.exec(query).all()
 

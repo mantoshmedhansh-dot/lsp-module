@@ -153,8 +153,7 @@ def list_putaway_tasks(
     query = select(PutawayTask)
 
     # Apply company filter
-    if company_filter.company_id:
-        query = query.where(PutawayTask.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, PutawayTask.companyId)
 
     # Apply filters
     if status:
@@ -186,8 +185,7 @@ def count_putaway_tasks(
     """Get count of putaway tasks."""
     query = select(func.count(PutawayTask.id))
 
-    if company_filter.company_id:
-        query = query.where(PutawayTask.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, PutawayTask.companyId)
     if status:
         query = query.where(PutawayTask.status == status)
     if location_id:
@@ -322,8 +320,7 @@ def get_putaway_task(
     """Get a specific putaway task."""
     query = select(PutawayTask).where(PutawayTask.id == task_id)
 
-    if company_filter.company_id:
-        query = query.where(PutawayTask.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, PutawayTask.companyId)
 
     task = session.exec(query).first()
     if not task:
@@ -347,8 +344,7 @@ def update_putaway_task(
     """Update a putaway task."""
     query = select(PutawayTask).where(PutawayTask.id == task_id)
 
-    if company_filter.company_id:
-        query = query.where(PutawayTask.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, PutawayTask.companyId)
 
     task = session.exec(query).first()
     if not task:
@@ -650,8 +646,7 @@ def get_goods_receipt_tasks(
     """Get putaway tasks for a goods receipt."""
     query = select(PutawayTask).where(PutawayTask.goodsReceiptId == goods_receipt_id)
 
-    if company_filter.company_id:
-        query = query.where(PutawayTask.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, PutawayTask.companyId)
 
     query = query.order_by(PutawayTask.createdAt)
     tasks = session.exec(query).all()

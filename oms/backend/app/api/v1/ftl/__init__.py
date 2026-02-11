@@ -40,8 +40,7 @@ def list_vehicle_types(
     """List FTL vehicle types."""
     query = select(FTLVehicleTypeMaster)
 
-    if company_filter.company_id:
-        query = query.where(FTLVehicleTypeMaster.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, FTLVehicleTypeMaster.companyId)
     if category:
         query = query.where(FTLVehicleTypeMaster.category == category.value)
     if is_active is not None:
@@ -63,8 +62,7 @@ def count_vehicle_types(
     """Count FTL vehicle types."""
     query = select(func.count(FTLVehicleTypeMaster.id))
 
-    if company_filter.company_id:
-        query = query.where(FTLVehicleTypeMaster.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, FTLVehicleTypeMaster.companyId)
     if category:
         query = query.where(FTLVehicleTypeMaster.category == category.value)
     if is_active is not None:
@@ -83,8 +81,7 @@ def get_vehicle_type(
 ):
     """Get FTL vehicle type by ID."""
     query = select(FTLVehicleTypeMaster).where(FTLVehicleTypeMaster.id == vehicle_type_id)
-    if company_filter.company_id:
-        query = query.where(FTLVehicleTypeMaster.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, FTLVehicleTypeMaster.companyId)
 
     vehicle_type = session.exec(query).first()
     if not vehicle_type:
@@ -139,8 +136,7 @@ def update_vehicle_type(
 ):
     """Update FTL vehicle type."""
     query = select(FTLVehicleTypeMaster).where(FTLVehicleTypeMaster.id == vehicle_type_id)
-    if company_filter.company_id:
-        query = query.where(FTLVehicleTypeMaster.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, FTLVehicleTypeMaster.companyId)
 
     vehicle_type = session.exec(query).first()
     if not vehicle_type:
@@ -169,8 +165,7 @@ def delete_vehicle_type(
 ):
     """Delete FTL vehicle type (soft delete)."""
     query = select(FTLVehicleTypeMaster).where(FTLVehicleTypeMaster.id == vehicle_type_id)
-    if company_filter.company_id:
-        query = query.where(FTLVehicleTypeMaster.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, FTLVehicleTypeMaster.companyId)
 
     vehicle_type = session.exec(query).first()
     if not vehicle_type:
@@ -199,8 +194,7 @@ def list_vendors(
     """List FTL vendors."""
     query = select(FTLVendor)
 
-    if company_filter.company_id:
-        query = query.where(FTLVendor.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, FTLVendor.companyId)
     if search:
         query = query.where(
             (FTLVendor.name.ilike(f"%{search}%")) |
@@ -228,8 +222,7 @@ def count_vendors(
     """Count FTL vendors."""
     query = select(func.count(FTLVendor.id))
 
-    if company_filter.company_id:
-        query = query.where(FTLVendor.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, FTLVendor.companyId)
     if search:
         query = query.where(
             (FTLVendor.name.ilike(f"%{search}%")) |
@@ -253,8 +246,7 @@ def get_vendor(
 ):
     """Get FTL vendor by ID."""
     query = select(FTLVendor).where(FTLVendor.id == vendor_id)
-    if company_filter.company_id:
-        query = query.where(FTLVendor.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, FTLVendor.companyId)
 
     vendor = session.exec(query).first()
     if not vendor:
@@ -314,8 +306,7 @@ def update_vendor(
 ):
     """Update FTL vendor."""
     query = select(FTLVendor).where(FTLVendor.id == vendor_id)
-    if company_filter.company_id:
-        query = query.where(FTLVendor.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, FTLVendor.companyId)
 
     vendor = session.exec(query).first()
     if not vendor:
@@ -340,8 +331,7 @@ def delete_vendor(
 ):
     """Delete FTL vendor (soft delete)."""
     query = select(FTLVendor).where(FTLVendor.id == vendor_id)
-    if company_filter.company_id:
-        query = query.where(FTLVendor.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, FTLVendor.companyId)
 
     vendor = session.exec(query).first()
     if not vendor:
@@ -372,8 +362,7 @@ def list_lane_rates(
     """List FTL lane rates."""
     query = select(FTLLaneRate)
 
-    if company_filter.company_id:
-        query = query.where(FTLLaneRate.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, FTLLaneRate.companyId)
     if origin_city:
         query = query.where(FTLLaneRate.originCity.ilike(f"%{origin_city}%"))
     if destination_city:
@@ -419,8 +408,7 @@ def count_lane_rates(
     """Count FTL lane rates."""
     query = select(func.count(FTLLaneRate.id))
 
-    if company_filter.company_id:
-        query = query.where(FTLLaneRate.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, FTLLaneRate.companyId)
     if origin_city:
         query = query.where(FTLLaneRate.originCity.ilike(f"%{origin_city}%"))
     if destination_city:
@@ -445,8 +433,7 @@ def get_lane_rate(
 ):
     """Get FTL lane rate by ID."""
     query = select(FTLLaneRate).where(FTLLaneRate.id == lane_rate_id)
-    if company_filter.company_id:
-        query = query.where(FTLLaneRate.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, FTLLaneRate.companyId)
 
     lane_rate = session.exec(query).first()
     if not lane_rate:
@@ -522,8 +509,7 @@ def update_lane_rate(
 ):
     """Update FTL lane rate."""
     query = select(FTLLaneRate).where(FTLLaneRate.id == lane_rate_id)
-    if company_filter.company_id:
-        query = query.where(FTLLaneRate.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, FTLLaneRate.companyId)
 
     lane_rate = session.exec(query).first()
     if not lane_rate:
@@ -559,8 +545,7 @@ def delete_lane_rate(
 ):
     """Delete FTL lane rate (soft delete)."""
     query = select(FTLLaneRate).where(FTLLaneRate.id == lane_rate_id)
-    if company_filter.company_id:
-        query = query.where(FTLLaneRate.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, FTLLaneRate.companyId)
 
     lane_rate = session.exec(query).first()
     if not lane_rate:
@@ -593,8 +578,7 @@ def compare_rates(
         (FTLLaneRate.validTo.is_(None)) | (FTLLaneRate.validTo >= datetime.utcnow())
     )
 
-    if company_filter.company_id:
-        query = query.where(FTLLaneRate.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, FTLLaneRate.companyId)
     if vehicle_type_id:
         query = query.where(FTLLaneRate.vehicleTypeId == vehicle_type_id)
 

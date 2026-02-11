@@ -37,8 +37,7 @@ def list_templates(
     """List communication templates."""
     query = select(CommunicationTemplate)
 
-    if company_filter.company_id:
-        query = query.where(CommunicationTemplate.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, CommunicationTemplate.companyId)
     if trigger:
         query = query.where(CommunicationTemplate.trigger == trigger)
     if channel:
@@ -60,8 +59,7 @@ def get_template(
 ):
     """Get template by ID."""
     query = select(CommunicationTemplate).where(CommunicationTemplate.id == template_id)
-    if company_filter.company_id:
-        query = query.where(CommunicationTemplate.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, CommunicationTemplate.companyId)
 
     template = session.exec(query).first()
     if not template:
@@ -97,8 +95,7 @@ def update_template(
 ):
     """Update template."""
     query = select(CommunicationTemplate).where(CommunicationTemplate.id == template_id)
-    if company_filter.company_id:
-        query = query.where(CommunicationTemplate.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, CommunicationTemplate.companyId)
 
     template = session.exec(query).first()
     if not template:
@@ -123,8 +120,7 @@ def delete_template(
 ):
     """Delete template."""
     query = select(CommunicationTemplate).where(CommunicationTemplate.id == template_id)
-    if company_filter.company_id:
-        query = query.where(CommunicationTemplate.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, CommunicationTemplate.companyId)
 
     template = session.exec(query).first()
     if not template:
@@ -154,8 +150,7 @@ def list_proactive_communications(
     """List proactive communications."""
     query = select(ProactiveCommunication)
 
-    if company_filter.company_id:
-        query = query.where(ProactiveCommunication.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ProactiveCommunication.companyId)
     if status:
         query = query.where(ProactiveCommunication.status == status)
     if trigger:
@@ -182,8 +177,7 @@ def count_proactive_communications(
     """Get count of proactive communications."""
     query = select(func.count(ProactiveCommunication.id))
 
-    if company_filter.company_id:
-        query = query.where(ProactiveCommunication.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ProactiveCommunication.companyId)
     if status:
         query = query.where(ProactiveCommunication.status == status)
 
@@ -200,8 +194,7 @@ def get_proactive_communication(
 ):
     """Get proactive communication by ID."""
     query = select(ProactiveCommunication).where(ProactiveCommunication.id == communication_id)
-    if company_filter.company_id:
-        query = query.where(ProactiveCommunication.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ProactiveCommunication.companyId)
 
     communication = session.exec(query).first()
     if not communication:
@@ -243,8 +236,7 @@ def update_proactive_communication(
 ):
     """Update proactive communication."""
     query = select(ProactiveCommunication).where(ProactiveCommunication.id == communication_id)
-    if company_filter.company_id:
-        query = query.where(ProactiveCommunication.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ProactiveCommunication.companyId)
 
     communication = session.exec(query).first()
     if not communication:
@@ -269,8 +261,7 @@ def send_proactive_communication(
 ):
     """Send proactive communication."""
     query = select(ProactiveCommunication).where(ProactiveCommunication.id == communication_id)
-    if company_filter.company_id:
-        query = query.where(ProactiveCommunication.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ProactiveCommunication.companyId)
 
     communication = session.exec(query).first()
     if not communication:

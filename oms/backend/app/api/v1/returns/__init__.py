@@ -45,8 +45,7 @@ def list_returns(
     query = select(Return)
 
     # Apply company filter for multi-tenancy
-    if company_filter.company_id:
-        query = query.where(Return.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Return.companyId)
 
     if status:
         query = query.where(Return.status == status)
@@ -79,8 +78,7 @@ def count_returns(
     query = select(func.count(Return.id))
 
     # Apply company filter for multi-tenancy
-    if company_filter.company_id:
-        query = query.where(Return.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Return.companyId)
 
     if status:
         query = query.where(Return.status == status)
@@ -101,8 +99,7 @@ def get_return_summary(
     try:
         query = select(Return)
         # Apply company filter for multi-tenancy
-        if company_filter.company_id:
-            query = query.where(Return.companyId == company_filter.company_id)
+        query = company_filter.apply_filter(query, Return.companyId)
         returns = session.exec(query).all()
 
         # Use string comparison to avoid enum issues
@@ -618,8 +615,7 @@ def list_zone_routing(
 
     query = select(ReturnZoneRouting)
 
-    if company_filter.company_id:
-        query = query.where(ReturnZoneRouting.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ReturnZoneRouting.companyId)
 
     if location_id:
         query = query.where(ReturnZoneRouting.locationId == location_id)

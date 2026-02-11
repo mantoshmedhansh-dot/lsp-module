@@ -57,8 +57,7 @@ def list_shipments(
     query = select(Shipment)
 
     # Apply company filter
-    if company_filter.company_id:
-        query = query.where(Shipment.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Shipment.companyId)
 
     # Apply filters
     if status:
@@ -99,8 +98,7 @@ def count_shipments(
     """Get total count of shipments matching filters."""
     query = select(func.count(Shipment.id))
 
-    if company_filter.company_id:
-        query = query.where(Shipment.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Shipment.companyId)
     if status:
         query = query.where(Shipment.status == status)
     if payment_mode:
@@ -125,8 +123,7 @@ def get_shipment_stats(
     """Get shipment statistics."""
     base_query = select(Shipment)
 
-    if company_filter.company_id:
-        base_query = base_query.where(Shipment.companyId == company_filter.company_id)
+    base_query = company_filter.apply_filter(base_query, Shipment.companyId)
     if date_from:
         base_query = base_query.where(Shipment.createdAt >= date_from)
     if date_to:
@@ -159,8 +156,7 @@ def get_shipment(
 ):
     """Get shipment by ID."""
     query = select(Shipment).where(Shipment.id == shipment_id)
-    if company_filter.company_id:
-        query = query.where(Shipment.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Shipment.companyId)
 
     shipment = session.exec(query).first()
     if not shipment:
@@ -255,8 +251,7 @@ def update_shipment(
 ):
     """Update a shipment."""
     query = select(Shipment).where(Shipment.id == shipment_id)
-    if company_filter.company_id:
-        query = query.where(Shipment.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Shipment.companyId)
 
     shipment = session.exec(query).first()
     if not shipment:
@@ -296,8 +291,7 @@ def delete_shipment(
 ):
     """Delete a shipment (only if PENDING)."""
     query = select(Shipment).where(Shipment.id == shipment_id)
-    if company_filter.company_id:
-        query = query.where(Shipment.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Shipment.companyId)
 
     shipment = session.exec(query).first()
     if not shipment:
@@ -325,8 +319,7 @@ def assign_awb(
 ):
     """Assign AWB number to shipment."""
     query = select(Shipment).where(Shipment.id == shipment_id)
-    if company_filter.company_id:
-        query = query.where(Shipment.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Shipment.companyId)
 
     shipment = session.exec(query).first()
     if not shipment:
@@ -355,8 +348,7 @@ def ship_shipment(
 ):
     """Mark shipment as shipped."""
     query = select(Shipment).where(Shipment.id == shipment_id)
-    if company_filter.company_id:
-        query = query.where(Shipment.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Shipment.companyId)
 
     shipment = session.exec(query).first()
     if not shipment:
@@ -386,8 +378,7 @@ def deliver_shipment(
 ):
     """Mark shipment as delivered."""
     query = select(Shipment).where(Shipment.id == shipment_id)
-    if company_filter.company_id:
-        query = query.where(Shipment.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Shipment.companyId)
 
     shipment = session.exec(query).first()
     if not shipment:

@@ -38,8 +38,7 @@ def list_rules(
     """List cross-dock rules"""
     query = select(CrossDockRule).where(CrossDockRule.isActive == is_active)
 
-    if company_filter.company_id:
-        query = query.where(CrossDockRule.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, CrossDockRule.companyId)
     if location_id:
         query = query.where(CrossDockRule.locationId == location_id)
 
@@ -88,8 +87,7 @@ def get_rule(
 ):
     """Get a specific cross-dock rule"""
     query = select(CrossDockRule).where(CrossDockRule.id == rule_id)
-    if company_filter.company_id:
-        query = query.where(CrossDockRule.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, CrossDockRule.companyId)
 
     rule = session.exec(query).first()
     if not rule:
@@ -109,8 +107,7 @@ def update_rule(
 ):
     """Update a cross-dock rule"""
     query = select(CrossDockRule).where(CrossDockRule.id == rule_id)
-    if company_filter.company_id:
-        query = query.where(CrossDockRule.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, CrossDockRule.companyId)
 
     rule = session.exec(query).first()
     if not rule:
@@ -138,8 +135,7 @@ def delete_rule(
 ):
     """Deactivate a cross-dock rule"""
     query = select(CrossDockRule).where(CrossDockRule.id == rule_id)
-    if company_filter.company_id:
-        query = query.where(CrossDockRule.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, CrossDockRule.companyId)
 
     rule = session.exec(query).first()
     if not rule:
@@ -167,8 +163,7 @@ def list_eligible_orders(
     """List orders eligible for cross-docking"""
     query = select(CrossDockOrder)
 
-    if company_filter.company_id:
-        query = query.where(CrossDockOrder.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, CrossDockOrder.companyId)
     if location_id:
         query = query.where(CrossDockOrder.locationId == location_id)
     if status:
@@ -242,8 +237,7 @@ def list_allocations(
     """List cross-dock allocations"""
     query = select(CrossDockAllocation)
 
-    if company_filter.company_id:
-        query = query.where(CrossDockAllocation.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, CrossDockAllocation.companyId)
     if location_id:
         query = query.where(CrossDockAllocation.locationId == location_id)
     if status:
@@ -295,8 +289,7 @@ def confirm_allocation(
 ):
     """Confirm a cross-dock allocation"""
     query = select(CrossDockAllocation).where(CrossDockAllocation.id == allocation_id)
-    if company_filter.company_id:
-        query = query.where(CrossDockAllocation.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, CrossDockAllocation.companyId)
 
     allocation = session.exec(query).first()
     if not allocation:
@@ -325,8 +318,7 @@ def complete_allocation(
 ):
     """Complete a cross-dock allocation"""
     query = select(CrossDockAllocation).where(CrossDockAllocation.id == allocation_id)
-    if company_filter.company_id:
-        query = query.where(CrossDockAllocation.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, CrossDockAllocation.companyId)
 
     allocation = session.exec(query).first()
     if not allocation:
@@ -357,8 +349,7 @@ def cancel_allocation(
 ):
     """Cancel a cross-dock allocation"""
     query = select(CrossDockAllocation).where(CrossDockAllocation.id == allocation_id)
-    if company_filter.company_id:
-        query = query.where(CrossDockAllocation.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, CrossDockAllocation.companyId)
 
     allocation = session.exec(query).first()
     if not allocation:
@@ -392,8 +383,7 @@ def list_staging_areas(
     """List cross-dock staging areas"""
     query = select(StagingArea)
 
-    if company_filter.company_id:
-        query = query.where(StagingArea.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, StagingArea.companyId)
     if location_id:
         query = query.where(StagingArea.locationId == location_id)
     if status:
@@ -444,8 +434,7 @@ def update_staging_area_status(
 ):
     """Update staging area status"""
     query = select(StagingArea).where(StagingArea.id == area_id)
-    if company_filter.company_id:
-        query = query.where(StagingArea.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, StagingArea.companyId)
 
     area = session.exec(query).first()
     if not area:
@@ -472,40 +461,32 @@ def get_cross_dock_dashboard(
 ):
     """Get cross-docking dashboard stats"""
     base_query = select(CrossDockOrder)
-    if company_filter.company_id:
-        base_query = base_query.where(CrossDockOrder.companyId == company_filter.company_id)
+    base_query = company_filter.apply_filter(base_query, CrossDockOrder.companyId)
     if location_id:
         base_query = base_query.where(CrossDockOrder.locationId == location_id)
 
     # Order counts by status
     status_counts = {}
     for s in CrossDockStatus:
-        count = session.exec(
-            select(func.count(CrossDockOrder.id))
-            .where(CrossDockOrder.status == s)
-            .where(CrossDockOrder.companyId == company_filter.company_id if company_filter.company_id else True)
-        ).one()
+        count_query = select(func.count(CrossDockOrder.id)).where(CrossDockOrder.status == s)
+        count_query = company_filter.apply_filter(count_query, CrossDockOrder.companyId)
+        count = session.exec(count_query).one()
         status_counts[s.value] = count
 
     # Allocation counts
     alloc_base = select(CrossDockAllocation)
-    if company_filter.company_id:
-        alloc_base = alloc_base.where(CrossDockAllocation.companyId == company_filter.company_id)
+    alloc_base = company_filter.apply_filter(alloc_base, CrossDockAllocation.companyId)
 
-    pending_allocations = session.exec(
-        select(func.count(CrossDockAllocation.id))
-        .where(CrossDockAllocation.status == AllocationStatus.ALLOCATED)
-        .where(CrossDockAllocation.companyId == company_filter.company_id if company_filter.company_id else True)
-    ).one()
+    pending_query = select(func.count(CrossDockAllocation.id)).where(CrossDockAllocation.status == AllocationStatus.ALLOCATED)
+    pending_query = company_filter.apply_filter(pending_query, CrossDockAllocation.companyId)
+    pending_allocations = session.exec(pending_query).one()
 
     # Staging area utilization
     staging_counts = {}
     for s in StagingAreaStatus:
-        count = session.exec(
-            select(func.count(StagingArea.id))
-            .where(StagingArea.status == s)
-            .where(StagingArea.companyId == company_filter.company_id if company_filter.company_id else True)
-        ).one()
+        staging_query = select(func.count(StagingArea.id)).where(StagingArea.status == s)
+        staging_query = company_filter.apply_filter(staging_query, StagingArea.companyId)
+        count = session.exec(staging_query).one()
         staging_counts[s.value] = count
 
     return {

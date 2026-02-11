@@ -40,8 +40,7 @@ def get_velocity_analysis(
     """Get SKU velocity analysis"""
     query = select(SkuVelocity)
 
-    if company_filter.company_id:
-        query = query.where(SkuVelocity.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, SkuVelocity.companyId)
     if location_id:
         query = query.where(SkuVelocity.locationId == location_id)
     if velocity_class:
@@ -142,8 +141,7 @@ def list_bin_characteristics(
     """List bin characteristics"""
     query = select(BinCharacteristics)
 
-    if company_filter.company_id:
-        query = query.where(BinCharacteristics.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, BinCharacteristics.companyId)
     if location_id:
         query = query.where(BinCharacteristics.locationId == location_id)
     if zone:
@@ -200,8 +198,7 @@ def list_slotting_rules(
     """List slotting rules"""
     query = select(SlottingRule).where(SlottingRule.isActive == is_active)
 
-    if company_filter.company_id:
-        query = query.where(SlottingRule.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, SlottingRule.companyId)
     if location_id:
         query = query.where(SlottingRule.locationId == location_id)
 
@@ -250,8 +247,7 @@ def delete_slotting_rule(
 ):
     """Deactivate a slotting rule"""
     query = select(SlottingRule).where(SlottingRule.id == rule_id)
-    if company_filter.company_id:
-        query = query.where(SlottingRule.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, SlottingRule.companyId)
 
     rule = session.exec(query).first()
     if not rule:
@@ -279,8 +275,7 @@ def list_recommendations(
     """List slotting recommendations"""
     query = select(SlottingRecommendation)
 
-    if company_filter.company_id:
-        query = query.where(SlottingRecommendation.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, SlottingRecommendation.companyId)
     if location_id:
         query = query.where(SlottingRecommendation.locationId == location_id)
     if status:
@@ -361,8 +356,7 @@ def apply_recommendation(
 ):
     """Apply a slotting recommendation"""
     query = select(SlottingRecommendation).where(SlottingRecommendation.id == recommendation_id)
-    if company_filter.company_id:
-        query = query.where(SlottingRecommendation.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, SlottingRecommendation.companyId)
 
     rec = session.exec(query).first()
     if not rec:
@@ -393,8 +387,7 @@ def reject_recommendation(
 ):
     """Reject a slotting recommendation"""
     query = select(SlottingRecommendation).where(SlottingRecommendation.id == recommendation_id)
-    if company_filter.company_id:
-        query = query.where(SlottingRecommendation.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, SlottingRecommendation.companyId)
 
     rec = session.exec(query).first()
     if not rec:
@@ -431,8 +424,7 @@ def get_slotting_metrics(
         func.count(SkuVelocity.id).label("count")
     ).group_by(SkuVelocity.velocityClass)
 
-    if company_filter.company_id:
-        velocity_query = velocity_query.where(SkuVelocity.companyId == company_filter.company_id)
+    velocity_query = company_filter.apply_filter(velocity_query, SkuVelocity.companyId)
     if location_id:
         velocity_query = velocity_query.where(SkuVelocity.locationId == location_id)
 
@@ -444,8 +436,7 @@ def get_slotting_metrics(
         func.count(SlottingRecommendation.id).label("count")
     ).group_by(SlottingRecommendation.status)
 
-    if company_filter.company_id:
-        rec_query = rec_query.where(SlottingRecommendation.companyId == company_filter.company_id)
+    rec_query = company_filter.apply_filter(rec_query, SlottingRecommendation.companyId)
     if location_id:
         rec_query = rec_query.where(SlottingRecommendation.locationId == location_id)
 

@@ -175,8 +175,7 @@ def list_stock_transfers(
     query = select(StockTransferOrder)
 
     # Apply company filter
-    if company_filter.company_id:
-        query = query.where(StockTransferOrder.company_id == company_filter.company_id)
+    query = company_filter.apply_filter(query, StockTransferOrder.company_id)
 
     # Apply filters
     if status:
@@ -210,8 +209,7 @@ def count_stock_transfers(
     """Get count of stock transfer orders."""
     query = select(func.count(StockTransferOrder.id))
 
-    if company_filter.company_id:
-        query = query.where(StockTransferOrder.company_id == company_filter.company_id)
+    query = company_filter.apply_filter(query, StockTransferOrder.company_id)
     if status:
         query = query.where(StockTransferOrder.status == status)
     if source_location_id:
@@ -236,8 +234,7 @@ def get_pending_stos(
         StockTransferOrder.status.in_(["DRAFT", "APPROVED", "PICKING", "PICKED"])
     )
 
-    if company_filter.company_id:
-        query = query.where(StockTransferOrder.company_id == company_filter.company_id)
+    query = company_filter.apply_filter(query, StockTransferOrder.company_id)
     if source_location_id:
         query = query.where(StockTransferOrder.source_location_id == source_location_id)
     if destination_location_id:
@@ -265,8 +262,7 @@ def get_intransit_stos(
         StockTransferOrder.status == "IN_TRANSIT"
     )
 
-    if company_filter.company_id:
-        query = query.where(StockTransferOrder.company_id == company_filter.company_id)
+    query = company_filter.apply_filter(query, StockTransferOrder.company_id)
     if destination_location_id:
         query = query.where(StockTransferOrder.destination_location_id == destination_location_id)
 
@@ -372,8 +368,7 @@ def get_stock_transfer(
     """Get a stock transfer order with its items."""
     query = select(StockTransferOrder).where(StockTransferOrder.id == sto_id)
 
-    if company_filter.company_id:
-        query = query.where(StockTransferOrder.company_id == company_filter.company_id)
+    query = company_filter.apply_filter(query, StockTransferOrder.company_id)
 
     sto = session.exec(query).first()
     if not sto:
@@ -406,8 +401,7 @@ def update_stock_transfer(
     """Update a stock transfer order."""
     query = select(StockTransferOrder).where(StockTransferOrder.id == sto_id)
 
-    if company_filter.company_id:
-        query = query.where(StockTransferOrder.company_id == company_filter.company_id)
+    query = company_filter.apply_filter(query, StockTransferOrder.company_id)
 
     sto = session.exec(query).first()
     if not sto:
@@ -458,8 +452,7 @@ def delete_stock_transfer(
     """Delete a stock transfer order (only if DRAFT)."""
     query = select(StockTransferOrder).where(StockTransferOrder.id == sto_id)
 
-    if company_filter.company_id:
-        query = query.where(StockTransferOrder.company_id == company_filter.company_id)
+    query = company_filter.apply_filter(query, StockTransferOrder.company_id)
 
     sto = session.exec(query).first()
     if not sto:

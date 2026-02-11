@@ -47,8 +47,7 @@ def list_reconciliation(
     """
     query = select(ReconciliationDiscrepancy)
 
-    if company_filter.company_id:
-        query = query.where(ReconciliationDiscrepancy.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ReconciliationDiscrepancy.companyId)
     if status and status != "all":
         if status == "Resolved":
             query = query.where(ReconciliationDiscrepancy.isResolved == True)
@@ -80,79 +79,52 @@ def get_reconciliation_dashboard(
     current_user: User = Depends(get_current_user)
 ):
     """Get reconciliation dashboard summary"""
-    if not company_filter.company_id:
-        return {
-            "totalSettlements": 0,
-            "pendingReconciliation": 0,
-            "matchedPercentage": 0,
-            "totalDiscrepancies": 0,
-            "openChargebacks": 0,
-            "chargebackAmount": 0,
-            "codPending": 0,
-            "escrowHeld": 0
-        }
-
     # Total settlements
-    total_settlements = session.exec(
-        select(func.count(PaymentSettlement.id))
-        .where(PaymentSettlement.companyId == company_filter.company_id)
-    ).one() or 0
+    total_settlements_q = select(func.count(PaymentSettlement.id))
+    total_settlements_q = company_filter.apply_filter(total_settlements_q, PaymentSettlement.companyId)
+    total_settlements = session.exec(total_settlements_q).one() or 0
 
     # Pending reconciliation
-    pending_recon = session.exec(
-        select(func.count(PaymentSettlement.id))
-        .where(PaymentSettlement.companyId == company_filter.company_id)
-        .where(PaymentSettlement.status == SettlementStatus.PENDING)
-    ).one() or 0
+    pending_recon_q = select(func.count(PaymentSettlement.id)).where(PaymentSettlement.status == SettlementStatus.PENDING)
+    pending_recon_q = company_filter.apply_filter(pending_recon_q, PaymentSettlement.companyId)
+    pending_recon = session.exec(pending_recon_q).one() or 0
 
     # Matched amount percentage
     matched_pct = 0
     if total_settlements > 0:
-        matched_result = session.exec(
-            select(func.count(PaymentSettlement.id))
-            .where(PaymentSettlement.companyId == company_filter.company_id)
-            .where(PaymentSettlement.status == SettlementStatus.MATCHED)
-        ).one() or 0
+        matched_q = select(func.count(PaymentSettlement.id)).where(PaymentSettlement.status == SettlementStatus.MATCHED)
+        matched_q = company_filter.apply_filter(matched_q, PaymentSettlement.companyId)
+        matched_result = session.exec(matched_q).one() or 0
         matched_pct = round((matched_result / total_settlements) * 100, 1)
 
     # Total discrepancies
-    total_discrepancies = session.exec(
-        select(func.count(ReconciliationDiscrepancy.id))
-        .where(ReconciliationDiscrepancy.companyId == company_filter.company_id)
-        .where(ReconciliationDiscrepancy.isResolved == False)
-    ).one() or 0
+    disc_q = select(func.count(ReconciliationDiscrepancy.id)).where(ReconciliationDiscrepancy.isResolved == False)
+    disc_q = company_filter.apply_filter(disc_q, ReconciliationDiscrepancy.companyId)
+    total_discrepancies = session.exec(disc_q).one() or 0
 
     # Open chargebacks
-    open_chargebacks = session.exec(
-        select(func.count(Chargeback.id))
-        .where(Chargeback.companyId == company_filter.company_id)
-        .where(Chargeback.status.in_([ChargebackStatus.PENDING, ChargebackStatus.DISPUTED]))
-    ).one() or 0
+    cb_q = select(func.count(Chargeback.id)).where(Chargeback.status.in_([ChargebackStatus.PENDING, ChargebackStatus.DISPUTED]))
+    cb_q = company_filter.apply_filter(cb_q, Chargeback.companyId)
+    open_chargebacks = session.exec(cb_q).one() or 0
 
     # Chargeback amount
-    chargeback_amount = session.exec(
-        select(func.sum(Chargeback.amount))
-        .where(Chargeback.companyId == company_filter.company_id)
-        .where(Chargeback.status.in_([ChargebackStatus.PENDING, ChargebackStatus.DISPUTED]))
-    ).one() or 0
+    cb_amt_q = select(func.sum(Chargeback.amount)).where(Chargeback.status.in_([ChargebackStatus.PENDING, ChargebackStatus.DISPUTED]))
+    cb_amt_q = company_filter.apply_filter(cb_amt_q, Chargeback.companyId)
+    chargeback_amount = session.exec(cb_amt_q).one() or 0
 
     # COD pending (from CODReconciliation if exists)
     cod_pending = 0
     try:
-        cod_pending = session.exec(
-            select(func.count(CODReconciliation.id))
-            .where(CODReconciliation.companyId == company_filter.company_id)
-            .where(CODReconciliation.status == CODReconciliationStatus.PENDING)
-        ).one() or 0
+        cod_q = select(func.count(CODReconciliation.id)).where(CODReconciliation.status == CODReconciliationStatus.PENDING)
+        cod_q = company_filter.apply_filter(cod_q, CODReconciliation.companyId)
+        cod_pending = session.exec(cod_q).one() or 0
     except Exception:
         pass
 
     # Escrow held
-    escrow_held = session.exec(
-        select(func.sum(EscrowHold.amount))
-        .where(EscrowHold.companyId == company_filter.company_id)
-        .where(EscrowHold.status == EscrowStatus.HELD)
-    ).one() or 0
+    escrow_q = select(func.sum(EscrowHold.amount)).where(EscrowHold.status == EscrowStatus.HELD)
+    escrow_q = company_filter.apply_filter(escrow_q, EscrowHold.companyId)
+    escrow_held = session.exec(escrow_q).one() or 0
 
     return {
         "totalSettlements": total_settlements,
@@ -185,8 +157,7 @@ def list_settlements(
     """List payment settlements"""
     query = select(PaymentSettlement)
 
-    if company_filter.company_id:
-        query = query.where(PaymentSettlement.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, PaymentSettlement.companyId)
     if status:
         query = query.where(PaymentSettlement.status == status)
     if channel:
@@ -235,8 +206,7 @@ def get_settlement(
 ):
     """Get a specific settlement"""
     query = select(PaymentSettlement).where(PaymentSettlement.id == settlement_id)
-    if company_filter.company_id:
-        query = query.where(PaymentSettlement.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, PaymentSettlement.companyId)
 
     settlement = session.exec(query).first()
     if not settlement:
@@ -327,8 +297,7 @@ def list_cod_remittances(
     """List COD remittances"""
     query = select(CODReconciliation)
 
-    if company_filter.company_id:
-        query = query.where(CODReconciliation.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, CODReconciliation.companyId)
     if status:
         query = query.where(CODReconciliation.status == status)
     if carrier:
@@ -357,8 +326,7 @@ def get_cod_summary(
     pending_query = select(func.sum(CODReconciliation.amount)).where(
         CODReconciliation.status == CODReconciliationStatus.PENDING
     )
-    if company_filter.company_id:
-        pending_query = pending_query.where(CODReconciliation.companyId == company_filter.company_id)
+    pending_query = company_filter.apply_filter(pending_query, CODReconciliation.companyId)
 
     pending_amount = session.exec(pending_query).one() or Decimal("0")
 
@@ -366,8 +334,7 @@ def get_cod_summary(
     received_query = select(func.sum(CODReconciliation.amount)).where(
         CODReconciliation.status == CODReconciliationStatus.RECEIVED
     )
-    if company_filter.company_id:
-        received_query = received_query.where(CODReconciliation.companyId == company_filter.company_id)
+    received_query = company_filter.apply_filter(received_query, CODReconciliation.companyId)
     if from_date:
         received_query = received_query.where(CODReconciliation.remittanceDate >= from_date)
     if to_date:
@@ -399,8 +366,7 @@ def list_chargebacks(
     """List chargebacks"""
     query = select(Chargeback)
 
-    if company_filter.company_id:
-        query = query.where(Chargeback.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Chargeback.companyId)
     if status:
         query = query.where(Chargeback.status == status)
     if channel:
@@ -444,8 +410,7 @@ def get_chargeback(
 ):
     """Get a specific chargeback"""
     query = select(Chargeback).where(Chargeback.id == chargeback_id)
-    if company_filter.company_id:
-        query = query.where(Chargeback.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Chargeback.companyId)
 
     chargeback = session.exec(query).first()
     if not chargeback:
@@ -463,8 +428,7 @@ def update_chargeback(
 ):
     """Update a chargeback"""
     query = select(Chargeback).where(Chargeback.id == chargeback_id)
-    if company_filter.company_id:
-        query = query.where(Chargeback.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Chargeback.companyId)
 
     chargeback = session.exec(query).first()
     if not chargeback:
@@ -529,8 +493,7 @@ def list_discrepancies(
         ReconciliationDiscrepancy.isResolved == is_resolved
     )
 
-    if company_filter.company_id:
-        query = query.where(ReconciliationDiscrepancy.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ReconciliationDiscrepancy.companyId)
     if type:
         query = query.where(ReconciliationDiscrepancy.discrepancyType == type)
     if channel:
@@ -613,8 +576,7 @@ def list_escrow_holds(
     """List escrow holds"""
     query = select(EscrowHold)
 
-    if company_filter.company_id:
-        query = query.where(EscrowHold.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, EscrowHold.companyId)
     if status:
         query = query.where(EscrowHold.status == status)
     if channel:
@@ -687,19 +649,16 @@ def get_reconciliation_report(
     current_user: User = Depends(get_current_user)
 ):
     """Get reconciliation report"""
-    if not company_filter.company_id:
-        raise HTTPException(status_code=400, detail="Company ID required")
-
     # Settlement totals
     settlement_query = select(
         func.sum(PaymentSettlement.totalAmount),
         func.sum(PaymentSettlement.settledAmount),
         func.count(PaymentSettlement.id)
     ).where(
-        PaymentSettlement.companyId == company_filter.company_id,
         PaymentSettlement.settlementDate >= from_date,
         PaymentSettlement.settlementDate <= to_date
     )
+    settlement_query = company_filter.apply_filter(settlement_query, PaymentSettlement.companyId)
     if channel:
         settlement_query = settlement_query.where(PaymentSettlement.channel == channel)
 
@@ -710,21 +669,19 @@ def get_reconciliation_report(
         func.sum(Chargeback.amount),
         func.count(Chargeback.id)
     ).where(
-        Chargeback.companyId == company_filter.company_id,
         func.date(Chargeback.createdAt) >= from_date,
         func.date(Chargeback.createdAt) <= to_date
     )
+    chargeback_query = company_filter.apply_filter(chargeback_query, Chargeback.companyId)
     if channel:
         chargeback_query = chargeback_query.where(Chargeback.channel == channel)
 
     chargeback_result = session.exec(chargeback_query).first()
 
     # Discrepancy count
-    discrepancy_count = session.exec(
-        select(func.count(ReconciliationDiscrepancy.id))
-        .where(ReconciliationDiscrepancy.companyId == company_filter.company_id)
-        .where(ReconciliationDiscrepancy.isResolved == False)
-    ).one()
+    disc_count_q = select(func.count(ReconciliationDiscrepancy.id)).where(ReconciliationDiscrepancy.isResolved == False)
+    disc_count_q = company_filter.apply_filter(disc_count_q, ReconciliationDiscrepancy.companyId)
+    discrepancy_count = session.exec(disc_count_q).one()
 
     return ReconciliationReportResponse(
         fromDate=from_date,

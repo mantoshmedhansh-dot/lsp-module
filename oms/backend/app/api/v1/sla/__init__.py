@@ -33,17 +33,11 @@ def get_sla_metrics(
     """Get SLA metrics for the specified period."""
     cutoff_date = datetime.utcnow() - timedelta(days=days)
 
-    # Base query filters
-    def add_company_filter(query, model):
-        if company_filter.company_id:
-            return query.where(model.companyId == company_filter.company_id)
-        return query
-
     # ============================================================================
     # Order Processing SLA (target: 95% within 4 hours)
     # ============================================================================
     orders_query = select(Order).where(Order.createdAt >= cutoff_date)
-    orders_query = add_company_filter(orders_query, Order)
+    orders_query = company_filter.apply_filter(orders_query, Order.companyId)
     orders = session.exec(orders_query).all()
 
     orders_total = len(orders)
@@ -58,7 +52,7 @@ def get_sla_metrics(
     # Same Day Dispatch (target: 90%)
     # ============================================================================
     deliveries_query = select(Delivery).where(Delivery.createdAt >= cutoff_date)
-    deliveries_query = add_company_filter(deliveries_query, Delivery)
+    deliveries_query = company_filter.apply_filter(deliveries_query, Delivery.companyId)
     deliveries = session.exec(deliveries_query).all()
 
     deliveries_total = len(deliveries)
@@ -74,7 +68,7 @@ def get_sla_metrics(
     # ============================================================================
     # This would typically come from QC data - for now estimate based on returns
     returns_query = select(Return).where(Return.createdAt >= cutoff_date)
-    returns_query = add_company_filter(returns_query, Return)
+    returns_query = company_filter.apply_filter(returns_query, Return.companyId)
     returns = session.exec(returns_query).all()
 
     # Pick errors = returns with reason "WRONG_ITEM"
@@ -98,7 +92,7 @@ def get_sla_metrics(
     # NDR Resolution (target: 80% within 48 hours)
     # ============================================================================
     ndrs_query = select(NDR).where(NDR.createdAt >= cutoff_date)
-    ndrs_query = add_company_filter(ndrs_query, NDR)
+    ndrs_query = company_filter.apply_filter(ndrs_query, NDR.companyId)
     ndrs = session.exec(ndrs_query).all()
 
     ndrs_total = len(ndrs)
@@ -227,8 +221,7 @@ def get_at_risk_orders(
     query = select(Delivery).where(
         Delivery.status.in_(["PICKED_UP", "IN_TRANSIT", "OUT_FOR_DELIVERY"])
     )
-    if company_filter.company_id:
-        query = query.where(Delivery.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Delivery.companyId)
 
     deliveries = session.exec(query.order_by(Delivery.expectedDeliveryDate.asc()).limit(limit)).all()
 
@@ -273,8 +266,7 @@ def get_sla_trend(
             Order.createdAt >= week_start,
             Order.createdAt < week_end
         )
-        if company_filter.company_id:
-            orders_query = orders_query.where(Order.companyId == company_filter.company_id)
+        orders_query = company_filter.apply_filter(orders_query, Order.companyId)
         orders_count = session.exec(orders_query).one()
 
         # Get delivered count
@@ -283,8 +275,7 @@ def get_sla_trend(
             Delivery.deliveredAt < week_end,
             Delivery.status == "DELIVERED"
         )
-        if company_filter.company_id:
-            delivered_query = delivered_query.where(Delivery.companyId == company_filter.company_id)
+        delivered_query = company_filter.apply_filter(delivered_query, Delivery.companyId)
         delivered_count = session.exec(delivered_query).one()
 
         # Calculate week's SLA score (simplified)

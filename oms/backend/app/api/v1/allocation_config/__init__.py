@@ -40,8 +40,7 @@ def list_csr_configs(
     """List CSR score configurations."""
     query = select(CSRScoreConfig)
 
-    if company_filter.company_id:
-        query = query.where(CSRScoreConfig.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, CSRScoreConfig.companyId)
     if shipment_type:
         query = query.where(
             (CSRScoreConfig.shipmentType == shipment_type.value) |
@@ -65,8 +64,7 @@ def count_csr_configs(
     """Count CSR score configurations."""
     query = select(func.count(CSRScoreConfig.id))
 
-    if company_filter.company_id:
-        query = query.where(CSRScoreConfig.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, CSRScoreConfig.companyId)
     if shipment_type:
         query = query.where(
             (CSRScoreConfig.shipmentType == shipment_type.value) |
@@ -86,9 +84,7 @@ def get_default_csr_config(
 ):
     """Get the default CSR config for a shipment type."""
     query = select(CSRScoreConfig).where(CSRScoreConfig.isDefault == True)
-
-    if company_filter.company_id:
-        query = query.where(CSRScoreConfig.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, CSRScoreConfig.companyId)
 
     # Try to find shipment-type specific default first
     if shipment_type:
@@ -120,8 +116,7 @@ def get_csr_config(
 ):
     """Get CSR score config by ID."""
     query = select(CSRScoreConfig).where(CSRScoreConfig.id == config_id)
-    if company_filter.company_id:
-        query = query.where(CSRScoreConfig.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, CSRScoreConfig.companyId)
 
     config = session.exec(query).first()
     if not config:
@@ -187,8 +182,7 @@ def update_csr_config(
 ):
     """Update CSR score configuration."""
     query = select(CSRScoreConfig).where(CSRScoreConfig.id == config_id)
-    if company_filter.company_id:
-        query = query.where(CSRScoreConfig.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, CSRScoreConfig.companyId)
 
     config = session.exec(query).first()
     if not config:
@@ -244,8 +238,7 @@ def delete_csr_config(
 ):
     """Delete CSR score configuration."""
     query = select(CSRScoreConfig).where(CSRScoreConfig.id == config_id)
-    if company_filter.company_id:
-        query = query.where(CSRScoreConfig.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, CSRScoreConfig.companyId)
 
     config = session.exec(query).first()
     if not config:
@@ -275,8 +268,7 @@ def list_allocation_rules(
     """List shipping allocation rules."""
     query = select(ShippingAllocationRule)
 
-    if company_filter.company_id:
-        query = query.where(ShippingAllocationRule.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ShippingAllocationRule.companyId)
     if shipment_type:
         query = query.where(
             (ShippingAllocationRule.shipmentType == shipment_type.value) |
@@ -316,8 +308,7 @@ def count_allocation_rules(
     """Count shipping allocation rules."""
     query = select(func.count(ShippingAllocationRule.id))
 
-    if company_filter.company_id:
-        query = query.where(ShippingAllocationRule.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ShippingAllocationRule.companyId)
     if shipment_type:
         query = query.where(
             (ShippingAllocationRule.shipmentType == shipment_type.value) |
@@ -339,8 +330,7 @@ def get_allocation_rule(
 ):
     """Get shipping allocation rule by ID."""
     query = select(ShippingAllocationRule).where(ShippingAllocationRule.id == rule_id)
-    if company_filter.company_id:
-        query = query.where(ShippingAllocationRule.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ShippingAllocationRule.companyId)
 
     rule = session.exec(query).first()
     if not rule:
@@ -435,8 +425,7 @@ def update_allocation_rule(
 ):
     """Update shipping allocation rule."""
     query = select(ShippingAllocationRule).where(ShippingAllocationRule.id == rule_id)
-    if company_filter.company_id:
-        query = query.where(ShippingAllocationRule.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ShippingAllocationRule.companyId)
 
     rule = session.exec(query).first()
     if not rule:
@@ -477,8 +466,7 @@ def delete_allocation_rule(
 ):
     """Delete shipping allocation rule (soft delete)."""
     query = select(ShippingAllocationRule).where(ShippingAllocationRule.id == rule_id)
-    if company_filter.company_id:
-        query = query.where(ShippingAllocationRule.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ShippingAllocationRule.companyId)
 
     rule = session.exec(query).first()
     if not rule:
@@ -499,8 +487,7 @@ def reorder_allocation_rule(
 ):
     """Change the priority of an allocation rule."""
     query = select(ShippingAllocationRule).where(ShippingAllocationRule.id == rule_id)
-    if company_filter.company_id:
-        query = query.where(ShippingAllocationRule.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, ShippingAllocationRule.companyId)
 
     rule = session.exec(query).first()
     if not rule:
@@ -541,8 +528,7 @@ def list_allocation_audit(
     """List allocation audit trail."""
     query = select(AllocationAudit)
 
-    if company_filter.company_id:
-        query = query.where(AllocationAudit.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, AllocationAudit.companyId)
     if shipment_type:
         query = query.where(AllocationAudit.shipmentType == shipment_type.value)
     if allocation_mode:
@@ -584,8 +570,7 @@ def count_allocation_audit(
     """Count allocation audit entries."""
     query = select(func.count(AllocationAudit.id))
 
-    if company_filter.company_id:
-        query = query.where(AllocationAudit.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, AllocationAudit.companyId)
     if shipment_type:
         query = query.where(AllocationAudit.shipmentType == shipment_type.value)
     if allocation_mode:
@@ -608,8 +593,7 @@ def get_allocation_audit(
 ):
     """Get allocation audit entry by ID."""
     query = select(AllocationAudit).where(AllocationAudit.id == audit_id)
-    if company_filter.company_id:
-        query = query.where(AllocationAudit.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, AllocationAudit.companyId)
 
     audit = session.exec(query).first()
     if not audit:

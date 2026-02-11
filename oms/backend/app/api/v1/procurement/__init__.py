@@ -37,8 +37,7 @@ def list_vendors(
     """List vendors with filters."""
     query = select(Vendor)
 
-    if company_filter.company_id:
-        query = query.where(Vendor.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Vendor.companyId)
     if is_active is not None:
         query = query.where(Vendor.isActive == is_active)
     if search:
@@ -62,8 +61,7 @@ def count_vendors(
     """Get total count of vendors."""
     query = select(func.count(Vendor.id))
 
-    if company_filter.company_id:
-        query = query.where(Vendor.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Vendor.companyId)
     if is_active is not None:
         query = query.where(Vendor.isActive == is_active)
 
@@ -80,8 +78,7 @@ def get_vendor(
 ):
     """Get vendor by ID."""
     query = select(Vendor).where(Vendor.id == vendor_id)
-    if company_filter.company_id:
-        query = query.where(Vendor.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Vendor.companyId)
 
     vendor = session.exec(query).first()
     if not vendor:
@@ -117,8 +114,7 @@ def update_vendor(
 ):
     """Update vendor."""
     query = select(Vendor).where(Vendor.id == vendor_id)
-    if company_filter.company_id:
-        query = query.where(Vendor.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Vendor.companyId)
 
     vendor = session.exec(query).first()
     if not vendor:
@@ -143,8 +139,7 @@ def delete_vendor(
 ):
     """Delete vendor."""
     query = select(Vendor).where(Vendor.id == vendor_id)
-    if company_filter.company_id:
-        query = query.where(Vendor.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Vendor.companyId)
 
     vendor = session.exec(query).first()
     if not vendor:
@@ -172,8 +167,7 @@ def list_purchase_orders(
     """List purchase orders with filters."""
     query = select(PurchaseOrder)
 
-    if company_filter.company_id:
-        query = query.where(PurchaseOrder.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, PurchaseOrder.companyId)
     if status:
         query = query.where(PurchaseOrder.status == status)
     if vendor_id:
@@ -196,8 +190,7 @@ def count_purchase_orders(
     """Get total count of purchase orders."""
     query = select(func.count(PurchaseOrder.id))
 
-    if company_filter.company_id:
-        query = query.where(PurchaseOrder.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, PurchaseOrder.companyId)
     if status:
         query = query.where(PurchaseOrder.status == status)
 
@@ -214,8 +207,7 @@ def get_purchase_order(
 ):
     """Get purchase order by ID."""
     query = select(PurchaseOrder).where(PurchaseOrder.id == po_id)
-    if company_filter.company_id:
-        query = query.where(PurchaseOrder.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, PurchaseOrder.companyId)
 
     po = session.exec(query).first()
     if not po:
@@ -273,8 +265,7 @@ def update_purchase_order(
 ):
     """Update purchase order."""
     query = select(PurchaseOrder).where(PurchaseOrder.id == po_id)
-    if company_filter.company_id:
-        query = query.where(PurchaseOrder.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, PurchaseOrder.companyId)
 
     po = session.exec(query).first()
     if not po:
@@ -299,8 +290,7 @@ def submit_purchase_order(
 ):
     """Submit purchase order for approval."""
     query = select(PurchaseOrder).where(PurchaseOrder.id == po_id)
-    if company_filter.company_id:
-        query = query.where(PurchaseOrder.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, PurchaseOrder.companyId)
 
     po = session.exec(query).first()
     if not po:
@@ -325,8 +315,7 @@ def approve_purchase_order(
 ):
     """Approve purchase order."""
     query = select(PurchaseOrder).where(PurchaseOrder.id == po_id)
-    if company_filter.company_id:
-        query = query.where(PurchaseOrder.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, PurchaseOrder.companyId)
 
     po = session.exec(query).first()
     if not po:

@@ -40,8 +40,7 @@ def list_preorders(
     """List pre-orders"""
     query = select(Preorder)
 
-    if company_filter.company_id:
-        query = query.where(Preorder.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Preorder.companyId)
     if status:
         query = query.where(Preorder.status == status)
     if customer_id:
@@ -96,8 +95,7 @@ def get_preorder(
 ):
     """Get a specific pre-order"""
     query = select(Preorder).where(Preorder.id == preorder_id)
-    if company_filter.company_id:
-        query = query.where(Preorder.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Preorder.companyId)
 
     preorder = session.exec(query).first()
     if not preorder:
@@ -115,8 +113,7 @@ def update_preorder(
 ):
     """Update a pre-order"""
     query = select(Preorder).where(Preorder.id == preorder_id)
-    if company_filter.company_id:
-        query = query.where(Preorder.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Preorder.companyId)
 
     preorder = session.exec(query).first()
     if not preorder:
@@ -146,8 +143,7 @@ def cancel_preorder(
 ):
     """Cancel a pre-order"""
     query = select(Preorder).where(Preorder.id == preorder_id)
-    if company_filter.company_id:
-        query = query.where(Preorder.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Preorder.companyId)
 
     preorder = session.exec(query).first()
     if not preorder:
@@ -242,8 +238,7 @@ def convert_to_order(
 ):
     """Convert a pre-order to a regular order"""
     query = select(Preorder).where(Preorder.id == preorder_id)
-    if company_filter.company_id:
-        query = query.where(Preorder.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Preorder.companyId)
 
     preorder = session.exec(query).first()
     if not preorder:
@@ -294,8 +289,7 @@ def get_preorder_inventory_status(
     """Get pre-order inventory reservations"""
     query = select(PreorderInventory)
 
-    if company_filter.company_id:
-        query = query.where(PreorderInventory.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, PreorderInventory.companyId)
     if sku_id:
         query = query.where(PreorderInventory.skuId == sku_id)
     if location_id:
@@ -378,8 +372,7 @@ def confirm_preorder(
 ):
     """Confirm a pre-order"""
     query = select(Preorder).where(Preorder.id == preorder_id)
-    if company_filter.company_id:
-        query = query.where(Preorder.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Preorder.companyId)
 
     preorder = session.exec(query).first()
     if not preorder:
@@ -417,24 +410,19 @@ def get_preorder_stats(
 ):
     """Get pre-order statistics"""
     base = select(Preorder)
-    if company_filter.company_id:
-        base = base.where(Preorder.companyId == company_filter.company_id)
+    base = company_filter.apply_filter(base, Preorder.companyId)
 
     status_counts = {}
     for s in PreorderStatus:
-        count = session.exec(
-            select(func.count(Preorder.id))
-            .where(Preorder.status == s)
-            .where(Preorder.companyId == company_filter.company_id if company_filter.company_id else True)
-        ).one()
+        count_query = select(func.count(Preorder.id)).where(Preorder.status == s)
+        count_query = company_filter.apply_filter(count_query, Preorder.companyId)
+        count = session.exec(count_query).one()
         status_counts[s.value] = count
 
     # Total reserved inventory value
-    reserved_value = session.exec(
-        select(func.sum(PreorderInventory.reservedQuantity))
-        .where(PreorderInventory.isActive == True)
-        .where(PreorderInventory.companyId == company_filter.company_id if company_filter.company_id else True)
-    ).one() or 0
+    reserved_query = select(func.sum(PreorderInventory.reservedQuantity)).where(PreorderInventory.isActive == True)
+    reserved_query = company_filter.apply_filter(reserved_query, PreorderInventory.companyId)
+    reserved_value = session.exec(reserved_query).one() or 0
 
     return {
         "byStatus": status_counts,

@@ -175,8 +175,7 @@ def list_sync_jobs(
     """List sync jobs"""
     query = select(MarketplaceSyncJob)
 
-    if company_filter.company_id:
-        query = query.where(MarketplaceSyncJob.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, MarketplaceSyncJob.companyId)
 
     if connection_id:
         query = query.where(MarketplaceSyncJob.connectionId == connection_id)
@@ -204,8 +203,7 @@ def get_sync_job(
     """Get a specific sync job"""
     query = select(MarketplaceSyncJob).where(MarketplaceSyncJob.id == job_id)
 
-    if company_filter.company_id:
-        query = query.where(MarketplaceSyncJob.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, MarketplaceSyncJob.companyId)
 
     job = session.exec(query).first()
 
@@ -226,8 +224,7 @@ def cancel_sync_job(
     """Cancel a pending or in-progress sync job"""
     query = select(MarketplaceSyncJob).where(MarketplaceSyncJob.id == job_id)
 
-    if company_filter.company_id:
-        query = query.where(MarketplaceSyncJob.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, MarketplaceSyncJob.companyId)
 
     job = session.exec(query).first()
 
@@ -267,8 +264,7 @@ def list_synced_orders(
     """List synced marketplace orders"""
     query = select(MarketplaceOrderSync)
 
-    if company_filter.company_id:
-        query = query.where(MarketplaceOrderSync.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, MarketplaceOrderSync.companyId)
 
     if connection_id:
         query = query.where(MarketplaceOrderSync.connectionId == connection_id)
@@ -301,8 +297,7 @@ def get_synced_order(
     """Get details of a synced order"""
     query = select(MarketplaceOrderSync).where(MarketplaceOrderSync.id == sync_id)
 
-    if company_filter.company_id:
-        query = query.where(MarketplaceOrderSync.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, MarketplaceOrderSync.companyId)
 
     sync = session.exec(query).first()
 

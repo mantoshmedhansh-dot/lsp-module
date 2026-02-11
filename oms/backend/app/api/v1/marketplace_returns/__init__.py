@@ -58,8 +58,7 @@ def list_marketplace_returns(
     """List marketplace returns with filters"""
     query = select(MarketplaceReturn)
 
-    if company_filter.company_id:
-        query = query.where(MarketplaceReturn.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, MarketplaceReturn.companyId)
 
     if connection_id:
         query = query.where(MarketplaceReturn.connectionId == connection_id)
@@ -93,8 +92,7 @@ def get_marketplace_return(
     """Get marketplace return details"""
     query = select(MarketplaceReturn).where(MarketplaceReturn.id == return_id)
 
-    if company_filter.company_id:
-        query = query.where(MarketplaceReturn.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, MarketplaceReturn.companyId)
 
     ret = session.exec(query).first()
 

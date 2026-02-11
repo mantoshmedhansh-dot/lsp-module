@@ -253,3 +253,21 @@ class CompanyFilter:
         elif self.company_id:
             return query.where(company_field == self.company_id)
         return query
+
+    def get_location_ids(self) -> Optional[List[UUID]]:
+        """Get all location IDs accessible by this user (supports LSP hierarchy)."""
+        if self.is_super_admin:
+            return None  # No filter needed
+        from app.models.company import Location
+        loc_query = select(Location.id)
+        loc_query = self.apply_filter(loc_query, Location.companyId)
+        return list(self.db.exec(loc_query).all())
+
+    def apply_location_filter(self, query: Any, location_field: Any) -> Any:
+        """Apply company filter via location IDs (for models linked via locationId)."""
+        if self.is_super_admin:
+            return query
+        location_ids = self.get_location_ids()
+        if location_ids:
+            return query.where(location_field.in_(location_ids))
+        return query

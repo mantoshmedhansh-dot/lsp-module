@@ -38,8 +38,7 @@ def list_price_lists(
     """List price lists."""
     query = select(PriceList)
 
-    if company_filter.company_id:
-        query = query.where(PriceList.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, PriceList.companyId)
     if is_active is not None:
         query = query.where(PriceList.isActive == is_active)
 
@@ -57,8 +56,7 @@ def get_price_list(
 ):
     """Get price list by ID."""
     query = select(PriceList).where(PriceList.id == price_list_id)
-    if company_filter.company_id:
-        query = query.where(PriceList.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, PriceList.companyId)
 
     price_list = session.exec(query).first()
     if not price_list:
@@ -94,8 +92,7 @@ def update_price_list(
 ):
     """Update price list."""
     query = select(PriceList).where(PriceList.id == price_list_id)
-    if company_filter.company_id:
-        query = query.where(PriceList.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, PriceList.companyId)
 
     price_list = session.exec(query).first()
     if not price_list:
@@ -120,8 +117,7 @@ def delete_price_list(
 ):
     """Delete price list."""
     query = select(PriceList).where(PriceList.id == price_list_id)
-    if company_filter.company_id:
-        query = query.where(PriceList.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, PriceList.companyId)
 
     price_list = session.exec(query).first()
     if not price_list:
@@ -218,8 +214,7 @@ def list_quotations(
     """List quotations."""
     query = select(Quotation)
 
-    if company_filter.company_id:
-        query = query.where(Quotation.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Quotation.companyId)
     if status:
         query = query.where(Quotation.status == status)
     if customer_id:
@@ -239,8 +234,7 @@ def get_quotation(
 ):
     """Get quotation by ID."""
     query = select(Quotation).where(Quotation.id == quotation_id)
-    if company_filter.company_id:
-        query = query.where(Quotation.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Quotation.companyId)
 
     quotation = session.exec(query).first()
     if not quotation:
@@ -300,8 +294,7 @@ def update_quotation(
 ):
     """Update quotation."""
     query = select(Quotation).where(Quotation.id == quotation_id)
-    if company_filter.company_id:
-        query = query.where(Quotation.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Quotation.companyId)
 
     quotation = session.exec(query).first()
     if not quotation:
@@ -326,8 +319,7 @@ def approve_quotation(
 ):
     """Approve quotation."""
     query = select(Quotation).where(Quotation.id == quotation_id)
-    if company_filter.company_id:
-        query = query.where(Quotation.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Quotation.companyId)
 
     quotation = session.exec(query).first()
     if not quotation:

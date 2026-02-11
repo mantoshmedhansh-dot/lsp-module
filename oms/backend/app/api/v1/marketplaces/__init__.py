@@ -40,8 +40,7 @@ def list_marketplace_connections(
     """List marketplace connections"""
     query = select(MarketplaceConnection)
 
-    if company_filter.company_id:
-        query = query.where(MarketplaceConnection.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, MarketplaceConnection.companyId)
     if marketplace:
         query = query.where(MarketplaceConnection.marketplace == marketplace)
     if status:
@@ -96,8 +95,7 @@ def get_marketplace_connection(
 ):
     """Get a specific marketplace connection"""
     query = select(MarketplaceConnection).where(MarketplaceConnection.id == connection_id)
-    if company_filter.company_id:
-        query = query.where(MarketplaceConnection.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, MarketplaceConnection.companyId)
 
     connection = session.exec(query).first()
     if not connection:
@@ -116,8 +114,7 @@ def update_marketplace_connection(
 ):
     """Update a marketplace connection"""
     query = select(MarketplaceConnection).where(MarketplaceConnection.id == connection_id)
-    if company_filter.company_id:
-        query = query.where(MarketplaceConnection.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, MarketplaceConnection.companyId)
 
     connection = session.exec(query).first()
     if not connection:
@@ -144,8 +141,7 @@ def delete_marketplace_connection(
 ):
     """Disconnect a marketplace"""
     query = select(MarketplaceConnection).where(MarketplaceConnection.id == connection_id)
-    if company_filter.company_id:
-        query = query.where(MarketplaceConnection.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, MarketplaceConnection.companyId)
 
     connection = session.exec(query).first()
     if not connection:
@@ -591,38 +587,30 @@ def get_marketplaces_dashboard(
     current_user: User = Depends(get_current_user)
 ):
     """Get marketplace connections dashboard"""
-    if not company_filter.company_id:
-        raise HTTPException(status_code=400, detail="Company ID required")
-
     # Connection counts by status
     status_counts = {}
     for s in ConnectionStatus:
-        count = session.exec(
-            select(func.count(MarketplaceConnection.id))
-            .where(MarketplaceConnection.companyId == company_filter.company_id)
-            .where(MarketplaceConnection.status == s)
-        ).one()
+        q = select(func.count(MarketplaceConnection.id)).where(MarketplaceConnection.status == s)
+        q = company_filter.apply_filter(q, MarketplaceConnection.companyId)
+        count = session.exec(q).one()
         status_counts[s.value] = count
 
     # Connection counts by marketplace
     marketplace_counts = {}
     for m in MarketplaceType:
-        count = session.exec(
-            select(func.count(MarketplaceConnection.id))
-            .where(MarketplaceConnection.companyId == company_filter.company_id)
-            .where(MarketplaceConnection.marketplace == m)
-            .where(MarketplaceConnection.status == ConnectionStatus.ACTIVE)
-        ).one()
+        q = select(func.count(MarketplaceConnection.id)).where(
+            MarketplaceConnection.marketplace == m,
+            MarketplaceConnection.status == ConnectionStatus.ACTIVE
+        )
+        q = company_filter.apply_filter(q, MarketplaceConnection.companyId)
+        count = session.exec(q).one()
         if count > 0:
             marketplace_counts[m.value] = count
 
     # Recent syncs
-    recent_syncs = session.exec(
-        select(MarketplaceOrderSync)
-        .where(MarketplaceOrderSync.companyId == company_filter.company_id)
-        .order_by(MarketplaceOrderSync.syncStartedAt.desc())
-        .limit(5)
-    ).all()
+    syncs_q = select(MarketplaceOrderSync).order_by(MarketplaceOrderSync.syncStartedAt.desc()).limit(5)
+    syncs_q = company_filter.apply_filter(syncs_q, MarketplaceOrderSync.companyId)
+    recent_syncs = session.exec(syncs_q).all()
 
     return {
         "connectionsByStatus": status_counts,

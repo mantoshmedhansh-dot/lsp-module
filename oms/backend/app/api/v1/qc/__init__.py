@@ -39,8 +39,7 @@ def list_templates(
     """List QC templates."""
     query = select(QCTemplate)
 
-    if company_filter.company_id:
-        query = query.where(QCTemplate.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, QCTemplate.companyId)
     if qc_type:
         query = query.where(QCTemplate.type == qc_type)
     if is_active is not None:

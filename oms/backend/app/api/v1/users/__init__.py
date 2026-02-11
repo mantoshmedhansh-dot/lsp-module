@@ -35,8 +35,7 @@ def list_users(
     query = select(User)
 
     # Apply company filter (non-super-admins can only see their company's users)
-    if company_filter.company_id:
-        query = query.where(User.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, User.companyId)
 
     # Apply filters
     if role:
@@ -68,8 +67,7 @@ def count_users(
     """Get total count of users matching filters."""
     query = select(func.count(User.id))
 
-    if company_filter.company_id:
-        query = query.where(User.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, User.companyId)
     if role:
         query = query.where(User.role == role)
     if is_active is not None:
@@ -89,8 +87,7 @@ def get_user(
     """Get a specific user by ID."""
     query = select(User).where(User.id == user_id)
 
-    if company_filter.company_id:
-        query = query.where(User.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, User.companyId)
 
     user = session.exec(query).first()
 
@@ -157,8 +154,7 @@ def update_user(
     """Update a user."""
     query = select(User).where(User.id == user_id)
 
-    if company_filter.company_id:
-        query = query.where(User.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, User.companyId)
 
     user = session.exec(query).first()
 
@@ -216,8 +212,7 @@ def delete_user(
 
     query = select(User).where(User.id == user_id)
 
-    if company_filter.company_id:
-        query = query.where(User.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, User.companyId)
 
     user = session.exec(query).first()
 

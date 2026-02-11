@@ -39,9 +39,7 @@ def list_rate_matrix(
 ):
     """List PTL rate matrix entries."""
     query = select(PTLRateMatrix)
-
-    if company_filter.company_id:
-        query = query.where(PTLRateMatrix.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, PTLRateMatrix.companyId)
     if origin_city:
         query = query.where(PTLRateMatrix.originCity.ilike(f"%{origin_city}%"))
     if destination_city:
@@ -78,9 +76,7 @@ def count_rate_matrix(
 ):
     """Count PTL rate matrix entries."""
     query = select(func.count(PTLRateMatrix.id))
-
-    if company_filter.company_id:
-        query = query.where(PTLRateMatrix.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, PTLRateMatrix.companyId)
     if origin_city:
         query = query.where(PTLRateMatrix.originCity.ilike(f"%{origin_city}%"))
     if destination_city:
@@ -103,8 +99,7 @@ def get_rate_matrix(
 ):
     """Get PTL rate matrix entry by ID."""
     query = select(PTLRateMatrix).where(PTLRateMatrix.id == rate_matrix_id)
-    if company_filter.company_id:
-        query = query.where(PTLRateMatrix.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, PTLRateMatrix.companyId)
 
     rate_matrix = session.exec(query).first()
     if not rate_matrix:
@@ -171,8 +166,7 @@ def update_rate_matrix(
 ):
     """Update PTL rate matrix entry."""
     query = select(PTLRateMatrix).where(PTLRateMatrix.id == rate_matrix_id)
-    if company_filter.company_id:
-        query = query.where(PTLRateMatrix.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, PTLRateMatrix.companyId)
 
     rate_matrix = session.exec(query).first()
     if not rate_matrix:
@@ -203,8 +197,7 @@ def delete_rate_matrix(
 ):
     """Delete PTL rate matrix entry (soft delete)."""
     query = select(PTLRateMatrix).where(PTLRateMatrix.id == rate_matrix_id)
-    if company_filter.company_id:
-        query = query.where(PTLRateMatrix.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, PTLRateMatrix.companyId)
 
     rate_matrix = session.exec(query).first()
     if not rate_matrix:
@@ -233,9 +226,7 @@ def list_tat_matrix(
 ):
     """List PTL TAT matrix entries."""
     query = select(PTLTATMatrix)
-
-    if company_filter.company_id:
-        query = query.where(PTLTATMatrix.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, PTLTATMatrix.companyId)
     if origin_city:
         query = query.where(PTLTATMatrix.originCity.ilike(f"%{origin_city}%"))
     if destination_city:
@@ -272,9 +263,7 @@ def count_tat_matrix(
 ):
     """Count PTL TAT matrix entries."""
     query = select(func.count(PTLTATMatrix.id))
-
-    if company_filter.company_id:
-        query = query.where(PTLTATMatrix.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, PTLTATMatrix.companyId)
     if origin_city:
         query = query.where(PTLTATMatrix.originCity.ilike(f"%{origin_city}%"))
     if destination_city:
@@ -297,8 +286,7 @@ def get_tat_matrix(
 ):
     """Get PTL TAT matrix entry by ID."""
     query = select(PTLTATMatrix).where(PTLTATMatrix.id == tat_matrix_id)
-    if company_filter.company_id:
-        query = query.where(PTLTATMatrix.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, PTLTATMatrix.companyId)
 
     tat_matrix = session.exec(query).first()
     if not tat_matrix:
@@ -356,8 +344,7 @@ def update_tat_matrix(
 ):
     """Update PTL TAT matrix entry."""
     query = select(PTLTATMatrix).where(PTLTATMatrix.id == tat_matrix_id)
-    if company_filter.company_id:
-        query = query.where(PTLTATMatrix.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, PTLTATMatrix.companyId)
 
     tat_matrix = session.exec(query).first()
     if not tat_matrix:
@@ -388,8 +375,7 @@ def delete_tat_matrix(
 ):
     """Delete PTL TAT matrix entry (soft delete)."""
     query = select(PTLTATMatrix).where(PTLTATMatrix.id == tat_matrix_id)
-    if company_filter.company_id:
-        query = query.where(PTLTATMatrix.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, PTLTATMatrix.companyId)
 
     tat_matrix = session.exec(query).first()
     if not tat_matrix:
@@ -422,8 +408,7 @@ def compare_ptl_rates(
         (PTLRateMatrix.validTo.is_(None)) | (PTLRateMatrix.validTo >= datetime.utcnow())
     )
 
-    if company_filter.company_id:
-        query = query.where(PTLRateMatrix.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, PTLRateMatrix.companyId)
 
     rate_entries = session.exec(query).all()
 
@@ -513,8 +498,7 @@ def calculate_ptl_rate(
         (PTLRateMatrix.validTo.is_(None)) | (PTLRateMatrix.validTo >= datetime.utcnow())
     )
 
-    if company_filter.company_id:
-        query = query.where(PTLRateMatrix.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, PTLRateMatrix.companyId)
 
     rm = session.exec(query).first()
     if not rm:

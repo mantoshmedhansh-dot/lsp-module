@@ -640,8 +640,7 @@ def get_stock_adjustment_summary(
     """Get summary of stock adjustments by status."""
     base_query = select(func.count(StockAdjustment.id))
 
-    if company_filter.company_id:
-        base_query = base_query.where(StockAdjustment.companyId == company_filter.company_id)
+    base_query = company_filter.apply_filter(base_query, StockAdjustment.companyId)
     if location_id:
         base_query = base_query.where(StockAdjustment.locationId == location_id)
 
@@ -722,8 +721,7 @@ def list_virtual_inventory(
     """List virtual inventory."""
     query = select(VirtualInventory)
 
-    if company_filter.company_id:
-        query = query.where(VirtualInventory.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, VirtualInventory.companyId)
     if sku_id:
         query = query.where(VirtualInventory.skuId == sku_id)
     if location_id:

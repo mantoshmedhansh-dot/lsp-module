@@ -143,11 +143,7 @@ def list_orders_for_packing(
         query = query.where(Order.status.in_(valid_statuses))
 
     # Apply company filter via location
-    if company_filter.company_id:
-        location_ids = session.exec(
-            select(Location.id).where(Location.companyId == company_filter.company_id)
-        ).all()
-        query = query.where(Order.locationId.in_(location_ids))
+    query = company_filter.apply_location_filter(query, Order.locationId)
 
     # Apply search filter
     if search:
@@ -211,11 +207,7 @@ def count_packing_orders(
     else:
         query = query.where(Order.status.in_(valid_statuses))
 
-    if company_filter.company_id:
-        location_ids = session.exec(
-            select(Location.id).where(Location.companyId == company_filter.company_id)
-        ).all()
-        query = query.where(Order.locationId.in_(location_ids))
+    query = company_filter.apply_location_filter(query, Order.locationId)
 
     count = session.exec(query).one()
     return {"count": count}
@@ -229,45 +221,30 @@ def get_packing_stats(
 ):
     """Get packing statistics."""
     base_query = select(Order)
-
-    if company_filter.company_id:
-        location_ids = session.exec(
-            select(Location.id).where(Location.companyId == company_filter.company_id)
-        ).all()
-        base_query = base_query.where(Order.locationId.in_(location_ids))
+    base_query = company_filter.apply_location_filter(base_query, Order.locationId)
 
     # Count by status
-    ready_count = session.exec(
-        select(func.count(Order.id)).where(
-            Order.status == OrderStatus.PICKED,
-            Order.locationId.in_(location_ids) if company_filter.company_id else True
-        )
-    ).one()
+    ready_query = select(func.count(Order.id)).where(Order.status == OrderStatus.PICKED)
+    ready_query = company_filter.apply_location_filter(ready_query, Order.locationId)
+    ready_count = session.exec(ready_query).one()
 
-    in_progress_count = session.exec(
-        select(func.count(Order.id)).where(
-            Order.status == OrderStatus.PACKING,
-            Order.locationId.in_(location_ids) if company_filter.company_id else True
-        )
-    ).one()
+    in_progress_query = select(func.count(Order.id)).where(Order.status == OrderStatus.PACKING)
+    in_progress_query = company_filter.apply_location_filter(in_progress_query, Order.locationId)
+    in_progress_count = session.exec(in_progress_query).one()
 
     # Packed today
     today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-    packed_today = session.exec(
-        select(func.count(Order.id)).where(
-            Order.status == OrderStatus.PACKED,
-            Order.updatedAt >= today_start,
-            Order.locationId.in_(location_ids) if company_filter.company_id else True
-        )
-    ).one()
+    packed_today_query = select(func.count(Order.id)).where(
+        Order.status == OrderStatus.PACKED,
+        Order.updatedAt >= today_start,
+    )
+    packed_today_query = company_filter.apply_location_filter(packed_today_query, Order.locationId)
+    packed_today = session.exec(packed_today_query).one()
 
     # Total packed
-    total_packed = session.exec(
-        select(func.count(Order.id)).where(
-            Order.status == OrderStatus.PACKED,
-            Order.locationId.in_(location_ids) if company_filter.company_id else True
-        )
-    ).one()
+    total_packed_query = select(func.count(Order.id)).where(Order.status == OrderStatus.PACKED)
+    total_packed_query = company_filter.apply_location_filter(total_packed_query, Order.locationId)
+    total_packed = session.exec(total_packed_query).one()
 
     return PackingStatsResponse(
         readyToPack=ready_count,

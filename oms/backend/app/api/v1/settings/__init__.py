@@ -149,9 +149,7 @@ def list_location_valuations(
 ):
     """List all location valuation settings."""
     query = select(Location).where(Location.isActive == True)
-
-    if company_filter.company_id:
-        query = query.where(Location.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Location.companyId)
 
     locations = session.exec(query).all()
 
@@ -185,9 +183,7 @@ def get_location_valuation(
 ):
     """Get location-specific valuation method setting."""
     query = select(Location).where(Location.id == location_id)
-
-    if company_filter.company_id:
-        query = query.where(Location.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Location.companyId)
 
     location = session.exec(query).first()
 
@@ -231,9 +227,7 @@ def update_location_valuation(
         )
 
     query = select(Location).where(Location.id == location_id)
-
-    if company_filter.company_id:
-        query = query.where(Location.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Location.companyId)
 
     location = session.exec(query).first()
 
@@ -267,9 +261,7 @@ def clear_location_valuation(
 ):
     """Clear location-specific valuation override (use company default)."""
     query = select(Location).where(Location.id == location_id)
-
-    if company_filter.company_id:
-        query = query.where(Location.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, Location.companyId)
 
     location = session.exec(query).first()
 
@@ -301,9 +293,7 @@ def list_sku_valuations(
 ):
     """List SKU valuation settings. Use has_override=True to only show SKUs with overrides."""
     query = select(SKU).where(SKU.isActive == True)
-
-    if company_filter.company_id:
-        query = query.where(SKU.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, SKU.companyId)
 
     if has_override:
         query = query.where(SKU.valuationMethod.isnot(None))
@@ -341,9 +331,7 @@ def get_sku_valuation(
 ):
     """Get SKU-specific valuation method setting."""
     query = select(SKU).where(SKU.id == sku_id)
-
-    if company_filter.company_id:
-        query = query.where(SKU.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, SKU.companyId)
 
     sku = session.exec(query).first()
 
@@ -387,9 +375,7 @@ def update_sku_valuation(
         )
 
     query = select(SKU).where(SKU.id == sku_id)
-
-    if company_filter.company_id:
-        query = query.where(SKU.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, SKU.companyId)
 
     sku = session.exec(query).first()
 
@@ -423,9 +409,7 @@ def clear_sku_valuation(
 ):
     """Clear SKU-specific valuation override (use company/location default)."""
     query = select(SKU).where(SKU.id == sku_id)
-
-    if company_filter.company_id:
-        query = query.where(SKU.companyId == company_filter.company_id)
+    query = company_filter.apply_filter(query, SKU.companyId)
 
     sku = session.exec(query).first()
 

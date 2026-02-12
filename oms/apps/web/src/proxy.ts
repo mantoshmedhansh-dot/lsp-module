@@ -17,8 +17,16 @@ export default auth((req) => {
     return NextResponse.next();
   }
 
-  // Allow API routes with internal API key
+  // Allow public API routes (no auth needed — backend handles auth)
   if (isApiRoute) {
+    const isPublicApi =
+      req.nextUrl.pathname.startsWith("/api/v1/platform/onboarding") ||
+      req.nextUrl.pathname.startsWith("/api/v1/platform/plans");
+    if (isPublicApi) {
+      return NextResponse.next();
+    }
+
+    // Allow API routes with internal API key
     const apiKey = req.headers.get("x-internal-api-key");
     if (apiKey === INTERNAL_API_KEY) {
       return NextResponse.next();

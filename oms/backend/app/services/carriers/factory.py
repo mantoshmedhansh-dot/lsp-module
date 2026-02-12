@@ -11,19 +11,26 @@ from sqlmodel import Session, select
 from app.models.transporter import Transporter, TransporterConfig
 from .base import CarrierAdapter
 from .shiprocket import ShiprocketAdapter
+from .delhivery import DelhiveryAdapter
+from .xpressbees import XpressbeesAdapter
+from .shadowfax import ShadowfaxAdapter
+from .ekart import EkartAdapter
+from .bluedart import BlueDartAdapter
+from .dtdc import DTDCAdapter
+from .ecom_express import EcomExpressAdapter
 
 logger = logging.getLogger(__name__)
 
 # Registry of carrier code → adapter class
 CARRIER_REGISTRY: Dict[str, type] = {
     "SHIPROCKET": ShiprocketAdapter,
-    # Future:
-    # "DELHIVERY": DelhiveryAdapter,
-    # "BLUEDART": BlueDartAdapter,
-    # "DTDC": DTDCAdapter,
-    # "ECOM_EXPRESS": EcomExpressAdapter,
-    # "XPRESSBEES": XpressbeesAdapter,
-    # "SHADOWFAX": ShadowfaxAdapter,
+    "DELHIVERY": DelhiveryAdapter,
+    "XPRESSBEES": XpressbeesAdapter,
+    "SHADOWFAX": ShadowfaxAdapter,
+    "EKART": EkartAdapter,
+    "BLUEDART": BlueDartAdapter,
+    "DTDC": DTDCAdapter,
+    "ECOM_EXPRESS": EcomExpressAdapter,
 }
 
 

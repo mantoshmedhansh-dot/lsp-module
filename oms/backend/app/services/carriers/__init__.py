@@ -7,6 +7,7 @@ from .base import CarrierAdapter, ShipmentRequest, ShipmentResponse, TrackingEve
 from .factory import get_carrier_adapter
 from .status_mapper import StatusMapper
 from .pipeline import StatusPipeline
+from .delhivery import DelhiveryAdapter
 
 __all__ = [
     "CarrierAdapter",
@@ -17,4 +18,5 @@ __all__ = [
     "get_carrier_adapter",
     "StatusMapper",
     "StatusPipeline",
+    "DelhiveryAdapter",
 ]

@@ -142,6 +142,84 @@ class StatusMapper:
     }
 
     # ========================================================================
+    # DTDC status mapping
+    # ========================================================================
+    DTDC_STATUS_MAP = {
+        "Booked": DeliveryStatus.MANIFESTED,
+        "Picked Up": DeliveryStatus.SHIPPED,
+        "In Transit": DeliveryStatus.IN_TRANSIT,
+        "Out for Delivery": DeliveryStatus.OUT_FOR_DELIVERY,
+        "Delivered": DeliveryStatus.DELIVERED,
+        "Undelivered": DeliveryStatus.NDR,
+        "RTO": DeliveryStatus.RTO_INITIATED,
+        "RTO Delivered": DeliveryStatus.RTO_DELIVERED,
+        "Cancelled": DeliveryStatus.CANCELLED,
+    }
+
+    # ========================================================================
+    # Ecom Express status mapping
+    # ========================================================================
+    ECOM_EXPRESS_STATUS_MAP = {
+        "Manifested": DeliveryStatus.MANIFESTED,
+        "Picked Up": DeliveryStatus.SHIPPED,
+        "In Transit": DeliveryStatus.IN_TRANSIT,
+        "Out for Delivery": DeliveryStatus.OUT_FOR_DELIVERY,
+        "Delivered": DeliveryStatus.DELIVERED,
+        "Undelivered": DeliveryStatus.NDR,
+        "RTO Initiated": DeliveryStatus.RTO_INITIATED,
+        "RTO In Transit": DeliveryStatus.RTO_IN_TRANSIT,
+        "RTO Delivered": DeliveryStatus.RTO_DELIVERED,
+        "Cancelled": DeliveryStatus.CANCELLED,
+    }
+
+    # ========================================================================
+    # Xpressbees status mapping
+    # ========================================================================
+    XPRESSBEES_STATUS_MAP = {
+        "Manifested": DeliveryStatus.MANIFESTED,
+        "Picked Up": DeliveryStatus.SHIPPED,
+        "In Transit": DeliveryStatus.IN_TRANSIT,
+        "Out for Delivery": DeliveryStatus.OUT_FOR_DELIVERY,
+        "Delivered": DeliveryStatus.DELIVERED,
+        "NDR": DeliveryStatus.NDR,
+        "RTO Initiated": DeliveryStatus.RTO_INITIATED,
+        "RTO In Transit": DeliveryStatus.RTO_IN_TRANSIT,
+        "RTO Delivered": DeliveryStatus.RTO_DELIVERED,
+        "Cancelled": DeliveryStatus.CANCELLED,
+    }
+
+    # ========================================================================
+    # Shadowfax status mapping
+    # ========================================================================
+    SHADOWFAX_STATUS_MAP = {
+        "Order Placed": DeliveryStatus.MANIFESTED,
+        "Pickup Assigned": DeliveryStatus.MANIFESTED,
+        "Picked Up": DeliveryStatus.SHIPPED,
+        "In Transit": DeliveryStatus.IN_TRANSIT,
+        "Out for Delivery": DeliveryStatus.OUT_FOR_DELIVERY,
+        "Delivered": DeliveryStatus.DELIVERED,
+        "NDR": DeliveryStatus.NDR,
+        "RTO": DeliveryStatus.RTO_INITIATED,
+        "RTO Delivered": DeliveryStatus.RTO_DELIVERED,
+        "Cancelled": DeliveryStatus.CANCELLED,
+    }
+
+    # ========================================================================
+    # Ekart Logistics status mapping
+    # ========================================================================
+    EKART_STATUS_MAP = {
+        "Created": DeliveryStatus.MANIFESTED,
+        "Picked Up": DeliveryStatus.SHIPPED,
+        "In Transit": DeliveryStatus.IN_TRANSIT,
+        "Out for Delivery": DeliveryStatus.OUT_FOR_DELIVERY,
+        "Delivered": DeliveryStatus.DELIVERED,
+        "Undelivered": DeliveryStatus.NDR,
+        "RTO Initiated": DeliveryStatus.RTO_INITIATED,
+        "RTO Delivered": DeliveryStatus.RTO_DELIVERED,
+        "Cancelled": DeliveryStatus.CANCELLED,
+    }
+
+    # ========================================================================
     # Public Methods
     # ========================================================================
 
@@ -174,6 +252,45 @@ class StatusMapper:
         return NDRReason.OTHER
 
     @classmethod
+    def map_xpressbees_status(cls, status: str) -> DeliveryStatus:
+        """Map an Xpressbees status string to OMS DeliveryStatus."""
+        mapped = cls.XPRESSBEES_STATUS_MAP.get(status)
+        if mapped:
+            return mapped
+        # Case-insensitive fallback
+        status_lower = status.strip().lower()
+        for key, value in cls.XPRESSBEES_STATUS_MAP.items():
+            if key.lower() == status_lower:
+                return value
+        return DeliveryStatus.IN_TRANSIT
+
+    @classmethod
+    def map_shadowfax_status(cls, status: str) -> DeliveryStatus:
+        """Map a Shadowfax status string to OMS DeliveryStatus."""
+        mapped = cls.SHADOWFAX_STATUS_MAP.get(status)
+        if mapped:
+            return mapped
+        # Case-insensitive fallback
+        status_lower = status.strip().lower()
+        for key, value in cls.SHADOWFAX_STATUS_MAP.items():
+            if key.lower() == status_lower:
+                return value
+        return DeliveryStatus.IN_TRANSIT
+
+    @classmethod
+    def map_ekart_status(cls, status: str) -> DeliveryStatus:
+        """Map an Ekart status string to OMS DeliveryStatus."""
+        mapped = cls.EKART_STATUS_MAP.get(status)
+        if mapped:
+            return mapped
+        # Case-insensitive fallback
+        status_lower = status.strip().lower()
+        for key, value in cls.EKART_STATUS_MAP.items():
+            if key.lower() == status_lower:
+                return value
+        return DeliveryStatus.IN_TRANSIT
+
+    @classmethod
     def map_status(cls, carrier_code: str, status: str) -> DeliveryStatus:
         """Generic mapper — routes to the right carrier-specific mapper."""
         carrier_code = carrier_code.upper()
@@ -183,6 +300,16 @@ class StatusMapper:
             return cls.map_delhivery_status(status)
         elif carrier_code == "BLUEDART":
             return cls.BLUEDART_STATUS_MAP.get(status, DeliveryStatus.IN_TRANSIT)
+        elif carrier_code == "XPRESSBEES":
+            return cls.map_xpressbees_status(status)
+        elif carrier_code == "SHADOWFAX":
+            return cls.map_shadowfax_status(status)
+        elif carrier_code == "EKART":
+            return cls.map_ekart_status(status)
+        elif carrier_code == "DTDC":
+            return cls.DTDC_STATUS_MAP.get(status, DeliveryStatus.IN_TRANSIT)
+        elif carrier_code == "ECOM_EXPRESS":
+            return cls.ECOM_EXPRESS_STATUS_MAP.get(status, DeliveryStatus.IN_TRANSIT)
         # Fallback: try Shiprocket mapping (most common)
         return cls.map_shiprocket_status(status)
 
@@ -194,6 +321,8 @@ class StatusMapper:
             return cls.map_shiprocket_ndr_reason(reason)
         elif carrier_code == "DELHIVERY":
             return cls.map_delhivery_ndr_reason(reason)
+        # Xpressbees, Shadowfax, Ekart — no carrier-specific NDR reason mapping yet
+        # Fall through to generic OTHER
         return NDRReason.OTHER
 
     @classmethod

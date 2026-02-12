@@ -1,6 +1,6 @@
 # CJDQuick OMS - Project Context
 
-**Last Updated:** 2026-01-30
+**Last Updated:** 2026-02-12
 
 ---
 
@@ -25,7 +25,7 @@
 | Component | Technology | URL |
 |-----------|------------|-----|
 | Frontend | Next.js 16 | https://oms-sable.vercel.app |
-| Backend | FastAPI | https://cjdquick-api-vr4w.onrender.com |
+| Backend | FastAPI | https://lsp-oms-api.onrender.com |
 | Database | Supabase | Tokyo (rilakxywitslblkgikzf) |
 
 ---
@@ -275,7 +275,7 @@ export default function FeaturePage() {
 | Platform | What | Source Folder | Deploy Trigger | URL |
 |----------|------|---------------|----------------|-----|
 | **Vercel** | Frontend (Next.js) | `apps/web/` | **Auto on git push** | https://oms-sable.vercel.app |
-| **Render** | Backend (FastAPI) | `backend/` | Auto on git push | https://cjdquick-api-vr4w.onrender.com |
+| **Render** | Backend (FastAPI) | `backend/` | Auto on git push | https://lsp-oms-api.onrender.com |
 
 ### Vercel Project Settings (vercel.com)
 
@@ -345,7 +345,7 @@ git push origin main
 
 | Remote | Repository | Branch |
 |--------|------------|--------|
-| origin | singhmantoshkumar22/cjdquick-app | `main` |
+| origin | mantoshmedhansh-dot/lsp-module | `main` |
 
 ### Platform Configuration
 
@@ -376,7 +376,7 @@ npx vercel link --yes --project oms
 ### Vercel (Frontend)
 
 ```
-NEXT_PUBLIC_API_URL=https://cjdquick-api-vr4w.onrender.com
+NEXT_PUBLIC_API_URL=https://lsp-oms-api.onrender.com
 AUTH_SECRET=<secret>
 NEXTAUTH_SECRET=<secret>
 NEXTAUTH_URL=https://oms-sable.vercel.app
@@ -420,7 +420,7 @@ npm run vercel-build
 cd backend && python -c "from app.main import app; print('OK')"
 
 # Health check
-curl https://cjdquick-api-vr4w.onrender.com/health
+curl https://lsp-oms-api.onrender.com/health
 ```
 
 ---

@@ -82,6 +82,10 @@ from .marketplaces import router as marketplaces_router
 # SaaS Platform routers
 from .platform import router as platform_router
 
+# Carrier Integration routers
+from .carrier import router as carrier_router
+from .carrier_webhooks import router as carrier_webhooks_router
+
 # Omni-Channel OMS routers
 from .sku_mappings import router as sku_mappings_router
 from .order_sync import router as order_sync_router
@@ -173,6 +177,10 @@ router.include_router(marketplaces_router)
 
 # SaaS Platform
 router.include_router(platform_router)
+
+# Carrier Integration
+router.include_router(carrier_router)
+router.include_router(carrier_webhooks_router)
 
 # Omni-Channel OMS
 router.include_router(sku_mappings_router)

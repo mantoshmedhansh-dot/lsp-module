@@ -1,5 +1,6 @@
 """
-Finance Models: COD Reconciliation, COD Transaction, Chargebacks, Escrow, Discrepancies
+Finance Models: COD Reconciliation, COD Transaction, Chargebacks, Escrow, Discrepancies,
+Invoice, Weight Discrepancy, Payment Ledger
 """
 from typing import Optional, List
 from uuid import UUID
@@ -7,7 +8,8 @@ from datetime import datetime, date
 from decimal import Decimal
 from enum import Enum
 from sqlmodel import SQLModel, Field, Relationship
-from sqlalchemy import Column, JSON, Text
+from sqlalchemy import Column, JSON, Text, String, Date, Numeric, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID, JSONB
 
 from .base import BaseModel
 from .enums import CODReconciliationStatus, CODTransactionType
@@ -458,3 +460,193 @@ class ReconciliationReportResponse(SQLModel):
     chargebackCount: int
     chargebackAmount: Decimal
     escrowHeld: Decimal
+
+
+# ============================================================================
+# Invoice Model (for freight/order invoicing)
+# ============================================================================
+
+class InvoiceBase(SQLModel):
+    """Invoice base fields"""
+    companyId: UUID
+    invoiceNumber: str
+    invoiceType: str = "freight"  # freight, order, credit_note
+    customerId: Optional[UUID] = None
+    transporterId: Optional[UUID] = None
+    invoiceDate: Optional[date] = None
+    dueDate: Optional[date] = None
+    subtotal: Decimal = Decimal("0")
+    taxAmount: Decimal = Decimal("0")
+    totalAmount: Decimal = Decimal("0")
+    status: str = "draft"  # draft, sent, paid, overdue, cancelled
+    notes: Optional[str] = None
+
+
+class Invoice(InvoiceBase, BaseModel, table=True):
+    """Invoice model"""
+    __tablename__ = "Invoice"
+    companyId: UUID = Field(sa_column=Column(PG_UUID(as_uuid=True), ForeignKey("Company.id", ondelete="CASCADE"), nullable=False, index=True))
+    invoiceNumber: str = Field(sa_column=Column(String(50), nullable=False, index=True))
+    invoiceType: str = Field(default="freight", sa_column=Column(String(20), nullable=False, default="freight"))
+    customerId: Optional[UUID] = Field(default=None, sa_column=Column(PG_UUID(as_uuid=True)))
+    transporterId: Optional[UUID] = Field(default=None, sa_column=Column(PG_UUID(as_uuid=True)))
+    invoiceDate: Optional[date] = Field(default=None, sa_column=Column(Date))
+    dueDate: Optional[date] = Field(default=None, sa_column=Column(Date))
+    subtotal: Decimal = Field(default=Decimal("0"), sa_column=Column(Numeric(12, 2), nullable=False, default=0))
+    taxAmount: Decimal = Field(default=Decimal("0"), sa_column=Column(Numeric(12, 2), nullable=False, default=0))
+    totalAmount: Decimal = Field(default=Decimal("0"), sa_column=Column(Numeric(12, 2), nullable=False, default=0))
+    status: str = Field(default="draft", sa_column=Column(String(20), nullable=False, default="draft"))
+    notes: Optional[str] = Field(default=None, sa_column=Column(Text))
+    lineItems: Optional[list] = Field(default=None, sa_column=Column(JSONB, default=[]))
+
+
+class InvoiceCreate(SQLModel):
+    """Schema for invoice creation"""
+    invoiceNumber: str
+    invoiceType: str = "freight"
+    customerId: Optional[UUID] = None
+    transporterId: Optional[UUID] = None
+    invoiceDate: Optional[str] = None
+    dueDate: Optional[str] = None
+    subtotal: float = 0
+    taxAmount: float = 0
+    totalAmount: float = 0
+    status: str = "draft"
+    notes: Optional[str] = None
+    lineItems: Optional[list] = None
+
+
+class InvoiceUpdate(SQLModel):
+    """Schema for invoice update"""
+    invoiceType: Optional[str] = None
+    customerId: Optional[UUID] = None
+    transporterId: Optional[UUID] = None
+    invoiceDate: Optional[str] = None
+    dueDate: Optional[str] = None
+    subtotal: Optional[float] = None
+    taxAmount: Optional[float] = None
+    totalAmount: Optional[float] = None
+    status: Optional[str] = None
+    notes: Optional[str] = None
+    lineItems: Optional[list] = None
+
+
+class InvoiceResponse(InvoiceBase):
+    """Response schema for invoice"""
+    id: UUID
+    lineItems: Optional[list] = None
+    createdAt: datetime
+    updatedAt: datetime
+
+
+# ============================================================================
+# Weight Discrepancy Model
+# ============================================================================
+
+class WeightDiscrepancyBase(SQLModel):
+    """Weight discrepancy base fields"""
+    companyId: UUID
+    shipmentId: Optional[UUID] = None
+    awbNumber: Optional[str] = None
+    courierName: Optional[str] = None
+    declaredWeight: Decimal = Decimal("0")
+    actualWeight: Decimal = Decimal("0")
+    weightDiff: Decimal = Decimal("0")
+    chargedAmount: Decimal = Decimal("0")
+    expectedAmount: Decimal = Decimal("0")
+    excessCharge: Decimal = Decimal("0")
+    status: str = "pending"  # pending, accepted, disputed, resolved
+
+
+class WeightDiscrepancy(WeightDiscrepancyBase, BaseModel, table=True):
+    """Weight discrepancy model"""
+    __tablename__ = "WeightDiscrepancy"
+    companyId: UUID = Field(sa_column=Column(PG_UUID(as_uuid=True), ForeignKey("Company.id", ondelete="CASCADE"), nullable=False, index=True))
+    shipmentId: Optional[UUID] = Field(default=None, sa_column=Column(PG_UUID(as_uuid=True)))
+    awbNumber: Optional[str] = Field(default=None, sa_column=Column(String(50), index=True))
+    courierName: Optional[str] = Field(default=None, sa_column=Column(String(100)))
+    declaredWeight: Decimal = Field(default=Decimal("0"), sa_column=Column(Numeric(8, 3), nullable=False, default=0))
+    actualWeight: Decimal = Field(default=Decimal("0"), sa_column=Column(Numeric(8, 3), nullable=False, default=0))
+    weightDiff: Decimal = Field(default=Decimal("0"), sa_column=Column(Numeric(8, 3), nullable=False, default=0))
+    chargedAmount: Decimal = Field(default=Decimal("0"), sa_column=Column(Numeric(12, 2), nullable=False, default=0))
+    expectedAmount: Decimal = Field(default=Decimal("0"), sa_column=Column(Numeric(12, 2), nullable=False, default=0))
+    excessCharge: Decimal = Field(default=Decimal("0"), sa_column=Column(Numeric(12, 2), nullable=False, default=0))
+    status: str = Field(default="pending", sa_column=Column(String(20), nullable=False, default="pending"))
+    disputeReason: Optional[str] = Field(default=None, sa_column=Column(Text))
+    resolvedAt: Optional[datetime] = Field(default=None)
+
+
+class WeightDiscrepancyCreate(SQLModel):
+    """Schema for weight discrepancy creation"""
+    shipmentId: Optional[UUID] = None
+    awbNumber: Optional[str] = None
+    courierName: Optional[str] = None
+    declaredWeight: float = 0
+    actualWeight: float = 0
+    chargedAmount: float = 0
+    expectedAmount: float = 0
+    status: str = "pending"
+
+
+class WeightDiscrepancyUpdate(SQLModel):
+    """Schema for weight discrepancy update"""
+    status: Optional[str] = None
+    disputeReason: Optional[str] = None
+
+
+class WeightDiscrepancyResponse(WeightDiscrepancyBase):
+    """Response schema for weight discrepancy"""
+    id: UUID
+    disputeReason: Optional[str] = None
+    resolvedAt: Optional[datetime] = None
+    createdAt: datetime
+    updatedAt: datetime
+
+
+# ============================================================================
+# Payment Ledger Model
+# ============================================================================
+
+class PaymentLedgerBase(SQLModel):
+    """Payment ledger base fields"""
+    companyId: UUID
+    entryDate: Optional[date] = None
+    entryType: str = "credit"  # credit, debit
+    category: str = "order_payment"  # order_payment, cod_remittance, freight_charge, refund, adjustment
+    referenceType: Optional[str] = None  # order, shipment, invoice, settlement
+    referenceId: Optional[UUID] = None
+    description: Optional[str] = None
+    amount: Decimal = Decimal("0")
+    runningBalance: Decimal = Decimal("0")
+
+
+class PaymentLedger(PaymentLedgerBase, BaseModel, table=True):
+    """Payment ledger model"""
+    __tablename__ = "PaymentLedger"
+    companyId: UUID = Field(sa_column=Column(PG_UUID(as_uuid=True), ForeignKey("Company.id", ondelete="CASCADE"), nullable=False, index=True))
+    entryDate: Optional[date] = Field(default=None, sa_column=Column(Date))
+    entryType: str = Field(default="credit", sa_column=Column(String(20), nullable=False, default="credit"))
+    category: str = Field(default="order_payment", sa_column=Column(String(30), nullable=False, default="order_payment"))
+    referenceType: Optional[str] = Field(default=None, sa_column=Column(String(30)))
+    referenceId: Optional[UUID] = Field(default=None, sa_column=Column(PG_UUID(as_uuid=True)))
+    description: Optional[str] = Field(default=None, sa_column=Column(Text))
+    amount: Decimal = Field(default=Decimal("0"), sa_column=Column(Numeric(12, 2), nullable=False, default=0))
+    runningBalance: Decimal = Field(default=Decimal("0"), sa_column=Column(Numeric(12, 2), nullable=False, default=0))
+
+
+class PaymentLedgerCreate(SQLModel):
+    """Schema for payment ledger entry creation"""
+    entryDate: Optional[str] = None
+    entryType: str = "credit"
+    category: str = "order_payment"
+    referenceType: Optional[str] = None
+    referenceId: Optional[UUID] = None
+    description: Optional[str] = None
+    amount: float = 0
+
+
+class PaymentLedgerResponse(PaymentLedgerBase):
+    """Response schema for payment ledger"""
+    id: UUID
+    createdAt: datetime
+    updatedAt: datetime

@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlmodel import Session, select, func
 
 from app.core.deps import get_db, get_current_user, require_admin
-from app.models.company import Company, CompanyCreate, CompanyResponse
+from app.models.company import Company, CompanyCreate, CompanyResponse, Location
 from app.models.client_contract import (
     ClientContract,
     ClientContractCreate,
@@ -215,3 +215,30 @@ async def list_contracts(
     query = query.offset(skip).limit(limit)
     contracts = db.exec(query).all()
     return contracts
+
+
+# ── Get LSP's warehouses (for contract warehouse assignment) ─────────────
+@router.get("/warehouses/available")
+async def list_lsp_warehouses(
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """List all warehouses owned by the current LSP (for assigning to brand contracts)."""
+    company = db.exec(select(Company).where(Company.id == current_user.companyId)).first()
+    if not company or company.companyType != "LSP":
+        raise HTTPException(status_code=403, detail="Only LSP companies can list warehouses")
+
+    locations = db.exec(
+        select(Location).where(Location.companyId == current_user.companyId)
+    ).all()
+    return [
+        {
+            "id": str(loc.id),
+            "name": loc.name,
+            "code": getattr(loc, "code", None),
+            "locationType": getattr(loc, "locationType", None),
+            "city": getattr(loc, "city", None),
+            "state": getattr(loc, "state", None),
+        }
+        for loc in locations
+    ]

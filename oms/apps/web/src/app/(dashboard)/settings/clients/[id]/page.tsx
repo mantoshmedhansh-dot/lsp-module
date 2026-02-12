@@ -92,6 +92,7 @@ export default function ClientDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isEditingContract, setIsEditingContract] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [warehouses, setWarehouses] = useState<{id: string; name: string; code: string | null; city: string | null}[]>([]);
   const [contractForm, setContractForm] = useState({
     serviceModel: "FULL",
     status: "active",
@@ -99,6 +100,7 @@ export default function ClientDetailPage() {
     billingRate: "0",
     contractStart: "",
     contractEnd: "",
+    warehouseIds: [] as string[],
   });
 
   const isAdmin =
@@ -107,6 +109,7 @@ export default function ClientDetailPage() {
   useEffect(() => {
     fetchClient();
     fetchContract();
+    fetchWarehouses();
   }, [clientId]);
 
   async function fetchClient() {
@@ -137,10 +140,24 @@ export default function ClientDetailPage() {
           billingRate: String(data.billingRate ?? 0),
           contractStart: data.contractStart || "",
           contractEnd: data.contractEnd || "",
+          warehouseIds: data.warehouseIds || [],
         });
       }
     } catch {
       // No contract yet — that's fine
+    }
+  }
+
+  async function fetchWarehouses() {
+    try {
+      const response = await fetch(`/api/v1/platform/clients/warehouses/available`);
+      if (response.ok) {
+        const data = await response.json();
+        const items = Array.isArray(data) ? data : data?.items || data?.data || [];
+        setWarehouses(items);
+      }
+    } catch {
+      // Non-critical — warehouses list may not be available
     }
   }
 
@@ -155,6 +172,7 @@ export default function ClientDetailPage() {
         billingRate: parseFloat(contractForm.billingRate) || 0,
         contractStart: contractForm.contractStart || null,
         contractEnd: contractForm.contractEnd || null,
+        warehouseIds: contractForm.warehouseIds,
       };
 
       const method = contract ? "PATCH" : "POST";
@@ -415,6 +433,32 @@ export default function ClientDetailPage() {
                     />
                   </div>
                 </div>
+                <div className="space-y-2">
+                  <Label>Assigned Warehouses</Label>
+                  <div className="space-y-2 max-h-40 overflow-y-auto border rounded-md p-2">
+                    {warehouses.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">No warehouses available</p>
+                    ) : (
+                      warehouses.map((wh) => (
+                        <label key={wh.id} className="flex items-center gap-2 text-sm cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={contractForm.warehouseIds.includes(wh.id)}
+                            onChange={(e) => {
+                              const ids = e.target.checked
+                                ? [...contractForm.warehouseIds, wh.id]
+                                : contractForm.warehouseIds.filter((id) => id !== wh.id);
+                              setContractForm({ ...contractForm, warehouseIds: ids });
+                            }}
+                            className="rounded border-gray-300"
+                          />
+                          <span>{wh.name}</span>
+                          {wh.city && <span className="text-muted-foreground">({wh.city})</span>}
+                        </label>
+                      ))
+                    )}
+                  </div>
+                </div>
                 <div className="flex gap-2">
                   <Button type="submit" disabled={isSaving}>
                     <Save className="mr-2 h-4 w-4" />
@@ -483,12 +527,15 @@ export default function ClientDetailPage() {
                       Assigned Warehouses
                     </p>
                     <div className="flex gap-1 mt-1 flex-wrap">
-                      {contract.warehouseIds.map((id) => (
-                        <Badge key={id} variant="outline">
-                          <Warehouse className="mr-1 h-3 w-3" />
-                          {id.slice(0, 8)}...
-                        </Badge>
-                      ))}
+                      {contract.warehouseIds.map((id: string) => {
+                        const wh = warehouses.find((w) => w.id === id);
+                        return (
+                          <Badge key={id} variant="outline">
+                            <Warehouse className="mr-1 h-3 w-3" />
+                            {wh ? wh.name : id.slice(0, 8) + "..."}
+                          </Badge>
+                        );
+                      })}
                     </div>
                   </div>
                 )}

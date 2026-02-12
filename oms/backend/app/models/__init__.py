@@ -535,6 +535,18 @@ from .finance import (
     MatchPaymentResponse,
     ResolveDiscrepancyRequest,
     ReconciliationReportResponse,
+    # Invoice, Weight Discrepancy, Payment Ledger Models
+    Invoice,
+    InvoiceCreate,
+    InvoiceUpdate,
+    InvoiceResponse,
+    WeightDiscrepancy,
+    WeightDiscrepancyCreate,
+    WeightDiscrepancyUpdate,
+    WeightDiscrepancyResponse,
+    PaymentLedger,
+    PaymentLedgerCreate,
+    PaymentLedgerResponse,
 )
 
 # Logistics Extended models and schemas
@@ -1830,6 +1842,20 @@ __all__ = [
     "MatchPaymentResponse",
     "ResolveDiscrepancyRequest",
     "ReconciliationReportResponse",
+    # Invoice
+    "Invoice",
+    "InvoiceCreate",
+    "InvoiceUpdate",
+    "InvoiceResponse",
+    # WeightDiscrepancy
+    "WeightDiscrepancy",
+    "WeightDiscrepancyCreate",
+    "WeightDiscrepancyUpdate",
+    "WeightDiscrepancyResponse",
+    # PaymentLedger
+    "PaymentLedger",
+    "PaymentLedgerCreate",
+    "PaymentLedgerResponse",
     # Marketplace Enums
     "MarketplaceType",
     "ConnectionStatus",

@@ -37,6 +37,14 @@ class Settings(BaseSettings):
         "https://cjdquick-oms.vercel.app"
     ])
 
+    # Stripe Billing
+    STRIPE_SECRET_KEY: Optional[str] = None
+    STRIPE_WEBHOOK_SECRET: Optional[str] = None
+
+    # Email (Resend)
+    RESEND_API_KEY: Optional[str] = None
+    EMAIL_FROM: str = "CJDQuick OMS <noreply@cjdquick.com>"
+
     # Database Pool Settings
     DB_POOL_SIZE: int = 5
     DB_MAX_OVERFLOW: int = 10

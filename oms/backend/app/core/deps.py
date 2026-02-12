@@ -255,10 +255,27 @@ class CompanyFilter:
         return query
 
     def get_location_ids(self) -> Optional[List[UUID]]:
-        """Get all location IDs accessible by this user (supports LSP hierarchy)."""
+        """Get all location IDs accessible by this user (supports LSP hierarchy + warehouse assignment)."""
         if self.is_super_admin:
             return None  # No filter needed
-        from app.models.company import Location
+
+        # For brand-under-LSP users, restrict to assigned warehouses if set
+        from app.models.company import Company, Location
+        company = self.db.exec(
+            select(Company).where(Company.id == self.company_id)
+        ).first()
+        if company and company.companyType == "BRAND" and company.parentId:
+            from app.models.client_contract import ClientContract
+            contract = self.db.exec(
+                select(ClientContract).where(
+                    ClientContract.brandCompanyId == self.company_id,
+                    ClientContract.lspCompanyId == company.parentId,
+                )
+            ).first()
+            if contract and contract.warehouseIds:
+                # Return only the assigned warehouse location IDs
+                return [UUID(wid) for wid in contract.warehouseIds if wid]
+
         loc_query = select(Location.id)
         loc_query = self.apply_filter(loc_query, Location.companyId)
         return list(self.db.exec(loc_query).all())

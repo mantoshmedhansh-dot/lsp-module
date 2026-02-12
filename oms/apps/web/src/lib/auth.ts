@@ -119,16 +119,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return session;
     },
     async authorized({ auth, request }) {
-      // Allow access to public pages without authentication
       const { pathname } = request.nextUrl;
-      const isPublicPage =
-        pathname === "/login" ||
-        pathname === "/signup" ||
-        pathname.startsWith("/api/auth") ||
-        pathname.startsWith("/api/v1/platform/onboarding") ||
-        pathname.startsWith("/api/v1/platform/plans");
 
-      if (isPublicPage) {
+      // Allow ALL API routes through — route handlers manage their own auth
+      if (pathname.startsWith("/api/")) {
+        return true;
+      }
+
+      // Allow public pages
+      if (pathname === "/login" || pathname === "/signup" || pathname === "/") {
         return true;
       }
 

@@ -24,7 +24,7 @@
 
 | Component | Technology | URL |
 |-----------|------------|-----|
-| Frontend | Next.js 16 | https://oms-sable.vercel.app |
+| Frontend | Next.js 16 | https://lsp-oms.vercel.app |
 | Backend | FastAPI | https://lsp-oms-api.onrender.com |
 | Database | Supabase | Tokyo (rilakxywitslblkgikzf) |
 
@@ -274,7 +274,7 @@ export default function FeaturePage() {
 
 | Platform | What | Source Folder | Deploy Trigger | URL |
 |----------|------|---------------|----------------|-----|
-| **Vercel** | Frontend (Next.js) | `apps/web/` | **Auto on git push** | https://oms-sable.vercel.app |
+| **Vercel** | Frontend (Next.js) | `apps/web/` | **Auto on git push** | https://lsp-oms.vercel.app |
 | **Render** | Backend (FastAPI) | `backend/` | Auto on git push | https://lsp-oms-api.onrender.com |
 
 ### Vercel Project Settings (vercel.com)
@@ -304,7 +304,7 @@ export default function FeaturePage() {
 └── client-portal/                  ← Ignored
 ```
 
-**To verify/fix:** https://vercel.com/mantosh-singhs-projects/oms/settings
+**To verify/fix:** https://vercel.com/ilms/lsp-oms/settings
 
 ### Vercel Deployment Rules
 
@@ -351,15 +351,15 @@ git push origin main
 
 | Platform | Trigger | Branch | Project Name |
 |----------|---------|--------|--------------|
-| Vercel | Auto (git push) | `main` | `oms` |
-| Render | Auto (git push) | `main` | `cjdquick-api` |
+| Vercel | Auto (git push) | `main` | `lsp-oms` |
+| Render | Auto (git push) | `main` | `lsp-oms-api` |
 
 ### Vercel Project Verification
 
 Before deploying, verify correct project link:
 ```bash
 cat /Users/mantosh/CJDQuickApp/oms/.vercel/project.json
-# Should show: "projectName": "oms"
+# Should show: "projectName": "lsp-oms"
 ```
 
 If wrong project, re-link:
@@ -379,7 +379,7 @@ npx vercel link --yes --project oms
 NEXT_PUBLIC_API_URL=https://lsp-oms-api.onrender.com
 AUTH_SECRET=<secret>
 NEXTAUTH_SECRET=<secret>
-NEXTAUTH_URL=https://oms-sable.vercel.app
+NEXTAUTH_URL=https://lsp-oms.vercel.app
 AUTH_TRUST_HOST=true
 ```
 
@@ -388,7 +388,7 @@ AUTH_TRUST_HOST=true
 ```
 DATABASE_URL=postgresql://postgres.rilakxywitslblkgikzf:<password>@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
 SECRET_KEY=<secret>
-FRONTEND_URL=https://oms-sable.vercel.app
+FRONTEND_URL=https://lsp-oms.vercel.app
 ```
 
 **Important:** Always include `?pgbouncer=true` in DATABASE_URL
@@ -489,7 +489,7 @@ curl https://lsp-oms-api.onrender.com/health
 [ ] Backend health check passes
 [ ] Run any required SQL migrations on Supabase
 [ ] git push origin main (triggers auto-deploy to Vercel + Render)
-[ ] Verify production after deploy: https://oms-sable.vercel.app
+[ ] Verify production after deploy: https://lsp-oms.vercel.app
 ```
 
 ---

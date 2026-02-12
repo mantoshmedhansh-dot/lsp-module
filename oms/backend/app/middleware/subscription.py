@@ -76,15 +76,15 @@ PATH_MODULE_MAP = {
     "/api/v1/settlements": "FINANCE",
     # ANALYTICS
     "/api/v1/analytics": "ANALYTICS",
-    # CHANNELS
-    "/api/v1/channels": "CHANNELS",
-    "/api/v1/marketplaces": "CHANNELS",
-    "/api/v1/sku-mappings": "CHANNELS",
-    "/api/v1/order-sync": "CHANNELS",
-    "/api/v1/inventory-sync": "CHANNELS",
-    "/api/v1/marketplace-returns": "CHANNELS",
-    "/api/v1/scheduled-jobs": "CHANNELS",
-    "/api/v1/webhooks": "CHANNELS",
+    # CHANNELS & MARKETPLACE (part of OMS — order lifecycle)
+    "/api/v1/channels": "OMS",
+    "/api/v1/marketplaces": "OMS",
+    "/api/v1/sku-mappings": "OMS",
+    "/api/v1/order-sync": "OMS",
+    "/api/v1/inventory-sync": "OMS",
+    "/api/v1/marketplace-returns": "OMS",
+    "/api/v1/scheduled-jobs": "OMS",
+    "/api/v1/webhooks": "OMS",
 }
 
 # Paths that bypass subscription checks entirely

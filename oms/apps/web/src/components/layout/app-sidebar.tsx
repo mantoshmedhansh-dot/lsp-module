@@ -366,7 +366,7 @@ const procurementNav: NavItemWithSub = {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
-// 7. CHANNELS & MARKETPLACE — PROMOTED
+// 3c. CHANNELS & MARKETPLACE (part of Order Lifecycle / OMS)
 // ═══════════════════════════════════════════════════════════════════════════
 
 const marketplaceNav: NavItemWithSub = {
@@ -750,6 +750,7 @@ export function AppSidebar() {
             <SidebarMenu>
               <CollapsibleNavItem item={ordersNav} pathname={pathname} />
               <CollapsibleNavItem item={b2bSalesNav} pathname={pathname} />
+              <CollapsibleNavItem item={marketplaceNav} pathname={pathname} />
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -799,16 +800,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* ═══ 7. CHANNELS & MARKETPLACE — MODULE GATED ═══ */}
-        <GatedSectionGroup
-          label="Channels & Marketplace"
-          labelColor="text-indigo-600"
-          module="CHANNELS"
-          items={[marketplaceNav]}
-          pathname={pathname}
-        />
-
-        {/* ═══ 8. FINANCE — MODULE GATED ═══ */}
+        {/* ═══ 7. FINANCE — MODULE GATED ═══ */}
         <GatedSectionGroup
           label="Finance"
           labelColor="text-rose-600"

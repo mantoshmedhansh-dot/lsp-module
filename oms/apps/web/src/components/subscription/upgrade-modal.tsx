@@ -27,7 +27,6 @@ const MODULE_LABELS: Record<string, string> = {
   CONTROL_TOWER: "Command Center",
   FINANCE: "Finance & Billing",
   ANALYTICS: "Reports & Analytics",
-  CHANNELS: "Channels & Marketplace",
 };
 
 export function UpgradeModal({

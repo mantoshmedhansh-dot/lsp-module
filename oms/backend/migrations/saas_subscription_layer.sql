@@ -274,7 +274,7 @@ ON CONFLICT ("planId", module) DO NOTHING;
 INSERT INTO "PlanModule" ("planId", module)
 SELECT p.id, m.module
 FROM "Plan" p
-CROSS JOIN (VALUES ('OMS'), ('WMS'), ('LOGISTICS'), ('CONTROL_TOWER'), ('FINANCE'), ('ANALYTICS'), ('CHANNELS')) AS m(module)
+CROSS JOIN (VALUES ('OMS'), ('WMS'), ('LOGISTICS'), ('CONTROL_TOWER'), ('FINANCE'), ('ANALYTICS')) AS m(module)
 WHERE p.slug = 'enterprise'
 ON CONFLICT ("planId", module) DO NOTHING;
 

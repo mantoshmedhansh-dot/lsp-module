@@ -59,6 +59,18 @@ def signup(
     Self-service signup: creates company + admin user + subscription + onboarding steps.
     Public endpoint (no auth required).
     """
+    try:
+        return _do_signup(data, session)
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Signup failed: {str(e)}")
+
+
+def _do_signup(data: SignupData, session: Session):
+    """Inner signup logic — separated for clean error handling."""
     # Check if email already exists
     existing_user = session.exec(
         select(User).where(User.email == data.adminEmail)
@@ -76,13 +88,40 @@ def signup(
             select(Plan).where(Plan.slug == "free")
         ).first()
 
-    # Generate company code
+    # Generate company code - find next available number for this prefix
     import re
+    from sqlmodel import func, text
     clean_name = re.sub(r'[^a-zA-Z]', '', data.companyName).upper()
     prefix = clean_name[:3].ljust(3, 'X')
-    from sqlmodel import func
-    count = session.exec(select(func.count(Company.id))).one() or 0
-    code = f"{prefix}-{count + 1:04d}"
+
+    # Find the highest existing code number for this prefix
+    max_code = session.exec(
+        select(Company.code)
+        .where(Company.code.like(f"{prefix}-%"))
+        .order_by(Company.code.desc())
+    ).first()
+
+    if max_code:
+        # Extract numeric suffix from e.g. "AQU-0006" -> 6
+        try:
+            max_num = int(max_code.split("-")[-1])
+        except (ValueError, IndexError):
+            max_num = 0
+        next_num = max_num + 1
+    else:
+        next_num = 1
+
+    code = f"{prefix}-{next_num:04d}"
+
+    # Safety: retry with incrementing numbers if code somehow still exists
+    for attempt in range(10):
+        existing = session.exec(
+            select(Company.id).where(Company.code == code)
+        ).first()
+        if not existing:
+            break
+        next_num += 1
+        code = f"{prefix}-{next_num:04d}"
 
     # Create company
     company = Company(

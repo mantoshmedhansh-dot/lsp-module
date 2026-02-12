@@ -124,7 +124,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       const isPublicPage =
         pathname === "/login" ||
         pathname === "/signup" ||
-        pathname.startsWith("/api/auth");
+        pathname.startsWith("/api/auth") ||
+        pathname.startsWith("/api/v1/platform/onboarding") ||
+        pathname.startsWith("/api/v1/platform/plans");
 
       if (isPublicPage) {
         return true;

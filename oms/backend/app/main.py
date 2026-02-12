@@ -69,7 +69,7 @@ app.add_middleware(
         "http://localhost:3001",
         "https://cjdquick-oms.vercel.app",
         "https://oms-sable.vercel.app",
-        "https://*.vercel.app"
+        "https://lsp-oms.vercel.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],

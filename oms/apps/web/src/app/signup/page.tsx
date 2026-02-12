@@ -20,8 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, Package, Check, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "https://lsp-oms-api.onrender.com";
+// Use relative URL to go through Next.js API proxy (avoids CORS issues)
 
 const signupSchema = z.object({
   companyName: z.string().min(2, "Company name must be at least 2 characters"),
@@ -94,6 +93,12 @@ export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState("free");
 
+  const selectedPlanData = plans.find((p) => p.slug === selectedPlan);
+  const buttonLabel =
+    selectedPlan === "free"
+      ? "Start Free Trial"
+      : `Get Started with ${selectedPlanData?.name}`;
+
   const {
     register,
     handleSubmit,
@@ -108,7 +113,7 @@ export default function SignupPage() {
 
     try {
       // Call signup endpoint
-      const response = await fetch(`${API_BASE_URL}/api/v1/platform/onboarding/signup`, {
+      const response = await fetch(`/api/v1/platform/onboarding/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -155,10 +160,14 @@ export default function SignupPage() {
             <span className="text-2xl font-bold">CJDQuick OMS</span>
           </Link>
           <h1 className="text-3xl font-bold text-slate-900">
-            Start your free trial
+            {selectedPlan === "free"
+              ? "Start your free trial"
+              : `Get started with ${selectedPlanData?.name}`}
           </h1>
           <p className="mt-2 text-slate-600">
-            14 days free. No credit card required.
+            {selectedPlan === "free"
+              ? "14 days free. No credit card required."
+              : "Set up your account and start using CJDQuick OMS."}
           </p>
         </div>
 
@@ -250,7 +259,7 @@ export default function SignupPage() {
                     </>
                   ) : (
                     <>
-                      Start Free Trial
+                      {buttonLabel}
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </>
                   )}

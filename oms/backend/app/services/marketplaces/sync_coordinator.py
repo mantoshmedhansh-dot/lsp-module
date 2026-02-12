@@ -28,6 +28,7 @@ from app.models import (
 from app.core.database import get_session_context
 from .adapter_factory import AdapterFactory, get_adapter
 from .token_manager import TokenManager
+from .order_pipeline import OrderPipeline
 from .base_adapter import MarketplaceOrder, InventoryUpdate, InventoryUpdateResult
 
 logger = logging.getLogger(__name__)
@@ -333,84 +334,41 @@ class SyncCoordinator:
         order: MarketplaceOrder
     ) -> str:
         """
-        Process a single marketplace order.
+        Process a single marketplace order via OrderPipeline.
+
+        Creates actual OMS Order + OrderItem + Delivery records,
+        maps marketplace SKUs to internal SKUs, and reserves inventory.
 
         Returns: "created", "updated", or "skipped"
         """
-        from uuid import uuid4
+        pipeline = OrderPipeline(session)
 
-        # Check if order already exists
-        existing = session.exec(
-            select(MarketplaceOrderSync)
-            .where(MarketplaceOrderSync.companyId == connection.companyId)
-            .where(MarketplaceOrderSync.marketplaceOrderId == order.marketplace_order_id)
-        ).first()
-
-        if existing and existing.orderId:
-            # Order already synced - could update status
-            return "skipped"
-
-        # Map marketplace SKUs to internal SKUs
-        items_with_mapping = []
-        unmapped_skus = []
-
-        for item in order.items:
-            marketplace_sku = item.get("marketplace_sku") or item.get("sku")
-
-            # Find SKU mapping
-            mapping = session.exec(
-                select(MarketplaceSkuMapping)
-                .where(MarketplaceSkuMapping.companyId == connection.companyId)
-                .where(MarketplaceSkuMapping.channel == connection.marketplace.value)
-                .where(MarketplaceSkuMapping.marketplaceSku == marketplace_sku)
-            ).first()
-
-            if mapping:
-                item["internal_sku_id"] = mapping.skuId
-                items_with_mapping.append(item)
-            else:
-                unmapped_skus.append(marketplace_sku)
-                item["internal_sku_id"] = None
-                items_with_mapping.append(item)
-
-        # Create order sync record
-        order_sync = MarketplaceOrderSync(
-            id=uuid4(),
-            companyId=connection.companyId,
-            connectionId=connection.id,
-            marketplace=connection.marketplace,
-            marketplaceOrderId=order.marketplace_order_id,
-            syncStatus=ImportStatus.PENDING if unmapped_skus else ImportStatus.COMPLETED,
-            syncDirection="INBOUND",
-            orderData={
-                "customer": {
-                    "name": order.customer_name,
-                    "email": order.customer_email,
-                    "phone": order.customer_phone
-                },
-                "shipping_address": order.shipping_address,
-                "items": items_with_mapping,
-                "totals": {
-                    "subtotal": order.subtotal,
-                    "shipping": order.shipping_amount,
-                    "tax": order.tax_amount,
-                    "discount": order.discount_amount,
-                    "total": order.total_amount
-                },
-                "payment_method": order.payment_method,
-                "is_cod": order.is_cod,
-                "fulfillment_type": order.fulfillment_type.value,
-                "unmapped_skus": unmapped_skus
-            },
-            errorMessage=f"Unmapped SKUs: {unmapped_skus}" if unmapped_skus else None
+        result = await pipeline.process_order(
+            company_id=connection.companyId,
+            connection=connection,
+            marketplace_order=order,
         )
 
-        session.add(order_sync)
-        session.commit()
+        status = result.get("status", "failed")
 
-        if existing:
-            return "updated"
-        return "created"
+        if status == "created":
+            logger.info(
+                f"Order pipeline created OMS order {result.get('order_no')} "
+                f"for marketplace order {order.marketplace_order_id}"
+            )
+            return "created"
+        elif status == "skipped":
+            return "skipped"
+        elif status == "failed":
+            errors = result.get("errors", [])
+            if errors:
+                logger.warning(
+                    f"Order pipeline failed for {order.marketplace_order_id}: "
+                    f"{errors}"
+                )
+            return "skipped"
+        else:
+            return "skipped"
 
     # =========================================================================
     # Inventory Sync

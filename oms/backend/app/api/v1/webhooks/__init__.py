@@ -4,8 +4,10 @@ Webhooks API v1 - Marketplace webhook handling
 from typing import List, Optional
 from uuid import UUID
 from datetime import datetime
+import asyncio
+import logging
 
-from fastapi import APIRouter, Depends, HTTPException, status, Query, Request, Header
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Request, Header, BackgroundTasks
 from sqlmodel import Session, select
 
 from app.core.database import get_session
@@ -19,6 +21,9 @@ from app.models import (
     WebhookEventStatus,
     ConnectionStatus,
 )
+from app.services.marketplaces.webhook_processor import WebhookEventProcessor
+
+logger = logging.getLogger(__name__)
 
 
 router = APIRouter(prefix="/webhooks", tags=["Webhooks"])
@@ -32,6 +37,7 @@ router = APIRouter(prefix="/webhooks", tags=["Webhooks"])
 async def receive_webhook(
     channel: str,
     request: Request,
+    background_tasks: BackgroundTasks,
     x_webhook_secret: Optional[str] = Header(None, alias="X-Webhook-Secret"),
     x_signature: Optional[str] = Header(None, alias="X-Signature"),
     session: Session = Depends(get_session)
@@ -122,7 +128,8 @@ async def receive_webhook(
     session.commit()
     session.refresh(event)
 
-    # TODO: Trigger async processing of the event
+    # Process the event asynchronously in the background
+    background_tasks.add_task(_process_event_background, str(event.id))
 
     return {
         "success": True,
@@ -222,6 +229,7 @@ def get_webhook_event(
 @router.post("/events/{event_id}/retry")
 def retry_webhook_event(
     event_id: UUID,
+    background_tasks: BackgroundTasks,
     company_filter: CompanyFilter = Depends(),
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user),
@@ -254,7 +262,8 @@ def retry_webhook_event(
     session.add(event)
     session.commit()
 
-    # TODO: Trigger async processing
+    # Process the retried event in the background
+    background_tasks.add_task(_process_event_background, str(event.id))
 
     return {"success": True, "message": "Event queued for retry"}
 
@@ -442,3 +451,42 @@ def get_webhook_stats(
         "processed": by_status.get("PROCESSED", 0),
         "failed": by_status.get("FAILED", 0)
     }
+
+
+# ============================================================================
+# Process Pending Events
+# ============================================================================
+
+@router.post("/process-pending")
+async def process_pending_events(
+    limit: int = Query(50, ge=1, le=200),
+    company_filter: CompanyFilter = Depends(),
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+    _: None = Depends(require_manager())
+):
+    """Process all pending webhook events for the company."""
+    if not company_filter.company_id:
+        raise HTTPException(status_code=400, detail="Company ID required")
+
+    processor = WebhookEventProcessor(session)
+    results = await processor.process_pending_events(
+        company_id=company_filter.company_id, limit=limit
+    )
+    return results
+
+
+# ============================================================================
+# Background Processing Helper
+# ============================================================================
+
+async def _process_event_background(event_id: str):
+    """Process a single webhook event in the background."""
+    from app.core.database import get_session as get_db_session
+
+    try:
+        session = next(get_db_session())
+        processor = WebhookEventProcessor(session)
+        await processor.process_event(UUID(event_id))
+    except Exception as e:
+        logger.error(f"Background webhook processing failed for event {event_id}: {e}")

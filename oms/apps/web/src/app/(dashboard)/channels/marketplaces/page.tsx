@@ -48,16 +48,18 @@ import { toast } from "sonner";
 
 interface MarketplaceConnection {
   id: string;
-  marketplaceName: string;
-  marketplaceType: string;
+  marketplace: string;
+  connectionName: string;
+  marketplaceName?: string;
+  marketplaceType?: string;
   status: string;
   isActive: boolean;
   lastSyncAt: string | null;
-  syncStatus: string | null;
-  totalListings: number;
-  activeListings: number;
-  totalOrders: number;
-  pendingOrders: number;
+  syncStatus?: string | null;
+  totalListings?: number;
+  activeListings?: number;
+  totalOrders?: number;
+  pendingOrders?: number;
   createdAt: string;
 }
 
@@ -192,7 +194,7 @@ export default function MarketplacesPage() {
       });
       if (response.ok) {
         const result = await response.json();
-        toast.success(`Synced ${result.ordersImported || 0} orders from ${connection.marketplaceName}`);
+        toast.success(`Synced ${result.ordersImported || 0} orders from ${getDisplayName(connection)}`);
         fetchAll();
       } else {
         toast.error("Failed to sync orders");
@@ -213,7 +215,7 @@ export default function MarketplacesPage() {
       });
       if (response.ok) {
         const result = await response.json();
-        toast.success(`Pushed inventory for ${result.skusUpdated || 0} SKUs to ${connection.marketplaceName}`);
+        toast.success(`Pushed inventory for ${result.skusUpdated || 0} SKUs to ${getDisplayName(connection)}`);
         fetchAll();
       } else {
         toast.error("Failed to push inventory");
@@ -233,7 +235,7 @@ export default function MarketplacesPage() {
         body: JSON.stringify({ isActive: !connection.isActive }),
       });
       if (response.ok) {
-        toast.success(`${connection.marketplaceName} ${connection.isActive ? "disabled" : "enabled"}`);
+        toast.success(`${getDisplayName(connection)} ${connection.isActive ? "disabled" : "enabled"}`);
         fetchConnections();
       }
     } catch (error) {
@@ -281,9 +283,16 @@ export default function MarketplacesPage() {
     }).format(num);
   };
 
-  const totalListings = connections.reduce((sum, c) => sum + c.totalListings, 0);
-  const totalOrders = connections.reduce((sum, c) => sum + c.totalOrders, 0);
+  const totalListings = connections.reduce((sum, c) => sum + (Number(c.totalListings) || 0), 0);
+  const totalOrders = connections.reduce((sum, c) => sum + (Number(c.totalOrders) || 0), 0);
+  const pendingOrders = connections.reduce((sum, c) => sum + (Number(c.pendingOrders) || 0), 0);
   const activeConnections = connections.filter(c => c.status === "CONNECTED" && c.isActive).length;
+
+  // Helper to get display name for a connection
+  const getDisplayName = (c: MarketplaceConnection) =>
+    c.connectionName || c.marketplaceName || c.marketplace || "Unknown";
+  const getMarketplaceType = (c: MarketplaceConnection) =>
+    c.marketplace || c.marketplaceType || "";
 
   return (
     <div className="space-y-6">
@@ -340,7 +349,7 @@ export default function MarketplacesPage() {
           <CardContent>
             <div className="text-2xl font-bold">{totalOrders}</div>
             <p className="text-xs text-muted-foreground">
-              {connections.reduce((sum, c) => sum + c.pendingOrders, 0)} pending
+              {pendingOrders} pending
             </p>
           </CardContent>
         </Card>
@@ -396,11 +405,11 @@ export default function MarketplacesPage() {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <div className="text-3xl">
-                              {marketplaceLogos[connection.marketplaceType] || "🏪"}
+                              {marketplaceLogos[getMarketplaceType(connection)] || "🏪"}
                             </div>
                             <div>
-                              <CardTitle className="text-lg">{connection.marketplaceName}</CardTitle>
-                              <CardDescription>{connection.marketplaceType}</CardDescription>
+                              <CardTitle className="text-lg">{getDisplayName(connection)}</CardTitle>
+                              <CardDescription>{getMarketplaceType(connection)}</CardDescription>
                             </div>
                           </div>
                           <Switch
@@ -417,11 +426,11 @@ export default function MarketplacesPage() {
                         <div className="grid grid-cols-2 gap-4 text-sm">
                           <div>
                             <p className="text-muted-foreground">Listings</p>
-                            <p className="font-medium">{connection.activeListings}/{connection.totalListings}</p>
+                            <p className="font-medium">{Number(connection.activeListings) || 0}/{Number(connection.totalListings) || 0}</p>
                           </div>
                           <div>
                             <p className="text-muted-foreground">Orders</p>
-                            <p className="font-medium">{connection.totalOrders}</p>
+                            <p className="font-medium">{Number(connection.totalOrders) || 0}</p>
                           </div>
                         </div>
                         {connection.lastSyncAt && (
@@ -648,7 +657,7 @@ export default function MarketplacesPage() {
               <div className="bg-muted p-4 rounded-lg space-y-2">
                 <div className="flex justify-between">
                   <span className="text-sm">Marketplace</span>
-                  <span className="font-medium">{selectedConnection.marketplaceName}</span>
+                  <span className="font-medium">{getDisplayName(selectedConnection)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm">Status</span>

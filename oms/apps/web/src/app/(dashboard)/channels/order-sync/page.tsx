@@ -87,14 +87,23 @@ interface SyncedOrder {
 }
 
 interface SyncStats {
-  period_days: number;
-  total_sync_jobs: number;
-  completed_jobs: number;
-  failed_jobs: number;
-  success_rate: number;
-  total_orders_synced: number;
-  orders_from_jobs: number;
-  failed_orders: number;
+  // Support both snake_case and camelCase from backend
+  period_days?: number;
+  periodDays?: number;
+  total_sync_jobs?: number;
+  totalSyncJobs?: number;
+  completed_jobs?: number;
+  completedJobs?: number;
+  failed_jobs?: number;
+  failedJobs?: number;
+  success_rate?: number;
+  successRate?: number;
+  total_orders_synced?: number;
+  totalOrdersSynced?: number;
+  orders_from_jobs?: number;
+  ordersFromJobs?: number;
+  failed_orders?: number;
+  failedOrders?: number;
 }
 
 interface MarketplaceConnection {
@@ -183,6 +192,15 @@ export default function OrderSyncPage() {
       console.error("Error fetching stats:", error);
     }
   }, []);
+
+  // Compute stats from job data as fallback when endpoint returns zeros
+  const computedTotalJobs = jobs.length;
+  const computedCompletedJobs = jobs.filter(j => j.status === "COMPLETED").length;
+  const computedFailedJobs = jobs.filter(j => j.status === "FAILED").length;
+  const computedOrdersSynced = jobs.reduce((sum, j) => sum + (j.recordsSuccess || 0), 0);
+  const computedFailedOrders = jobs.reduce((sum, j) => sum + (j.recordsFailed || 0), 0);
+  const computedSuccessRate = computedTotalJobs > 0
+    ? (computedCompletedJobs / computedTotalJobs) * 100 : 0;
 
   const fetchConnections = useCallback(async () => {
     try {
@@ -334,6 +352,34 @@ export default function OrderSyncPage() {
     }).format(num);
   };
 
+  // Helper to get stat value (supports both camelCase and snake_case, falls back to computed)
+  const computedStats: Record<string, number> = {
+    total_sync_jobs: computedTotalJobs, totalSyncJobs: computedTotalJobs,
+    completed_jobs: computedCompletedJobs, completedJobs: computedCompletedJobs,
+    failed_jobs: computedFailedJobs, failedJobs: computedFailedJobs,
+    total_orders_synced: computedOrdersSynced, totalOrdersSynced: computedOrdersSynced,
+    failed_orders: computedFailedOrders, failedOrders: computedFailedOrders,
+    success_rate: computedSuccessRate, successRate: computedSuccessRate,
+  };
+  const getStat = (snake: string, camel: string): number => {
+    if (stats) {
+      const val = Number((stats as Record<string, unknown>)[snake] ?? (stats as Record<string, unknown>)[camel]) || 0;
+      if (val > 0) return val;
+    }
+    return computedStats[snake] || computedStats[camel] || 0;
+  };
+
+  // Build connection name lookup map
+  const connectionMap = new Map(connections.map(c => [c.id, c]));
+  const getConnectionName = (connectionId: string) => {
+    const conn = connectionMap.get(connectionId);
+    return conn?.connectionName || conn?.marketplace || "";
+  };
+  const getConnectionMarketplace = (connectionId: string) => {
+    const conn = connectionMap.get(connectionId);
+    return conn?.marketplace || "";
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -363,7 +409,7 @@ export default function OrderSyncPage() {
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.total_orders_synced || 0}</div>
+            <div className="text-2xl font-bold">{getStat("total_orders_synced", "totalOrdersSynced")}</div>
             <p className="text-xs text-muted-foreground">Last 7 days</p>
           </CardContent>
         </Card>
@@ -374,9 +420,9 @@ export default function OrderSyncPage() {
             <RefreshCw className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.total_sync_jobs || 0}</div>
+            <div className="text-2xl font-bold">{getStat("total_sync_jobs", "totalSyncJobs")}</div>
             <p className="text-xs text-muted-foreground">
-              {stats?.completed_jobs || 0} completed, {stats?.failed_jobs || 0} failed
+              {getStat("completed_jobs", "completedJobs")} completed, {getStat("failed_jobs", "failedJobs")} failed
             </p>
           </CardContent>
         </Card>
@@ -388,9 +434,9 @@ export default function OrderSyncPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {stats?.success_rate?.toFixed(1) || 0}%
+              {getStat("success_rate", "successRate").toFixed(1)}%
             </div>
-            <Progress value={stats?.success_rate || 0} className="mt-2" />
+            <Progress value={getStat("success_rate", "successRate")} className="mt-2" />
           </CardContent>
         </Card>
 
@@ -400,7 +446,7 @@ export default function OrderSyncPage() {
             <AlertCircle className="h-4 w-4 text-red-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{stats?.failed_orders || 0}</div>
+            <div className="text-2xl font-bold text-red-600">{getStat("failed_orders", "failedOrders")}</div>
             <p className="text-xs text-muted-foreground">Requires attention</p>
           </CardContent>
         </Card>
@@ -482,8 +528,8 @@ export default function OrderSyncPage() {
                       <TableRow key={job.id}>
                         <TableCell>
                           <div>
-                            <p className="font-medium">{job.connectionName}</p>
-                            {getChannelBadge(job.marketplace)}
+                            <p className="font-medium">{job.connectionName || getConnectionName(job.connectionId)}</p>
+                            {getChannelBadge(job.marketplace || getConnectionMarketplace(job.connectionId))}
                           </div>
                         </TableCell>
                         <TableCell>

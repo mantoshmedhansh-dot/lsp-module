@@ -21,11 +21,15 @@ def _get_pool_class():
 
 
 # Create sync engine for SQLModel
+# connect_timeout: fail fast if DB is unreachable (default is no timeout = hang forever)
+_connect_args = {"connect_timeout": 10}  # 10 second connection timeout
+
 engine = create_engine(
     settings.database_url_sync,
     poolclass=_get_pool_class(),
     pool_pre_ping=True,  # Verify connections before use
     echo=settings.DEBUG,  # Log SQL in debug mode
+    connect_args=_connect_args,
 )
 
 

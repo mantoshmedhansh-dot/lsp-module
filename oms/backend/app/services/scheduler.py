@@ -442,12 +442,14 @@ def start_scheduler():
         max_instances=1,  # Prevent overlapping runs
     )
 
-    # Run immediately on startup
+    # Run after 5-minute delay (not immediately) to let server warm up first
+    from datetime import timedelta
     scheduler.add_job(
         run_detection_engine,
-        trigger="date",  # Run once immediately
+        trigger="date",
+        run_date=datetime.utcnow() + timedelta(minutes=5),
         id="detection_engine_startup",
-        name="Detection Engine - Startup Run",
+        name="Detection Engine - Delayed Startup Run",
     )
 
     # Import marketplace sync jobs
@@ -457,9 +459,11 @@ def start_scheduler():
         from app.jobs.settlement_sync_job import run_settlement_fetch_all
         from app.jobs.token_refresh_job import run_token_refresh
 
+        import asyncio
+
         # Order sync: Every 15 minutes
         scheduler.add_job(
-            lambda: __import__('asyncio').get_event_loop().run_until_complete(run_order_sync_all()),
+            lambda: asyncio.run(run_order_sync_all()),
             trigger=IntervalTrigger(minutes=15),
             id="marketplace_order_sync",
             name="Marketplace Order Sync (All Connections)",
@@ -470,7 +474,7 @@ def start_scheduler():
 
         # Inventory push: Every 30 minutes
         scheduler.add_job(
-            lambda: __import__('asyncio').get_event_loop().run_until_complete(run_inventory_push_all()),
+            lambda: asyncio.run(run_inventory_push_all()),
             trigger=IntervalTrigger(minutes=30),
             id="marketplace_inventory_push",
             name="Marketplace Inventory Push (All Connections)",
@@ -481,7 +485,7 @@ def start_scheduler():
 
         # Settlement fetch: Daily at 6 AM UTC
         scheduler.add_job(
-            lambda: __import__('asyncio').get_event_loop().run_until_complete(run_settlement_fetch_all()),
+            lambda: asyncio.run(run_settlement_fetch_all()),
             trigger=CronTrigger(hour=6, minute=0),
             id="marketplace_settlement_fetch",
             name="Marketplace Settlement Fetch (Daily)",
@@ -492,7 +496,7 @@ def start_scheduler():
 
         # Token refresh: Every 45 minutes
         scheduler.add_job(
-            lambda: __import__('asyncio').get_event_loop().run_until_complete(run_token_refresh()),
+            lambda: asyncio.run(run_token_refresh()),
             trigger=IntervalTrigger(minutes=45),
             id="marketplace_token_refresh",
             name="OAuth Token Refresh",

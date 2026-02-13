@@ -39,6 +39,7 @@ def set_cached(key: str, value: Any, ttl: int = CACHE_DURATION):
 @router.get("")
 def get_dashboard(
     locationId: Optional[UUID] = None,
+    days: Optional[int] = Query(None, ge=1, le=365),
     company_filter: CompanyFilter = Depends(),
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
@@ -48,10 +49,11 @@ def get_dashboard(
     Returns order counts, revenue, inventory stats, and order status breakdown.
     Cached for 30 seconds to improve response time.
     Multi-tenant: CompanyFilter ensures brand-under-LSP isolation.
+    Optional 'days' parameter filters orders to the last N days.
     """
     # Check cache first (include company context to prevent cross-tenant leaks)
     company_cache_id = str(company_filter.company_id) if company_filter.company_id else "all"
-    cache_key = f"dashboard_{company_cache_id}_{locationId or 'all'}"
+    cache_key = f"dashboard_{company_cache_id}_{locationId or 'all'}_{days or 'all'}"
     cached = get_cached(cache_key)
     if cached:
         return cached
@@ -59,6 +61,11 @@ def get_dashboard(
     today = datetime.now().date()
     today_start = datetime.combine(today, datetime.min.time())
     today_end = datetime.combine(today, datetime.max.time())
+
+    # Date range filter (if days param is provided)
+    date_start = None
+    if days:
+        date_start = datetime.combine(today - timedelta(days=days), datetime.min.time())
 
     # OPTIMIZED: Single query with all counts using CASE statements
     pending_statuses = [OrderStatus.CREATED, OrderStatus.CONFIRMED, OrderStatus.ALLOCATED]
@@ -68,6 +75,8 @@ def get_dashboard(
     status_query = company_filter.apply_filter(status_query, Order.companyId)
     if locationId:
         status_query = status_query.where(Order.locationId == locationId)
+    if date_start:
+        status_query = status_query.where(Order.orderDate >= date_start)
     status_results = session.exec(status_query).all()
 
     # Calculate metrics from status breakdown
@@ -104,6 +113,8 @@ def get_dashboard(
     revenue_query = company_filter.apply_filter(revenue_query, Order.companyId)
     if locationId:
         revenue_query = revenue_query.where(Order.locationId == locationId)
+    if date_start:
+        revenue_query = revenue_query.where(Order.orderDate >= date_start)
     total_revenue = session.exec(revenue_query).one() or 0
 
     # Inventory stats

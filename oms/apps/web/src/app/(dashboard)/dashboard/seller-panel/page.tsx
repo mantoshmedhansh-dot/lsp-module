@@ -253,13 +253,17 @@ export default function SellerPanelDashboard() {
         setLoading(true);
       }
 
-      // Fetch from real dashboard endpoints
+      // Fetch from real dashboard endpoints with period filtering
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 60000);
+      const periodDays = parseInt(period);
+
+      // Map period dropdown (days) to analytics period param
+      const analyticsPeriod = periodDays <= 7 ? "week" : periodDays <= 30 ? "month" : "year";
 
       const [dashRes, analyticsRes] = await Promise.all([
-        fetch("/api/v1/dashboard", { signal: controller.signal }),
-        fetch(`/api/v1/dashboard/analytics?period=week`, { signal: controller.signal }),
+        fetch(`/api/v1/dashboard?days=${periodDays}`, { signal: controller.signal }),
+        fetch(`/api/v1/dashboard/analytics?period=${analyticsPeriod}`, { signal: controller.signal }),
       ]);
       clearTimeout(timeout);
 
@@ -270,7 +274,6 @@ export default function SellerPanelDashboard() {
       const dash = await dashRes.json();
       const analytics = analyticsRes.ok ? await analyticsRes.json() : { orderTrend: [] };
       const summary = dash?.summary || {};
-      const periodDays = parseInt(period);
 
       // Map backend dashboard response to seller-panel format
       const totalOrders = summary.totalOrders || 0;

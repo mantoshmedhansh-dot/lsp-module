@@ -34,6 +34,7 @@ export interface DashboardAnalytics {
 
 export interface DashboardStatsParams {
   locationId?: string;
+  days?: number;
 }
 
 export interface DashboardAnalyticsParams {
@@ -57,6 +58,9 @@ async function fetchDashboardStats(params: DashboardStatsParams = {}): Promise<D
   const searchParams = new URLSearchParams();
   if (params.locationId) {
     searchParams.set("locationId", params.locationId);
+  }
+  if (params.days) {
+    searchParams.set("days", String(params.days));
   }
 
   const url = `/api/v1/dashboard${searchParams.toString() ? `?${searchParams}` : ""}`;
@@ -128,6 +132,7 @@ export function useDashboardAnalytics(params: DashboardAnalyticsParams = {}) {
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 30 * 60 * 1000, // Keep in cache for 30 minutes
     refetchOnWindowFocus: false,
+    placeholderData: (prev: DashboardAnalytics | undefined) => prev,
     retry: 1,
     retryDelay: 5000,
   });

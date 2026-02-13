@@ -114,16 +114,6 @@ function formatNumber(num: number): string {
   return num.toLocaleString("en-IN");
 }
 
-// Mock weekly trend data (will be replaced by real analytics)
-function generateWeeklyTrend(total: number) {
-  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  const base = Math.max(Math.floor(total / 7), 1);
-  return days.map((day) => ({
-    day,
-    orders: Math.max(0, base + Math.floor((Math.random() - 0.3) * base)),
-    revenue: Math.max(0, (base * 500) + Math.floor((Math.random() - 0.3) * base * 500)),
-  }));
-}
 
 export default function DashboardPage() {
   const { data: session } = useSession();
@@ -138,7 +128,6 @@ export default function DashboardPage() {
 
   const {
     data: analyticsData,
-    isLoading: isLoadingAnalytics,
   } = useDashboardAnalytics({ period: "week" });
 
   const isLoading = isLoadingDashboard;
@@ -170,8 +159,12 @@ export default function DashboardPage() {
   const maxStatusCount = Math.max(...orderStatusData.map((s) => s.value), 1);
   const totalStatusOrders = orderStatusData.reduce((sum, s) => sum + s.value, 0);
 
-  // Weekly trend
-  const weeklyTrend = generateWeeklyTrend(totalOrders);
+  // Weekly trend from real analytics data
+  const weeklyTrend = (analyticsData?.orderTrend || []).map((t) => ({
+    day: new Date(t.date).toLocaleDateString("en-US", { weekday: "short" }),
+    orders: t.orders,
+    revenue: t.revenue,
+  }));
 
   // Recent activity
   const recentActivity = dashboardData?.recentActivity?.length
@@ -284,17 +277,19 @@ export default function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            {(
+            {weeklyTrend.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <BarChart3 className="h-10 w-10 text-indigo-300 mb-3" />
+                <p className="font-medium text-muted-foreground">No trend data</p>
+                <p className="text-sm text-muted-foreground/60 mt-1">Order trends will appear here as orders are created</p>
+              </div>
+            ) : (
               <ResponsiveContainer width="100%" height={250}>
                 <AreaChart data={weeklyTrend}>
                   <defs>
                     <linearGradient id="orderGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#6366f1" stopOpacity={0.3} />
                       <stop offset="100%" stopColor="#6366f1" stopOpacity={0} />
-                    </linearGradient>
-                    <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#10b981" stopOpacity={0.2} />
-                      <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />

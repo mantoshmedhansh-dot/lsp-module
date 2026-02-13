@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useState } from "react";
 import { useSession } from "next-auth/react";
 import {
   BarChart3,
@@ -13,8 +13,6 @@ import {
   Clock,
   AlertTriangle,
   XCircle,
-  ChevronLeft,
-  ChevronRight,
   RefreshCw,
 } from "lucide-react";
 import {
@@ -26,37 +24,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-
-interface DashboardData {
-  // Row 1: Order Volume Metrics
-  totalOrders: number;
-  totalOrderLines: number;
-  totalOrderQuantity: number;
-  distinctSkuSold: number;
-  avgLinesPerOrder: number;
-
-  // Row 2: Financial Metrics
-  totalOrderAmount: number;
-  avgOrderAmount: number;
-  codPercentage: number;
-  totalDiscount: number;
-  orderQtyPendingStock: number;
-
-  // Row 3: Order Status Metrics
-  totalPendingOrder: number;
-  unfulfillableLineLevelOrder: number;
-  totalUnfulfillableOrder: number;
-  totalSlaBreachedOrder: number;
-  totalFailedOrder: number;
-
-  // Charts data
-  orderCountByDate: { date: string; count: number }[];
-  orderLineCountByDate: { date: string; count: number }[];
-
-  // Metadata
-  period: number;
-  generatedAt: string;
-}
+import { useDashboardStats, useDashboardAnalytics } from "@/hooks";
 
 type CardColor = "blue" | "orange" | "yellow" | "teal" | "green" | "red" | "darkRed";
 
@@ -103,17 +71,13 @@ function KPICard({
   );
 }
 
-// Bar Chart Component matching Vinculum style
+// Bar Chart Component (display-only, no per-chart period selector)
 function BarChart({
   data,
   title,
-  period,
-  onPeriodChange,
 }: {
   data: { date: string; count: number }[];
   title: string;
-  period: string;
-  onPeriodChange: (period: string) => void;
 }) {
   const maxValue = Math.max(...data.map((d) => d.count), 1);
 
@@ -132,76 +96,61 @@ function BarChart({
 
   return (
     <div className="bg-white rounded-lg border shadow-sm p-4">
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex items-center gap-2">
-          <button className="p-1 hover:bg-gray-100 rounded transition-colors">
-            <ChevronLeft className="h-4 w-4 text-gray-500" />
-          </button>
-          <button className="p-1 hover:bg-gray-100 rounded transition-colors">
-            <ChevronRight className="h-4 w-4 text-gray-500" />
-          </button>
-        </div>
-        <Select value={period} onValueChange={onPeriodChange}>
-          <SelectTrigger className="w-[140px] h-8 text-sm">
-            <SelectValue placeholder="Select range" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="7">Last 7 days</SelectItem>
-            <SelectItem value="14">Last 14 days</SelectItem>
-            <SelectItem value="30">Last 30 days</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
       <div className="text-center mb-4">
         <h3 className="font-semibold text-gray-800">{title}</h3>
-        <p className="text-xs text-gray-500">[Click On The Bar(s) To Drilldown]</p>
       </div>
 
-      <div className="flex">
-        {/* Y-axis labels */}
-        <div className="flex flex-col justify-between pr-2 text-xs text-gray-500 h-[220px]">
-          {yAxisLabels.map((label, i) => (
-            <span key={i} className="text-right w-12">
-              {label.toLocaleString()}
-            </span>
-          ))}
+      {data.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <BarChart3 className="h-10 w-10 text-gray-300 mb-3" />
+          <p className="text-sm text-gray-500">No data for this period</p>
         </div>
-
-        {/* Chart area */}
-        <div className="flex-1">
-          <div className="flex items-end justify-around h-[220px] border-l border-b border-gray-300 bg-gray-50/50">
-            {data.slice(-7).map((item, index) => {
-              const height = maxValue > 0 ? (item.count / maxValue) * 100 : 0;
-              return (
-                <div
-                  key={index}
-                  className="flex flex-col items-center justify-end h-full px-1"
-                  style={{ width: `${100 / Math.min(data.length, 7)}%` }}
-                >
-                  <div
-                    className="bg-sky-400 hover:bg-sky-500 w-full max-w-[45px] cursor-pointer transition-all rounded-t shadow-sm"
-                    style={{ height: `${height}%`, minHeight: item.count > 0 ? "4px" : "0" }}
-                    title={`${item.count.toLocaleString()} on ${formatDate(item.date)}`}
-                  />
-                </div>
-              );
-            })}
-          </div>
-          {/* X-axis labels */}
-          <div className="flex justify-around mt-2 border-l border-transparent">
-            {data.slice(-7).map((item, index) => (
-              <span
-                key={index}
-                className="text-xs text-gray-500 text-center truncate"
-                style={{ width: `${100 / Math.min(data.length, 7)}%` }}
-              >
-                {formatDate(item.date)}
+      ) : (
+        <div className="flex">
+          {/* Y-axis labels */}
+          <div className="flex flex-col justify-between pr-2 text-xs text-gray-500 h-[220px]">
+            {yAxisLabels.map((label, i) => (
+              <span key={i} className="text-right w-12">
+                {label.toLocaleString()}
               </span>
             ))}
           </div>
+
+          {/* Chart area */}
+          <div className="flex-1">
+            <div className="flex items-end justify-around h-[220px] border-l border-b border-gray-300 bg-gray-50/50">
+              {data.slice(-7).map((item, index) => {
+                const height = maxValue > 0 ? (item.count / maxValue) * 100 : 0;
+                return (
+                  <div
+                    key={index}
+                    className="flex flex-col items-center justify-end h-full px-1"
+                    style={{ width: `${100 / Math.min(data.length, 7)}%` }}
+                  >
+                    <div
+                      className="bg-sky-400 hover:bg-sky-500 w-full max-w-[45px] cursor-pointer transition-all rounded-t shadow-sm"
+                      style={{ height: `${height}%`, minHeight: item.count > 0 ? "4px" : "0" }}
+                      title={`${item.count.toLocaleString()} on ${formatDate(item.date)}`}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+            {/* X-axis labels */}
+            <div className="flex justify-around mt-2 border-l border-transparent">
+              {data.slice(-7).map((item, index) => (
+                <span
+                  key={index}
+                  className="text-xs text-gray-500 text-center truncate"
+                  style={{ width: `${100 / Math.min(data.length, 7)}%` }}
+                >
+                  {formatDate(item.date)}
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -239,92 +188,40 @@ function DashboardSkeleton() {
 
 export default function SellerPanelDashboard() {
   const { data: session } = useSession();
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [period, setPeriod] = useState("7");
-  const [refreshing, setRefreshing] = useState(false);
 
-  const fetchDashboardData = useCallback(async (showRefreshing = false) => {
-    try {
-      // Only show full skeleton on initial load, not on period change
-      if (dashboardData) {
-        setRefreshing(true);
-      } else {
-        setLoading(true);
-      }
+  const periodDays = parseInt(period);
+  const analyticsPeriod = periodDays <= 7 ? "week" : periodDays <= 30 ? "month" : "year";
 
-      // Fetch from real dashboard endpoints with period filtering
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 60000);
-      const periodDays = parseInt(period);
+  const {
+    data: statsData,
+    isLoading,
+    isFetching,
+    error: statsError,
+    refetch,
+  } = useDashboardStats({ days: periodDays });
 
-      // Map period dropdown (days) to analytics period param
-      const analyticsPeriod = periodDays <= 7 ? "week" : periodDays <= 30 ? "month" : "year";
+  const {
+    data: analyticsData,
+    error: analyticsError,
+    refetch: refetchAnalytics,
+  } = useDashboardAnalytics({ period: analyticsPeriod });
 
-      const [dashRes, analyticsRes] = await Promise.all([
-        fetch(`/api/v1/dashboard?days=${periodDays}`, { signal: controller.signal }),
-        fetch(`/api/v1/dashboard/analytics?period=${analyticsPeriod}`, { signal: controller.signal }),
-      ]);
-      clearTimeout(timeout);
+  const error = statsError || analyticsError;
 
-      if (!dashRes.ok) {
-        throw new Error("Failed to fetch dashboard data");
-      }
+  // Derive KPI values from hook data
+  const summary = statsData?.summary;
+  const totalOrders = summary?.totalOrders || 0;
+  const totalRevenue = summary?.totalRevenue || 0;
+  const pendingOrders = summary?.pendingOrders || 0;
+  const totalSKUs = summary?.totalSKUs || 0;
+  const avgOrderAmount = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
-      const dash = await dashRes.json();
-      const analytics = analyticsRes.ok ? await analyticsRes.json() : { orderTrend: [] };
-      const summary = dash?.summary || {};
-
-      // Map backend dashboard response to seller-panel format
-      const totalOrders = summary.totalOrders || 0;
-      const totalRevenue = summary.totalRevenue || 0;
-      const pendingOrders = summary.pendingOrders || 0;
-      const totalSKUs = summary.totalSKUs || 0;
-
-      // Build chart data from analytics
-      const orderCountByDate = (analytics.orderTrend || []).map((t: { date: string; orders: number }) => ({
-        date: t.date,
-        count: t.orders,
-      }));
-
-      setDashboardData({
-        totalOrders,
-        totalOrderLines: totalOrders,
-        totalOrderQuantity: totalOrders,
-        distinctSkuSold: totalSKUs,
-        avgLinesPerOrder: totalOrders > 0 ? 1 : 0,
-        totalOrderAmount: totalRevenue,
-        avgOrderAmount: totalOrders > 0 ? totalRevenue / totalOrders : 0,
-        codPercentage: 0,
-        totalDiscount: 0,
-        orderQtyPendingStock: 0,
-        totalPendingOrder: pendingOrders,
-        unfulfillableLineLevelOrder: 0,
-        totalUnfulfillableOrder: 0,
-        totalSlaBreachedOrder: 0,
-        totalFailedOrder: 0,
-        orderCountByDate,
-        orderLineCountByDate: orderCountByDate,
-        period: periodDays,
-        generatedAt: new Date().toISOString(),
-      });
-      setError(null);
-    } catch (err) {
-      if (err instanceof DOMException && err.name === "AbortError") {
-        setError("Request timed out. Please retry.");
-      } else {
-        setError(err instanceof Error ? err.message : "An error occurred");
-      }
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [period]);
-
-  useEffect(() => {
-    fetchDashboardData();
-  }, [fetchDashboardData]);
+  // Build chart data from analytics
+  const orderCountByDate = (analyticsData?.orderTrend || []).map((t) => ({
+    date: t.date,
+    count: t.orders,
+  }));
 
   // Format number in Indian style (lakhs, crores)
   const formatIndianNumber = (num: number) => {
@@ -344,28 +241,31 @@ export default function SellerPanelDashboard() {
     }).format(num);
   };
 
-  if (loading) {
+  // First load only: show skeleton when no data yet
+  if (isLoading && !statsData) {
     return <DashboardSkeleton />;
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-[60vh]">
-        <div className="text-center">
-          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">Error Loading Dashboard</h2>
-          <p className="text-gray-600 mb-4">{error}</p>
-          <Button onClick={() => fetchDashboardData()} variant="default">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Retry
-          </Button>
-        </div>
-      </div>
-    );
   }
 
   return (
     <div className="space-y-6">
+      {/* Inline error banner — doesn't replace the dashboard */}
+      {error && !isLoading && (
+        <div className="flex items-center gap-3 p-4 rounded-lg border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50">
+          <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0" />
+          <p className="text-sm text-amber-800 flex-1">
+            Could not load dashboard data. Please retry.
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => { refetch(); refetchAnalytics(); }}
+            className="border-amber-300 text-amber-700 hover:bg-amber-100"
+          >
+            <RefreshCw className="mr-1 h-3 w-3" /> Retry
+          </Button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-lg border shadow-sm">
         <div>
@@ -389,10 +289,10 @@ export default function SellerPanelDashboard() {
           <Button
             variant="outline"
             size="icon"
-            onClick={() => fetchDashboardData(true)}
-            disabled={refreshing}
+            onClick={() => { refetch(); refetchAnalytics(); }}
+            disabled={isFetching}
           >
-            <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+            <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
           </Button>
         </div>
       </div>
@@ -401,31 +301,31 @@ export default function SellerPanelDashboard() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         <KPICard
           label="Total Orders"
-          value={formatIndianNumber(dashboardData?.totalOrders || 0)}
+          value={formatIndianNumber(totalOrders)}
           color="blue"
           icon={ShoppingCart}
         />
         <KPICard
           label="Total Order Lines"
-          value={formatIndianNumber(dashboardData?.totalOrderLines || 0)}
+          value={formatIndianNumber(totalOrders)}
           color="orange"
           icon={Package}
         />
         <KPICard
           label="Total Order Quantity"
-          value={formatIndianNumber(dashboardData?.totalOrderQuantity || 0)}
+          value={formatIndianNumber(totalOrders)}
           color="blue"
           icon={Boxes}
         />
         <KPICard
           label="Distinct SKU Sold"
-          value={formatIndianNumber(dashboardData?.distinctSkuSold || 0)}
+          value={formatIndianNumber(totalSKUs)}
           color="yellow"
           icon={Package}
         />
         <KPICard
           label="Average Lines Per Order"
-          value={(dashboardData?.avgLinesPerOrder || 0).toFixed(2)}
+          value={totalOrders > 0 ? "1.00" : "0.00"}
           color="teal"
           icon={TrendingUp}
         />
@@ -435,31 +335,31 @@ export default function SellerPanelDashboard() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         <KPICard
           label="Total Order Amount"
-          value={formatCurrency(dashboardData?.totalOrderAmount || 0)}
+          value={formatCurrency(totalRevenue)}
           color="blue"
           icon={IndianRupee}
         />
         <KPICard
           label="Avg. Order Amount"
-          value={formatCurrency(dashboardData?.avgOrderAmount || 0)}
+          value={formatCurrency(avgOrderAmount)}
           color="orange"
           icon={TrendingUp}
         />
         <KPICard
           label="% COD Orders"
-          value={(dashboardData?.codPercentage || 0).toFixed(2)}
+          value="0.00"
           color="blue"
           icon={Percent}
         />
         <KPICard
           label="Total Discount"
-          value={formatCurrency(dashboardData?.totalDiscount || 0)}
+          value={formatCurrency(0)}
           color="yellow"
           icon={IndianRupee}
         />
         <KPICard
           label="Order Qty Pending Stock"
-          value={formatIndianNumber(dashboardData?.orderQtyPendingStock || 0)}
+          value={formatIndianNumber(0)}
           color="teal"
           icon={Clock}
         />
@@ -469,31 +369,31 @@ export default function SellerPanelDashboard() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         <KPICard
           label="Total Pending Order"
-          value={formatIndianNumber(dashboardData?.totalPendingOrder || 0)}
+          value={formatIndianNumber(pendingOrders)}
           color="green"
           icon={Clock}
         />
         <KPICard
           label="Unfulfillable Line Level Order"
-          value={formatIndianNumber(dashboardData?.unfulfillableLineLevelOrder || 0)}
+          value={formatIndianNumber(0)}
           color="orange"
           icon={AlertTriangle}
         />
         <KPICard
           label="Total Unfulfillable Order"
-          value={formatIndianNumber(dashboardData?.totalUnfulfillableOrder || 0)}
+          value={formatIndianNumber(0)}
           color="red"
           icon={XCircle}
         />
         <KPICard
           label="Total SLA Breached Order"
-          value={formatIndianNumber(dashboardData?.totalSlaBreachedOrder || 0)}
+          value={formatIndianNumber(0)}
           color="darkRed"
           icon={AlertTriangle}
         />
         <KPICard
           label="Total Failed Order"
-          value={formatIndianNumber(dashboardData?.totalFailedOrder || 0)}
+          value={formatIndianNumber(0)}
           color="darkRed"
           icon={XCircle}
         />
@@ -502,22 +402,18 @@ export default function SellerPanelDashboard() {
       {/* Bar Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <BarChart
-          data={dashboardData?.orderCountByDate || []}
+          data={orderCountByDate}
           title="Order Count - By Date"
-          period={period}
-          onPeriodChange={setPeriod}
         />
         <BarChart
-          data={dashboardData?.orderLineCountByDate || []}
+          data={orderCountByDate}
           title="Order Line Count - By Date"
-          period={period}
-          onPeriodChange={setPeriod}
         />
       </div>
 
       {/* Footer info */}
       <div className="text-center text-xs text-gray-400 py-2">
-        Last updated: {dashboardData?.generatedAt ? new Date(dashboardData.generatedAt).toLocaleString() : "N/A"}
+        Last updated: {new Date().toLocaleString()}
       </div>
     </div>
   );

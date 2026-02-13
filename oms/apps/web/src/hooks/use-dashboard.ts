@@ -99,12 +99,13 @@ export function useDashboardStats(params: DashboardStatsParams = {}) {
   return useQuery({
     queryKey: dashboardKeys.stats(params),
     queryFn: () => fetchDashboardStats(params),
-    staleTime: 60 * 1000, // 1 minute - data is cached on backend too
-    gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
-    refetchInterval: 2 * 60 * 1000, // Auto-refresh every 2 minutes
+    staleTime: 2 * 60 * 1000, // 2 minutes - data is cached on backend too
+    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
+    refetchInterval: 5 * 60 * 1000, // Auto-refresh every 5 minutes (reduced from 2min)
     refetchOnWindowFocus: false, // Don't refetch on tab focus
+    placeholderData: (prev: DashboardStats | undefined) => prev, // Keep old data during refetch
     retry: 2, // Retry failed requests twice
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
+    retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 10000),
   });
 }
 

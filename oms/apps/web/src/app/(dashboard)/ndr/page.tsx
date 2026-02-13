@@ -152,9 +152,30 @@ export default function NDRQueuePage() {
       const response = await fetch(`/api/v1/ndr?${params}`);
       if (!response.ok) throw new Error("Failed to fetch NDRs");
       const result = await response.json();
-      setNdrs(result.ndrs || []);
-      setTotal(result.total || 0);
-      setTotalPages(result.totalPages || 1);
+      // Map backend NDR fields to frontend expected format
+      const rawNdrs = result.ndrs || [];
+      const mappedNdrs = rawNdrs.map((n: Record<string, unknown>) => ({
+        id: n.id,
+        ndrNo: n.ndrCode || n.ndrNo || "",
+        orderId: n.order ? (n.order as Record<string, unknown>).id : "",
+        orderNo: n.order ? (n.order as Record<string, unknown>).orderNo : "",
+        awb: n.delivery ? (n.delivery as Record<string, unknown>).awbNo : "",
+        status: n.status || "OPEN",
+        reason: n.reason || "OTHER",
+        attempts: n.attemptNumber || 0,
+        customerName: n.order ? (n.order as Record<string, unknown>).customerName : "",
+        customerPhone: n.order ? (n.order as Record<string, unknown>).customerPhone : "",
+        customerCity: "",
+        carrierName: "",
+        lastAttemptDate: n.attemptDate || "",
+        createdAt: n.createdAt || "",
+        priority: n.priority || "MEDIUM",
+        outreachCount: n.outreachCount || 0,
+      }));
+      setNdrs(mappedNdrs);
+      const totalCount = result.total || 0;
+      setTotal(totalCount);
+      setTotalPages(Math.max(1, Math.ceil(totalCount / 25)));
     } catch (error) {
       console.error("Error fetching NDRs:", error);
       toast.error("Failed to load NDRs");
@@ -168,7 +189,16 @@ export default function NDRQueuePage() {
       const response = await fetch("/api/v1/ndr/summary");
       if (!response.ok) throw new Error("Failed to fetch summary");
       const result = await response.json();
-      setSummary(result);
+      // Map backend field names to frontend expected format
+      setSummary({
+        total: result.totalNDRs || 0,
+        pending: result.openNDRs || 0,
+        inProgress: result.inProgressNDRs || 0,
+        resolved: result.resolvedNDRs || 0,
+        rto: result.rtoNDRs || 0,
+        byReason: result.byReason || {},
+        byCarrier: result.byCarrier || {},
+      });
     } catch (error) {
       console.error("Error fetching summary:", error);
     }

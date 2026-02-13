@@ -110,26 +110,68 @@ export default function ControlTowerPage() {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      // Fetch all data in parallel
-      const [snapshotRes, insightsRes, capacityRes] = await Promise.all([
-        fetch("/api/v1/control-tower"),
-        fetch("/api/v1/control-tower/insights"),
-        fetch("/api/v1/control-tower/capacity"),
+      // Fetch dashboard data from the actual backend endpoint
+      const [dashboardRes, healthRes] = await Promise.all([
+        fetch("/api/v1/control-tower/dashboard"),
+        fetch("/api/v1/control-tower/health"),
       ]);
 
-      if (snapshotRes.ok) {
-        const snapshotData = await snapshotRes.json();
-        if (snapshotData.success) setSnapshot(snapshotData.data);
+      if (dashboardRes.ok) {
+        const data = await dashboardRes.json();
+        // Map backend response to snapshot format
+        const exc = data.exceptions || {};
+        const ops = data.operations || {};
+        setSnapshot((prev) => ({
+          ...prev,
+          activeOrders: ops.ordersToday || 0,
+          ordersAtRisk: exc.open || 0,
+          ordersBreached: exc.critical || 0,
+          slaPredictions: {
+            onTrack: Math.max(0, (ops.ordersToday || 0) - (exc.open || 0)),
+            atRisk: exc.open || 0,
+            breached: exc.critical || 0,
+            critical: exc.critical || 0,
+          },
+          alerts: {
+            p0: exc.critical || 0,
+            p1: Math.max(0, (exc.open || 0) - (exc.critical || 0)),
+            p2: exc.inProgress || 0,
+            p3: exc.resolvedToday || 0,
+            total: (exc.open || 0) + (exc.inProgress || 0),
+          },
+          inventoryHealth: prev.inventoryHealth,
+          carrierHealth: prev.carrierHealth,
+        }));
+
+        // Build insights from exception breakdown
+        const byType = exc.byType || {};
+        const newInsights: PredictiveInsight[] = Object.entries(byType).map(
+          ([type, count]) => ({
+            type: "SLA_RISK" as const,
+            severity: (count as number) >= 5 ? "CRITICAL" as const : (count as number) >= 2 ? "WARNING" as const : "INFO" as const,
+            title: type.replace(/_/g, " "),
+            description: `${count} active ${type.replace(/_/g, " ").toLowerCase()} exceptions detected`,
+            predictedImpact: { affectedOrders: count as number },
+            timeToImpact: 60,
+            recommendations: [
+              { action: `Review and resolve ${type.replace(/_/g, " ").toLowerCase()} issues`, effort: "LOW" as const, impact: "HIGH" as const },
+            ],
+          })
+        );
+        setInsights(newInsights);
       }
 
-      if (insightsRes.ok) {
-        const insightsData = await insightsRes.json();
-        if (insightsData.success) setInsights(insightsData.data.insights || []);
-      }
-
-      if (capacityRes.ok) {
-        const capacityResponse = await capacityRes.json();
-        if (capacityResponse.success) setCapacityData(capacityResponse.data.locations || []);
+      if (healthRes.ok) {
+        const healthData = await healthRes.json();
+        const breakdown = healthData.breakdown || {};
+        setSnapshot((prev) => ({
+          ...prev,
+          inventoryHealth: {
+            stockoutRisk: Math.min(100, (breakdown.critical || 0) * 10),
+            lowStockSkus: breakdown.medium || 0,
+            criticalSkus: breakdown.critical || 0,
+          },
+        }));
       }
 
       setLastRefresh(new Date());
@@ -142,8 +184,8 @@ export default function ControlTowerPage() {
 
   useEffect(() => {
     fetchData();
-    // Refresh every 30 seconds
-    const interval = setInterval(fetchData, 30000);
+    // Refresh every 5 minutes (not 30s - avoids hammering the server)
+    const interval = setInterval(fetchData, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
 

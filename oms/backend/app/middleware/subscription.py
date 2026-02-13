@@ -3,10 +3,14 @@ Subscription Middleware - Enforces module access and usage limits per tenant.
 Runs after auth, checks if tenant's plan includes the required module.
 Also enforces usage limits (orders/month, users, locations, SKUs) on POST requests.
 SUPER_ADMIN bypasses all checks.
+
+Performance: subscription/module lookups are cached in-memory (5-min TTL)
+to avoid hitting the database on every API request.
 """
 import logging
+import time
 from datetime import datetime, timezone
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Dict, Any
 
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -16,6 +20,35 @@ from sqlmodel import Session, select, func
 from app.core.database import engine
 
 logger = logging.getLogger("subscription")
+
+# ── In-memory TTL cache for subscription lookups ──────────────────────
+# Key: company_id → { "data": {...}, "expires": timestamp }
+_sub_cache: Dict[str, Dict[str, Any]] = {}
+_SUB_CACHE_TTL = 300  # 5 minutes
+
+
+def _cache_get(company_id: str) -> Optional[Dict[str, Any]]:
+    """Get cached subscription data if not expired."""
+    entry = _sub_cache.get(company_id)
+    if entry and entry["expires"] > time.monotonic():
+        return entry["data"]
+    # Expired or missing — evict
+    _sub_cache.pop(company_id, None)
+    return None
+
+
+def _cache_set(company_id: str, data: Dict[str, Any]) -> None:
+    """Cache subscription data with TTL."""
+    _sub_cache[company_id] = {
+        "data": data,
+        "expires": time.monotonic() + _SUB_CACHE_TTL,
+    }
+    # Lazy eviction: if cache grows large, drop expired entries
+    if len(_sub_cache) > 500:
+        now = time.monotonic()
+        expired = [k for k, v in _sub_cache.items() if v["expires"] <= now]
+        for k in expired:
+            del _sub_cache[k]
 
 # Map POST endpoints to (limitKey, model_import_path, needs_monthly_filter)
 # These are checked only on POST (create) requests
@@ -178,7 +211,30 @@ class SubscriptionMiddleware(BaseHTTPMiddleware):
         if not is_bypass and not required_module:
             return await call_next(request)
 
-        # Check subscription and module access
+        # ── Try cached subscription data first (avoids DB hit) ────────
+        cached = _cache_get(company_id)
+        if cached is not None:
+            # Use cached result for module checks
+            if cached.get("no_subscription") and not is_bypass:
+                return JSONResponse(status_code=403, content=cached["response"])
+            if cached.get("trial_expired") and not is_bypass:
+                return JSONResponse(status_code=403, content=cached["response"])
+            if required_module and required_module not in cached.get("modules", set()):
+                return JSONResponse(
+                    status_code=403,
+                    content={
+                        "error": "upgrade_required",
+                        "message": f"The {required_module} module is not included in your {cached.get('plan_name', 'current')} plan.",
+                        "module": required_module,
+                        "currentPlan": cached.get("plan_slug"),
+                        "upgradeUrl": "/settings/billing",
+                    },
+                )
+            # Cached and allowed — skip usage limit check for GET (only POST needs it)
+            if method != "POST":
+                return await call_next(request)
+
+        # ── Cache miss or POST request needing usage check — hit DB ───
         try:
             with Session(engine) as session:
                 from app.models.tenant_subscription import TenantSubscription
@@ -193,83 +249,87 @@ class SubscriptionMiddleware(BaseHTTPMiddleware):
                 ).first()
 
                 if not sub:
-                    # For bypass paths, don't block on missing subscription
+                    resp = {
+                        "error": "no_subscription",
+                        "message": "No active subscription found. Please subscribe to a plan.",
+                        "upgradeUrl": "/settings/billing",
+                    }
+                    _cache_set(company_id, {"no_subscription": True, "response": resp})
                     if is_bypass:
                         return await call_next(request)
+                    return JSONResponse(status_code=403, content=resp)
+
+                # Check trial expiry
+                trial_expired = False
+                if sub.status == "trialing" and sub.trialEndsAt:
+                    if sub.trialEndsAt.replace(tzinfo=timezone.utc) < datetime.now(timezone.utc):
+                        trial_expired = True
+
+                if trial_expired and not is_bypass:
+                    resp = {
+                        "error": "trial_expired",
+                        "message": "Your free trial has expired. Please upgrade to continue.",
+                        "upgradeUrl": "/settings/billing",
+                    }
+                    _cache_set(company_id, {"trial_expired": True, "response": resp})
+                    return JSONResponse(status_code=403, content=resp)
+
+                # Load all modules for this plan (single query, then cache)
+                plan_modules = session.exec(
+                    select(PlanModule.module)
+                    .where(PlanModule.planId == sub.planId)
+                ).all()
+                module_set = set(plan_modules)
+
+                # Get plan name for error messages
+                plan = session.exec(
+                    select(Plan).where(Plan.id == sub.planId)
+                ).first()
+
+                # Cache the subscription + modules
+                _cache_set(company_id, {
+                    "modules": module_set,
+                    "plan_id": str(sub.planId),
+                    "plan_name": plan.name if plan else "current",
+                    "plan_slug": plan.slug if plan else None,
+                    "status": sub.status,
+                })
+
+                # Check module access
+                if required_module and required_module not in module_set:
                     return JSONResponse(
                         status_code=403,
                         content={
-                            "error": "no_subscription",
-                            "message": "No active subscription found. Please subscribe to a plan.",
-                            "upgradeUrl": "/settings/billing"
-                        }
+                            "error": "upgrade_required",
+                            "message": f"The {required_module} module is not included in your {plan.name if plan else 'current'} plan.",
+                            "module": required_module,
+                            "currentPlan": plan.slug if plan else None,
+                            "upgradeUrl": "/settings/billing",
+                        },
                     )
 
-                # Check trial expiry (only for non-bypass paths)
-                if not is_bypass and sub.status == "trialing" and sub.trialEndsAt:
-                    if sub.trialEndsAt.replace(tzinfo=timezone.utc) < datetime.now(timezone.utc):
-                        return JSONResponse(
-                            status_code=403,
-                            content={
-                                "error": "trial_expired",
-                                "message": "Your free trial has expired. Please upgrade to continue.",
-                                "upgradeUrl": "/settings/billing"
-                            }
-                        )
-
-                # Check if plan includes the required module (skip for bypass paths)
-                if required_module:
-                    module_exists = session.exec(
-                        select(PlanModule)
-                        .where(PlanModule.planId == sub.planId)
-                        .where(PlanModule.module == required_module)
-                    ).first()
-
-                    if not module_exists:
-                        plan = session.exec(
-                            select(Plan).where(Plan.id == sub.planId)
-                        ).first()
-                        return JSONResponse(
-                            status_code=403,
-                            content={
-                                "error": "upgrade_required",
-                                "message": f"The {required_module} module is not included in your {plan.name if plan else 'current'} plan.",
-                                "module": required_module,
-                                "currentPlan": plan.slug if plan else None,
-                                "upgradeUrl": "/settings/billing"
-                            }
-                        )
-
-                # ============================================================
-                # Usage Limit Enforcement (POST requests only)
-                # ============================================================
+                # ── Usage Limit Enforcement (POST requests only) ──────
                 if method == "POST":
                     limit_config = _get_usage_limit_config(path)
                     if limit_config:
                         limit_key, model_ref, needs_monthly_filter = limit_config
 
-                        # Look up the plan limit for this key
                         plan_limit = session.exec(
                             select(PlanLimit)
                             .where(PlanLimit.planId == sub.planId)
                             .where(PlanLimit.limitKey == limit_key)
                         ).first()
 
-                        # If no limit row exists or limitValue is -1, treat as unlimited
                         if plan_limit and plan_limit.limitValue != -1:
                             max_allowed = plan_limit.limitValue
-
-                            # Get the actual model class for counting
                             ModelClass = _get_model_class(model_ref)
 
-                            # Build the count query
                             count_query = (
                                 select(func.count())
                                 .select_from(ModelClass)
                                 .where(ModelClass.companyId == company_id)
                             )
 
-                            # For orders, filter by current month
                             if needs_monthly_filter:
                                 now = datetime.now(timezone.utc)
                                 month_start = now.replace(
@@ -293,8 +353,8 @@ class SubscriptionMiddleware(BaseHTTPMiddleware):
                                         "limitKey": limit_key,
                                         "current": current_count,
                                         "limit": max_allowed,
-                                        "upgradeUrl": "/settings/billing"
-                                    }
+                                        "upgradeUrl": "/settings/billing",
+                                    },
                                 )
 
         except Exception as e:

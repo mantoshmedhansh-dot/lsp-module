@@ -94,7 +94,9 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       return res.json();
     },
     enabled: !!session?.user && !isSuperAdmin,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 30 * 60 * 1000, // 30 minutes — plan data rarely changes
+    gcTime: 60 * 60 * 1000, // Keep in cache for 1 hour
+    refetchOnWindowFocus: false,
   });
 
   const { data: usageData, isLoading: usageLoading } = useQuery({
@@ -105,7 +107,9 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       return res.json();
     },
     enabled: !!session?.user && !isSuperAdmin,
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 15 * 60 * 1000, // 15 minutes — usage counts don't need real-time
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   const { data: companyData } = useQuery({
@@ -116,7 +120,9 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       return res.json();
     },
     enabled: !!session?.user && !isSuperAdmin,
-    staleTime: 10 * 60 * 1000, // 10 minutes — rarely changes
+    staleTime: 60 * 60 * 1000, // 1 hour — company context almost never changes
+    gcTime: 60 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   const companyContext: CompanyContext = {

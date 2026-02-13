@@ -546,17 +546,31 @@ function CollapsibleSectionGroup({
 
   const [isOpen, setIsOpen] = useState(defaultOpen || hasActiveItem);
 
+  // Map label colors to dot colors
+  const dotColorMap: Record<string, string> = {
+    "text-purple-600": "bg-purple-500",
+    "text-amber-600": "bg-amber-500",
+    "text-rose-600": "bg-rose-500",
+    "text-slate-500": "bg-slate-400",
+    "text-teal-600": "bg-teal-500",
+    "text-indigo-600": "bg-indigo-500",
+  };
+  const dotColor = dotColorMap[labelColor || ""] || "bg-gray-400";
+
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <SidebarGroup>
         <CollapsibleTrigger asChild>
           <SidebarGroupLabel
             className={cn(
-              "text-xs font-semibold cursor-pointer hover:text-foreground transition-colors flex items-center justify-between",
+              "text-xs font-bold uppercase tracking-wider cursor-pointer hover:text-foreground transition-colors flex items-center justify-between",
               labelColor || "text-muted-foreground"
             )}
           >
-            {label}
+            <span className="flex items-center gap-1.5">
+              <span className={`h-1.5 w-1.5 rounded-full ${dotColor}`} />
+              {label}
+            </span>
             <ChevronRight
               className={cn(
                 "h-3 w-3 transition-transform",
@@ -618,8 +632,8 @@ function GatedSectionGroup({
       <SidebarGroup>
         <SidebarGroupLabel
           className={cn(
-            "text-xs font-semibold flex items-center justify-between",
-            "text-muted-foreground/50"
+            "text-xs font-bold uppercase tracking-wider flex items-center justify-between",
+            "text-muted-foreground/40"
           )}
         >
           <span className="flex items-center gap-1.5">
@@ -627,7 +641,7 @@ function GatedSectionGroup({
             {label}
           </span>
           <Link href="/settings/billing">
-            <Badge variant="outline" className="text-[10px] px-1.5 py-0 cursor-pointer hover:bg-accent">
+            <Badge className="text-[10px] px-2 py-0.5 cursor-pointer bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-0 hover:from-indigo-600 hover:to-purple-600 shadow-sm">
               Upgrade
             </Badge>
           </Link>
@@ -667,15 +681,15 @@ export function AppSidebar() {
 
   return (
     <Sidebar>
-      <SidebarHeader className="border-b px-4 py-3">
-        <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-md">
+      <SidebarHeader className="border-b px-4 py-3 bg-gradient-to-r from-slate-50 to-white">
+        <Link href="/dashboard" className="flex items-center gap-3 group">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 text-white shadow-lg shadow-indigo-200/50 group-hover:shadow-indigo-300/60 transition-shadow">
             <Package className="h-5 w-5" />
           </div>
           <div className="flex flex-col">
-            <span className="font-bold text-base">CJDQuick OMS</span>
-            <span className="text-xs text-muted-foreground">
-              Order Management System
+            <span className="font-extrabold text-base bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent">CJDQuick OMS</span>
+            <span className="text-[10px] font-medium text-muted-foreground tracking-wider uppercase">
+              Order Management
             </span>
           </div>
         </Link>
@@ -712,7 +726,8 @@ export function AppSidebar() {
         {/* ═══ 1. ADMIN (SUPER_ADMIN ONLY) ═══ */}
         {session?.user?.role === "SUPER_ADMIN" && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-xs font-semibold text-orange-600">
+            <SidebarGroupLabel className="text-xs font-bold uppercase tracking-wider text-orange-600 flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-orange-500" />
               Admin
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -725,7 +740,8 @@ export function AppSidebar() {
 
         {/* ═══ 2. COMMAND CENTER (Dashboard = OMS, Control Tower = gated) ═══ */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-blue-600">
+          <SidebarGroupLabel className="text-xs font-bold uppercase tracking-wider text-blue-600 flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
             Command Center
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -743,7 +759,8 @@ export function AppSidebar() {
 
         {/* ═══ 3. ORDER LIFECYCLE (OMS - all plans) ═══ */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-green-600">
+          <SidebarGroupLabel className="text-xs font-bold uppercase tracking-wider text-emerald-600 flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
             Order Lifecycle
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -790,7 +807,8 @@ export function AppSidebar() {
 
         {/* ═══ 6. PROCUREMENT (always visible) ═══ */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-teal-600">
+          <SidebarGroupLabel className="text-xs font-bold uppercase tracking-wider text-teal-600 flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-teal-500" />
             Procurement
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -853,14 +871,14 @@ export function AppSidebar() {
         )}
       </SidebarContent>
 
-      <SidebarFooter className="border-t">
+      <SidebarFooter className="border-t bg-gradient-to-r from-slate-50/80 to-white">
         <SidebarMenu>
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <SidebarMenuButton className="w-full">
-                  <Avatar className="h-6 w-6">
-                    <AvatarFallback className="text-xs bg-gradient-to-br from-blue-600 to-indigo-700 text-white">
+                <SidebarMenuButton className="w-full py-3">
+                  <Avatar className="h-8 w-8 shadow-sm">
+                    <AvatarFallback className="text-xs font-bold bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 text-white">
                       {session?.user?.role === "SUPER_ADMIN"
                         ? "SA"
                         : session?.user?.name
@@ -869,16 +887,16 @@ export function AppSidebar() {
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col items-start text-sm">
-                    <span className="font-medium">
+                    <span className="font-semibold">
                       {session?.user?.role === "SUPER_ADMIN"
                         ? "Super Admin"
                         : session?.user?.name}
                     </span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
                       {session?.user?.role?.replace(/_/g, " ")}
                     </span>
                   </div>
-                  <ChevronDown className="ml-auto h-4 w-4" />
+                  <ChevronDown className="ml-auto h-4 w-4 text-muted-foreground" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-56">

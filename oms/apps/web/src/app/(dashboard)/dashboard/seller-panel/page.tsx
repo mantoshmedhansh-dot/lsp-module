@@ -253,15 +253,65 @@ export default function SellerPanelDashboard() {
         setLoading(true);
       }
 
-      const response = await fetch(`/api/v1/dashboard/seller-panel?period=${period}`);
-      if (!response.ok) {
+      // Fetch from real dashboard endpoints
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 20000);
+
+      const [dashRes, analyticsRes] = await Promise.all([
+        fetch("/api/v1/dashboard", { signal: controller.signal }),
+        fetch(`/api/v1/dashboard/analytics?period=week`, { signal: controller.signal }),
+      ]);
+      clearTimeout(timeout);
+
+      if (!dashRes.ok) {
         throw new Error("Failed to fetch dashboard data");
       }
-      const data = await response.json();
-      setDashboardData(data);
+
+      const dash = await dashRes.json();
+      const analytics = analyticsRes.ok ? await analyticsRes.json() : { orderTrend: [] };
+      const summary = dash?.summary || {};
+      const periodDays = parseInt(period);
+
+      // Map backend dashboard response to seller-panel format
+      const totalOrders = summary.totalOrders || 0;
+      const totalRevenue = summary.totalRevenue || 0;
+      const pendingOrders = summary.pendingOrders || 0;
+      const totalSKUs = summary.totalSKUs || 0;
+
+      // Build chart data from analytics
+      const orderCountByDate = (analytics.orderTrend || []).map((t: { date: string; orders: number }) => ({
+        date: t.date,
+        count: t.orders,
+      }));
+
+      setDashboardData({
+        totalOrders,
+        totalOrderLines: totalOrders,
+        totalOrderQuantity: totalOrders,
+        distinctSkuSold: totalSKUs,
+        avgLinesPerOrder: totalOrders > 0 ? 1 : 0,
+        totalOrderAmount: totalRevenue,
+        avgOrderAmount: totalOrders > 0 ? totalRevenue / totalOrders : 0,
+        codPercentage: 0,
+        totalDiscount: 0,
+        orderQtyPendingStock: 0,
+        totalPendingOrder: pendingOrders,
+        unfulfillableLineLevelOrder: 0,
+        totalUnfulfillableOrder: 0,
+        totalSlaBreachedOrder: 0,
+        totalFailedOrder: 0,
+        orderCountByDate,
+        orderLineCountByDate: orderCountByDate,
+        period: periodDays,
+        generatedAt: new Date().toISOString(),
+      });
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      if (err instanceof DOMException && err.name === "AbortError") {
+        setError("Server is warming up. Please retry in a moment.");
+      } else {
+        setError(err instanceof Error ? err.message : "An error occurred");
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);

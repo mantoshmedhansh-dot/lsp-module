@@ -197,9 +197,9 @@ export default function SalesAnalyticsPage() {
   const totalOrders = trends.reduce((sum, t) => sum + t.orders, 0);
   const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
-  // Calculate growth (mock - would need previous period data)
-  const revenueGrowth = stats?.summary?.totalRevenue ? 12.5 : 0;
-  const ordersGrowth = stats?.summary?.todayOrders ? 8.2 : 0;
+  // TODO: Calculate from previous period data
+  const revenueGrowth = 0;
+  const ordersGrowth = 0;
 
   const channelColors: Record<string, string> = {
     AMAZON: "bg-orange-500",
@@ -239,7 +239,7 @@ export default function SalesAnalyticsPage() {
             <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
             Refresh
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => toast.info("Export coming soon")}>
             <Download className="mr-2 h-4 w-4" />
             Export
           </Button>

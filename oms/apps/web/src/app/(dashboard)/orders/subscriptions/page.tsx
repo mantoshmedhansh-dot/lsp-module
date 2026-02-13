@@ -11,7 +11,7 @@ import {
   Pause,
   X,
   User,
-  DollarSign,
+  IndianRupee,
   Plus,
   Clock,
   CheckCircle,
@@ -245,6 +245,11 @@ export default function SubscriptionsPage() {
     return value;
   };
 
+  const formatCurrency = (value: string | number | null): string => {
+    const num = typeof value === "string" ? parseFloat(value) || 0 : (value ?? 0);
+    return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2 }).format(num);
+  };
+
   const stats = {
     total: subscriptions.length,
     active: subscriptions.filter(s => s.status === "ACTIVE").length,
@@ -266,7 +271,7 @@ export default function SubscriptionsPage() {
             <RefreshCw className="mr-2 h-4 w-4" />
             Refresh
           </Button>
-          <Button>
+          <Button onClick={() => router.push("/orders/subscriptions/new")}>
             <Plus className="mr-2 h-4 w-4" />
             New Subscription
           </Button>
@@ -339,7 +344,7 @@ export default function SubscriptionsPage() {
                       : "-"
                     }
                   </div>
-                  <p className="font-medium">${parseDecimal(delivery.totalAmount).toFixed(2)}</p>
+                  <p className="font-medium">{formatCurrency(delivery.totalAmount)}</p>
                 </div>
               ))}
             </div>
@@ -439,7 +444,7 @@ export default function SubscriptionsPage() {
                       )}
                     </TableCell>
                     <TableCell className="text-right font-medium">
-                      ${parseDecimal(subscription.totalAmount).toFixed(2)}
+                      {formatCurrency(subscription.totalAmount)}
                     </TableCell>
                     <TableCell>{getStatusBadge(subscription.status)}</TableCell>
                     <TableCell className="text-right">

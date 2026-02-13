@@ -131,7 +131,13 @@ export default function AuditLogsPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => {
+            const csv = logs.map(a => `${a.entityType},${a.action},${a.userName || "System"},${a.createdAt}`).join("\n");
+            const blob = new Blob(["Entity,Action,User,Date\n" + csv], { type: "text/csv" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a"); a.href = url; a.download = "audit-log.csv"; a.click();
+            URL.revokeObjectURL(url);
+          }}>
             <Download className="mr-2 h-4 w-4" />
             Export
           </Button>

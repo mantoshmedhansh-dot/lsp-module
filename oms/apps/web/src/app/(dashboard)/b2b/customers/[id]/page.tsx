@@ -964,11 +964,11 @@ export default function CustomerDetailPage() {
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button variant="outline" className="w-full justify-start">
+                <Button variant="outline" className="w-full justify-start" onClick={() => toast.info("Add credit coming soon")}>
                   <Plus className="mr-2 h-4 w-4" />
                   Add Credit
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
+                <Button variant="outline" className="w-full justify-start" onClick={() => toast.info("View statement coming soon")}>
                   <FileText className="mr-2 h-4 w-4" />
                   View Statement
                 </Button>
@@ -976,6 +976,7 @@ export default function CustomerDetailPage() {
                   <Button
                     variant="outline"
                     className="w-full justify-start text-red-600"
+                    onClick={() => toast.info("Block credit coming soon")}
                   >
                     <AlertCircle className="mr-2 h-4 w-4" />
                     Block Credit

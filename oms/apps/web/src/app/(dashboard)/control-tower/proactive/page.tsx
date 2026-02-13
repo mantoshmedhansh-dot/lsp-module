@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
+import { toast } from "sonner";
 
 interface ProactiveCommunication {
   id: string;
@@ -303,7 +304,7 @@ export default function ProactiveCommunicationPage() {
                       <Icon className={`h-5 w-5 ${color}`} />
                       <span className="font-medium text-sm">{label}</span>
                     </div>
-                    <Switch checked={true} />
+                    <Switch checked={true} onCheckedChange={() => toast.info(`${label} toggle coming soon`)} />
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="text-2xl font-bold">{count}</div>

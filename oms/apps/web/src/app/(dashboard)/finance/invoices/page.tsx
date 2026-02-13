@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import {
   Card,
@@ -38,6 +39,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface InvoiceOrder {
   id: string;
@@ -55,6 +57,7 @@ interface InvoiceOrder {
 }
 
 export default function InvoicesPage() {
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(1);
@@ -293,10 +296,10 @@ export default function InvoicesPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-1">
-                          <Button variant="ghost" size="icon">
+                          <Button variant="ghost" size="icon" onClick={() => router.push(`/finance/invoices/${order.id}`)}>
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon">
+                          <Button variant="ghost" size="icon" onClick={() => toast.info("Invoice PDF download coming soon")}>
                             <Download className="h-4 w-4" />
                           </Button>
                         </div>

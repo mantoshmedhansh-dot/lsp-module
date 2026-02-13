@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import {
   Card,
@@ -39,6 +40,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface Shipment {
   id: string;
@@ -59,6 +61,7 @@ interface Shipment {
 }
 
 export default function FreightBillingPage() {
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [courierFilter, setCourierFilter] = useState("all");
@@ -340,7 +343,7 @@ export default function FreightBillingPage() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Button variant="ghost" size="sm">
+                        <Button variant="ghost" size="sm" onClick={() => router.push(`/finance/freight-billing/${shipment.id}`)}>
                           View
                         </Button>
                       </TableCell>

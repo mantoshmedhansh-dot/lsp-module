@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,6 +65,7 @@ const statusConfig: Record<string, { label: string; color: string; icon: React.E
 };
 
 export default function TranshipmentPage() {
+  const router = useRouter();
   const [transfers, setTransfers] = useState<StockTransfer[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -309,7 +311,7 @@ export default function TranshipmentPage() {
                       {formatDate(transfer.createdAt)}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="outline" size="sm">
+                      <Button variant="outline" size="sm" onClick={() => router.push(`/wms/transhipment/${transfer.id}`)}>
                         View
                       </Button>
                     </TableCell>

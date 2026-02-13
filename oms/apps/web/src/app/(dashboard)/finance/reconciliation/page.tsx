@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import {
-  DollarSign,
+  IndianRupee,
   FileText,
   AlertTriangle,
   CheckCircle,
@@ -220,6 +220,11 @@ export default function ReconciliationPage() {
     return value;
   };
 
+  const formatCurrency = (value: string | number | null): string => {
+    const num = typeof value === "string" ? parseFloat(value) || 0 : (value ?? 0);
+    return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2 }).format(num);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -234,7 +239,7 @@ export default function ReconciliationPage() {
             <RefreshCw className="mr-2 h-4 w-4" />
             Refresh
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => toast.info("Settlement import coming soon")}>
             <Upload className="mr-2 h-4 w-4" />
             Import Settlement
           </Button>
@@ -296,7 +301,7 @@ export default function ReconciliationPage() {
               {dashboard?.openChargebacks || chargebacks.length}
             </div>
             <p className="text-xs text-muted-foreground">
-              ${(dashboard?.chargebackAmount || 0).toFixed(2)} at risk
+              {formatCurrency(dashboard?.chargebackAmount || 0)} at risk
             </p>
           </CardContent>
         </Card>
@@ -348,7 +353,7 @@ export default function ReconciliationPage() {
                 <div className="flex flex-col items-center justify-center py-8">
                   <FileText className="h-12 w-12 text-muted-foreground mb-4" />
                   <p className="text-muted-foreground">No settlements found</p>
-                  <Button variant="outline" className="mt-4">
+                  <Button variant="outline" className="mt-4" onClick={() => toast.info("Settlement import coming soon")}>
                     <Upload className="mr-2 h-4 w-4" />
                     Import First Settlement
                   </Button>
@@ -382,15 +387,15 @@ export default function ReconciliationPage() {
                           {settlement.totalTransactions}
                         </TableCell>
                         <TableCell className="text-right font-medium">
-                          ${parseDecimal(settlement.netAmount).toFixed(2)}
+                          {formatCurrency(settlement.netAmount)}
                         </TableCell>
                         <TableCell className="text-right">
                           <span className="text-green-600">
-                            ${parseDecimal(settlement.matchedAmount).toFixed(2)}
+                            {formatCurrency(settlement.matchedAmount)}
                           </span>
                           {parseDecimal(settlement.unmatchedAmount) > 0 && (
                             <span className="text-red-600 ml-2">
-                              (-${parseDecimal(settlement.unmatchedAmount).toFixed(2)})
+                              (-{formatCurrency(settlement.unmatchedAmount)})
                             </span>
                           )}
                         </TableCell>
@@ -441,17 +446,17 @@ export default function ReconciliationPage() {
                           <Badge variant="outline">{discrepancy.discrepancyType}</Badge>
                         </TableCell>
                         <TableCell className="text-right">
-                          ${parseDecimal(discrepancy.expectedAmount).toFixed(2)}
+                          {formatCurrency(discrepancy.expectedAmount)}
                         </TableCell>
                         <TableCell className="text-right">
-                          ${parseDecimal(discrepancy.actualAmount).toFixed(2)}
+                          {formatCurrency(discrepancy.actualAmount)}
                         </TableCell>
                         <TableCell className="text-right font-medium text-red-600">
-                          ${parseDecimal(discrepancy.difference).toFixed(2)}
+                          {formatCurrency(discrepancy.difference)}
                         </TableCell>
                         <TableCell>{getStatusBadge(discrepancy.status)}</TableCell>
                         <TableCell className="text-right">
-                          <Button size="sm" variant="outline">Resolve</Button>
+                          <Button size="sm" variant="outline" onClick={() => toast.info("Discrepancy resolution coming soon")}>Resolve</Button>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -497,7 +502,7 @@ export default function ReconciliationPage() {
                         </TableCell>
                         <TableCell className="font-mono">{chargeback.orderNo}</TableCell>
                         <TableCell className="text-right font-medium text-red-600">
-                          ${parseDecimal(chargeback.amount).toFixed(2)}
+                          {formatCurrency(chargeback.amount)}
                         </TableCell>
                         <TableCell>{chargeback.reason}</TableCell>
                         <TableCell>
@@ -508,7 +513,7 @@ export default function ReconciliationPage() {
                         </TableCell>
                         <TableCell>{getStatusBadge(chargeback.status)}</TableCell>
                         <TableCell className="text-right">
-                          <Button size="sm">Respond</Button>
+                          <Button size="sm" onClick={() => toast.info("Chargeback response coming soon")}>Respond</Button>
                         </TableCell>
                       </TableRow>
                     ))}

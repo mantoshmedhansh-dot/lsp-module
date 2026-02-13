@@ -12,7 +12,7 @@ import {
   ArrowRight,
   Calendar,
   User,
-  DollarSign,
+  IndianRupee,
   Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -200,6 +200,11 @@ export default function PreordersPage() {
     return value;
   };
 
+  const formatCurrency = (value: string | number | null): string => {
+    const num = typeof value === "string" ? parseFloat(value) || 0 : (value ?? 0);
+    return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2 }).format(num);
+  };
+
   const stats = {
     total: preorders.length,
     confirmed: preorders.filter(p => p.status === "CONFIRMED").length,
@@ -221,7 +226,7 @@ export default function PreordersPage() {
             <RefreshCw className="mr-2 h-4 w-4" />
             Refresh
           </Button>
-          <Button>
+          <Button onClick={() => router.push("/orders/preorders/new")}>
             <Plus className="mr-2 h-4 w-4" />
             New Pre-order
           </Button>
@@ -341,16 +346,16 @@ export default function PreordersPage() {
                     </TableCell>
                     <TableCell className="text-center">{preorder.totalItems}</TableCell>
                     <TableCell className="text-right font-medium">
-                      ${parseDecimal(preorder.totalAmount).toFixed(2)}
+                      {formatCurrency(preorder.totalAmount)}
                     </TableCell>
                     <TableCell className="text-right">
                       {preorder.depositPaidAt ? (
                         <Badge className="bg-green-100 text-green-800">
-                          ${parseDecimal(preorder.depositAmount).toFixed(2)}
+                          {formatCurrency(preorder.depositAmount)}
                         </Badge>
                       ) : (
                         <span className="text-muted-foreground">
-                          ${parseDecimal(preorder.depositAmount).toFixed(2)}
+                          {formatCurrency(preorder.depositAmount)}
                         </span>
                       )}
                     </TableCell>
@@ -415,7 +420,7 @@ export default function PreordersPage() {
                 <div className="flex justify-between">
                   <span className="text-sm">Total Amount</span>
                   <span className="font-medium">
-                    ${parseDecimal(selectedPreorder.totalAmount).toFixed(2)}
+                    {formatCurrency(selectedPreorder.totalAmount)}
                   </span>
                 </div>
               </div>

@@ -39,6 +39,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface Shipment {
   id: string;
@@ -355,10 +356,10 @@ export default function WeightDiscrepancyPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-1">
-                          <Button variant="outline" size="sm">
+                          <Button variant="outline" size="sm" onClick={() => toast.info("Dispute filed for " + dispute.awbNo)}>
                             Dispute
                           </Button>
-                          <Button variant="ghost" size="sm">
+                          <Button variant="ghost" size="sm" onClick={() => toast.info("Weight accepted for " + dispute.awbNo)}>
                             Accept
                           </Button>
                         </div>

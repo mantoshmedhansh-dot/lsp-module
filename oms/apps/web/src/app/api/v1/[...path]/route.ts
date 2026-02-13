@@ -74,9 +74,13 @@ async function proxyToBackend(
     const backendUrl = buildBackendUrl(request, path);
     const headers = await getAuthHeaders(request);
 
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000); // 30s timeout
+
     const fetchOptions: RequestInit = {
       method,
       headers,
+      signal: controller.signal,
     };
 
     // Include body for POST, PUT, PATCH requests
@@ -121,16 +125,20 @@ async function proxyToBackend(
       }
     }
 
+    clearTimeout(timeout);
+
     // Return response with same status
     if (data === null || data === "") {
       return new NextResponse(null, { status: response.status });
     }
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error(`[API Proxy] Error proxying ${method} to /${path.join("/")}:`, error);
+    clearTimeout(timeout);
+    const isTimeout = error instanceof DOMException && error.name === "AbortError";
+    console.error(`[API Proxy] ${isTimeout ? "Timeout" : "Error"} proxying ${method} to /${path.join("/")}:`, error);
     return NextResponse.json(
-      { error: "Failed to proxy request to backend" },
-      { status: 500 }
+      { error: isTimeout ? "Backend request timed out" : "Failed to proxy request to backend" },
+      { status: isTimeout ? 504 : 500 }
     );
   }
 }

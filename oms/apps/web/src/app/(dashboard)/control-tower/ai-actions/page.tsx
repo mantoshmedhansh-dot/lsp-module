@@ -122,8 +122,8 @@ export default function AIActionsPage() {
 
   useEffect(() => {
     fetchActions();
-    // Refresh every 30 seconds
-    const interval = setInterval(fetchActions, 30000);
+    // Refresh every 15 minutes
+    const interval = setInterval(fetchActions, 15 * 60 * 1000);
     return () => clearInterval(interval);
   }, [page, entityTypeFilter, actionTypeFilter, statusFilter]);
 

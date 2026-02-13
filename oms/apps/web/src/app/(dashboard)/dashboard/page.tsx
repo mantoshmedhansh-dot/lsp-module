@@ -29,7 +29,6 @@ import {
   Layers,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
@@ -274,10 +273,10 @@ export default function DashboardPage() {
 
         {/* Mini stats in hero */}
         <div className="relative mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-          <MiniHeroStat label="Orders Today" value={isLoading ? "..." : formatNumber(todayOrders)} icon={ShoppingCart} />
-          <MiniHeroStat label="Pending" value={isLoading ? "..." : formatNumber(pendingOrders)} icon={Clock} />
-          <MiniHeroStat label="Shipped" value={isLoading ? "..." : formatNumber(shippedOrders)} icon={Truck} />
-          <MiniHeroStat label="Delivered" value={isLoading ? "..." : formatNumber(deliveredOrders)} icon={CheckCircle} />
+          <MiniHeroStat label="Orders Today" value={formatNumber(todayOrders)} icon={ShoppingCart} />
+          <MiniHeroStat label="Pending" value={formatNumber(pendingOrders)} icon={Clock} />
+          <MiniHeroStat label="Shipped" value={formatNumber(shippedOrders)} icon={Truck} />
+          <MiniHeroStat label="Delivered" value={formatNumber(deliveredOrders)} icon={CheckCircle} />
         </div>
       </div>
 
@@ -286,7 +285,7 @@ export default function DashboardPage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <GradientStatCard
             title="Total Orders"
-            value={isLoading ? "..." : formatNumber(totalOrders)}
+            value={formatNumber(totalOrders)}
             description="all time orders"
             icon={ShoppingCart}
             gradient={gradients.blue}
@@ -294,7 +293,7 @@ export default function DashboardPage() {
           />
           <GradientStatCard
             title="Total Revenue"
-            value={isLoading ? "..." : formatCurrency(totalRevenue)}
+            value={formatCurrency(totalRevenue)}
             description="from delivered orders"
             icon={IndianRupee}
             gradient={gradients.emerald}
@@ -302,7 +301,7 @@ export default function DashboardPage() {
           />
           <GradientStatCard
             title="Inventory"
-            value={isLoading ? "..." : formatNumber(totalInventory)}
+            value={formatNumber(totalInventory)}
             description="units in stock"
             icon={Boxes}
             gradient={gradients.violet}
@@ -310,7 +309,7 @@ export default function DashboardPage() {
           />
           <GradientStatCard
             title="Active SKUs"
-            value={isLoading ? "..." : formatNumber(totalSKUs)}
+            value={formatNumber(totalSKUs)}
             description="product catalog"
             icon={Package}
             gradient={gradients.amber}
@@ -336,9 +335,7 @@ export default function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            {isLoading ? (
-              <Skeleton className="h-[250px] w-full rounded-lg" />
-            ) : (
+            {(
               <ResponsiveContainer width="100%" height={250}>
                 <AreaChart data={weeklyTrend}>
                   <defs>
@@ -385,9 +382,7 @@ export default function DashboardPage() {
             <p className="text-sm text-muted-foreground">Current status breakdown</p>
           </CardHeader>
           <CardContent>
-            {isLoading ? (
-              <Skeleton className="h-[250px] w-full rounded-lg" />
-            ) : orderStatusData.length === 0 ? (
+            {orderStatusData.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <div className="rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 p-6 mb-4">
                   <Package className="h-10 w-10 text-indigo-400" />
@@ -471,13 +466,7 @@ export default function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            {isLoading ? (
-              <div className="space-y-4">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <Skeleton key={i} className="h-8 w-full rounded" />
-                ))}
-              </div>
-            ) : orderStatusData.length === 0 ? (
+            {orderStatusData.length === 0 ? (
               <div className="py-8 text-center text-muted-foreground">
                 <Layers className="h-8 w-8 mx-auto mb-2 opacity-40" />
                 <p>No orders in pipeline</p>
@@ -527,19 +516,7 @@ export default function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            {isLoading ? (
-              <div className="space-y-4">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="flex items-start gap-3">
-                    <Skeleton className="h-10 w-10 rounded-xl" />
-                    <div className="flex-1 space-y-1">
-                      <Skeleton className="h-4 w-48" />
-                      <Skeleton className="h-3 w-24" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
+            {(
               <div className="space-y-3">
                 {recentActivity
                   .filter((a: { type?: string }) => isSuperAdmin || a.type !== "master")

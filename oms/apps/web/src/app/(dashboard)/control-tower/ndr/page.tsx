@@ -181,12 +181,12 @@ export default function NDRCommandCenterPage() {
     fetchSchedulerStatus();
   }, [fetchNdrSummary, fetchSchedulerStatus]);
 
-  // Auto-refresh Control Tower data every 60 seconds
+  // Auto-refresh Control Tower data every 15 minutes
   useEffect(() => {
     const interval = setInterval(() => {
       fetchNdrSummary();
       fetchSchedulerStatus();
-    }, 60000);
+    }, 15 * 60 * 1000);
     return () => clearInterval(interval);
   }, [fetchNdrSummary, fetchSchedulerStatus]);
 

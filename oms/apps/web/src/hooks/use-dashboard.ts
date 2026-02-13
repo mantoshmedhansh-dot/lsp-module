@@ -60,13 +60,17 @@ async function fetchDashboardStats(params: DashboardStatsParams = {}): Promise<D
   }
 
   const url = `/api/v1/dashboard${searchParams.toString() ? `?${searchParams}` : ""}`;
-  const response = await fetch(url);
-
-  if (!response.ok) {
-    throw new Error(`Dashboard stats fetch failed: ${response.status}`);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 20000); // 20s timeout
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    if (!response.ok) {
+      throw new Error(`Dashboard stats fetch failed: ${response.status}`);
+    }
+    return response.json();
+  } finally {
+    clearTimeout(timeout);
   }
-
-  return response.json();
 }
 
 /**
@@ -82,13 +86,17 @@ async function fetchDashboardAnalytics(params: DashboardAnalyticsParams = {}): P
   }
 
   const url = `/api/v1/dashboard/analytics${searchParams.toString() ? `?${searchParams}` : ""}`;
-  const response = await fetch(url);
-
-  if (!response.ok) {
-    throw new Error(`Dashboard analytics fetch failed: ${response.status}`);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 20000);
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    if (!response.ok) {
+      throw new Error(`Dashboard analytics fetch failed: ${response.status}`);
+    }
+    return response.json();
+  } finally {
+    clearTimeout(timeout);
   }
-
-  return response.json();
 }
 
 /**
@@ -99,13 +107,13 @@ export function useDashboardStats(params: DashboardStatsParams = {}) {
   return useQuery({
     queryKey: dashboardKeys.stats(params),
     queryFn: () => fetchDashboardStats(params),
-    staleTime: 2 * 60 * 1000, // 2 minutes - data is cached on backend too
-    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
-    refetchInterval: 5 * 60 * 1000, // Auto-refresh every 5 minutes (reduced from 2min)
-    refetchOnWindowFocus: false, // Don't refetch on tab focus
-    placeholderData: (prev: DashboardStats | undefined) => prev, // Keep old data during refetch
-    retry: 2, // Retry failed requests twice
-    retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 10000),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 30 * 60 * 1000, // Keep in cache for 30 minutes
+    refetchInterval: 15 * 60 * 1000, // Auto-refresh every 15 minutes
+    refetchOnWindowFocus: false,
+    placeholderData: (prev: DashboardStats | undefined) => prev,
+    retry: 1, // Retry once (Render cold start may need one retry)
+    retryDelay: 5000, // Wait 5s before retry (give Render time to wake)
   });
 }
 
@@ -117,9 +125,10 @@ export function useDashboardAnalytics(params: DashboardAnalyticsParams = {}) {
   return useQuery({
     queryKey: dashboardKeys.analytics(params),
     queryFn: () => fetchDashboardAnalytics(params),
-    staleTime: 2 * 60 * 1000, // 2 minutes - analytics don't change frequently
-    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 30 * 60 * 1000, // Keep in cache for 30 minutes
     refetchOnWindowFocus: false,
-    retry: 2,
+    retry: 1,
+    retryDelay: 5000,
   });
 }

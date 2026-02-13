@@ -199,12 +199,12 @@ export default function ExceptionManagementPage() {
     fetchExceptions();
   }, [fetchStats, fetchExceptions]);
 
-  // Auto-refresh every 60 seconds
+  // Auto-refresh every 15 minutes
   useEffect(() => {
     const interval = setInterval(() => {
       fetchStats();
       fetchExceptions();
-    }, 60000); // 60 seconds
+    }, 15 * 60 * 1000);
 
     return () => clearInterval(interval);
   }, [fetchStats, fetchExceptions]);

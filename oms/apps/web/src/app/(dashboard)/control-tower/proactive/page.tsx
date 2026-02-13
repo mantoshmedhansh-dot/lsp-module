@@ -135,8 +135,8 @@ export default function ProactiveCommunicationPage() {
 
   useEffect(() => {
     fetchCommunications();
-    // Refresh every 60 seconds
-    const interval = setInterval(fetchCommunications, 60000);
+    // Refresh every 15 minutes
+    const interval = setInterval(fetchCommunications, 15 * 60 * 1000);
     return () => clearInterval(interval);
   }, [page, statusFilter, triggerFilter, channelFilter]);
 

@@ -68,6 +68,7 @@ export default function AuditLogsPage() {
       setIsLoading(true);
       const params = new URLSearchParams();
       if (actionFilter !== "all") params.set("action", actionFilter);
+      if (userFilter !== "all") params.set("user_id", userFilter);
       params.set("limit", "50");
 
       const response = await fetch(`/api/v1/system/audit-logs?${params}`);
@@ -105,7 +106,7 @@ export default function AuditLogsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [actionFilter]);
+  }, [actionFilter, userFilter]);
 
   useEffect(() => {
     fetchAuditLogs();
@@ -223,6 +224,9 @@ export default function AuditLogsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Users</SelectItem>
+                {Array.from(new Map(logs.map((l) => [l.userId, l.userName || "System"])).entries()).map(([id, name]) => (
+                  <SelectItem key={id} value={id}>{name}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

@@ -66,6 +66,13 @@ interface ScheduledReport {
 
 export default function ScheduledReportsPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    reportType: "",
+    frequency: "",
+    recipients: "",
+    format: "",
+  });
   const queryClient = useQueryClient();
 
   const { data, isLoading, refetch } = useQuery({
@@ -93,6 +100,34 @@ export default function ScheduledReportsPage() {
     },
     onError: () => {
       toast.error("Failed to update report");
+    },
+  });
+
+  const createMutation = useMutation({
+    mutationFn: async (payload: typeof formData) => {
+      const res = await fetch("/api/v1/reports/scheduled", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: payload.name,
+          reportType: payload.reportType,
+          frequency: payload.frequency,
+          recipients: payload.recipients.split(",").map((e) => e.trim()).filter(Boolean),
+          format: payload.format,
+          isActive: true,
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to create scheduled report");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["scheduled-reports"] });
+      toast.success("Scheduled report created");
+      setIsCreateOpen(false);
+      setFormData({ name: "", reportType: "", frequency: "", recipients: "", format: "" });
+    },
+    onError: () => {
+      toast.error("Failed to create scheduled report");
     },
   });
 
@@ -145,11 +180,15 @@ export default function ScheduledReportsPage() {
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                   <Label>Report Name</Label>
-                  <Input placeholder="Daily Sales Report" />
+                  <Input
+                    placeholder="Daily Sales Report"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  />
                 </div>
                 <div className="grid gap-2">
                   <Label>Report Type</Label>
-                  <Select>
+                  <Select value={formData.reportType} onValueChange={(v) => setFormData({ ...formData, reportType: v })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select report type" />
                     </SelectTrigger>
@@ -164,7 +203,7 @@ export default function ScheduledReportsPage() {
                 </div>
                 <div className="grid gap-2">
                   <Label>Frequency</Label>
-                  <Select>
+                  <Select value={formData.frequency} onValueChange={(v) => setFormData({ ...formData, frequency: v })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select frequency" />
                     </SelectTrigger>
@@ -177,11 +216,15 @@ export default function ScheduledReportsPage() {
                 </div>
                 <div className="grid gap-2">
                   <Label>Recipients (comma-separated emails)</Label>
-                  <Input placeholder="user1@company.com, user2@company.com" />
+                  <Input
+                    placeholder="user1@company.com, user2@company.com"
+                    value={formData.recipients}
+                    onChange={(e) => setFormData({ ...formData, recipients: e.target.value })}
+                  />
                 </div>
                 <div className="grid gap-2">
                   <Label>Format</Label>
-                  <Select>
+                  <Select value={formData.format} onValueChange={(v) => setFormData({ ...formData, format: v })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select format" />
                     </SelectTrigger>
@@ -197,11 +240,11 @@ export default function ScheduledReportsPage() {
                 <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
                   Cancel
                 </Button>
-                <Button onClick={() => {
-                  toast.success("Scheduled report created");
-                  setIsCreateOpen(false);
-                }}>
-                  Create
+                <Button
+                  disabled={!formData.name || !formData.reportType || !formData.frequency || !formData.format || createMutation.isPending}
+                  onClick={() => createMutation.mutate(formData)}
+                >
+                  {createMutation.isPending ? "Creating..." : "Create"}
                 </Button>
               </DialogFooter>
             </DialogContent>

@@ -157,7 +157,7 @@ export default function ClientDetailPage() {
         setWarehouses(items);
       }
     } catch {
-      // Non-critical — warehouses list may not be available
+      toast.error("Could not load available warehouses");
     }
   }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -79,7 +79,7 @@ export default function BulkUploadPage() {
   const [step, setStep] = useState<"select" | "preview" | "result">("select");
 
   // Fetch connections on mount
-  useState(() => {
+  useEffect(() => {
     const fetchConnections = async () => {
       try {
         const response = await fetch("/api/v1/marketplaces");
@@ -92,7 +92,7 @@ export default function BulkUploadPage() {
       }
     };
     fetchConnections();
-  });
+  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -181,10 +181,10 @@ export default function BulkUploadPage() {
         marketplaceSkuName: row.marketplaceSkuName,
       }));
 
-      const response = await fetch("/api/v1/sku-mappings/bulk-upload", {
+      const response = await fetch("/api/v1/sku-mappings/bulk/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mappings }),
+        body: JSON.stringify(mappings),
       });
 
       if (response.ok) {

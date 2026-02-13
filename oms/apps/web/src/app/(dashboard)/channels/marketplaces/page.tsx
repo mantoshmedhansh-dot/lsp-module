@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import {
   Store,
   Link,
@@ -109,6 +110,7 @@ const marketplaceLogos: Record<string, string> = {
 };
 
 export default function MarketplacesPage() {
+  const router = useRouter();
   const [connections, setConnections] = useState<MarketplaceConnection[]>([]);
   const [listings, setListings] = useState<MarketplaceListing[]>([]);
   const [orderSyncs, setOrderSyncs] = useState<OrderSync[]>([]);
@@ -133,10 +135,10 @@ export default function MarketplacesPage() {
 
   const fetchListings = useCallback(async () => {
     try {
-      const response = await fetch("/api/v1/marketplaces/listings?limit=50");
+      const response = await fetch("/api/v1/sku-mappings?limit=50");
       if (response.ok) {
         const data = await response.json();
-        setListings(Array.isArray(data) ? data : []);
+        setListings(Array.isArray(data) ? data : data?.items || data?.data || []);
       }
     } catch (error) {
       console.error("Error fetching listings:", error);
@@ -145,10 +147,10 @@ export default function MarketplacesPage() {
 
   const fetchOrderSyncs = useCallback(async () => {
     try {
-      const response = await fetch("/api/v1/marketplaces/order-syncs?limit=50");
+      const response = await fetch("/api/v1/order-sync/orders?limit=50");
       if (response.ok) {
         const data = await response.json();
-        setOrderSyncs(Array.isArray(data) ? data : []);
+        setOrderSyncs(Array.isArray(data) ? data : data?.items || data?.data || []);
       }
     } catch (error) {
       console.error("Error fetching order syncs:", error);
@@ -157,10 +159,10 @@ export default function MarketplacesPage() {
 
   const fetchInventorySyncs = useCallback(async () => {
     try {
-      const response = await fetch("/api/v1/marketplaces/inventory-syncs?limit=50");
+      const response = await fetch("/api/v1/inventory-sync/logs?limit=50");
       if (response.ok) {
         const data = await response.json();
-        setInventorySyncs(Array.isArray(data) ? data : []);
+        setInventorySyncs(Array.isArray(data) ? data : data?.items || data?.data || []);
       }
     } catch (error) {
       console.error("Error fetching inventory syncs:", error);
@@ -270,6 +272,15 @@ export default function MarketplacesPage() {
     return value;
   };
 
+  const formatCurrency = (value: string | number | null): string => {
+    const num = parseDecimal(value);
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 2,
+    }).format(num);
+  };
+
   const totalListings = connections.reduce((sum, c) => sum + c.totalListings, 0);
   const totalOrders = connections.reduce((sum, c) => sum + c.totalOrders, 0);
   const activeConnections = connections.filter(c => c.status === "CONNECTED" && c.isActive).length;
@@ -288,7 +299,7 @@ export default function MarketplacesPage() {
             <RefreshCw className="mr-2 h-4 w-4" />
             Refresh
           </Button>
-          <Button>
+          <Button onClick={() => router.push("/settings/integrations")}>
             <Plus className="mr-2 h-4 w-4" />
             Add Marketplace
           </Button>
@@ -372,7 +383,7 @@ export default function MarketplacesPage() {
                 <div className="flex flex-col items-center justify-center py-8">
                   <Store className="h-12 w-12 text-muted-foreground mb-4" />
                   <p className="text-muted-foreground">No marketplaces connected</p>
-                  <Button className="mt-4">
+                  <Button className="mt-4" onClick={() => router.push("/settings/integrations")}>
                     <Plus className="mr-2 h-4 w-4" />
                     Connect First Marketplace
                   </Button>
@@ -487,7 +498,7 @@ export default function MarketplacesPage() {
                           {listing.marketplaceSku}
                         </TableCell>
                         <TableCell className="text-right font-medium">
-                          ${parseDecimal(listing.price).toFixed(2)}
+                          {formatCurrency(listing.price)}
                         </TableCell>
                         <TableCell className="text-center">{listing.quantity}</TableCell>
                         <TableCell>{getStatusBadge(listing.status)}</TableCell>
@@ -545,7 +556,7 @@ export default function MarketplacesPage() {
                           )}
                         </TableCell>
                         <TableCell className="text-right font-medium">
-                          ${parseDecimal(sync.orderAmount).toFixed(2)}
+                          {formatCurrency(sync.orderAmount)}
                         </TableCell>
                         <TableCell>
                           {getStatusBadge(sync.status)}

@@ -325,6 +325,15 @@ export default function OrderSyncPage() {
     return value;
   };
 
+  const formatCurrency = (value: string | number | null): string => {
+    const num = parseDecimal(value);
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 2,
+    }).format(num);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -573,7 +582,7 @@ export default function OrderSyncPage() {
                           )}
                         </TableCell>
                         <TableCell className="text-right font-medium">
-                          ${parseDecimal(order.orderAmount).toFixed(2)}
+                          {formatCurrency(order.orderAmount)}
                         </TableCell>
                         <TableCell>
                           {getStatusBadge(order.syncStatus)}

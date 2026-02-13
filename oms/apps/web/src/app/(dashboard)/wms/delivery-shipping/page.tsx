@@ -322,7 +322,7 @@ export default function DeliveryShippingPage() {
     }
 
     try {
-      const response = await fetch("/api/v1/manifests", {
+      const response = await fetch("/api/v1/transporters/manifests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

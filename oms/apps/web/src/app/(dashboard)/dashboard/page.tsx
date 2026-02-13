@@ -6,38 +6,29 @@ import {
   ShoppingCart,
   Truck,
   Clock,
-  TrendingUp,
-  TrendingDown,
   AlertCircle,
   CheckCircle,
-  PackageCheck,
   Building2,
   Users,
   Boxes,
   Settings,
   BarChart3,
-  MapPin,
   RefreshCw,
   IndianRupee,
   ArrowUpRight,
-  ArrowDownRight,
-  Zap,
-  Globe,
-  Activity,
   Star,
   Store,
   Layers,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+
+
 import Link from "next/link";
 import { useDashboardStats, useDashboardAnalytics } from "@/hooks";
 import {
   AreaChart,
   Area,
-  BarChart,
-  Bar,
   PieChart,
   Pie,
   Cell,
@@ -47,8 +38,6 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
-
-type ChangeType = "positive" | "negative" | "neutral";
 
 // Vibrant gradient palettes for stat cards
 const gradients = {
@@ -61,13 +50,6 @@ const gradients = {
   indigo: "from-indigo-500 to-blue-800",
   fuchsia: "from-fuchsia-500 to-purple-800",
 };
-
-// Pie chart colors
-const PIE_COLORS = [
-  "#3b82f6", "#10b981", "#f59e0b", "#ef4444",
-  "#8b5cf6", "#ec4899", "#06b6d4", "#84cc16",
-  "#f97316", "#6366f1", "#14b8a6", "#64748b",
-];
 
 // Status color mapping for order breakdown
 const statusColors: Record<string, string> = {
@@ -199,35 +181,22 @@ export default function DashboardPage() {
         { id: 1, action: "System initialized", time: "Just now", icon: CheckCircle, type: "operations" },
       ];
 
-  if (dashboardError) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">Dashboard</h1>
-            <p className="text-muted-foreground">Welcome back, {session?.user?.name || "User"}!</p>
-          </div>
-        </div>
-        <Card className="border-red-200 bg-gradient-to-r from-red-50 to-rose-50 shadow-lg">
-          <CardContent className="flex items-center gap-4 p-6">
-            <div className="rounded-full bg-red-100 p-3">
-              <AlertCircle className="h-6 w-6 text-red-500" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-red-800">Failed to load dashboard data</h3>
-              <p className="text-sm text-red-600">There was an error connecting to the server.</p>
-            </div>
-            <Button onClick={() => refetchDashboard()} className="bg-red-600 hover:bg-red-700 text-white shadow-md">
-              <RefreshCw className="mr-2 h-4 w-4" /> Retry
+  return (
+    <div className="space-y-6">
+      {/* Inline error banner - doesn't replace entire dashboard */}
+      {dashboardError && !isLoading && (
+        <Card className="border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50">
+          <CardContent className="flex items-center gap-3 p-4">
+            <AlertCircle className="h-5 w-5 text-amber-500 shrink-0" />
+            <p className="text-sm text-amber-800 flex-1">
+              Server is warming up. Data will load shortly.
+            </p>
+            <Button variant="outline" size="sm" onClick={() => refetchDashboard()} className="border-amber-300 text-amber-700 hover:bg-amber-100">
+              <RefreshCw className="mr-1 h-3 w-3" /> Retry
             </Button>
           </CardContent>
         </Card>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-6">
+      )}
       {/* Hero Header */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 p-6 text-white shadow-2xl">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iYSIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIj48cGF0aCBkPSJNMCAyMGgyME0yMCAwdjIwIiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNhKSIvPjwvc3ZnPg==')] opacity-30" />
@@ -254,20 +223,11 @@ export default function DashboardPage() {
               variant="outline"
               size="sm"
               onClick={() => refetchDashboard()}
-              disabled={isLoading}
               className="border-white/30 text-white bg-white/10 hover:bg-white/20 backdrop-blur-sm"
             >
-              <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+              <RefreshCw className="mr-2 h-4 w-4" />
               Refresh
             </Button>
-            <div className="hidden md:flex items-center gap-2 text-sm text-white/60">
-              <Activity className="h-4 w-4" />
-              <span>Live</span>
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-400" />
-              </span>
-            </div>
           </div>
         </div>
 
@@ -289,7 +249,6 @@ export default function DashboardPage() {
             description="all time orders"
             icon={ShoppingCart}
             gradient={gradients.blue}
-            trend={+12.5}
           />
           <GradientStatCard
             title="Total Revenue"
@@ -297,7 +256,6 @@ export default function DashboardPage() {
             description="from delivered orders"
             icon={IndianRupee}
             gradient={gradients.emerald}
-            trend={+8.2}
           />
           <GradientStatCard
             title="Inventory"
@@ -305,7 +263,6 @@ export default function DashboardPage() {
             description="units in stock"
             icon={Boxes}
             gradient={gradients.violet}
-            trend={-2.1}
           />
           <GradientStatCard
             title="Active SKUs"
@@ -313,7 +270,6 @@ export default function DashboardPage() {
             description="product catalog"
             icon={Package}
             gradient={gradients.amber}
-            trend={+5.3}
           />
         </div>
       )}
@@ -323,15 +279,9 @@ export default function DashboardPage() {
         {/* Order Trend Chart */}
         <Card className="lg:col-span-4 shadow-md border-0 bg-white">
           <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-lg font-bold">Order Trends</CardTitle>
-                <p className="text-sm text-muted-foreground">This week's performance</p>
-              </div>
-              <Badge variant="outline" className="text-emerald-600 border-emerald-200 bg-emerald-50">
-                <TrendingUp className="h-3 w-3 mr-1" />
-                +12.5%
-              </Badge>
+            <div>
+              <CardTitle className="text-lg font-bold">Order Trends</CardTitle>
+              <p className="text-sm text-muted-foreground">This week&apos;s performance</p>
             </div>
           </CardHeader>
           <CardContent>
@@ -591,16 +541,13 @@ function GradientStatCard({
   description,
   icon: Icon,
   gradient,
-  trend,
 }: {
   title: string;
   value: string;
   description: string;
   icon: React.ElementType;
   gradient: string;
-  trend: number;
 }) {
-  const isPositive = trend >= 0;
   return (
     <Card className={`relative overflow-hidden border-0 bg-gradient-to-br ${gradient} text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5`}>
       <div className="absolute top-0 right-0 p-4 opacity-10">
@@ -610,10 +557,6 @@ function GradientStatCard({
         <div className="flex items-center justify-between mb-3">
           <div className="rounded-lg bg-white/20 backdrop-blur-sm p-2">
             <Icon className="h-5 w-5" />
-          </div>
-          <div className={`flex items-center gap-1 text-xs font-medium rounded-full px-2 py-0.5 ${isPositive ? "bg-white/20 text-white" : "bg-red-400/30 text-red-100"}`}>
-            {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-            {isPositive ? "+" : ""}{trend}%
           </div>
         </div>
         <div className="text-3xl font-bold tracking-tight">{value}</div>

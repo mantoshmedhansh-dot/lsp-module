@@ -247,7 +247,8 @@ export default function SellerPanelDashboard() {
 
   const fetchDashboardData = useCallback(async (showRefreshing = false) => {
     try {
-      if (showRefreshing) {
+      // Only show full skeleton on initial load, not on period change
+      if (dashboardData) {
         setRefreshing(true);
       } else {
         setLoading(true);

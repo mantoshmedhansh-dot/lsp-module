@@ -38,15 +38,20 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"Table creation warning (tables may already exist): {e}")
 
-    # Warm up database connection so first user request is fast
-    try:
-        from sqlalchemy import text
-        with engine.connect() as conn:
-            conn.execute(text("SELECT 1"))
-            conn.commit()
-        logger.info("Database connection warmed up successfully")
-    except Exception as e:
-        logger.warning(f"Database warmup failed (will retry on first request): {e}")
+    # Warm up database connection in background (non-blocking)
+    # Don't block startup — if DB is slow, let the server start anyway
+    import threading
+    def _warmup_db():
+        try:
+            from sqlalchemy import text
+            with engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+                conn.commit()
+            logger.info("Database connection warmed up successfully")
+        except Exception as e:
+            logger.warning(f"Database warmup failed (will retry on first request): {e}")
+    warmup_thread = threading.Thread(target=_warmup_db, daemon=True)
+    warmup_thread.start()
 
     start_scheduler()
     logger.info("Scheduler started - Detection Engine will run every 15 minutes")

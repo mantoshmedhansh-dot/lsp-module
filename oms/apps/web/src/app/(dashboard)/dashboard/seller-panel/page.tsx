@@ -308,7 +308,7 @@ export default function SellerPanelDashboard() {
       setError(null);
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") {
-        setError("Server is warming up. Please retry in a moment.");
+        setError("Request timed out. Please retry.");
       } else {
         setError(err instanceof Error ? err.message : "An error occurred");
       }

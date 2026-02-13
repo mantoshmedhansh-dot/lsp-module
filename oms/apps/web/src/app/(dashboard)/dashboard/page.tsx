@@ -188,7 +188,7 @@ export default function DashboardPage() {
           <CardContent className="flex items-center gap-3 p-4">
             <AlertCircle className="h-5 w-5 text-amber-500 shrink-0" />
             <p className="text-sm text-amber-800 flex-1">
-              Server is warming up. Data will load shortly.
+              Could not load dashboard data. Please retry.
             </p>
             <Button variant="outline" size="sm" onClick={() => refetchDashboard()} className="border-amber-300 text-amber-700 hover:bg-amber-100">
               <RefreshCw className="mr-1 h-3 w-3" /> Retry

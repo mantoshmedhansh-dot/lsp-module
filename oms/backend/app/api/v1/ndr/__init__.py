@@ -44,6 +44,8 @@ def list_ndrs(
     skip: int = Query(0, ge=0),
     ndr_status: Optional[NDRStatus] = Query(None, alias="status"),
     priority: Optional[NDRPriority] = None,
+    reason: Optional[NDRReason] = None,
+    search: Optional[str] = None,
     company_filter: CompanyFilter = Depends(),
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
@@ -58,6 +60,11 @@ def list_ndrs(
         base_query = base_query.where(NDR.status == ndr_status)
     if priority:
         base_query = base_query.where(NDR.priority == priority)
+    if reason:
+        base_query = base_query.where(NDR.reason == reason)
+    if search:
+        search_term = f"%{search}%"
+        base_query = base_query.where(NDR.ndrCode.ilike(search_term))
 
     # Get total count - build separate count query with same conditions
     count_query = select(func.count(NDR.id))
@@ -66,6 +73,11 @@ def list_ndrs(
         count_query = count_query.where(NDR.status == ndr_status)
     if priority:
         count_query = count_query.where(NDR.priority == priority)
+    if reason:
+        count_query = count_query.where(NDR.reason == reason)
+    if search:
+        search_term = f"%{search}%"
+        count_query = count_query.where(NDR.ndrCode.ilike(search_term))
     count = session.exec(count_query).one()
 
     # Get paginated results
@@ -103,7 +115,7 @@ def list_ndrs(
                 "id": str(o.id),
                 "channel": safe_enum_value(o.channel, "WHATSAPP"),
                 "status": safe_enum_value(o.status, "PENDING"),
-                "message": o.message,
+                "message": o.messageContent,
                 "attemptNumber": o.attemptNumber,
                 "createdAt": o.createdAt.isoformat() if o.createdAt else None,
             })
@@ -253,6 +265,7 @@ def get_ndr_summary(
     ndrs = session.exec(base_query).all()
 
     open_count = sum(1 for n in ndrs if safe_enum_value(n.status, "") == "OPEN")
+    in_progress_count = sum(1 for n in ndrs if safe_enum_value(n.status, "") in ("ACTION_REQUESTED", "REATTEMPT_SCHEDULED"))
     resolved_count = sum(1 for n in ndrs if safe_enum_value(n.status, "") == "RESOLVED")
     rto_count = sum(1 for n in ndrs if safe_enum_value(n.status, "") == "RTO")
 
@@ -267,6 +280,7 @@ def get_ndr_summary(
     return {
         "totalNDRs": len(ndrs),
         "openNDRs": open_count,
+        "inProgressNDRs": in_progress_count,
         "resolvedNDRs": resolved_count,
         "rtoNDRs": rto_count,
         "byReason": by_reason,

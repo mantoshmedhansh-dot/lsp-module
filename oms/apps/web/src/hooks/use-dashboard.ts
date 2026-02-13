@@ -61,7 +61,7 @@ async function fetchDashboardStats(params: DashboardStatsParams = {}): Promise<D
 
   const url = `/api/v1/dashboard${searchParams.toString() ? `?${searchParams}` : ""}`;
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 20000); // 20s timeout
+  const timeout = setTimeout(() => controller.abort(), 60000); // 60s timeout
   try {
     const response = await fetch(url, { signal: controller.signal });
     if (!response.ok) {
@@ -87,7 +87,7 @@ async function fetchDashboardAnalytics(params: DashboardAnalyticsParams = {}): P
 
   const url = `/api/v1/dashboard/analytics${searchParams.toString() ? `?${searchParams}` : ""}`;
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 20000);
+  const timeout = setTimeout(() => controller.abort(), 60000);
   try {
     const response = await fetch(url, { signal: controller.signal });
     if (!response.ok) {
@@ -112,8 +112,8 @@ export function useDashboardStats(params: DashboardStatsParams = {}) {
     refetchInterval: 15 * 60 * 1000, // Auto-refresh every 15 minutes
     refetchOnWindowFocus: false,
     placeholderData: (prev: DashboardStats | undefined) => prev,
-    retry: 1, // Retry once (Render cold start may need one retry)
-    retryDelay: 5000, // Wait 5s before retry (give Render time to wake)
+    retry: 2,
+    retryDelay: 10000, // Wait 10s before retry
   });
 }
 

@@ -255,7 +255,7 @@ export default function SellerPanelDashboard() {
 
       // Fetch from real dashboard endpoints
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 20000);
+      const timeout = setTimeout(() => controller.abort(), 60000);
 
       const [dashRes, analyticsRes] = await Promise.all([
         fetch("/api/v1/dashboard", { signal: controller.signal }),

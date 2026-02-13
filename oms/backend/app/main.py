@@ -30,13 +30,23 @@ async def lifespan(app: FastAPI):
     logger.info("Starting CJDQuick OMS API...")
 
     # Create any missing database tables
-    from .core.database import create_db_and_tables
+    from .core.database import create_db_and_tables, engine
     try:
         logger.info("Ensuring database tables exist...")
         create_db_and_tables()
         logger.info("Database tables verified")
     except Exception as e:
         logger.warning(f"Table creation warning (tables may already exist): {e}")
+
+    # Warm up database connection so first user request is fast
+    try:
+        from sqlalchemy import text
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+            conn.commit()
+        logger.info("Database connection warmed up successfully")
+    except Exception as e:
+        logger.warning(f"Database warmup failed (will retry on first request): {e}")
 
     start_scheduler()
     logger.info("Scheduler started - Detection Engine will run every 15 minutes")

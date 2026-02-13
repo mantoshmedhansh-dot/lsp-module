@@ -75,7 +75,7 @@ async function proxyToBackend(
     const headers = await getAuthHeaders(request);
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30000); // 30s timeout
+    const timeout = setTimeout(() => controller.abort(), 60000); // 60s timeout
 
     const fetchOptions: RequestInit = {
       method,

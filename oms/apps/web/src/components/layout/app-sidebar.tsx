@@ -195,9 +195,6 @@ const wmsSetupNav: NavItemWithSub = {
   items: [
     { title: "Zones", href: "/wms/zones" },
     { title: "Bins", href: "/wms/bins" },
-    { title: "Putaway Rules", href: "/inbound/putaway" },
-    { title: "QC Templates", href: "/wms/qc/templates" },
-    { title: "Cycle Count Waves", href: "/inventory/cycle-counts" },
     { title: "SKU Label Print", href: "/wms/sku-label-print" },
   ],
 };
@@ -208,11 +205,8 @@ const wmsInboundNav: NavItemWithSub = {
   items: [
     { title: "Goods Receipt (GRN)", href: "/inbound/goods-receipt" },
     { title: "ASN Management", href: "/inbound/asn" },
-    { title: "Receiving", href: "/inbound/receiving" },
     { title: "Inbound QC", href: "/inbound/qc" },
     { title: "Putaway Tasks", href: "/inbound/putaway" },
-    { title: "Direct Inbound", href: "/inbound/direct" },
-    { title: "Return Inbound", href: "/inbound/return-inbound" },
   ],
 };
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import {
   Card,
@@ -24,8 +24,18 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -33,7 +43,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Search, Eye, MoreHorizontal, Building2, Users, CreditCard, TrendingUp } from "lucide-react";
+import { Loader2, Search, Eye, MoreHorizontal, Building2, Users, CreditCard, TrendingUp, Edit, Trash2, MapPin } from "lucide-react";
+import { toast } from "sonner";
 
 interface Tenant {
   company: { id: string; name: string; code: string; createdAt: string };
@@ -42,8 +53,61 @@ interface Tenant {
 
 export default function TenantsPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingTenant, setEditingTenant] = useState<Tenant | null>(null);
+  const [editForm, setEditForm] = useState({ name: "", gst: "", pan: "" });
+  const [isSaving, setIsSaving] = useState(false);
+
+  function openEditDialog(t: Tenant) {
+    setEditingTenant(t);
+    setEditForm({ name: t.company.name, gst: "", pan: "" });
+    // Fetch full company details for GST/PAN
+    fetch(`/api/v1/companies/${t.company.id}`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (data) setEditForm({ name: data.name, gst: data.gst || "", pan: data.pan || "" });
+      });
+    setEditDialogOpen(true);
+  }
+
+  async function handleEditSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editingTenant) return;
+    try {
+      setIsSaving(true);
+      const res = await fetch(`/api/v1/companies/${editingTenant.company.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editForm),
+      });
+      if (!res.ok) throw new Error("Failed to update");
+      toast.success("Company updated");
+      setEditDialogOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["platform-tenants"] });
+    } catch {
+      toast.error("Failed to update company");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleDelete(t: Tenant) {
+    if (!confirm(`Are you sure you want to delete ${t.company.name}?`)) return;
+    try {
+      const res = await fetch(`/api/v1/companies/${t.company.id}`, { method: "DELETE" });
+      if (res.status === 204 || res.ok) {
+        toast.success("Company deleted");
+        queryClient.invalidateQueries({ queryKey: ["platform-tenants"] });
+      } else {
+        throw new Error("Failed to delete");
+      }
+    } catch {
+      toast.error("Failed to delete company");
+    }
+  }
 
   const { data: tenants, isLoading } = useQuery({
     queryKey: ["platform-tenants", search],
@@ -219,9 +283,22 @@ export default function TenantsPage() {
                             <Eye className="mr-2 h-4 w-4" />
                             View Details
                           </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => openEditDialog(t)}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit Company
+                          </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => router.push(`/settings/users?companyId=${t.company.id}`)}>
                             <Users className="mr-2 h-4 w-4" />
                             Manage Users
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => router.push(`/settings/locations?companyId=${t.company.id}`)}>
+                            <MapPin className="mr-2 h-4 w-4" />
+                            Manage Locations
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => handleDelete(t)} className="text-red-600">
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete Company
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -240,6 +317,63 @@ export default function TenantsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Company</DialogTitle>
+            <DialogDescription>
+              Update company details for {editingTenant?.company.name}
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleEditSubmit}>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label>Company Name</Label>
+                <Input
+                  value={editForm.name}
+                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label>GST Number</Label>
+                  <Input
+                    value={editForm.gst}
+                    onChange={(e) => setEditForm({ ...editForm, gst: e.target.value.toUpperCase() })}
+                    placeholder="27AABCU9603R1ZM"
+                    maxLength={15}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label>PAN Number</Label>
+                  <Input
+                    value={editForm.pan}
+                    onChange={(e) => setEditForm({ ...editForm, pan: e.target.value.toUpperCase() })}
+                    placeholder="AABCU9603R"
+                    maxLength={10}
+                  />
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setEditDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSaving}>
+                {isSaving ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : "Update"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

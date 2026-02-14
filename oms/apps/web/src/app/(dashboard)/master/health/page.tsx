@@ -134,7 +134,9 @@ function resolveStatus(
 }
 
 export default function SystemHealthPage() {
-  // Fetch /health endpoint with auto-refresh every 30 seconds
+  const backendUrl = process.env.NEXT_PUBLIC_API_URL || "https://lsp-oms-api.onrender.com";
+
+  // Fetch /health endpoint directly from backend (not through API proxy)
   const {
     data: healthData,
     isLoading: healthLoading,
@@ -145,20 +147,19 @@ export default function SystemHealthPage() {
     queryKey: ["system-health"],
     queryFn: async () => {
       const startTime = Date.now();
-      const res = await fetch("/api/v1/health");
+      const res = await fetch(`${backendUrl}/health`);
       const elapsed = Date.now() - startTime;
       if (!res.ok) {
         throw new Error(`Health check failed with status ${res.status}`);
       }
       const data = await res.json();
-      // Attach measured response time
       return { ...data, _measuredResponseTime: elapsed };
     },
     refetchInterval: 30000,
     retry: 1,
   });
 
-  // Fetch /api/v1/system/status if available
+  // Fetch database connectivity check via API proxy
   const {
     data: systemStatus,
     isLoading: statusLoading,
@@ -169,8 +170,7 @@ export default function SystemHealthPage() {
     queryFn: async () => {
       const res = await fetch("/api/v1/system/status");
       if (!res.ok) return {};
-      const result = await res.json();
-      return result;
+      return res.json();
     },
     refetchInterval: 30000,
     retry: false,

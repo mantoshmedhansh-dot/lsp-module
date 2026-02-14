@@ -20,11 +20,30 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2, Search, Eye } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Loader2, Search, Eye, MoreHorizontal, Building2, Users, CreditCard, TrendingUp } from "lucide-react";
+
+interface Tenant {
+  company: { id: string; name: string; code: string; createdAt: string };
+  subscription: { planName: string; status: string; trialEndsAt: string } | null;
+}
 
 export default function TenantsPage() {
   const router = useRouter();
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   const { data: tenants, isLoading } = useQuery({
     queryKey: ["platform-tenants", search],
@@ -38,28 +57,92 @@ export default function TenantsPage() {
     },
   });
 
-  const tenantList = Array.isArray(tenants) ? tenants : tenants?.items || [];
+  const tenantList: Tenant[] = Array.isArray(tenants) ? tenants : tenants?.items || [];
+
+  const filteredTenants = statusFilter === "all"
+    ? tenantList
+    : tenantList.filter((t) => t.subscription?.status === statusFilter);
+
+  const activeCount = tenantList.filter((t) => t.subscription?.status === "active").length;
+  const trialingCount = tenantList.filter((t) => t.subscription?.status === "trialing").length;
+
+  const stats = [
+    { label: "Total Tenants", value: tenantList.length, icon: Building2, color: "blue" },
+    { label: "Active", value: activeCount, icon: CreditCard, color: "green" },
+    { label: "Trialing", value: trialingCount, icon: TrendingUp, color: "amber" },
+    { label: "Unique Plans", value: new Set(tenantList.map((t) => t.subscription?.planName).filter(Boolean)).size, icon: Users, color: "purple" },
+  ];
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">All Tenants</h1>
-          <p className="text-muted-foreground">Manage tenant companies</p>
+          <p className="text-muted-foreground">Manage tenant companies and subscriptions</p>
         </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid gap-4 md:grid-cols-4">
+        {stats.map((stat) => (
+          <Card key={stat.label}>
+            <CardContent className="flex items-center gap-4 p-4">
+              <div
+                className="rounded-lg p-3"
+                style={{
+                  backgroundColor:
+                    stat.color === "blue" ? "#dbeafe"
+                      : stat.color === "green" ? "#dcfce7"
+                        : stat.color === "amber" ? "#fef3c7"
+                          : "#f3e8ff",
+                }}
+              >
+                <stat.icon
+                  className="h-5 w-5"
+                  style={{
+                    color:
+                      stat.color === "blue" ? "#2563eb"
+                        : stat.color === "green" ? "#16a34a"
+                          : stat.color === "amber" ? "#d97706"
+                            : "#9333ea",
+                  }}
+                />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">{stat.label}</p>
+                <p className="text-2xl font-bold">{stat.value}</p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       <Card>
         <CardHeader>
-          <div className="flex items-center gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search by company name or code..."
-                className="pl-9"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
+          <div className="flex items-center justify-between gap-4">
+            <CardTitle>Tenants</CardTitle>
+            <div className="flex items-center gap-3">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-36">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="trialing">Trialing</SelectItem>
+                  <SelectItem value="canceled">Canceled</SelectItem>
+                  <SelectItem value="expired">Expired</SelectItem>
+                </SelectContent>
+              </Select>
+              <div className="relative w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by company name or code..."
+                  className="pl-9"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
             </div>
           </div>
         </CardHeader>
@@ -78,17 +161,23 @@ export default function TenantsPage() {
                   <TableHead>Status</TableHead>
                   <TableHead>Trial Ends</TableHead>
                   <TableHead>Created</TableHead>
-                  <TableHead></TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {tenantList.map((t: {
-                  company: { id: string; name: string; code: string; createdAt: string };
-                  subscription: { planName: string; status: string; trialEndsAt: string } | null;
-                }) => (
+                {filteredTenants.map((t) => (
                   <TableRow key={t.company.id}>
-                    <TableCell className="font-medium">{t.company.name}</TableCell>
-                    <TableCell>{t.company.code}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100">
+                          <Building2 className="h-4 w-4 text-blue-600" />
+                        </div>
+                        <span className="font-medium">{t.company.name}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{t.company.code}</Badge>
+                    </TableCell>
                     <TableCell>{t.subscription?.planName || "—"}</TableCell>
                     <TableCell>
                       <Badge
@@ -98,6 +187,13 @@ export default function TenantsPage() {
                             : t.subscription?.status === "trialing"
                               ? "secondary"
                               : "outline"
+                        }
+                        className={
+                          t.subscription?.status === "active"
+                            ? "bg-green-100 text-green-700"
+                            : t.subscription?.status === "trialing"
+                              ? "bg-amber-100 text-amber-700"
+                              : ""
                         }
                       >
                         {t.subscription?.status || "none"}
@@ -111,18 +207,28 @@ export default function TenantsPage() {
                     <TableCell>
                       {new Date(t.company.createdAt).toLocaleDateString()}
                     </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => router.push(`/platform-admin/tenants/${t.company.id}`)}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => router.push(`/platform-admin/tenants/${t.company.id}`)}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            View Details
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => router.push(`/settings/users?companyId=${t.company.id}`)}>
+                            <Users className="mr-2 h-4 w-4" />
+                            Manage Users
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))}
-                {tenantList.length === 0 && (
+                {filteredTenants.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                       No tenants found

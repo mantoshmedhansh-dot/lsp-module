@@ -110,10 +110,9 @@ const platformAdminNav: NavItemWithSub = {
   items: [
     { title: "Revenue Dashboard", href: "/platform-admin" },
     { title: "All Tenants", href: "/platform-admin/tenants" },
+    { title: "All Brands/Clients", href: "/master/brands" },
     { title: "Plans Management", href: "/platform-admin/plans" },
     { title: "Feature Flags", href: "/platform-admin/feature-flags" },
-    { title: "All Companies", href: "/master/companies" },
-    { title: "All Brands/Tenants", href: "/master/brands" },
     { title: "System Health", href: "/master/health" },
     { title: "Audit Logs", href: "/master/audit" },
   ],

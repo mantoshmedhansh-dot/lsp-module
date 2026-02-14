@@ -162,19 +162,12 @@ export default function BrandsPage() {
     try {
       setIsLoading(true);
       const params = new URLSearchParams();
-      params.append("is_active", "true"); // Only show active brands
       if (selectedCompany && selectedCompany !== "all") {
         params.append("companyId", selectedCompany);
       }
       const response = await fetch(`/api/v1/brands?${params.toString()}`);
-      console.log("Brands API response status:", response.status);
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Brands API error:", errorText);
-        throw new Error("Failed to fetch brands");
-      }
+      if (!response.ok) throw new Error("Failed to fetch brands");
       const data = await response.json();
-      console.log("Brands API data:", data);
       setBrands(Array.isArray(data) ? data : (data.data || []));
     } catch (error) {
       console.error("Error fetching brands:", error);

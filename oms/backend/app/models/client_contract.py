@@ -46,6 +46,7 @@ class ClientContract(BaseModel, table=True):
     warehouseIds: Optional[list] = Field(default=None, sa_column=Column(JSONB, default=[]))
     modules: Optional[list] = Field(default=None, sa_column=Column(JSONB, default=[]))
     config: Optional[dict] = Field(default=None, sa_column=Column(JSONB, default={}))
+    slaConfig: Optional[dict] = Field(default=None, sa_column=Column(JSONB, default={}))
 
     # Relationships
     lspCompany: Optional["Company"] = Relationship(
@@ -69,6 +70,7 @@ class ClientContractCreate(CreateBase):
     warehouseIds: Optional[list] = None
     modules: Optional[list] = None
     config: Optional[dict] = None
+    slaConfig: Optional[dict] = None
 
 
 class ClientContractUpdate(UpdateBase):
@@ -81,6 +83,7 @@ class ClientContractUpdate(UpdateBase):
     warehouseIds: Optional[list] = None
     modules: Optional[list] = None
     config: Optional[dict] = None
+    slaConfig: Optional[dict] = None
 
 
 class ClientContractResponse(ResponseBase):
@@ -96,5 +99,6 @@ class ClientContractResponse(ResponseBase):
     warehouseIds: Optional[list] = None
     modules: Optional[list] = None
     config: Optional[dict] = None
+    slaConfig: Optional[dict] = None
     createdAt: datetime
     updatedAt: datetime

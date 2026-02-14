@@ -6,12 +6,14 @@ import { useRouter } from "next/navigation";
 import {
   Plus,
   MoreHorizontal,
-  Pencil,
   Trash2,
   Building2,
   Search,
   Handshake,
   Eye,
+  Upload,
+  AlertTriangle,
+  Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -49,10 +51,17 @@ interface Client {
   createdAt: string;
 }
 
+interface ContractInfo {
+  brandCompanyId: string;
+  status: string;
+  contractEnd: string | null;
+}
+
 export default function ClientsPage() {
   const { data: session } = useSession();
   const router = useRouter();
   const [clients, setClients] = useState<Client[]>([]);
+  const [contracts, setContracts] = useState<ContractInfo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
 
@@ -61,6 +70,7 @@ export default function ClientsPage() {
 
   useEffect(() => {
     fetchClients();
+    fetchContracts();
   }, [search]);
 
   async function fetchClients() {
@@ -82,6 +92,29 @@ export default function ClientsPage() {
     }
   }
 
+  async function fetchContracts() {
+    try {
+      const response = await fetch("/api/v1/platform/clients/contracts/all");
+      if (response.ok) {
+        const data = await response.json();
+        const items = Array.isArray(data) ? data : data?.items || data?.data || [];
+        setContracts(items);
+      }
+    } catch {
+      // silent
+    }
+  }
+
+  function getContractExpiry(clientId: string): { daysLeft: number | null; status: string | null } {
+    const contract = contracts.find((c) => c.brandCompanyId === clientId);
+    if (!contract) return { daysLeft: null, status: null };
+    if (!contract.contractEnd) return { daysLeft: null, status: contract.status };
+    const daysLeft = Math.ceil(
+      (new Date(contract.contractEnd).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+    );
+    return { daysLeft, status: contract.status };
+  }
+
   async function handleDelete(id: string, name: string) {
     if (!confirm(`Are you sure you want to remove client "${name}"?`)) return;
     try {
@@ -93,7 +126,7 @@ export default function ClientsPage() {
       if (!response.ok) throw new Error("Failed to deactivate client");
       toast.success(`Client "${name}" deactivated`);
       fetchClients();
-    } catch (error) {
+    } catch {
       toast.error("Failed to deactivate client");
     }
   }
@@ -118,10 +151,19 @@ export default function ClientsPage() {
           </p>
         </div>
         {isAdmin && (
-          <Button onClick={() => router.push("/settings/clients/new")}>
-            <Plus className="mr-2 h-4 w-4" />
-            Onboard Client
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => router.push("/settings/clients/import")}
+            >
+              <Upload className="mr-2 h-4 w-4" />
+              Bulk Import
+            </Button>
+            <Button onClick={() => router.push("/settings/clients/new")}>
+              <Plus className="mr-2 h-4 w-4" />
+              Onboard Client
+            </Button>
+          </div>
         )}
       </div>
 
@@ -171,72 +213,100 @@ export default function ClientsPage() {
                   <TableHead>Client Name</TableHead>
                   <TableHead>Code</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Contract</TableHead>
                   <TableHead>Onboarded</TableHead>
                   <TableHead className="w-[70px]" />
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {clients.map((client) => (
-                  <TableRow
-                    key={client.id}
-                    className="cursor-pointer"
-                    onClick={() =>
-                      router.push(`/settings/clients/${client.id}`)
-                    }
-                  >
-                    <TableCell className="font-medium">{client.name}</TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {client.code}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          client.isActive ? "default" : "secondary"
-                        }
-                      >
-                        {client.isActive ? "Active" : "Inactive"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {new Date(client.createdAt).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger
-                          asChild
-                          onClick={(e) => e.stopPropagation()}
+                {clients.map((client) => {
+                  const { daysLeft, status: contractStatus } = getContractExpiry(client.id);
+                  const isExpiring = daysLeft !== null && daysLeft <= 30 && daysLeft > 0;
+                  const isExpired = daysLeft !== null && daysLeft <= 0;
+
+                  return (
+                    <TableRow
+                      key={client.id}
+                      className="cursor-pointer"
+                      onClick={() =>
+                        router.push(`/settings/clients/${client.id}`)
+                      }
+                    >
+                      <TableCell className="font-medium">{client.name}</TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {client.code}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            client.isActive ? "default" : "secondary"
+                          }
                         >
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              router.push(`/settings/clients/${client.id}`);
-                            }}
+                          {client.isActive ? "Active" : "Inactive"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          {contractStatus && (
+                            <Badge variant="outline" className="text-xs">
+                              {contractStatus}
+                            </Badge>
+                          )}
+                          {isExpired && (
+                            <Badge variant="destructive" className="text-xs">
+                              <AlertTriangle className="mr-1 h-3 w-3" />
+                              Expired
+                            </Badge>
+                          )}
+                          {isExpiring && (
+                            <Badge variant="outline" className="text-xs border-amber-400 text-amber-600">
+                              <Clock className="mr-1 h-3 w-3" />
+                              {daysLeft}d left
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {new Date(client.createdAt).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger
+                            asChild
+                            onClick={(e) => e.stopPropagation()}
                           >
-                            <Eye className="mr-2 h-4 w-4" />
-                            View Details
-                          </DropdownMenuItem>
-                          {isAdmin && (
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
                             <DropdownMenuItem
-                              className="text-destructive"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleDelete(client.id, client.name);
+                                router.push(`/settings/clients/${client.id}`);
                               }}
                             >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Deactivate
+                              <Eye className="mr-2 h-4 w-4" />
+                              View Details
                             </DropdownMenuItem>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                            {isAdmin && (
+                              <DropdownMenuItem
+                                className="text-destructive"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDelete(client.id, client.name);
+                                }}
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Deactivate
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           )}

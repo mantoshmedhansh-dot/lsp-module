@@ -23,6 +23,24 @@ from app.models import (
 router = APIRouter(prefix="/orders", tags=["Orders"])
 
 
+# ── Contract auto-activation helper ──────────────────────────────────────
+def _auto_activate_contract(session: Session, company_id):
+    """Auto-transition 'onboarding' contracts to 'active' on first order."""
+    try:
+        from app.models.client_contract import ClientContract
+        contracts = session.exec(
+            select(ClientContract).where(
+                ClientContract.brandCompanyId == company_id,
+                ClientContract.status == "onboarding",
+            )
+        ).all()
+        for contract in contracts:
+            contract.status = "active"
+            session.add(contract)
+    except Exception:
+        pass  # Non-critical — don't fail order creation
+
+
 # ============================================================================
 # Order Endpoints
 # ============================================================================
@@ -274,6 +292,8 @@ def create_order(
         log_audit(session, entity_type="Order", entity_id=order.id,
                   action="CREATE", user_id=getattr(current_user, 'id', None),
                   changes={"orderNo": order.orderNo, "status": order.status})
+        # Auto-activate onboarding contracts on first order
+        _auto_activate_contract(session, location.companyId)
         session.commit()
         session.refresh(order)
     except Exception as e:

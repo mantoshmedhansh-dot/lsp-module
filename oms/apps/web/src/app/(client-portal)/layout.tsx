@@ -405,6 +405,7 @@ const settingsNav: NavItem = {
   icon: Settings,
   children: [
     { name: "Company Profile", href: "/client/settings" },
+    { name: "My Contract", href: "/client/my-contract" },
   ],
 };
 
@@ -446,6 +447,23 @@ export default function ClientPortalLayout({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [activeService, setActiveService] = useState<ServiceType>("OMS_WMS");
+  const [contractServiceModel, setContractServiceModel] = useState<string | null>(null);
+
+  // Fetch contract to determine service model filtering
+  useEffect(() => {
+    async function fetchContract() {
+      try {
+        const res = await fetch("/api/v1/platform/brand-portal/my-contract");
+        if (res.ok) {
+          const data = await res.json();
+          setContractServiceModel(data.contract?.serviceModel || null);
+        }
+      } catch {
+        // silent
+      }
+    }
+    fetchContract();
+  }, []);
 
   // Detect active service from URL
   useEffect(() => {
@@ -458,16 +476,34 @@ export default function ClientPortalLayout({
     }
   }, [pathname]);
 
-  // Get navigation items based on active service
+  // Get navigation items based on active service and contract service model
   const getNavItems = () => {
+    let items: NavItem[];
     switch (activeService) {
       case "B2C_COURIER":
-        return b2cNavItems;
+        items = b2cNavItems;
+        break;
       case "B2B_LOGISTICS":
-        return b2bNavItems;
+        items = b2bNavItems;
+        break;
       default:
-        return [dashboardNav, controlTowerNav, ...operationsNav, ...analyticsNav, ...configNav];
+        items = [dashboardNav, controlTowerNav, ...operationsNav, ...analyticsNav, ...configNav];
+        break;
     }
+
+    // Filter by contract service model (Feature 7)
+    if (contractServiceModel && activeService === "OMS_WMS") {
+      const inventoryNames = ["Inventory", "Inbound", "QC", "Quality Control"];
+      const shippingNames = ["Shipping", "Tracking", "Logistics Setup"];
+      if (contractServiceModel === "WAREHOUSING") {
+        items = items.filter((i) => !shippingNames.includes(i.name));
+      } else if (contractServiceModel === "LOGISTICS") {
+        items = items.filter((i) => !inventoryNames.includes(i.name));
+      }
+      // FULL: show all
+    }
+
+    return items;
   };
 
   // All navigation items combined for active detection

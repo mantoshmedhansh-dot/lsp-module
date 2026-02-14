@@ -508,6 +508,28 @@ def start_scheduler():
     except ImportError as e:
         logger.warning(f"Marketplace sync jobs not available: {e}")
 
+    # ── Contract activation safety net (Feature 3) ─────────────────────
+    scheduler.add_job(
+        contract_activation_check,
+        trigger=IntervalTrigger(hours=1),
+        id="contract_activation_check",
+        name="Contract Activation Check (Hourly)",
+        replace_existing=True,
+        max_instances=1,
+    )
+    logger.info("Scheduled contract activation check job: every hour")
+
+    # ── Contract expiry alerts (Feature 5) ───────────────────────────
+    scheduler.add_job(
+        check_contract_expiry,
+        trigger=CronTrigger(hour=8, minute=0),
+        id="contract_expiry_check",
+        name="Contract Expiry Check (Daily 8 AM UTC)",
+        replace_existing=True,
+        max_instances=1,
+    )
+    logger.info("Scheduled contract expiry check job: daily at 8 AM UTC")
+
     scheduler.start()
     logger.info("Scheduler started with Detection Engine job (every 15 minutes)")
 
@@ -576,3 +598,105 @@ def resume_scheduled_job(job_id: str) -> bool:
         return True
     except Exception:
         return False
+
+
+# =============================================================================
+# SCHEDULED JOB: CONTRACT ACTIVATION CHECK (Feature 3)
+# =============================================================================
+
+def contract_activation_check():
+    """
+    Hourly safety net: Find 'onboarding' contracts whose brand has orders → set 'active'.
+    """
+    logger.info("=== CONTRACT ACTIVATION CHECK START ===")
+    activated = 0
+    try:
+        with Session(engine) as session:
+            from app.models.client_contract import ClientContract
+            from app.models.company import Company
+
+            contracts = session.exec(
+                select(ClientContract).where(ClientContract.status == "onboarding")
+            ).all()
+
+            for contract in contracts:
+                order_count = session.exec(
+                    select(func.count(Order.id)).where(
+                        Order.companyId == contract.brandCompanyId
+                    )
+                ).one()
+                if order_count and order_count > 0:
+                    contract.status = "active"
+                    session.add(contract)
+                    activated += 1
+                    logger.info(f"Activated contract for brand {contract.brandCompanyId}")
+
+            if activated:
+                session.commit()
+
+            logger.info(f"=== CONTRACT ACTIVATION CHECK COMPLETE: {activated} activated ===")
+    except Exception as e:
+        logger.error(f"Contract activation check error: {e}")
+
+
+# =============================================================================
+# SCHEDULED JOB: CONTRACT EXPIRY ALERTS (Feature 5)
+# =============================================================================
+
+def check_contract_expiry():
+    """
+    Daily job at 8 AM UTC: find active contracts expiring in 30/7/3/1 days and send email alerts.
+    """
+    logger.info("=== CONTRACT EXPIRY CHECK START ===")
+    alerts_sent = 0
+    try:
+        with Session(engine) as session:
+            from app.models.client_contract import ClientContract
+            from app.models.company import Company
+            from app.models.user import User as UserModel
+
+            today = datetime.utcnow().date()
+            threshold = today + __import__("datetime").timedelta(days=30)
+
+            contracts = session.exec(
+                select(ClientContract).where(
+                    ClientContract.status == "active",
+                    ClientContract.contractEnd != None,
+                    ClientContract.contractEnd <= threshold,
+                    ClientContract.contractEnd >= today,
+                )
+            ).all()
+
+            alert_days = [30, 7, 3, 1]
+            from app.services.email import email_service
+
+            for contract in contracts:
+                days_left = (contract.contractEnd - today).days
+                if days_left not in alert_days:
+                    continue
+
+                brand = session.get(Company, contract.brandCompanyId)
+                lsp = session.get(Company, contract.lspCompanyId)
+                if not brand or not lsp:
+                    continue
+
+                # Send to LSP admins
+                admins = session.exec(
+                    select(UserModel).where(
+                        UserModel.companyId == lsp.id,
+                        UserModel.role.in_(["ADMIN", "SUPER_ADMIN"]),
+                        UserModel.isActive == True,
+                    )
+                ).all()
+
+                for admin in admins:
+                    email_service.send_contract_expiring(
+                        to=admin.email,
+                        brand_name=brand.name,
+                        days_left=days_left,
+                    )
+                    alerts_sent += 1
+
+            logger.info(f"=== CONTRACT EXPIRY CHECK COMPLETE: {alerts_sent} alerts sent ===")
+    except Exception as e:
+        logger.error(f"Contract expiry check error: {e}")

@@ -121,14 +121,21 @@ def create_user(
             detail="Email already registered"
         )
 
-    # Non-super-admins can only create users for their own company
+    # Non-super-admins: own company or child brand companies (LSP admin)
     if company_filter.company_id:
         if user_data.companyId and user_data.companyId != company_filter.company_id:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Cannot create users for other companies"
-            )
-        user_data.companyId = company_filter.company_id
+            # Allow LSP admins to create users for their child brand companies
+            from app.models.company import Company
+            target_company = session.exec(
+                select(Company).where(Company.id == user_data.companyId)
+            ).first()
+            if not target_company or target_company.parentId != company_filter.company_id:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Cannot create users for other companies"
+                )
+        elif not user_data.companyId:
+            user_data.companyId = company_filter.company_id
 
     # Hash password
     user_dict = user_data.model_dump()

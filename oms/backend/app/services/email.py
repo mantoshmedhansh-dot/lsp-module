@@ -83,6 +83,20 @@ class EmailService:
             """,
         )
 
+    def send_contract_expiring(self, to: str, brand_name: str, days_left: int):
+        urgency = "Urgent: " if days_left <= 3 else ""
+        self.send(
+            to=to,
+            subject=f"{urgency}Contract for {brand_name} expires in {days_left} day{'s' if days_left != 1 else ''}",
+            html=f"""
+            <h2>Contract Expiry Notice</h2>
+            <p>The service contract for <strong>{brand_name}</strong> will expire in <strong>{days_left} day{'s' if days_left != 1 else ''}</strong>.</p>
+            <p>Please review and renew the contract to avoid service interruption.</p>
+            <p><a href="https://lsp-oms.vercel.app/settings/clients">Review Contracts</a></p>
+            <p>— The CJDQuick Team</p>
+            """,
+        )
+
     def send_payment_failed(self, to: str, company_name: str):
         self.send(
             to=to,

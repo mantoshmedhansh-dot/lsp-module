@@ -73,11 +73,9 @@ export default function AuditLogsPage() {
 
       const response = await fetch(`/api/v1/system/audit-logs?${params}`);
       if (!response.ok) {
-        if (response.status === 403) {
-          toast.error("Access denied - Admin only");
-          return;
-        }
-        throw new Error("Failed to fetch audit logs");
+        // API may fail if table doesn't exist yet — show empty state
+        setLogs([]);
+        return;
       }
       const result = await response.json();
 
@@ -102,7 +100,6 @@ export default function AuditLogsPage() {
       });
     } catch (error) {
       console.error("Error fetching audit logs:", error);
-      toast.error("Failed to load audit logs");
     } finally {
       setIsLoading(false);
     }

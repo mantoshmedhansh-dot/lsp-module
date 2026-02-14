@@ -38,24 +38,28 @@ def list_audit_logs(
     current_user: User = Depends(require_admin)
 ):
     """List audit logs. Admin only."""
-    query = select(AuditLog)
+    try:
+        query = select(AuditLog)
 
-    if entity_type:
-        query = query.where(AuditLog.entityType == entity_type)
-    if entity_id:
-        query = query.where(AuditLog.entityId == entity_id)
-    if action:
-        query = query.where(AuditLog.action == action)
-    if user_id:
-        query = query.where(AuditLog.userId == user_id)
-    if date_from:
-        query = query.where(AuditLog.createdAt >= date_from)
-    if date_to:
-        query = query.where(AuditLog.createdAt <= date_to)
+        if entity_type:
+            query = query.where(AuditLog.entityType == entity_type)
+        if entity_id:
+            query = query.where(AuditLog.entityId == entity_id)
+        if action:
+            query = query.where(AuditLog.action == action)
+        if user_id:
+            query = query.where(AuditLog.userId == user_id)
+        if date_from:
+            query = query.where(AuditLog.createdAt >= date_from)
+        if date_to:
+            query = query.where(AuditLog.createdAt <= date_to)
 
-    query = query.offset(skip).limit(limit).order_by(AuditLog.createdAt.desc())
-    logs = session.exec(query).all()
-    return [AuditLogResponse.model_validate(l) for l in logs]
+        query = query.offset(skip).limit(limit).order_by(AuditLog.createdAt.desc())
+        logs = session.exec(query).all()
+        return [AuditLogResponse.model_validate(l) for l in logs]
+    except Exception:
+        # Table may not exist yet — return empty list
+        return []
 
 
 @router.get("/audit-logs/{log_id}", response_model=AuditLogResponse)

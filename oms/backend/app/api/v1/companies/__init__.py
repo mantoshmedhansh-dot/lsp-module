@@ -209,7 +209,8 @@ def get_company(
 def create_company(
     company_data: CompanyCreate,
     session: Session = Depends(get_session),
-    current_user: User = Depends(require_super_admin())
+    _: None = Depends(require_super_admin()),
+    current_user: User = Depends(get_current_user)
 ):
     """
     Create a new company.
@@ -306,7 +307,8 @@ def update_company(
 def delete_company(
     company_id: UUID,
     session: Session = Depends(get_session),
-    current_user: User = Depends(require_super_admin())
+    _: None = Depends(require_super_admin()),
+    current_user: User = Depends(get_current_user)
 ):
     """
     Soft delete a company (set isActive=False).

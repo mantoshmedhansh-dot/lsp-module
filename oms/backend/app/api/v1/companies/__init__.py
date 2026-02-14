@@ -148,9 +148,11 @@ def list_companies(
     # Non-super-admins can only see their own company
     query = company_filter.apply_filter(query, Company.id)
 
-    # Apply filters
+    # Apply filters — default to active-only when not specified
     if is_active is not None:
         query = query.where(Company.isActive == is_active)
+    else:
+        query = query.where(Company.isActive == True)
     if search:
         search_pattern = f"%{search}%"
         query = query.where(

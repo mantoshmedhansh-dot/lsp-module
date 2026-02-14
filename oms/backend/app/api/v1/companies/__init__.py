@@ -2,6 +2,7 @@
 Companies API v1 - Company management endpoints
 """
 import re
+import logging
 from typing import List, Optional
 from uuid import UUID
 
@@ -15,6 +16,8 @@ from app.models import (
     Company, CompanyCreate, CompanyUpdate, CompanyResponse, CompanyBrief,
     User
 )
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/companies", tags=["Companies"])
 
@@ -239,7 +242,7 @@ def create_company(
     session.add(company)
     session.flush()
     log_audit(session, entity_type="Company", entity_id=company.id,
-              action="CREATE", user_id=current_user.id,
+              action="CREATE", user_id=getattr(current_user, 'id', None),
               changes={"name": company.name, "code": company.code})
     session.commit()
     session.refresh(company)
@@ -296,7 +299,7 @@ def update_company(
 
     session.add(company)
     log_audit(session, entity_type="Company", entity_id=company.id,
-              action="UPDATE", user_id=current_user.id, changes=update_dict)
+              action="UPDATE", user_id=getattr(current_user, 'id', None), changes=update_dict)
     session.commit()
     session.refresh(company)
 
@@ -314,6 +317,8 @@ def delete_company(
     Soft delete a company (set isActive=False).
     Requires SUPER_ADMIN role.
     """
+    logger.info(f"delete_company called: company_id={company_id}, user={getattr(current_user, 'id', None)}")
+
     company = session.exec(
         select(Company).where(Company.id == company_id)
     ).first()
@@ -324,12 +329,20 @@ def delete_company(
             detail="Company not found"
         )
 
-    # Soft delete
-    company.isActive = False
-    session.add(company)
-    log_audit(session, entity_type="Company", entity_id=company.id,
-              action="DELETE", user_id=current_user.id,
-              changes={"name": company.name})
-    session.commit()
+    try:
+        # Soft delete
+        company.isActive = False
+        session.add(company)
+        log_audit(session, entity_type="Company", entity_id=company.id,
+                  action="DELETE", user_id=getattr(current_user, 'id', None),
+                  changes={"name": company.name})
+        session.commit()
+    except Exception as e:
+        logger.error(f"delete_company failed for {company_id}: {type(e).__name__}: {e}")
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete company: {str(e)}"
+        )
 
     return None

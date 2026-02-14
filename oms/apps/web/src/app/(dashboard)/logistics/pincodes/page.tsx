@@ -141,7 +141,7 @@ export default function PincodesPage() {
       params.set("limit", "50");
 
       // Call serviceability API
-      const response = await fetch(`/api/v1/serviceability?${params}`);
+      const response = await fetch(`/api/v1/logistics/service-pincodes?${params}`);
       if (!response.ok) throw new Error("Failed to fetch pincodes");
       const result = await response.json();
 

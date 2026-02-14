@@ -124,7 +124,7 @@ export default function RateCardsPage() {
         page: page.toString(),
         limit: "20",
       });
-      const res = await fetch(`/api/v1/rate-cards?${params}`);
+      const res = await fetch(`/api/v1/logistics/rate-cards?${params}`);
       if (!res.ok) throw new Error("Failed to fetch rate cards");
       return res.json();
     },
@@ -143,7 +143,7 @@ export default function RateCardsPage() {
   // Save mutation
   const saveMutation = useMutation({
     mutationFn: async (data: typeof formData & { id?: string }) => {
-      const url = data.id ? `/api/v1/rate-cards/${data.id}` : "/api/v1/rate-cards";
+      const url = data.id ? `/api/v1/logistics/rate-cards/${data.id}` : "/api/v1/logistics/rate-cards";
       const method = data.id ? "PATCH" : "POST";
       const res = await fetch(url, {
         method,
@@ -178,7 +178,7 @@ export default function RateCardsPage() {
   // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetch(`/api/v1/rate-cards/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/v1/logistics/rate-cards/${id}`, { method: "DELETE" });
       if (!res.ok) {
         const error = await res.json();
         throw new Error(error.error || "Failed to delete");
@@ -201,7 +201,7 @@ export default function RateCardsPage() {
   // Calculate rates
   const calculateMutation = useMutation({
     mutationFn: async (data: typeof calcData) => {
-      const res = await fetch("/api/v1/rate-cards/calculate", {
+      const res = await fetch("/api/v1/logistics/rate-cards/calculate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),

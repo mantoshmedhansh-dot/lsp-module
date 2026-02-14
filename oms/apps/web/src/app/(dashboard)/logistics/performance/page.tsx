@@ -112,7 +112,7 @@ export default function DeliveryPerformancePage() {
 
       // Try to fetch carrier performance data
       const performanceRes = await fetch(
-        `/api/v1/analytics/carrier-performance?startDate=${startDate.toISOString()}&endDate=${now.toISOString()}`
+        `/api/v1/analytics/carrier-scorecard?startDate=${startDate.toISOString()}&endDate=${now.toISOString()}`
       );
 
       if (performanceRes.ok) {
@@ -151,7 +151,7 @@ export default function DeliveryPerformancePage() {
       } else {
         // If no performance data, try to get basic delivery stats
         const deliveryRes = await fetch(
-          `/api/v1/shipments/stats?startDate=${startDate.toISOString()}&endDate=${now.toISOString()}`
+          `/api/v1/analytics/carrier-scorecard/summary?startDate=${startDate.toISOString()}&endDate=${now.toISOString()}`
         );
 
         if (deliveryRes.ok) {

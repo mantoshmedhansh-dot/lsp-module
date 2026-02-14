@@ -138,7 +138,7 @@ export default function AWBManagementPage() {
 
       // This would call an AWB-specific API
       // For now, we'll use deliveries API as a proxy
-      const response = await fetch(`/api/v1/deliveries?${params}`);
+      const response = await fetch(`/api/v1/logistics/awb?${params}`);
       if (!response.ok) throw new Error("Failed to fetch AWBs");
       const result = await response.json();
 

@@ -6,6 +6,7 @@ from typing import List, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
+from pydantic import BaseModel as PydanticBaseModel
 from sqlmodel import Session, select, func
 
 from app.core.database import get_session
@@ -19,6 +20,7 @@ from app.models import (
     Location, User, OrderStatus, Channel, OrderType, PaymentMode,
     ItemStatus, DeliveryStatus, SKU
 )
+from app.services.shipping_service import ShippingService
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
 
@@ -537,6 +539,122 @@ def generate_invoice(
         "items": invoice_items,
         "status": "INVOICED"
     }
+
+
+# ============================================================================
+# Ship Order Endpoints
+# ============================================================================
+
+
+class ShipOrderRequest(PydanticBaseModel):
+    carrierCode: str
+    weightGrams: int = 500
+    lengthCm: float = 10
+    breadthCm: float = 10
+    heightCm: float = 10
+
+
+@router.post("/{order_id}/ship")
+async def ship_order(
+    order_id: UUID,
+    body: ShipOrderRequest,
+    company_filter: CompanyFilter = Depends(),
+    session: Session = Depends(get_session),
+    _: None = Depends(require_manager()),
+):
+    """
+    Ship an order with the selected carrier.
+    Creates Delivery record, calls carrier API, gets AWB + label + tracking URL.
+    """
+    service = ShippingService(session)
+    result = await service.ship_order(
+        order_id=order_id,
+        carrier_code=body.carrierCode,
+        company_id=company_filter.company_id,
+        weight_grams=body.weightGrams,
+        length_cm=body.lengthCm,
+        breadth_cm=body.breadthCm,
+        height_cm=body.heightCm,
+    )
+
+    if not result.get("success"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=result.get("error", "Failed to ship order"),
+        )
+
+    return result
+
+
+@router.get("/{order_id}/shipping-options")
+async def get_shipping_options(
+    order_id: UUID,
+    company_filter: CompanyFilter = Depends(),
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    """Get available carriers for this order."""
+    # Verify order exists
+    order = session.exec(
+        select(Order).where(Order.id == order_id)
+    ).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    service = ShippingService(session)
+    carriers = await service.get_available_carriers(company_filter.company_id)
+    return {"orderId": str(order_id), "carriers": carriers}
+
+
+@router.post("/{order_id}/rate-check")
+async def order_rate_check(
+    order_id: UUID,
+    company_filter: CompanyFilter = Depends(),
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    """Rate comparison using order's addresses."""
+    order = session.exec(
+        select(Order).where(Order.id == order_id)
+    ).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    # Get origin pincode from location
+    location = session.exec(
+        select(Location).where(Location.id == order.locationId)
+    ).first()
+    origin_pincode = ""
+    if location:
+        loc_addr = location.address if isinstance(location.address, dict) else {}
+        origin_pincode = loc_addr.get("pincode", "")
+
+    # Get destination pincode from shipping address
+    ship_addr = order.shippingAddress or {}
+    dest_pincode = ship_addr.get("pincode", "")
+
+    if not origin_pincode or not dest_pincode:
+        raise HTTPException(
+            status_code=400,
+            detail="Origin or destination pincode missing",
+        )
+
+    payment_mode = order.paymentMode.value if hasattr(order.paymentMode, "value") else str(order.paymentMode)
+    cod_amount = float(order.totalAmount) if payment_mode == "COD" else 0
+
+    service = ShippingService(session)
+    result = await service.get_rates(
+        company_id=company_filter.company_id,
+        origin_pincode=origin_pincode,
+        dest_pincode=dest_pincode,
+        weight_grams=500,
+        payment_mode=payment_mode,
+        cod_amount=cod_amount,
+    )
+    result["orderId"] = str(order_id)
+    result["originPincode"] = origin_pincode
+    result["destPincode"] = dest_pincode
+    return result
 
 
 # ============================================================================

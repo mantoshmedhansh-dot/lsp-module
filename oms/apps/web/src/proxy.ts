@@ -11,6 +11,7 @@ export default auth((req) => {
   const isApiAuthRoute = req.nextUrl.pathname.startsWith("/api/auth");
   const isApiRoute = req.nextUrl.pathname.startsWith("/api/");
   const isPublicRoute = req.nextUrl.pathname === "/";
+  const isTrackingPage = req.nextUrl.pathname.startsWith("/track");
 
   // Allow API auth routes
   if (isApiAuthRoute) {
@@ -31,6 +32,11 @@ export default auth((req) => {
     if (apiKey === INTERNAL_API_KEY) {
       return NextResponse.next();
     }
+  }
+
+  // Allow tracking pages without auth (public-facing)
+  if (isTrackingPage) {
+    return NextResponse.next();
   }
 
   // Allow signup page without auth

@@ -86,6 +86,10 @@ from .platform import router as platform_router
 from .carrier import router as carrier_router
 from .carrier_webhooks import router as carrier_webhooks_router
 
+# Shipping workflow routers
+from .shipping import router as shipping_router
+from .public import router as public_router
+
 # Omni-Channel OMS routers
 from .sku_mappings import router as sku_mappings_router
 from .order_sync import router as order_sync_router
@@ -190,3 +194,7 @@ router.include_router(webhooks_router)
 router.include_router(settlements_router)
 router.include_router(marketplace_returns_router)
 router.include_router(scheduled_jobs_router)
+
+# Shipping workflow
+router.include_router(shipping_router)
+router.include_router(public_router)

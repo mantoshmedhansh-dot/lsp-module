@@ -41,6 +41,7 @@ import {
 } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
+import { ShipOrderDialog } from "./components/ship-order-dialog";
 
 interface Address {
   line1?: string;
@@ -190,6 +191,7 @@ export default function OrderDetailPage({
   const router = useRouter();
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [shipDialogOpen, setShipDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchOrder();
@@ -404,6 +406,12 @@ export default function OrderDetailPage({
             <FileText className="mr-2 h-4 w-4" />
             Print Label
           </Button>
+          {["PACKED", "INVOICED", "MANIFESTED"].includes(order.status) && (
+            <Button size="sm" onClick={() => setShipDialogOpen(true)}>
+              <Truck className="mr-2 h-4 w-4" />
+              Ship Order
+            </Button>
+          )}
           {["CREATED", "CONFIRMED", "PARTIALLY_ALLOCATED"].includes(order.status) && (
             <Button size="sm" onClick={handleAllocate}>
               <Package className="mr-2 h-4 w-4" />
@@ -747,6 +755,15 @@ export default function OrderDetailPage({
           )}
         </div>
       </div>
+
+      {/* Ship Order Dialog */}
+      <ShipOrderDialog
+        open={shipDialogOpen}
+        onOpenChange={setShipDialogOpen}
+        orderId={id}
+        orderNo={order.orderNo}
+        onShipped={fetchOrder}
+      />
     </div>
   );
 }

@@ -10,8 +10,10 @@ from sqlmodel import Session, select, func
 
 from app.core.database import get_session
 from app.core.deps import get_current_user, require_super_admin, CompanyFilter
+from app.core.audit import log_audit
 from app.models import (
-    Brand, BrandCreate, BrandUpdate, BrandResponse, BrandBrief
+    Brand, BrandCreate, BrandUpdate, BrandResponse, BrandBrief,
+    User
 )
 
 router = APIRouter(prefix="/brands", tags=["Brands"])
@@ -211,7 +213,7 @@ def get_brand(
 def create_brand(
     brand_data: BrandCreate,
     session: Session = Depends(get_session),
-    _: None = Depends(get_current_user)
+    current_user: User = Depends(get_current_user)
 ):
     """
     Create a new brand.
@@ -237,6 +239,10 @@ def create_brand(
     # Create brand
     brand = Brand(**data)
     session.add(brand)
+    session.flush()
+    log_audit(session, entity_type="Brand", entity_id=brand.id,
+              action="CREATE", user_id=current_user.id,
+              changes={"name": brand.name, "code": brand.code})
     session.commit()
     session.refresh(brand)
 
@@ -248,7 +254,8 @@ def update_brand(
     brand_id: UUID,
     brand_data: BrandUpdate,
     company_filter: CompanyFilter = Depends(),
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
 ):
     """
     Update a brand.
@@ -290,6 +297,8 @@ def update_brand(
         setattr(brand, field, value)
 
     session.add(brand)
+    log_audit(session, entity_type="Brand", entity_id=brand.id,
+              action="UPDATE", user_id=current_user.id, changes=update_dict)
     session.commit()
     session.refresh(brand)
 
@@ -300,7 +309,7 @@ def update_brand(
 def delete_brand(
     brand_id: UUID,
     session: Session = Depends(get_session),
-    _: None = Depends(get_current_user)
+    current_user: User = Depends(get_current_user)
 ):
     """
     Soft delete a brand (set isActive=False).
@@ -318,6 +327,9 @@ def delete_brand(
     # Soft delete
     brand.isActive = False
     session.add(brand)
+    log_audit(session, entity_type="Brand", entity_id=brand.id,
+              action="DELETE", user_id=current_user.id,
+              changes={"name": brand.name})
     session.commit()
 
     return None

@@ -11,6 +11,7 @@ from sqlmodel import Session, select, func
 from app.core.database import get_session
 from app.core.deps import get_current_user, require_manager, require_client, CompanyFilter
 from app.core.rate_limit import limiter, heavy_limit
+from app.core.audit import log_audit
 from app.models import (
     Order, OrderCreate, OrderUpdate, OrderResponse, OrderBrief,
     OrderItem, OrderItemCreate, OrderItemUpdate, OrderItemResponse,
@@ -232,7 +233,7 @@ def create_order(
     order_data: OrderCreate,
     company_filter: CompanyFilter = Depends(),
     session: Session = Depends(get_session),
-    _: None = Depends(require_client())
+    current_user=Depends(require_client())
 ):
     """Create a new order. Requires CLIENT or higher role."""
     # Validate location
@@ -269,6 +270,10 @@ def create_order(
         order_dict["companyId"] = location.companyId
         order = Order(**order_dict)
         session.add(order)
+        session.flush()
+        log_audit(session, entity_type="Order", entity_id=order.id,
+                  action="CREATE", user_id=getattr(current_user, 'id', None),
+                  changes={"orderNo": order.orderNo, "status": order.status})
         session.commit()
         session.refresh(order)
     except Exception as e:
@@ -287,7 +292,7 @@ def update_order(
     order_data: OrderUpdate,
     company_filter: CompanyFilter = Depends(),
     session: Session = Depends(get_session),
-    _: None = Depends(require_manager())
+    current_user=Depends(require_manager())
 ):
     """Update an order. Requires MANAGER or higher role."""
     query = select(Order).where(Order.id == order_id)
@@ -308,6 +313,9 @@ def update_order(
         setattr(order, field, value)
 
     session.add(order)
+    log_audit(session, entity_type="Order", entity_id=order.id,
+              action="UPDATE", user_id=getattr(current_user, 'id', None),
+              changes=update_dict)
     session.commit()
     session.refresh(order)
 

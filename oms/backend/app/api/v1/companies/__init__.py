@@ -10,8 +10,10 @@ from sqlmodel import Session, select, func
 
 from app.core.database import get_session
 from app.core.deps import get_current_user, require_super_admin, CompanyFilter
+from app.core.audit import log_audit
 from app.models import (
-    Company, CompanyCreate, CompanyUpdate, CompanyResponse, CompanyBrief
+    Company, CompanyCreate, CompanyUpdate, CompanyResponse, CompanyBrief,
+    User
 )
 
 router = APIRouter(prefix="/companies", tags=["Companies"])
@@ -207,7 +209,7 @@ def get_company(
 def create_company(
     company_data: CompanyCreate,
     session: Session = Depends(get_session),
-    _: None = Depends(require_super_admin())
+    current_user: User = Depends(require_super_admin())
 ):
     """
     Create a new company.
@@ -234,6 +236,10 @@ def create_company(
     # Create company
     company = Company(**data)
     session.add(company)
+    session.flush()
+    log_audit(session, entity_type="Company", entity_id=company.id,
+              action="CREATE", user_id=current_user.id,
+              changes={"name": company.name, "code": company.code})
     session.commit()
     session.refresh(company)
 
@@ -245,7 +251,8 @@ def update_company(
     company_id: UUID,
     company_data: CompanyUpdate,
     company_filter: CompanyFilter = Depends(),
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
 ):
     """
     Update a company.
@@ -287,6 +294,8 @@ def update_company(
         setattr(company, field, value)
 
     session.add(company)
+    log_audit(session, entity_type="Company", entity_id=company.id,
+              action="UPDATE", user_id=current_user.id, changes=update_dict)
     session.commit()
     session.refresh(company)
 
@@ -297,7 +306,7 @@ def update_company(
 def delete_company(
     company_id: UUID,
     session: Session = Depends(get_session),
-    _: None = Depends(require_super_admin())
+    current_user: User = Depends(require_super_admin())
 ):
     """
     Soft delete a company (set isActive=False).
@@ -316,6 +325,9 @@ def delete_company(
     # Soft delete
     company.isActive = False
     session.add(company)
+    log_audit(session, entity_type="Company", entity_id=company.id,
+              action="DELETE", user_id=current_user.id,
+              changes={"name": company.name})
     session.commit()
 
     return None

@@ -893,6 +893,40 @@ class FTLLaneRateResponse(ResponseBase):
     vendorName: Optional[str] = None
 
 
+class FTLIndentResponse(ResponseBase):
+    """FTL indent response schema"""
+    id: UUID
+    indentNo: str
+    status: str
+    originCity: str
+    originState: Optional[str] = None
+    originAddress: Optional[str] = None
+    destinationCity: str
+    destinationState: Optional[str] = None
+    destinationAddress: Optional[str] = None
+    totalWeight: Optional[Decimal] = None
+    totalPackages: int = 0
+    vehicleNumber: Optional[str] = None
+    driverName: Optional[str] = None
+    driverPhone: Optional[str] = None
+    requestedPickupDate: Optional[datetime] = None
+    expectedDeliveryDate: Optional[datetime] = None
+    actualPickupDate: Optional[datetime] = None
+    actualDeliveryDate: Optional[datetime] = None
+    agreedRate: Optional[Decimal] = None
+    advanceAmount: Optional[Decimal] = None
+    balanceAmount: Optional[Decimal] = None
+    remarks: Optional[str] = None
+    vehicleTypeId: Optional[UUID] = None
+    vendorId: Optional[UUID] = None
+    # Joined fields
+    vehicleTypeName: Optional[str] = None
+    vendorName: Optional[str] = None
+    companyId: UUID
+    createdAt: datetime
+    updatedAt: datetime
+
+
 class CSRScoreConfigResponse(ResponseBase):
     """CSR score config response schema"""
     id: UUID

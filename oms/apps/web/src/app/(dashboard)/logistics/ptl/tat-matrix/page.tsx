@@ -137,7 +137,7 @@ export default function PTLTATMatrixPage() {
 
   const fetchVendors = async () => {
     try {
-      const response = await fetch("/api/v1/ptl/vendors?is_active=true&limit=100");
+      const response = await fetch("/api/v1/transporters?is_active=true&limit=100");
       if (!response.ok) throw new Error("Failed to fetch vendors");
       const result = await response.json();
       setVendors(Array.isArray(result) ? result : result.data || []);

@@ -15,7 +15,7 @@ from app.models import (
     FTLVehicleTypeMaster, FTLVehicleTypeMasterCreate, FTLVehicleTypeMasterUpdate, FTLVehicleTypeMasterResponse,
     FTLVendor, FTLVendorCreate, FTLVendorUpdate, FTLVendorResponse,
     FTLLaneRate, FTLLaneRateCreate, FTLLaneRateUpdate, FTLLaneRateResponse,
-    FTLIndent,
+    FTLIndent, FTLIndentResponse,
     VehicleCategory, FTLIndentStatus,
     User
 )
@@ -622,3 +622,189 @@ def compare_rates(
         "ratesCount": len(result),
         "rates": result
     }
+
+
+# ============================================================================
+# FTL Indent Endpoints
+# ============================================================================
+
+@router.get("/indents", response_model=List[FTLIndentResponse])
+def list_indents(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=100),
+    search: Optional[str] = None,
+    status: Optional[str] = None,
+    vendor_id: Optional[UUID] = None,
+    company_filter: CompanyFilter = Depends(),
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """List FTL indents."""
+    query = select(FTLIndent)
+    query = company_filter.apply_filter(query, FTLIndent.companyId)
+
+    if search:
+        query = query.where(
+            (FTLIndent.indentNo.ilike(f"%{search}%")) |
+            (FTLIndent.originCity.ilike(f"%{search}%")) |
+            (FTLIndent.destinationCity.ilike(f"%{search}%"))
+        )
+    if status and status != "all":
+        query = query.where(FTLIndent.status == status)
+    if vendor_id:
+        query = query.where(FTLIndent.vendorId == vendor_id)
+
+    query = query.offset(skip).limit(limit).order_by(FTLIndent.createdAt.desc())
+    indents = session.exec(query).all()
+
+    result = []
+    for indent in indents:
+        data = FTLIndentResponse.model_validate(indent)
+        if indent.vendorId:
+            vendor = session.get(FTLVendor, indent.vendorId)
+            if vendor:
+                data.vendorName = vendor.name
+        if indent.vehicleTypeId:
+            vt = session.get(FTLVehicleTypeMaster, indent.vehicleTypeId)
+            if vt:
+                data.vehicleTypeName = vt.name
+        result.append(data)
+
+    return result
+
+
+@router.get("/indents/{indent_id}", response_model=FTLIndentResponse)
+def get_indent(
+    indent_id: UUID,
+    company_filter: CompanyFilter = Depends(),
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """Get FTL indent by ID."""
+    query = select(FTLIndent).where(FTLIndent.id == indent_id)
+    query = company_filter.apply_filter(query, FTLIndent.companyId)
+    indent = session.exec(query).first()
+    if not indent:
+        raise HTTPException(status_code=404, detail="Indent not found")
+
+    data = FTLIndentResponse.model_validate(indent)
+    if indent.vendorId:
+        vendor = session.get(FTLVendor, indent.vendorId)
+        if vendor:
+            data.vendorName = vendor.name
+    if indent.vehicleTypeId:
+        vt = session.get(FTLVehicleTypeMaster, indent.vehicleTypeId)
+        if vt:
+            data.vehicleTypeName = vt.name
+    return data
+
+
+@router.post("/indents", response_model=FTLIndentResponse, status_code=status.HTTP_201_CREATED)
+def create_indent(
+    vendor_id: UUID,
+    vehicle_type_id: UUID,
+    origin_city: str,
+    destination_city: str,
+    origin_address: Optional[str] = None,
+    destination_address: Optional[str] = None,
+    pickup_date: Optional[str] = None,
+    expected_delivery_date: Optional[str] = None,
+    agreed_rate: Optional[float] = None,
+    advance_amount: Optional[float] = None,
+    weight_kg: Optional[float] = None,
+    remarks: Optional[str] = None,
+    company_filter: CompanyFilter = Depends(),
+    session: Session = Depends(get_session),
+    current_user: User = Depends(require_manager)
+):
+    """Create a new FTL indent."""
+    from uuid import uuid4
+    import random
+    import string
+
+    # Generate indent number
+    prefix = "IND"
+    suffix = ''.join(random.choices(string.digits, k=8))
+    indent_no = f"{prefix}-{suffix}"
+
+    indent = FTLIndent(
+        id=uuid4(),
+        indentNo=indent_no,
+        vendorId=vendor_id,
+        vehicleTypeId=vehicle_type_id,
+        originCity=origin_city,
+        originAddress=origin_address,
+        destinationCity=destination_city,
+        destinationAddress=destination_address,
+        status=FTLIndentStatus.DRAFT,
+        remarks=remarks,
+        companyId=company_filter.company_id,
+    )
+
+    if agreed_rate is not None:
+        indent.agreedRate = agreed_rate
+    if advance_amount is not None:
+        indent.advanceAmount = advance_amount
+    if weight_kg is not None:
+        indent.totalWeight = weight_kg
+    if pickup_date:
+        indent.requestedPickupDate = datetime.fromisoformat(pickup_date.replace("Z", "+00:00")) if "T" in pickup_date else datetime.strptime(pickup_date, "%Y-%m-%d")
+    if expected_delivery_date:
+        indent.expectedDeliveryDate = datetime.fromisoformat(expected_delivery_date.replace("Z", "+00:00")) if "T" in expected_delivery_date else datetime.strptime(expected_delivery_date, "%Y-%m-%d")
+
+    session.add(indent)
+    session.flush()
+
+    data = FTLIndentResponse.model_validate(indent)
+    vendor = session.get(FTLVendor, vendor_id)
+    if vendor:
+        data.vendorName = vendor.name
+    vt = session.get(FTLVehicleTypeMaster, vehicle_type_id)
+    if vt:
+        data.vehicleTypeName = vt.name
+    return data
+
+
+@router.patch("/indents/{indent_id}/status", response_model=FTLIndentResponse)
+def update_indent_status(
+    indent_id: UUID,
+    new_status: str,
+    vehicle_number: Optional[str] = None,
+    driver_name: Optional[str] = None,
+    driver_phone: Optional[str] = None,
+    remarks: Optional[str] = None,
+    company_filter: CompanyFilter = Depends(),
+    session: Session = Depends(get_session),
+    current_user: User = Depends(require_manager)
+):
+    """Update FTL indent status."""
+    query = select(FTLIndent).where(FTLIndent.id == indent_id)
+    query = company_filter.apply_filter(query, FTLIndent.companyId)
+    indent = session.exec(query).first()
+    if not indent:
+        raise HTTPException(status_code=404, detail="Indent not found")
+
+    indent.status = new_status
+    if vehicle_number:
+        indent.vehicleNumber = vehicle_number
+    if driver_name:
+        indent.driverName = driver_name
+    if driver_phone:
+        indent.driverPhone = driver_phone
+    if remarks:
+        indent.remarks = remarks
+    indent.updatedAt = datetime.utcnow()
+
+    session.add(indent)
+    session.flush()
+
+    data = FTLIndentResponse.model_validate(indent)
+    if indent.vendorId:
+        vendor = session.get(FTLVendor, indent.vendorId)
+        if vendor:
+            data.vendorName = vendor.name
+    if indent.vehicleTypeId:
+        vt = session.get(FTLVehicleTypeMaster, indent.vehicleTypeId)
+        if vt:
+            data.vehicleTypeName = vt.name
+    return data

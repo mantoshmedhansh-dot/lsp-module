@@ -1124,6 +1124,7 @@ from .shipping_allocation import (
     FTLVehicleTypeMasterResponse,
     FTLVendorResponse,
     FTLLaneRateResponse,
+    FTLIndentResponse,
     # FTL Create/Update Schemas
     FTLVehicleTypeMasterCreate,
     FTLVehicleTypeMasterUpdate,
@@ -1743,6 +1744,7 @@ __all__ = [
     "FTLVehicleTypeMasterResponse",
     "FTLVendorResponse",
     "FTLLaneRateResponse",
+    "FTLIndentResponse",
     # FTL Create/Update Schemas
     "FTLVehicleTypeMasterCreate",
     "FTLVehicleTypeMasterUpdate",

@@ -53,6 +53,9 @@ def list_users(
     query = query.offset(skip).limit(limit).order_by(User.createdAt.desc())
 
     users = session.exec(query).all()
+    # Access company relationship while session is open to trigger lazy load
+    for u in users:
+        _ = u.company
     return [UserBrief.model_validate(u) for u in users]
 
 

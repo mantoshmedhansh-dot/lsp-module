@@ -125,13 +125,24 @@ class UserResponse(ResponseBase):
     updatedAt: datetime
 
 
+class CompanyBrief(SQLModel):
+    """Minimal company info embedded in user responses"""
+    id: UUID
+    name: str
+    code: str
+
+
 class UserBrief(ResponseBase):
     """Brief user info for lists and references"""
     id: UUID
     email: str
     name: str
     role: UserRole
+    isActive: bool = True
+    companyId: Optional[UUID] = None
     avatar: Optional[str] = None
+    createdAt: Optional[datetime] = None
+    company: Optional[CompanyBrief] = None
 
 
 class UserLogin(SQLModel):

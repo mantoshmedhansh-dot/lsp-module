@@ -1,6 +1,8 @@
 """
 Audit logging utility — writes audit entries to AuditLog table.
 Call log_audit() after successful CRUD operations.
+
+Uses a SEPARATE session so audit failures never break the main transaction.
 """
 import logging
 from typing import Optional
@@ -24,13 +26,15 @@ def log_audit(
     ip_address: Optional[str] = None,
 ):
     """
-    Write an audit log entry. Silently fails if table doesn't exist.
+    Write an audit log entry using a nested savepoint.
+    If audit logging fails, the main transaction is NOT affected.
 
     Usage:
         log_audit(session, entity_type="Company", entity_id=company.id,
                   action="CREATE", user_id=current_user.id)
     """
     try:
+        nested = session.begin_nested()
         entry = AuditLog(
             entityType=entity_type,
             entityId=entity_id,
@@ -40,6 +44,7 @@ def log_audit(
             ipAddress=ip_address,
         )
         session.add(entry)
-        # Don't commit — let the caller's transaction handle it
+        nested.commit()
     except Exception as e:
-        logger.debug(f"Audit log write skipped: {e}")
+        # Savepoint auto-rolls back on failure; outer transaction unaffected
+        logger.warning(f"Audit log write failed (non-fatal): {e}")

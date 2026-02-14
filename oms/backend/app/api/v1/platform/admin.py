@@ -27,9 +27,9 @@ def get_platform_stats(
     _: None = Depends(require_roles(["SUPER_ADMIN"])),
 ):
     """Get platform-wide stats: MRR, ARR, tenant counts, etc."""
-    # Total tenants
+    # Total tenants (exclude soft-deleted)
     total_tenants = session.exec(
-        select(func.count(Company.id))
+        select(func.count(Company.id)).where(Company.isActive == True)
     ).one() or 0
 
     # Active subscriptions
@@ -95,7 +95,7 @@ def list_tenants(
     _: None = Depends(require_roles(["SUPER_ADMIN"])),
 ):
     """List all tenants with subscription info."""
-    query = select(Company).order_by(Company.createdAt.desc())
+    query = select(Company).where(Company.isActive == True).order_by(Company.createdAt.desc())
 
     if status:
         query = query.where(Company.subscriptionStatus == status)
@@ -253,6 +253,7 @@ def get_growth_metrics(
             func.count(Company.id).label("cnt"),
         )
         .where(Company.createdAt >= twelve_months_ago)
+        .where(Company.isActive == True)
         .group_by(
             extract("year", Company.createdAt),
             extract("month", Company.createdAt),

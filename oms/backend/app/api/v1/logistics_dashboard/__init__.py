@@ -17,7 +17,7 @@ from app.core.deps import get_current_user, require_manager, CompanyFilter
 from app.models.user import User
 from app.models.order import Delivery
 from app.models.shipment import Shipment
-from app.models.transporter import Transporter
+from app.models.transporter import Transporter, TransporterConfig
 from app.models.enums import DeliveryStatus
 
 logger = logging.getLogger(__name__)
@@ -225,10 +225,28 @@ def courier_performance(
     now = datetime.now(timezone.utc)
     delayed_cutoff = now - timedelta(days=7)
 
-    # Get all transporters for this company
-    t_query = select(Transporter)
-    t_query = company_filter.apply_filter(t_query, Transporter.companyId)
-    transporters = session.exec(t_query).all()
+    # Get distinct transporter IDs from Delivery + Shipment (company-filtered)
+    del_tid_q = select(Delivery.transporterId).where(
+        Delivery.transporterId.isnot(None),
+        Delivery.createdAt >= period_start,
+    )
+    del_tid_q = company_filter.apply_filter(del_tid_q, Delivery.companyId)
+    del_tids = set(session.exec(del_tid_q).all())
+
+    ship_tid_q = select(Shipment.transporterId).where(
+        Shipment.transporterId.isnot(None),
+        Shipment.createdAt >= period_start,
+    )
+    ship_tid_q = company_filter.apply_filter(ship_tid_q, Shipment.companyId)
+    ship_tids = set(session.exec(ship_tid_q).all())
+
+    all_tids = del_tids | ship_tids
+    if not all_tids:
+        return []
+
+    transporters = session.exec(
+        select(Transporter).where(Transporter.id.in_(list(all_tids)))
+    ).all()
 
     results = []
     for t in transporters:
@@ -356,9 +374,9 @@ def courier_performance(
 @router.post("/trigger-aggregation")
 def trigger_aggregation(
     days: int = Query(default=30, description="Aggregate last N days"),
-    background_tasks: BackgroundTasks = None,
     session: Session = Depends(get_session),
-    current_user: User = Depends(require_manager),
+    _role: None = Depends(require_manager()),
+    current_user: User = Depends(get_current_user),
 ):
     """
     Manually trigger analytics aggregation for the current company.

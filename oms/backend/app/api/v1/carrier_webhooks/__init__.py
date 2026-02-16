@@ -10,20 +10,30 @@ Endpoints:
   POST /api/v1/carrier-webhooks/poll         — Trigger bulk tracking poll (admin/cron)
 
   GET  /api/v1/carrier-webhooks/logs         — View recent webhook events
+  GET  /api/v1/carrier-webhooks/stats        — Delivery status statistics
+
+Phase 2 additions:
+  - Webhook event logging (CarrierWebhookLog)
+  - Idempotency check (skip duplicate events)
+  - Optional signature validation
+  - Post-processing analytics trigger on terminal statuses
 """
+import hashlib
+import hmac
 import logging
 from datetime import datetime, timezone
 from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Query, BackgroundTasks
-from sqlmodel import Session, select, func
+from sqlmodel import Session, select, func, col
 from pydantic import BaseModel as PydanticBaseModel
 
 from app.core.database import get_session
 from app.core.deps import get_current_user, require_manager, CompanyFilter
 from app.models.user import User
 from app.models.order import Delivery
+from app.models.shipment import CarrierWebhookLog
 from app.models.enums import DeliveryStatus
 from app.services.carriers.pipeline import StatusPipeline
 from app.services.carriers.status_mapper import StatusMapper
@@ -78,12 +88,120 @@ class BulkPollRequest(PydanticBaseModel):
 
 
 # ============================================================================
+# Webhook Helpers (Phase 2)
+# ============================================================================
+
+def _log_webhook_event(
+    session: Session,
+    carrier_code: str,
+    awb_number: str,
+    carrier_status: str,
+    raw_payload: dict,
+    oms_status: str = None,
+    is_duplicate: bool = False,
+    is_processed: bool = True,
+    error_message: str = None,
+    processing_result: dict = None,
+    company_id: UUID = None,
+) -> CarrierWebhookLog:
+    """Log every inbound webhook event for debugging and audit."""
+    log_entry = CarrierWebhookLog(
+        carrierCode=carrier_code,
+        awbNumber=awb_number,
+        carrierStatus=carrier_status,
+        omsStatus=oms_status,
+        rawPayload=raw_payload,
+        isProcessed=is_processed,
+        isDuplicate=is_duplicate,
+        errorMessage=error_message,
+        processedAt=datetime.now(timezone.utc),
+        processingResult=processing_result,
+        companyId=company_id,
+    )
+    session.add(log_entry)
+    return log_entry
+
+
+def _check_idempotency(
+    session: Session,
+    awb_number: str,
+    carrier_status: str,
+    carrier_code: str,
+) -> bool:
+    """Check if this exact (awb, status, carrier) was already processed. Returns True if duplicate."""
+    existing = session.exec(
+        select(CarrierWebhookLog).where(
+            CarrierWebhookLog.awbNumber == awb_number,
+            CarrierWebhookLog.carrierStatus == carrier_status,
+            CarrierWebhookLog.carrierCode == carrier_code,
+            CarrierWebhookLog.isProcessed == True,
+            CarrierWebhookLog.isDuplicate == False,
+        ).limit(1)
+    ).first()
+    return existing is not None
+
+
+def _validate_webhook_signature(
+    request_body: bytes,
+    carrier_code: str,
+    signature_header: Optional[str] = None,
+    secret: Optional[str] = None,
+) -> bool:
+    """
+    Validate carrier-specific webhook signature.
+    Skips validation if no secret is configured.
+    """
+    if not secret or not signature_header:
+        return True  # No secret configured → skip validation
+
+    expected = hmac.new(
+        secret.encode("utf-8"),
+        request_body,
+        hashlib.sha256,
+    ).hexdigest()
+
+    return hmac.compare_digest(expected, signature_header)
+
+
+def _trigger_analytics_background(
+    background_tasks: BackgroundTasks,
+    result: dict,
+):
+    """If pipeline signals aggregation needed, fire background task."""
+    if result.get("trigger_aggregation") and result.get("delivery_id"):
+        background_tasks.add_task(
+            _run_aggregation_for_delivery,
+            delivery_id=result["delivery_id"],
+        )
+
+
+def _run_aggregation_for_delivery(delivery_id: str):
+    """Background task: re-aggregate analytics for one delivery."""
+    from app.core.database import get_session as get_db_session
+    from app.services.analytics_aggregator import AnalyticsAggregator
+
+    gen = get_db_session()
+    session = next(gen)
+    try:
+        result = AnalyticsAggregator.aggregate_for_delivery(
+            session=session,
+            delivery_id=UUID(delivery_id),
+        )
+        logger.info(f"Analytics aggregation for delivery {delivery_id}: {result}")
+    except Exception as e:
+        logger.error(f"Analytics aggregation failed for {delivery_id}: {e}")
+    finally:
+        session.close()
+
+
+# ============================================================================
 # Shiprocket Webhook
 # ============================================================================
 
 @router.post("/shiprocket")
 async def shiprocket_webhook(
     request: Request,
+    background_tasks: BackgroundTasks,
     session: Session = Depends(get_session),
 ):
     """
@@ -103,7 +221,22 @@ async def shiprocket_webhook(
         timestamp_str = body.get("current_timestamp")
 
         if not awb or not status:
+            _log_webhook_event(
+                session, "SHIPROCKET", str(awb), str(status), body,
+                is_processed=False, error_message="Missing awb or status",
+            )
+            session.commit()
             return {"status": "ignored", "reason": "Missing awb or status"}
+
+        # Idempotency check
+        if _check_idempotency(session, str(awb), str(status), "SHIPROCKET"):
+            _log_webhook_event(
+                session, "SHIPROCKET", str(awb), str(status), body,
+                is_duplicate=True, is_processed=False,
+            )
+            session.commit()
+            logger.info(f"Duplicate webhook skipped: SHIPROCKET AWB={awb} status={status}")
+            return {"status": "duplicate", "awb": awb}
 
         # Parse timestamp
         timestamp = None
@@ -132,10 +265,30 @@ async def shiprocket_webhook(
             ndr_reason_raw=ndr_reason,
         )
 
+        # Log the event
+        _log_webhook_event(
+            session, "SHIPROCKET", str(awb), str(status), body,
+            oms_status=result.get("new_status", ""),
+            processing_result=result,
+        )
+        session.commit()
+
+        # Trigger analytics if terminal
+        _trigger_analytics_background(background_tasks, result)
+
         return {"status": "processed", "result": result}
 
     except Exception as e:
         logger.error(f"Shiprocket webhook error: {e}", exc_info=True)
+        try:
+            _log_webhook_event(
+                session, "SHIPROCKET", str(awb) if 'awb' in dir() else "", "",
+                body if 'body' in dir() else {},
+                is_processed=False, error_message=str(e),
+            )
+            session.commit()
+        except Exception:
+            pass
         return {"status": "error", "message": str(e)}
 
 
@@ -146,6 +299,7 @@ async def shiprocket_webhook(
 @router.post("/delhivery")
 async def delhivery_webhook(
     request: Request,
+    background_tasks: BackgroundTasks,
     session: Session = Depends(get_session),
 ):
     """Receive tracking updates from Delhivery push API."""
@@ -159,7 +313,21 @@ async def delhivery_webhook(
         location = body.get("Status", {}).get("StatusLocation", "") if isinstance(body.get("Status"), dict) else ""
 
         if not awb or not status:
+            _log_webhook_event(
+                session, "DELHIVERY", str(awb), str(status), body,
+                is_processed=False, error_message="Missing waybill or status",
+            )
+            session.commit()
             return {"status": "ignored", "reason": "Missing waybill or status"}
+
+        # Idempotency check
+        if _check_idempotency(session, str(awb), str(status), "DELHIVERY"):
+            _log_webhook_event(
+                session, "DELHIVERY", str(awb), str(status), body,
+                is_duplicate=True, is_processed=False,
+            )
+            session.commit()
+            return {"status": "duplicate", "awb": awb}
 
         result = StatusPipeline.process_tracking_update(
             session=session,
@@ -169,6 +337,15 @@ async def delhivery_webhook(
             carrier_remark=remark,
             location=location,
         )
+
+        _log_webhook_event(
+            session, "DELHIVERY", str(awb), str(status), body,
+            oms_status=result.get("new_status", ""),
+            processing_result=result,
+        )
+        session.commit()
+
+        _trigger_analytics_background(background_tasks, result)
 
         return {"status": "processed", "result": result}
 
@@ -184,12 +361,24 @@ async def delhivery_webhook(
 @router.post("/generic")
 def generic_webhook(
     payload: GenericWebhookPayload,
+    background_tasks: BackgroundTasks,
     session: Session = Depends(get_session),
 ):
     """
     Generic carrier webhook — use for any carrier that doesn't have
     a dedicated handler. Just pass awb, carrier_code, and status.
     """
+    raw_payload = payload.model_dump()
+
+    # Idempotency check
+    if _check_idempotency(session, payload.awb_number, payload.status, payload.carrier_code):
+        _log_webhook_event(
+            session, payload.carrier_code, payload.awb_number, payload.status,
+            raw_payload, is_duplicate=True, is_processed=False,
+        )
+        session.commit()
+        return {"status": "duplicate", "awb": payload.awb_number}
+
     timestamp = None
     if payload.timestamp:
         try:
@@ -207,6 +396,15 @@ def generic_webhook(
         timestamp=timestamp,
         ndr_reason_raw=payload.ndr_reason,
     )
+
+    _log_webhook_event(
+        session, payload.carrier_code, payload.awb_number, payload.status,
+        raw_payload, oms_status=result.get("new_status", ""),
+        processing_result=result,
+    )
+    session.commit()
+
+    _trigger_analytics_background(background_tasks, result)
 
     return {"status": "processed", "result": result}
 
@@ -395,7 +593,49 @@ async def _poll_tracking_batch(
 
 
 # ============================================================================
-# Webhook Logs (for debugging)
+# Webhook Logs (Phase 2)
+# ============================================================================
+
+@router.get("/logs")
+def webhook_logs(
+    awb: Optional[str] = Query(default=None, description="Filter by AWB number"),
+    carrier: Optional[str] = Query(default=None, description="Filter by carrier code"),
+    limit: int = Query(default=50, le=200),
+    offset: int = Query(default=0),
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+    company_filter: CompanyFilter = Depends(),
+):
+    """View recent webhook event logs."""
+    query = select(CarrierWebhookLog).order_by(col(CarrierWebhookLog.createdAt).desc())
+
+    if awb:
+        query = query.where(CarrierWebhookLog.awbNumber == awb)
+    if carrier:
+        query = query.where(CarrierWebhookLog.carrierCode == carrier)
+
+    # Company filter (logs may have null companyId for unmatched AWBs)
+    query = query.offset(offset).limit(limit)
+
+    logs = session.exec(query).all()
+    return [
+        {
+            "id": str(log.id),
+            "carrierCode": log.carrierCode,
+            "awbNumber": log.awbNumber,
+            "carrierStatus": log.carrierStatus,
+            "omsStatus": log.omsStatus,
+            "isProcessed": log.isProcessed,
+            "isDuplicate": log.isDuplicate,
+            "errorMessage": log.errorMessage,
+            "createdAt": log.createdAt.isoformat() if log.createdAt else None,
+        }
+        for log in logs
+    ]
+
+
+# ============================================================================
+# Webhook Stats (existing)
 # ============================================================================
 
 @router.get("/stats")

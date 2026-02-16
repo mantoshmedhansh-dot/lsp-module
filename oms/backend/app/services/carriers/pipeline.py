@@ -122,6 +122,13 @@ class StatusPipeline:
             )
             result["order_updated"] = order_updated
 
+        # 6. Signal for analytics aggregation on terminal statuses
+        if new_status in (DeliveryStatus.DELIVERED, DeliveryStatus.RTO_DELIVERED):
+            result["trigger_aggregation"] = True
+            result["company_id"] = str(delivery.companyId)
+            result["delivery_id"] = str(delivery.id)
+            result["transporter_id"] = str(delivery.transporterId) if delivery.transporterId else None
+
         session.flush()
         return result
 

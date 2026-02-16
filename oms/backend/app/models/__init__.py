@@ -709,6 +709,8 @@ from .shipment import (
     ShipmentResponse,
     ShipmentBrief,
     ShipmentStats,
+    CarrierWebhookLog,
+    CarrierWebhookLogResponse,
 )
 
 # B2B Logistics models and schemas
@@ -1661,6 +1663,9 @@ __all__ = [
     "ShipmentResponse",
     "ShipmentBrief",
     "ShipmentStats",
+    # CarrierWebhookLog (Phase 2)
+    "CarrierWebhookLog",
+    "CarrierWebhookLogResponse",
     # B2B Logistics Enums
     "LRStatus",
     "VehicleType",

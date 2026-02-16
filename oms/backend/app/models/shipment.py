@@ -270,3 +270,48 @@ class ShipmentStats(SQLModel):
     rto: int = 0
     codPending: Decimal = Decimal("0")
     codCollected: Decimal = Decimal("0")
+
+
+# ============================================================================
+# Carrier Webhook Log (Phase 2 — Webhook Hardening)
+# ============================================================================
+
+class CarrierWebhookLog(BaseModel, table=True):
+    """
+    Logs every inbound carrier webhook for debugging and idempotency.
+    """
+    __tablename__ = "CarrierWebhookLog"
+
+    carrierCode: str = Field(sa_column=Column(String, nullable=False, index=True))
+    awbNumber: str = Field(sa_column=Column(String, nullable=False, index=True))
+    eventType: str = Field(default="TRACKING_UPDATE")
+    carrierStatus: str = Field(sa_column=Column(String, nullable=False))
+    omsStatus: Optional[str] = Field(default=None)
+    rawPayload: Optional[dict] = Field(default=None, sa_column=Column(JSON))
+    isProcessed: bool = Field(default=True)
+    isDuplicate: bool = Field(default=False)
+    errorMessage: Optional[str] = Field(default=None)
+    processedAt: Optional[datetime] = Field(default=None)
+    processingResult: Optional[dict] = Field(default=None, sa_column=Column(JSON))
+    companyId: Optional[UUID] = Field(
+        default=None,
+        sa_column=Column(PG_UUID(as_uuid=True), ForeignKey("Company.id"), index=True)
+    )
+
+
+class CarrierWebhookLogResponse(ResponseBase):
+    """Response schema for webhook log entries."""
+    id: UUID
+    carrierCode: str
+    awbNumber: str
+    eventType: str
+    carrierStatus: str
+    omsStatus: Optional[str] = None
+    rawPayload: Optional[dict] = None
+    isProcessed: bool
+    isDuplicate: bool
+    errorMessage: Optional[str] = None
+    processedAt: Optional[datetime] = None
+    processingResult: Optional[dict] = None
+    companyId: Optional[UUID] = None
+    createdAt: datetime

@@ -86,6 +86,9 @@ from .platform import router as platform_router
 from .carrier import router as carrier_router
 from .carrier_webhooks import router as carrier_webhooks_router
 
+# Logistics Dashboard (Phase 2)
+from .logistics_dashboard import router as logistics_dashboard_router
+
 # Shipping workflow routers
 from .shipping import router as shipping_router
 from .public import router as public_router
@@ -194,6 +197,9 @@ router.include_router(webhooks_router)
 router.include_router(settlements_router)
 router.include_router(marketplace_returns_router)
 router.include_router(scheduled_jobs_router)
+
+# Logistics Dashboard (Phase 2)
+router.include_router(logistics_dashboard_router)
 
 # Shipping workflow
 router.include_router(shipping_router)

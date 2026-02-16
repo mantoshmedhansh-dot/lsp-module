@@ -429,6 +429,14 @@ def confirm_order(
     session.commit()
     session.refresh(order)
 
+    # Dispatch event for auto-allocation pipeline
+    from app.services.event_dispatcher import dispatch
+    dispatch("order.confirmed", {
+        "orderId": str(order.id),
+        "companyId": str(order.companyId),
+        "locationId": str(order.locationId),
+    })
+
     return OrderResponse.model_validate(order)
 
 
@@ -905,6 +913,15 @@ def allocate_order(
     order.updatedAt = datetime.utcnow()
     session.add(order)
     session.commit()
+
+    # Dispatch event if fully allocated
+    if results["fullyAllocated"]:
+        from app.services.event_dispatcher import dispatch
+        dispatch("order.allocated", {
+            "orderId": str(order_id),
+            "companyId": str(order.companyId),
+            "locationId": str(order.locationId),
+        })
 
     return results
 

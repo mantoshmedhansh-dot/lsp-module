@@ -434,6 +434,14 @@ def update_packing_status(
         session.refresh(order)
         session.refresh(delivery)
 
+        # Dispatch event for auto-manifest pipeline
+        from app.services.event_dispatcher import dispatch
+        dispatch("order.packed", {
+            "orderId": str(order.id),
+            "companyId": str(order.companyId),
+            "deliveryId": str(delivery.id),
+        })
+
         return PackingActionResponse(
             success=True,
             orderId=str(order.id),

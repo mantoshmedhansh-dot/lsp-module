@@ -222,6 +222,14 @@ def receive_return(
     session.add(ret)
     session.commit()
     session.refresh(ret)
+
+    # Dispatch event for auto-GRN creation
+    from app.services.event_dispatcher import dispatch
+    dispatch("return.received", {
+        "returnId": str(ret.id),
+        "companyId": str(ret.companyId),
+    })
+
     return ReturnResponse.model_validate(ret)
 
 
@@ -251,6 +259,15 @@ def update_qc_status(
     session.add(ret)
     session.commit()
     session.refresh(ret)
+
+    # Dispatch event for QC passed (restock + refund)
+    if qc_status == QCStatus.PASSED:
+        from app.services.event_dispatcher import dispatch
+        dispatch("return.qc_passed", {
+            "returnId": str(ret.id),
+            "companyId": str(ret.companyId),
+        })
+
     return ReturnResponse.model_validate(ret)
 
 
@@ -271,6 +288,14 @@ def process_return(
     session.add(ret)
     session.commit()
     session.refresh(ret)
+
+    # Dispatch for marketplace sync
+    from app.services.event_dispatcher import dispatch
+    dispatch("return.processed", {
+        "returnId": str(ret.id),
+        "companyId": str(ret.companyId),
+    })
+
     return ReturnResponse.model_validate(ret)
 
 
@@ -501,6 +526,14 @@ def complete_return_qc(
     session.add(ret)
     session.commit()
     session.refresh(ret)
+
+    # Dispatch if QC passed
+    if ret.qcStatus in [QCStatus.PASSED, QCStatus.PARTIAL]:
+        from app.services.event_dispatcher import dispatch
+        dispatch("return.qc_passed", {
+            "returnId": str(ret.id),
+            "companyId": str(ret.companyId),
+        })
 
     return ReturnResponse.model_validate(ret)
 

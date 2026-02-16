@@ -122,7 +122,33 @@ class StatusPipeline:
             )
             result["order_updated"] = order_updated
 
-        # 6. Signal for analytics aggregation on terminal statuses
+        # 6. Dispatch events for downstream automation
+        from app.services.event_dispatcher import dispatch
+
+        if new_status == DeliveryStatus.DELIVERED:
+            dispatch("delivery.delivered", {
+                "deliveryId": str(delivery.id),
+                "orderId": str(delivery.orderId) if delivery.orderId else "",
+                "companyId": str(delivery.companyId),
+                "transporterId": str(delivery.transporterId) if delivery.transporterId else "",
+            })
+        elif new_status == DeliveryStatus.RTO_DELIVERED:
+            dispatch("delivery.rto_delivered", {
+                "deliveryId": str(delivery.id),
+                "orderId": str(delivery.orderId) if delivery.orderId else "",
+                "companyId": str(delivery.companyId),
+                "transporterId": str(delivery.transporterId) if delivery.transporterId else "",
+            })
+        elif new_status == DeliveryStatus.SHIPPED:
+            dispatch("delivery.shipped", {
+                "deliveryId": str(delivery.id),
+                "orderId": str(delivery.orderId) if delivery.orderId else "",
+                "companyId": str(delivery.companyId),
+                "awbNumber": delivery.awbNo or "",
+                "carrierCode": carrier_code,
+            })
+
+        # Legacy signal for analytics aggregation
         if new_status in (DeliveryStatus.DELIVERED, DeliveryStatus.RTO_DELIVERED):
             result["trigger_aggregation"] = True
             result["company_id"] = str(delivery.companyId)
@@ -218,6 +244,16 @@ class StatusPipeline:
             logger.info(
                 f"Created NDR {ndr_code} for {delivery.awbNo}: {ndr_reason.value}"
             )
+
+            # Dispatch NDR created event
+            from app.services.event_dispatcher import dispatch
+            dispatch("ndr.created", {
+                "ndrId": str(ndr.id),
+                "deliveryId": str(delivery.id),
+                "orderId": str(delivery.orderId) if delivery.orderId else "",
+                "companyId": str(delivery.companyId),
+            })
+
             return {"created": True, "ndr_id": str(ndr.id)}
 
     @staticmethod

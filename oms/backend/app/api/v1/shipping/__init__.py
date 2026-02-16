@@ -293,6 +293,13 @@ async def close_manifest(
     session.add(manifest)
     session.commit()
 
+    # Dispatch event for auto-ship pipeline
+    from app.services.event_dispatcher import dispatch
+    dispatch("manifest.closed", {
+        "manifestId": str(manifest.id),
+        "companyId": str(manifest.companyId),
+    })
+
     return {"id": str(manifest.id), "status": "CLOSED"}
 
 

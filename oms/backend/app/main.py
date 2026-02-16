@@ -55,6 +55,11 @@ async def lifespan(app: FastAPI):
 
     start_scheduler()
     logger.info("Scheduler started - Detection Engine will run every 15 minutes")
+
+    # Register all event-driven handlers
+    from app.services import event_handlers  # noqa: F401
+    logger.info("Event handlers registered")
+
     yield
     # Shutdown
     logger.info("Shutting down CJDQuick OMS API...")
@@ -113,6 +118,13 @@ async def root():
 @app.get("/health")
 async def health_check():
     return {"status": "healthy", "deploy": "auto", "version": "1.5.0"}
+
+
+@app.get("/api/v1/system/events")
+async def list_registered_events():
+    """Debug endpoint: list all registered event → handler mappings."""
+    from app.services.event_dispatcher import get_registered_events
+    return get_registered_events()
 
 
 @app.get("/scheduler/status")

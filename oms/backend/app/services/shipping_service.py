@@ -165,6 +165,18 @@ class ShippingService:
         self.session.commit()
         self.session.refresh(delivery)
 
+        # Dispatch shipment.created event for freight calculation
+        from app.services.event_dispatcher import dispatch
+        dispatch("shipment.created", {
+            "deliveryId": str(delivery.id),
+            "orderId": str(order.id),
+            "companyId": str(company_id),
+            "carrierCode": carrier_code,
+            "awbNumber": response.awb_number or "",
+            "weightGrams": weight_grams,
+            "transporterId": str(transporter.id) if transporter else "",
+        })
+
         return {
             "success": True,
             "deliveryId": str(delivery.id),

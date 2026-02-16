@@ -283,6 +283,21 @@ def run_detection_engine():
                                 session.add(exception)
                                 exceptions_created += 1
 
+                                # Dispatch exception.created event for alerts
+                                from app.services.event_dispatcher import dispatch_sync
+                                dispatch_sync("exception.created", {
+                                    "exceptionId": str(exception.id),
+                                    "exceptionCode": exception.exceptionCode,
+                                    "type": rule.ruleType,
+                                    "severity": severity,
+                                    "entityType": rule.entityType,
+                                    "entityId": entity_id,
+                                    "orderId": str(order_id) if order_id else "",
+                                    "companyId": str(getattr(entity, 'companyId', "")) if getattr(entity, 'companyId', None) else "",
+                                    "title": exception.title,
+                                    "description": exception.description,
+                                })
+
                                 # Create AI Action if enabled (map rule action types to DB enum values)
                                 if rule.aiActionEnabled and rule.aiActionType:
                                     # Map detection rule action types to database enum values
@@ -508,6 +523,28 @@ def start_scheduler():
     except ImportError as e:
         logger.warning(f"Marketplace sync jobs not available: {e}")
 
+    # ── Low stock checker (Batch 5) ──────────────────────────────────
+    scheduler.add_job(
+        check_low_stock_levels,
+        trigger=IntervalTrigger(hours=4),
+        id="low_stock_checker",
+        name="Low Stock Level Checker (Every 4 Hours)",
+        replace_existing=True,
+        max_instances=1,
+    )
+    logger.info("Scheduled low stock checker job: every 4 hours")
+
+    # ── Subscription lifecycle (Batch 5) ──────────────────────────────
+    scheduler.add_job(
+        check_subscription_lifecycle,
+        trigger=IntervalTrigger(hours=1),
+        id="subscription_lifecycle",
+        name="Subscription Lifecycle Check (Hourly)",
+        replace_existing=True,
+        max_instances=1,
+    )
+    logger.info("Scheduled subscription lifecycle job: every hour")
+
     # ── Contract activation safety net (Feature 3) ─────────────────────
     scheduler.add_job(
         contract_activation_check,
@@ -700,3 +737,100 @@ def check_contract_expiry():
             logger.info(f"=== CONTRACT EXPIRY CHECK COMPLETE: {alerts_sent} alerts sent ===")
     except Exception as e:
         logger.error(f"Contract expiry check error: {e}")
+
+
+# =============================================================================
+# SCHEDULED JOB: LOW STOCK CHECKER (Batch 5)
+# =============================================================================
+
+def check_low_stock_levels():
+    """
+    Every 4 hours: Check inventory for SKUs below reorder level.
+    Dispatches inventory.low_stock event for each low-stock SKU.
+    """
+    logger.info("=== LOW STOCK CHECK START ===")
+    alerts_dispatched = 0
+    try:
+        with Session(engine) as session:
+            # Find inventory records where current quantity is at or below reorder level
+            low_stock_items = session.exec(
+                select(Inventory).where(
+                    Inventory.reorderLevel != None,
+                    Inventory.reorderLevel > 0,
+                )
+            ).all()
+
+            from app.services.event_dispatcher import dispatch_sync
+
+            for inv in low_stock_items:
+                current_qty = (inv.quantity or 0) - (inv.reservedQty or 0)
+                if current_qty <= inv.reorderLevel:
+                    dispatch_sync("inventory.low_stock", {
+                        "inventoryId": str(inv.id),
+                        "skuId": str(inv.skuId),
+                        "locationId": str(inv.locationId) if inv.locationId else "",
+                        "companyId": str(inv.companyId) if inv.companyId else "",
+                        "currentQty": current_qty,
+                        "reorderLevel": inv.reorderLevel,
+                        "reorderQty": getattr(inv, "reorderQty", None) or inv.reorderLevel * 2,
+                    })
+                    alerts_dispatched += 1
+
+            logger.info(f"=== LOW STOCK CHECK COMPLETE: {alerts_dispatched} alerts dispatched ===")
+    except Exception as e:
+        logger.error(f"Low stock check error: {e}")
+
+
+# =============================================================================
+# SCHEDULED JOB: SUBSCRIPTION LIFECYCLE (Batch 5)
+# =============================================================================
+
+def check_subscription_lifecycle():
+    """
+    Hourly: Check for subscriptions approaching expiry or already expired.
+    Dispatches subscription.expiring and subscription.expired events.
+    """
+    logger.info("=== SUBSCRIPTION LIFECYCLE CHECK START ===")
+    events_dispatched = 0
+    try:
+        with Session(engine) as session:
+            from app.models.saas import Subscription
+            from app.services.event_dispatcher import dispatch_sync
+            from datetime import timedelta
+
+            now = datetime.utcnow()
+            today = now.date()
+
+            # Find active subscriptions
+            active_subs = session.exec(
+                select(Subscription).where(
+                    Subscription.status == "ACTIVE",
+                    Subscription.endDate != None,
+                )
+            ).all()
+
+            for sub in active_subs:
+                end_date = sub.endDate.date() if isinstance(sub.endDate, datetime) else sub.endDate
+                days_left = (end_date - today).days
+
+                if days_left <= 0:
+                    # Expired
+                    dispatch_sync("subscription.expired", {
+                        "subscriptionId": str(sub.id),
+                        "companyId": str(sub.companyId),
+                        "planId": str(sub.planId) if sub.planId else "",
+                    })
+                    events_dispatched += 1
+                elif days_left in [7, 3, 1]:
+                    # Expiring soon
+                    dispatch_sync("subscription.expiring", {
+                        "subscriptionId": str(sub.id),
+                        "companyId": str(sub.companyId),
+                        "planId": str(sub.planId) if sub.planId else "",
+                        "daysLeft": days_left,
+                    })
+                    events_dispatched += 1
+
+            logger.info(f"=== SUBSCRIPTION LIFECYCLE CHECK COMPLETE: {events_dispatched} events dispatched ===")
+    except Exception as e:
+        logger.error(f"Subscription lifecycle check error: {e}")

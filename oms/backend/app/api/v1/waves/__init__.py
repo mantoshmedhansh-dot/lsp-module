@@ -244,6 +244,16 @@ def update_picklist(
     session.add(picklist)
     session.commit()
     session.refresh(picklist)
+
+    # Dispatch if picklist completed
+    if picklist.status == PicklistStatus.COMPLETED and picklist.orderId:
+        from app.services.event_dispatcher import dispatch
+        dispatch("picklist.completed", {
+            "picklistId": str(picklist.id),
+            "orderId": str(picklist.orderId),
+            "companyId": str(picklist.companyId) if picklist.companyId else "",
+        })
+
     return PicklistResponse.model_validate(picklist)
 
 
@@ -381,6 +391,15 @@ def release_wave(
     session.add(wave)
     session.commit()
     session.refresh(wave)
+
+    # Dispatch event for auto-picklist generation
+    from app.services.event_dispatcher import dispatch
+    dispatch("wave.released", {
+        "waveId": str(wave.id),
+        "companyId": str(wave.companyId),
+        "locationId": str(wave.locationId),
+    })
+
     return WaveResponse.model_validate(wave)
 
 

@@ -359,6 +359,23 @@ def resolve_ndr(
     session.add(ndr)
     session.commit()
     session.refresh(ndr)
+
+    # Dispatch events based on resolution type
+    from app.services.event_dispatcher import dispatch
+    resolution_val = resolution_type.value if hasattr(resolution_type, "value") else str(resolution_type)
+
+    dispatch("ndr.resolved", {
+        "ndrId": str(ndr.id),
+        "companyId": str(ndr.companyId),
+        "resolutionType": resolution_val,
+    })
+
+    if resolution_val in ("RTO", "RTO_INITIATED"):
+        dispatch("ndr.rto_decided", {
+            "ndrId": str(ndr.id),
+            "companyId": str(ndr.companyId),
+        })
+
     return NDRResponse.model_validate(ndr)
 
 

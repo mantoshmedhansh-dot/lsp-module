@@ -123,10 +123,11 @@ def _do_signup(data: SignupData, session: Session):
         next_num += 1
         code = f"{prefix}-{next_num:04d}"
 
-    # Create company
+    # Create company (self-service signup is always LSP — brands are created by LSPs)
     company = Company(
         code=code,
         name=data.companyName,
+        companyType="LSP",
         gst=data.gst,
         pan=data.pan,
         email=data.adminEmail,

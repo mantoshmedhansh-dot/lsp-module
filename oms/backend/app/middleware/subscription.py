@@ -26,6 +26,24 @@ from app.core.database import engine
 
 logger = logging.getLogger("subscription")
 
+# ── ServiceModel → allowed modules mapping ─────────────────────────
+SERVICE_MODEL_MODULES = {
+    "WAREHOUSING": {"OMS", "WMS"},
+    "LOGISTICS": {"OMS", "LOGISTICS", "CONTROL_TOWER"},
+    "FULL": {"OMS", "WMS", "LOGISTICS", "CONTROL_TOWER", "FINANCE", "ANALYTICS"},
+}
+
+# ── WMS paths where brand-under-LSP users are read-only ────────────
+BRAND_READ_ONLY_PATHS = {
+    "/api/v1/goods-receipt", "/api/v1/asn", "/api/v1/inbound",
+    "/api/v1/inventory", "/api/v1/waves", "/api/v1/picklists",
+    "/api/v1/packing", "/api/v1/putaway", "/api/v1/allocation",
+    "/api/v1/qc", "/api/v1/zones", "/api/v1/bins",
+    "/api/v1/wms", "/api/v1/labor", "/api/v1/slotting",
+    "/api/v1/voice", "/api/v1/cross-dock", "/api/v1/stock-transfer",
+    "/api/v1/reconciliation", "/api/v1/mobile",
+}
+
 # ── In-memory TTL cache for subscription lookups ──────────────────────
 # Key: company_id → { "data": {...}, "expires": timestamp }
 _sub_cache: Dict[str, Dict[str, Any]] = {}
@@ -237,6 +255,32 @@ def _check_subscription_db(
                 select(Plan).where(Plan.id == sub.planId)
             ).first()
 
+            # ── Brand-under-LSP: intersect with ClientContract modules ──
+            is_brand_under_lsp = False
+            from app.models.company import Company
+            company = session.exec(
+                select(Company).where(Company.id == company_id)
+            ).first()
+
+            if company and company.parentId:
+                is_brand_under_lsp = True
+                from app.models.client_contract import ClientContract
+                contract = session.exec(
+                    select(ClientContract)
+                    .where(ClientContract.brandCompanyId == company_id)
+                    .where(ClientContract.lspCompanyId == company.parentId)
+                    .where(ClientContract.status == "active")
+                ).first()
+
+                if contract:
+                    # Derive allowed modules from serviceModel
+                    sm_modules = SERVICE_MODEL_MODULES.get(contract.serviceModel, set())
+                    # Also include explicitly granted modules from contract
+                    explicit = set(contract.modules) if contract.modules else set()
+                    contract_modules = sm_modules | explicit
+                    # Intersect with plan modules
+                    module_set = module_set & contract_modules
+
             # Cache the subscription + modules
             _cache_set(company_id, {
                 "modules": module_set,
@@ -244,7 +288,16 @@ def _check_subscription_db(
                 "plan_name": plan.name if plan else "current",
                 "plan_slug": plan.slug if plan else None,
                 "status": sub.status,
+                "is_brand_under_lsp": is_brand_under_lsp,
             })
+
+            # ── Brand write protection: block non-GET on WMS paths ──
+            if is_brand_under_lsp and method != "GET":
+                if any(path.startswith(p) for p in BRAND_READ_ONLY_PATHS):
+                    return (403, {
+                        "error": "brand_read_only",
+                        "message": "Brand users have read-only access to WMS. Contact your LSP to make changes.",
+                    })
 
             # Check module access
             if required_module and required_module not in module_set:
@@ -369,6 +422,16 @@ class SubscriptionMiddleware(BaseHTTPMiddleware):
                         "upgradeUrl": "/settings/billing",
                     },
                 )
+            # Brand write protection (fast path)
+            if cached.get("is_brand_under_lsp") and method != "GET":
+                if any(path.startswith(p) for p in BRAND_READ_ONLY_PATHS):
+                    return JSONResponse(
+                        status_code=403,
+                        content={
+                            "error": "brand_read_only",
+                            "message": "Brand users have read-only access to WMS. Contact your LSP to make changes.",
+                        },
+                    )
             # Cache hit + not POST → no DB needed, pass through
             if method != "POST":
                 return await call_next(request)

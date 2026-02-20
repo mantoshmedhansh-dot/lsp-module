@@ -23,6 +23,8 @@ from app.models import (
 )
 from app.services.fifo_sequence import FifoSequenceService
 
+import logging
+logger = logging.getLogger("api.goods_receipt")
 
 router = APIRouter(prefix="/goods-receipts", tags=["Goods Receipts"])
 
@@ -715,6 +717,23 @@ def post_goods_receipt(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to post goods receipt: {type(e).__name__}: {str(e)}. Traceback: {error_details[:500]}"
         )
+
+    # Dispatch inventory.updated for each SKU so alerts + reorder-point checks fire
+    try:
+        from app.services.event_dispatcher import dispatch
+        gr_items = session.exec(
+            select(GoodsReceiptItem).where(GoodsReceiptItem.goodsReceiptId == gr.id)
+        ).all()
+        for gi in gr_items:
+            dispatch("inventory.updated", {
+                "skuId": str(gi.skuId) if gi.skuId else "",
+                "locationId": str(gr.locationId) if gr.locationId else "",
+                "companyId": str(gr.companyId) if gr.companyId else "",
+                "grNo": gr.grNo,
+                "quantityAdded": gi.acceptedQty or 0,
+            })
+    except Exception as e:
+        logger.warning(f"Failed to dispatch inventory.updated events for GR {gr.grNo}: {e}")
 
     # For debugging, return a simple dict instead of using response model
     return {"status": "posted", "id": str(gr.id), "grNo": gr.grNo}

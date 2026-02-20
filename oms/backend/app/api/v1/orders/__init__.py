@@ -374,6 +374,32 @@ def cancel_order(
 
     order.status = OrderStatus.CANCELLED
     session.add(order)
+
+    # Release reserved inventory for cancelled order items
+    order_items = session.exec(
+        select(OrderItem).where(OrderItem.orderId == order_id)
+    ).all()
+    from app.models import Inventory
+    for oi in order_items:
+        if not oi.skuId:
+            continue
+        inv_records = session.exec(
+            select(Inventory).where(
+                Inventory.skuId == oi.skuId,
+                Inventory.locationId == order.locationId,
+                Inventory.reservedQty > 0,
+            )
+        ).all()
+        qty_to_release = oi.quantity or 0
+        for inv in inv_records:
+            if qty_to_release <= 0:
+                break
+            release = min(qty_to_release, inv.reservedQty or 0)
+            inv.reservedQty = (inv.reservedQty or 0) - release
+            inv.availableQty = (inv.availableQty or 0) + release
+            qty_to_release -= release
+            session.add(inv)
+
     session.commit()
     session.refresh(order)
 

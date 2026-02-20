@@ -115,6 +115,12 @@ def handle_ndr_ai_auto_execute(payload: dict, session: Session):
         ndr.status = NDRStatus.RTO
         ndr.actionTaken = "AUTO_RTO"
         session.add(ndr)
+        # Dispatch ndr.rto_decided so T23 auto-creates RTO shipment
+        from app.services.event_dispatcher import dispatch
+        dispatch("ndr.rto_decided", {
+            "ndrId": str(ndr.id),
+            "companyId": str(ndr.companyId) if ndr.companyId else "",
+        })
         logger.info(f"NDR {ndr.ndrCode}: AI auto-initiated RTO (confidence={ai_action.confidence})")
 
     # Log auto-execution
@@ -206,6 +212,14 @@ def handle_ndr_resolved_cascade(payload: dict, session: Session):
             order.status = OrderStatus.DELIVERED
             order.updatedAt = datetime.utcnow()
             session.add(order)
+        # Dispatch delivery.delivered so COD, invoice, and analytics chains fire
+        if delivery:
+            from app.services.event_dispatcher import dispatch
+            dispatch("delivery.delivered", {
+                "deliveryId": str(delivery.id),
+                "orderId": str(ndr.orderId) if ndr.orderId else "",
+                "companyId": str(ndr.companyId) if ndr.companyId else "",
+            })
         logger.info(f"NDR {ndr.ndrCode} resolved as DELIVERED")
 
     elif resolution_type == "RTO" or resolution_type == "RTO_INITIATED":

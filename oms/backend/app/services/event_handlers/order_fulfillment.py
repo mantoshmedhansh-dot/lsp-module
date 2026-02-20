@@ -439,8 +439,44 @@ def handle_manifest_closed(payload: dict, session: Session):
                 })
             else:
                 logger.warning(f"Auto-ship failed for {delivery.deliveryNo}: {result.get('error')}")
+                # Create exception for Control Tower visibility
+                try:
+                    from app.models.system import Exception as CTException
+                    exc = CTException(
+                        exceptionCode=f"SHIP-FAIL-{delivery.deliveryNo}",
+                        companyId=company_id,
+                        type="SHIPPING",
+                        source="SYSTEM",
+                        severity="HIGH",
+                        entityType="DELIVERY",
+                        entityId=str(delivery.id),
+                        title=f"Auto-ship failed: {delivery.deliveryNo}",
+                        description=f"Carrier API returned error: {result.get('error', 'Unknown')}",
+                        status="OPEN",
+                    )
+                    session.add(exc)
+                except Exception as exc_err:
+                    logger.warning(f"Could not create exception record: {exc_err}")
         except Exception as e:
             logger.error(f"Auto-ship error for {delivery.deliveryNo}: {e}")
+            # Create exception for Control Tower visibility
+            try:
+                from app.models.system import Exception as CTException
+                exc = CTException(
+                    exceptionCode=f"SHIP-ERR-{delivery.deliveryNo}",
+                    companyId=company_id,
+                    type="SHIPPING",
+                    source="SYSTEM",
+                    severity="HIGH",
+                    entityType="DELIVERY",
+                    entityId=str(delivery.id),
+                    title=f"Auto-ship error: {delivery.deliveryNo}",
+                    description=str(e)[:500],
+                    status="OPEN",
+                )
+                session.add(exc)
+            except Exception as exc_err:
+                logger.warning(f"Could not create exception record: {exc_err}")
 
 
 # ── T35: order.ready_to_ship → auto-rate comparison ─────────────────────

@@ -467,15 +467,27 @@ def complete_wave(
         select(WaveOrder).where(WaveOrder.waveId == wave_id)
     ).all()
 
+    picked_orders = []
     for wo in wave_orders:
         order = session.get(Order, wo.orderId)
         if order and order.status == OrderStatus.PICKING:
             order.status = OrderStatus.PICKED
             order.updatedAt = datetime.utcnow()
             session.add(order)
+            picked_orders.append(order)
 
     session.commit()
     session.refresh(wave)
+
+    # Dispatch picklist.completed for each picked order so packing auto-starts
+    from app.services.event_dispatcher import dispatch
+    for order in picked_orders:
+        dispatch("picklist.completed", {
+            "orderId": str(order.id),
+            "companyId": str(order.companyId) if order.companyId else "",
+            "locationId": str(order.locationId) if order.locationId else "",
+        })
+
     return WaveResponse.model_validate(wave)
 
 

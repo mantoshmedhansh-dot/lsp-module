@@ -451,6 +451,13 @@ def receive_return_at_warehouse(
     session.commit()
     session.refresh(ret)
 
+    # Dispatch return.received for auto-GRN creation (matches single receive path)
+    from app.services.event_dispatcher import dispatch
+    dispatch("return.received", {
+        "returnId": str(ret.id),
+        "companyId": str(ret.companyId),
+    })
+
     return ReturnResponse.model_validate(ret)
 
 
@@ -628,6 +635,14 @@ def restock_return_items(
     session.add(ret)
     session.commit()
     session.refresh(ret)
+
+    # Dispatch return.processed for marketplace sync (matches single process path)
+    if all_processed:
+        from app.services.event_dispatcher import dispatch
+        dispatch("return.processed", {
+            "returnId": str(ret.id),
+            "companyId": str(ret.companyId),
+        })
 
     return ReturnResponse.model_validate(ret)
 
